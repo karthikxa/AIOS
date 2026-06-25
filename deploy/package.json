@@ -1,0 +1,22 @@
+{
+  "name": "avde-platform",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "setup": "node build.mjs",
+    "start": "node server.mjs",
+    "dev": "node server.mjs"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "socks-proxy-agent": "^10.0.0",
+    "tsx": "^4.19.4",
+    "undici": "^6.21.0",
+    "zod": "^3.24.4"
+  }
+}

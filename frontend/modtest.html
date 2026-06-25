@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head><body>
+<h1>Module Test</h1>
+<p id="output">Loading...</p>
+<script type="module">
+try {
+  const m = await import('./js/models-store.js');
+  document.getElementById('output').textContent = 'OK: models=' + m.modelsStore.getState().models.length + ', activeModel=' + m.modelsStore.getState().activeModel;
+} catch(e) {
+  document.getElementById('output').textContent = 'ERROR: ' + e.message;
+  console.error('Module error:', e);
+}
+</script>
+</body></html>

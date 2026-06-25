@@ -1,0 +1,4 @@
+﻿[console_scripts]
+zed = zed_cli.main:main
+zed-acp = acp_adapter.entry:main
+zed-agent = run_agent:main

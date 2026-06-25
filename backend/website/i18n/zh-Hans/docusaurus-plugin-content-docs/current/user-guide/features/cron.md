@@ -1,0 +1,682 @@
+﻿---
+sidebar_position: 5
+title: "å®šæ—¶ä»»åŠ¡ï¼ˆCronï¼‰"
+description: "ç”¨è‡ªç„¶è¯­è¨€è°ƒåº¦è‡ªåŠ¨åŒ–ä»»åŠ¡ï¼Œé€šè¿‡å•ä¸€ cron å·¥å…·ç®¡ç†ï¼Œå¹¶é™„åŠ ä¸€ä¸ªæˆ–å¤šä¸ª skill"
+---
+
+# å®šæ—¶ä»»åŠ¡ï¼ˆCronï¼‰
+
+ä½¿ç”¨è‡ªç„¶è¯­è¨€æˆ– cron è¡¨è¾¾å¼è°ƒåº¦è‡ªåŠ¨è¿è¡Œçš„ä»»åŠ¡ã€‚Zed é€šè¿‡å•ä¸€ `cronjob` å·¥å…·æš´éœ² cron ç®¡ç†èƒ½åŠ›ï¼Œé‡‡ç”¨åŠ¨ä½œå¼æ“ä½œï¼Œè€Œéžåˆ†æ•£çš„ schedule/list/remove å·¥å…·ã€‚
+
+## Cron å½“å‰èƒ½åšä»€ä¹ˆ
+
+Cron ä»»åŠ¡å¯ä»¥ï¼š
+
+- è°ƒåº¦ä¸€æ¬¡æ€§æˆ–å‘¨æœŸæ€§ä»»åŠ¡
+- æš‚åœã€æ¢å¤ã€ç¼–è¾‘ã€è§¦å‘å’Œåˆ é™¤ä»»åŠ¡
+- ä¸ºä»»åŠ¡é™„åŠ é›¶ä¸ªã€ä¸€ä¸ªæˆ–å¤šä¸ª skill
+- å°†ç»“æžœå›žä¼ åˆ°æ¥æºä¼šè¯ã€æœ¬åœ°æ–‡ä»¶æˆ–å·²é…ç½®çš„å¹³å°ç›®æ ‡
+- åœ¨å…¨æ–°çš„ agent ä¼šè¯ä¸­è¿è¡Œï¼Œä½¿ç”¨æ­£å¸¸çš„é™æ€å·¥å…·åˆ—è¡¨
+- ä»¥**æ—  agent æ¨¡å¼**è¿è¡Œâ€”â€”æŒ‰è®¡åˆ’æ‰§è¡Œè„šæœ¬ï¼Œå…¶ stdout åŽŸæ ·æŠ•é€’ï¼Œé›¶ LLM å‚ä¸Žï¼ˆå‚è§ä¸‹æ–¹[æ—  agent æ¨¡å¼](#no-agent-mode-script-only-jobs)ç« èŠ‚ï¼‰
+
+æ‰€æœ‰è¿™äº›åŠŸèƒ½å‡å¯é€šè¿‡ `cronjob` å·¥å…·ç”± Zed è‡ªèº«ä½¿ç”¨ï¼Œå› æ­¤ä½ å¯ä»¥ç”¨è‡ªç„¶è¯­è¨€åˆ›å»ºã€æš‚åœã€ç¼–è¾‘å’Œåˆ é™¤ä»»åŠ¡â€”â€”æ— éœ€ CLIã€‚
+
+:::warning
+Cron è¿è¡Œçš„ä¼šè¯ä¸èƒ½é€’å½’åˆ›å»ºæ›´å¤š cron ä»»åŠ¡ã€‚Zed åœ¨ cron æ‰§è¡Œå†…éƒ¨ç¦ç”¨äº† cron ç®¡ç†å·¥å…·ï¼Œä»¥é˜²æ­¢å¤±æŽ§çš„è°ƒåº¦å¾ªçŽ¯ã€‚
+:::
+
+## åˆ›å»ºå®šæ—¶ä»»åŠ¡
+
+### åœ¨èŠå¤©ä¸­ä½¿ç”¨ `/cron`
+
+```bash
+/cron add 30m "Remind me to check the build"
+/cron add "every 2h" "Check server status"
+/cron add "every 1h" "Summarize new feed items" --skill blogwatcher
+/cron add "every 1h" "Use both skills and combine the result" --skill blogwatcher --skill maps
+```
+
+### ä»Žç‹¬ç«‹ CLI
+
+```bash
+zed cron create "every 2h" "Check server status"
+zed cron create "every 1h" "Summarize new feed items" --skill blogwatcher
+zed cron create "every 1h" "Use both skills and combine the result" \
+  --skill blogwatcher \
+  --skill maps \
+  --name "Skill combo"
+```
+
+### é€šè¿‡è‡ªç„¶å¯¹è¯
+
+ç›´æŽ¥å‘ Zed æè¿°ï¼š
+
+```text
+Every morning at 9am, check Hacker News for AI news and send me a summary on Telegram.
+```
+
+Zed ä¼šåœ¨å†…éƒ¨ä½¿ç”¨ç»Ÿä¸€çš„ `cronjob` å·¥å…·ã€‚
+
+## é™„å¸¦ skill çš„ cron ä»»åŠ¡
+
+Cron ä»»åŠ¡å¯ä»¥åœ¨è¿è¡Œ promptï¼ˆæç¤ºè¯ï¼‰ä¹‹å‰åŠ è½½ä¸€ä¸ªæˆ–å¤šä¸ª skillã€‚
+
+### å•ä¸ª skill
+
+```python
+cronjob(
+    action="create",
+    skill="blogwatcher",
+    prompt="Check the configured feeds and summarize anything new.",
+    schedule="0 9 * * *",
+    name="Morning feeds",
+)
+```
+
+### å¤šä¸ª skill
+
+Skill æŒ‰é¡ºåºåŠ è½½ã€‚Prompt ä½œä¸ºä»»åŠ¡æŒ‡ä»¤å åŠ åœ¨è¿™äº› skill ä¹‹ä¸Šã€‚
+
+```python
+cronjob(
+    action="create",
+    skills=["blogwatcher", "maps"],
+    prompt="Look for new local events and interesting nearby places, then combine them into one short brief.",
+    schedule="every 6h",
+    name="Local brief",
+)
+```
+
+å½“ä½ å¸Œæœ›å®šæ—¶ agent ç»§æ‰¿å¯å¤ç”¨çš„å·¥ä½œæµï¼Œè€Œä¸å¿…å°†å®Œæ•´çš„ skill æ–‡æœ¬å¡žå…¥ cron prompt æœ¬èº«æ—¶ï¼Œè¿™éžå¸¸æœ‰ç”¨ã€‚
+
+## åœ¨æŒ‡å®šé¡¹ç›®ç›®å½•ä¸­è¿è¡Œä»»åŠ¡
+
+Cron ä»»åŠ¡é»˜è®¤ä¸Žä»»ä½•ä»£ç ä»“åº“è„±ç¦»è¿è¡Œâ€”â€”ä¸åŠ è½½ `AGENTS.md`ã€`CLAUDE.md` æˆ– `.cursorrules`ï¼Œç»ˆç«¯/æ–‡ä»¶/ä»£ç æ‰§è¡Œå·¥å…·ä»Ž gateway å¯åŠ¨æ—¶çš„å·¥ä½œç›®å½•è¿è¡Œã€‚ä¼ å…¥ `--workdir`ï¼ˆCLIï¼‰æˆ– `workdir=`ï¼ˆå·¥å…·è°ƒç”¨ï¼‰å¯æ›´æ”¹æ­¤è¡Œä¸ºï¼š
+
+```bash
+# ç‹¬ç«‹ CLIï¼ˆschedule å’Œ prompt ä¸ºä½ç½®å‚æ•°ï¼‰
+zed cron create "every 1d at 09:00" \
+  "Audit open PRs, summarize CI health, and post to #eng" \
+  --workdir /home/me/projects/acme
+```
+
+```python
+# åœ¨èŠå¤©ä¸­ï¼Œé€šè¿‡ cronjob å·¥å…·
+cronjob(
+    action="create",
+    schedule="every 1d at 09:00",
+    workdir="/home/me/projects/acme",
+    prompt="Audit open PRs, summarize CI health, and post to #eng",
+)
+```
+
+è®¾ç½® `workdir` åŽï¼š
+
+- è¯¥ç›®å½•ä¸­çš„ `AGENTS.md`ã€`CLAUDE.md` å’Œ `.cursorrules` ä¼šè¢«æ³¨å…¥ç³»ç»Ÿ promptï¼ˆå‘çŽ°é¡ºåºä¸Žäº¤äº’å¼ CLI ç›¸åŒï¼‰
+- `terminal`ã€`read_file`ã€`write_file`ã€`patch`ã€`search_files` å’Œ `execute_code` å‡ä»¥è¯¥ç›®å½•ä¸ºå·¥ä½œç›®å½•ï¼ˆé€šè¿‡ `TERMINAL_CWD`ï¼‰
+- è·¯å¾„å¿…é¡»æ˜¯å·²å­˜åœ¨çš„ç»å¯¹ç›®å½•â€”â€”ç›¸å¯¹è·¯å¾„å’Œä¸å­˜åœ¨çš„ç›®å½•åœ¨åˆ›å»º/æ›´æ–°æ—¶ä¼šè¢«æ‹’ç»
+- ç¼–è¾‘æ—¶ä¼ å…¥ `--workdir ""`ï¼ˆæˆ–å·¥å…·ä¸­çš„ `workdir=""`ï¼‰å¯æ¸…é™¤è¯¥è®¾ç½®å¹¶æ¢å¤åŽŸæœ‰è¡Œä¸º
+
+:::note ä¸²è¡ŒåŒ–
+è®¾ç½®äº† `workdir` çš„ä»»åŠ¡åœ¨è°ƒåº¦å™¨ tick æ—¶ä¸²è¡Œè¿è¡Œï¼Œè€Œéžåœ¨å¹¶è¡Œæ± ä¸­è¿è¡Œã€‚è¿™æ˜¯æœ‰æ„ä¸ºä¹‹â€”â€”`TERMINAL_CWD` æ˜¯è¿›ç¨‹å…¨å±€å˜é‡ï¼Œä¸¤ä¸ª workdir ä»»åŠ¡åŒæ—¶è¿è¡Œä¼šäº’ç›¸ç ´åå„è‡ªçš„ cwdã€‚æ—  workdir çš„ä»»åŠ¡ä»åƒä»¥å‰ä¸€æ ·å¹¶è¡Œè¿è¡Œã€‚
+:::
+
+## åœ¨æŒ‡å®š profile ä¸­è¿è¡Œ cron ä»»åŠ¡
+
+é»˜è®¤æƒ…å†µä¸‹ï¼Œcron ä»»åŠ¡ç»§æ‰¿åˆ›å»ºå®ƒçš„ gateway/CLI æ‰€å±žçš„ Zed profileã€‚ä¼ å…¥ `--profile <name>`ï¼ˆCLIï¼‰æˆ– `profile=`ï¼ˆcronjob å·¥å…·ï¼‰å¯å°†ä»»åŠ¡é‡å®šå‘åˆ°ä¸åŒçš„ profileâ€”â€”è°ƒåº¦å™¨ä¼šè§£æžè¯¥ profile çš„ `ZED_HOME`ï¼Œåœ¨è¿è¡ŒæœŸé—´ä¸´æ—¶åˆ‡æ¢åˆ°è¯¥ profileï¼ŒåŠ è½½å…¶ `.env` å’Œ `config.yaml`ï¼Œå¹¶åœ¨å…¶ä¸­æ‰§è¡Œä»»åŠ¡ï¼š
+
+```bash
+# å°†ä»»åŠ¡å›ºå®šåˆ° `night-ops` profileï¼Œæ— è®ºåœ¨å“ªé‡Œè°ƒåº¦
+zed cron create "every 1d at 03:00" \
+  "Tail the security log and flag anomalies" \
+  --profile night-ops
+```
+
+```python
+# åœ¨èŠå¤©ä¸­ï¼Œé€šè¿‡ cronjob å·¥å…·
+cronjob(
+    action="create",
+    schedule="every 1d at 03:00",
+    prompt="Tail the security log and flag anomalies",
+    profile="night-ops",
+)
+```
+
+ä½¿ç”¨ `--profile default` å¯æ˜¾å¼å›ºå®šåˆ°æ ¹ Zed profileã€‚æŒ‡å®šçš„ profile å¿…é¡»å·²å­˜åœ¨ï¼›è°ƒåº¦å™¨ä¸ä¼šåŠ¨æ€åˆ›å»º profileã€‚åœ¨ `cron edit` æ—¶æ¸…é™¤ profile å›ºå®šï¼Œä¼ å…¥ç©ºå­—ç¬¦ä¸²ï¼ˆ`--profile ""` æˆ– `profile=""`ï¼‰â€”â€”ä»»åŠ¡å°†æ¢å¤åœ¨è°ƒåº¦å™¨å½“å‰æ‰€åœ¨çš„ profile ä¸­è¿è¡Œã€‚
+
+å¦‚æžœå›ºå®šçš„ profile åŽæ¥è¢«åˆ é™¤ï¼Œè°ƒåº¦å™¨ä¼šè®°å½•è­¦å‘Šå¹¶å›žé€€åˆ°åœ¨å½“å‰ profile ä¸­è¿è¡Œè¯¥ä»»åŠ¡ï¼Œè€Œä¸æ˜¯å´©æºƒâ€”â€”å› æ­¤è¿‡æœŸçš„ `profile` å¼•ç”¨ä¸ä¼šå¡ä½ä»»åŠ¡ã€‚
+
+:::note ä¸²è¡ŒåŒ–
+è®¾ç½®äº† `profile` çš„ä»»åŠ¡ä¹Ÿä¸²è¡Œè¿è¡Œï¼ŒåŽŸå› ä¸Ž `workdir` å›ºå®šä»»åŠ¡ç›¸åŒï¼šåˆ‡æ¢ `ZED_HOME` æ˜¯è¿›ç¨‹å…¨å±€å˜æ›´ï¼Œä¸¤ä¸ª profile å›ºå®šä»»åŠ¡å¹¶è¡Œè¿è¡Œä¼šäº§ç”Ÿç«žäº‰ã€‚æœªå›ºå®šçš„ä»»åŠ¡ä»åœ¨æ­£å¸¸å¹¶è¡Œæ± ä¸­è¿è¡Œã€‚
+:::
+
+## ç¼–è¾‘ä»»åŠ¡
+
+æ— éœ€åˆ é™¤å¹¶é‡å»ºä»»åŠ¡æ¥ä¿®æ”¹å®ƒä»¬ã€‚
+
+:::tip ä»»åŠ¡å¼•ç”¨
+ä¸‹æ–¹ï¼ˆä»¥åŠ[ç”Ÿå‘½å‘¨æœŸæ“ä½œ](#lifecycle-actions)ä¸­ï¼‰çš„ `<job_id>` å ä½ç¬¦ä¹ŸæŽ¥å—ä»»åŠ¡åç§°ï¼ˆä¸åŒºåˆ†å¤§å°å†™ï¼‰â€”â€”å½“ä½ è®°å¾— `morning-digest` ä½†ä¸è®°å¾—åå…­è¿›åˆ¶ ID æ—¶å¾ˆæ–¹ä¾¿ã€‚ç²¾ç¡®çš„ä»»åŠ¡ ID ä¼˜å…ˆäºŽåç§°åŒ¹é…ï¼›å¦‚æžœå¼•ç”¨ä¸æ˜¯ ID ä¸”åç§°åŒ¹é…åˆ°å¤šä¸ªä»»åŠ¡ï¼Œå‘½ä»¤ä¼šæ‹’ç»æ‰§è¡Œå¹¶æ‰“å°å€™é€‰ ID ä¾›ä½ æ¶ˆæ­§ä¹‰ã€‚
+:::
+
+### èŠå¤©
+
+```bash
+/cron edit <job_id> --schedule "every 4h"
+/cron edit <job_id> --prompt "Use the revised task"
+/cron edit <job_id> --skill blogwatcher --skill maps
+/cron edit <job_id> --remove-skill blogwatcher
+/cron edit <job_id> --clear-skills
+```
+
+### ç‹¬ç«‹ CLI
+
+```bash
+zed cron edit <job_id> --schedule "every 4h"
+zed cron edit <job_id> --prompt "Use the revised task"
+zed cron edit <job_id> --skill blogwatcher --skill maps
+zed cron edit <job_id> --add-skill maps
+zed cron edit <job_id> --remove-skill blogwatcher
+zed cron edit <job_id> --clear-skills
+```
+
+æ³¨æ„ï¼š
+
+- é‡å¤ä½¿ç”¨ `--skill` ä¼šæ›¿æ¢ä»»åŠ¡å·²é™„åŠ çš„ skill åˆ—è¡¨
+- `--add-skill` è¿½åŠ åˆ°çŽ°æœ‰åˆ—è¡¨ï¼Œä¸æ›¿æ¢
+- `--remove-skill` åˆ é™¤æŒ‡å®šçš„å·²é™„åŠ  skill
+- `--clear-skills` åˆ é™¤æ‰€æœ‰å·²é™„åŠ çš„ skill
+
+## ç”Ÿå‘½å‘¨æœŸæ“ä½œ
+
+Cron ä»»åŠ¡çŽ°åœ¨æ‹¥æœ‰æ¯”åˆ›å»º/åˆ é™¤æ›´å®Œæ•´çš„ç”Ÿå‘½å‘¨æœŸã€‚
+
+### èŠå¤©
+
+```bash
+/cron list
+/cron pause <job_id>
+/cron resume <job_id>
+/cron run <job_id>
+/cron remove <job_id>
+```
+
+### ç‹¬ç«‹ CLI
+
+```bash
+zed cron list
+zed cron pause <job_id>
+zed cron resume <job_id>
+zed cron run <job_id>
+zed cron remove <job_id>
+zed cron status
+zed cron tick
+```
+
+å„æ“ä½œè¯´æ˜Žï¼š
+
+- `pause` â€” ä¿ç•™ä»»åŠ¡ä½†åœæ­¢è°ƒåº¦
+- `resume` â€” é‡æ–°å¯ç”¨ä»»åŠ¡å¹¶è®¡ç®—ä¸‹æ¬¡è¿è¡Œæ—¶é—´
+- `run` â€” åœ¨ä¸‹æ¬¡è°ƒåº¦å™¨ tick æ—¶è§¦å‘ä»»åŠ¡
+- `remove` â€” å½»åº•åˆ é™¤ä»»åŠ¡
+
+## å·¥ä½œåŽŸç†
+
+**Cron æ‰§è¡Œç”± gateway å®ˆæŠ¤è¿›ç¨‹å¤„ç†ã€‚** Gateway æ¯ 60 ç§’ tick ä¸€æ¬¡è°ƒåº¦å™¨ï¼Œåœ¨éš”ç¦»çš„ agent ä¼šè¯ä¸­è¿è¡Œåˆ°æœŸçš„ä»»åŠ¡ã€‚
+
+```bash
+zed gateway install     # å®‰è£…ä¸ºç”¨æˆ·æœåŠ¡
+sudo zed gateway install --system   # Linuxï¼šæœåŠ¡å™¨å¼€æœºå¯åŠ¨çš„ç³»ç»ŸæœåŠ¡
+zed gateway             # æˆ–åœ¨å‰å°è¿è¡Œ
+
+zed cron list
+zed cron status
+```
+
+### Gateway è°ƒåº¦å™¨è¡Œä¸º
+
+æ¯æ¬¡ tick æ—¶ï¼ŒZedï¼š
+
+1. ä»Ž `~/.zed/cron/jobs.json` åŠ è½½ä»»åŠ¡
+2. å¯¹ç…§å½“å‰æ—¶é—´æ£€æŸ¥ `next_run_at`
+3. ä¸ºæ¯ä¸ªåˆ°æœŸä»»åŠ¡å¯åŠ¨å…¨æ–°çš„ `AIAgent` ä¼šè¯
+4. å¯é€‰åœ°å°†ä¸€ä¸ªæˆ–å¤šä¸ªå·²é™„åŠ çš„ skill æ³¨å…¥è¯¥æ–°ä¼šè¯
+5. å°† prompt è¿è¡Œè‡³å®Œæˆ
+6. æŠ•é€’æœ€ç»ˆå“åº”
+7. æ›´æ–°è¿è¡Œå…ƒæ•°æ®å’Œä¸‹æ¬¡è°ƒåº¦æ—¶é—´
+
+`~/.zed/cron/.tick.lock` å¤„çš„æ–‡ä»¶é”é˜²æ­¢é‡å çš„è°ƒåº¦å™¨ tick é‡å¤è¿è¡ŒåŒä¸€æ‰¹ä»»åŠ¡ã€‚
+
+## æŠ•é€’é€‰é¡¹
+
+è°ƒåº¦ä»»åŠ¡æ—¶ï¼Œä½ å¯ä»¥æŒ‡å®šè¾“å‡ºçš„åŽ»å‘ï¼š
+
+| é€‰é¡¹ | è¯´æ˜Ž | ç¤ºä¾‹ |
+|--------|-------------|---------|
+| `"origin"` | å›žä¼ åˆ°ä»»åŠ¡åˆ›å»ºçš„æ¥æº | æ¶ˆæ¯å¹³å°ä¸Šçš„é»˜è®¤å€¼ |
+| `"local"` | ä»…ä¿å­˜åˆ°æœ¬åœ°æ–‡ä»¶ï¼ˆ`~/.zed/cron/output/`ï¼‰ | CLI ä¸Šçš„é»˜è®¤å€¼ |
+| `"telegram"` | Telegram ä¸»é¢‘é“ | ä½¿ç”¨ `TELEGRAM_HOME_CHANNEL` |
+| `"telegram:123456"` | æŒ‰ ID æŒ‡å®šçš„ Telegram ä¼šè¯ | ç›´æŽ¥æŠ•é€’ |
+| `"telegram:-100123:17585"` | æŒ‡å®š Telegram è¯é¢˜ | `chat_id:thread_id` æ ¼å¼ |
+| `"discord"` | Discord ä¸»é¢‘é“ | ä½¿ç”¨ `DISCORD_HOME_CHANNEL` |
+| `"discord:#engineering"` | æŒ‰é¢‘é“åæŒ‡å®šçš„ Discord é¢‘é“ | æŒ‰é¢‘é“å |
+| `"slack"` | Slack ä¸»é¢‘é“ | |
+| `"whatsapp"` | WhatsApp ä¸»è´¦å· | |
+| `"signal"` | Signal | |
+| `"matrix"` | Matrix ä¸»æˆ¿é—´ | |
+| `"mattermost"` | Mattermost ä¸»é¢‘é“ | |
+| `"email"` | é‚®ä»¶ | |
+| `"sms"` | é€šè¿‡ Twilio å‘é€ SMS | |
+| `"homeassistant"` | Home Assistant | |
+| `"dingtalk"` | é’‰é’‰ | |
+| `"feishu"` | é£žä¹¦/Lark | |
+| `"wecom"` | ä¼ä¸šå¾®ä¿¡ | |
+| `"weixin"` | å¾®ä¿¡ï¼ˆWeChatï¼‰ | |
+| `"bluebubbles"` | BlueBubblesï¼ˆiMessageï¼‰ | |
+| `"qqbot"` | QQ Botï¼ˆè…¾è®¯ QQï¼‰ | |
+| `"all"` | æ‰‡å‡ºåˆ°æ‰€æœ‰å·²è¿žæŽ¥çš„ä¸»é¢‘é“ | è§¦å‘æ—¶è§£æž |
+| `"telegram,discord"` | æ‰‡å‡ºåˆ°æŒ‡å®šçš„ä¸€ç»„é¢‘é“ | é€—å·åˆ†éš”åˆ—è¡¨ |
+| `"origin,all"` | æŠ•é€’åˆ°æ¥æº**åŠ ä¸Š**æ‰€æœ‰å…¶ä»–å·²è¿žæŽ¥é¢‘é“ | å¯ç»„åˆä»»æ„ token |
+
+Agent çš„æœ€ç»ˆå“åº”ä¼šè‡ªåŠ¨æŠ•é€’ï¼Œæ— éœ€åœ¨ cron prompt ä¸­è°ƒç”¨ `send_message`ã€‚
+
+### è·¯ç”±æ„å›¾ï¼ˆ`all`ï¼‰
+
+`all` è®©ä½ å°†ä¸€ä¸ª cron ä»»åŠ¡å‘é€åˆ°æ‰€æœ‰å·²é…ç½®çš„æ¶ˆæ¯é¢‘é“ï¼Œæ— éœ€é€ä¸€åˆ—ä¸¾åç§°ã€‚å®ƒåœ¨**è§¦å‘æ—¶è§£æž**ï¼Œå› æ­¤åœ¨ä½ é…ç½® `TELEGRAM_HOME_CHANNEL` ä¹‹å‰åˆ›å»ºçš„ä»»åŠ¡ï¼Œä¼šåœ¨ä¸‹æ¬¡ tick æ—¶è‡ªåŠ¨çº³å…¥ Telegramã€‚
+
+è¯­ä¹‰ï¼š`all` å±•å¼€ä¸ºæ‰€æœ‰å·²é…ç½®ä¸»é¢‘é“çš„å¹³å°ã€‚é›¶ä¸ªä¹Ÿæ²¡é—®é¢˜ï¼›ä»»åŠ¡åªæ˜¯æ²¡æœ‰æŠ•é€’ç›®æ ‡ï¼Œå¹¶åœ¨ä¸Šæ¸¸è®°å½•ä¸ºæŠ•é€’å¤±è´¥ã€‚
+
+`all` å¯ä¸Žæ˜¾å¼ç›®æ ‡ç»„åˆã€‚`origin,all` æŠ•é€’åˆ°æ¥æºä¼šè¯**åŠ ä¸Š**æ‰€æœ‰å…¶ä»–å·²è¿žæŽ¥çš„ä¸»é¢‘é“ï¼ŒæŒ‰ `(platform, chat_id, thread_id)` åŽ»é‡ã€‚
+
+### Telegram cron è¯é¢˜ï¼ˆ`TELEGRAM_CRON_THREAD_ID`ï¼‰
+
+å¯ç”¨ Telegram è¯é¢˜æ¨¡å¼åŽï¼Œæ ¹ DM è¢«ä¿ç•™ä¸ºç³»ç»Ÿå¤§åŽ…â€”â€”å‘é€åˆ°é‚£é‡Œçš„å›žå¤ä¼šè¢«æ‹’ç»å¹¶é™„å¸¦å¤§åŽ…æç¤ºï¼Œ`reply_to_message_id` ä¼šè¢«ä¸¢å¼ƒï¼Œå› æ­¤ä½ æ— æ³•å›žå¤è½åœ¨ä¸»èŠå¤©ä¸­çš„ cron æ¶ˆæ¯ã€‚
+
+å°† cron æŒ‡å‘ä¸“ç”¨çš„è®ºå›è¯é¢˜ï¼š
+
+1. åœ¨ Telegram ä¸­æ‰“å¼€æœºå™¨äºº DMï¼Œåˆ›å»ºä¸€ä¸ªåä¸º `Cron` çš„è¯é¢˜ã€‚é•¿æŒ‰è¯é¢˜æ ‡é¢˜ â†’ **å¤åˆ¶é“¾æŽ¥**ï¼›æœ«å°¾çš„æ•´æ•°å³ä¸ºè¯¥è¯é¢˜çš„ `message_thread_id`ã€‚
+2. åœ¨ `.env` ä¸­è®¾ç½® `TELEGRAM_CRON_THREAD_ID=<è¯¥ id>`ã€‚
+
+è¿™ä»…é€‚ç”¨äºŽ cron æŠ•é€’ã€‚`TELEGRAM_HOME_CHANNEL_THREAD_ID`ï¼ˆç”¨äºŽå…¶ä»–åœ°æ–¹ï¼Œå¦‚é‡å¯é€šçŸ¥ï¼‰ä¸å—å½±å“ã€‚æ˜¾å¼çš„ `deliver="telegram:chat_id:thread_id"` ç›®æ ‡ä»ä¼˜å…ˆäºŽçŽ¯å¢ƒå˜é‡ã€‚å¯¹ cron æ¶ˆæ¯çš„å›žå¤çŽ°åœ¨ä¼šè¿›å…¥å·²æœ‰çš„è¯é¢˜ä¼šè¯ï¼Œä½ å¯ä»¥ç›´æŽ¥åœ¨å…¶ä¸­æ“ä½œã€‚
+
+### å“åº”åŒ…è£…
+
+é»˜è®¤æƒ…å†µä¸‹ï¼ŒæŠ•é€’çš„ cron è¾“å‡ºä¼šå¸¦æœ‰é¡µçœ‰å’Œé¡µè„šï¼Œä»¥ä¾¿æŽ¥æ”¶æ–¹çŸ¥é“è¿™æ¥è‡ªå®šæ—¶ä»»åŠ¡ï¼š
+
+```
+Cronjob Response: Morning feeds
+-------------
+
+<agent output here>
+
+Note: The agent cannot see this message, and therefore cannot respond to it.
+```
+
+è‹¥è¦æŠ•é€’ä¸å¸¦åŒ…è£…çš„åŽŸå§‹ agent è¾“å‡ºï¼Œå°† `cron.wrap_response` è®¾ä¸º `false`ï¼š
+
+```yaml
+# ~/.zed/config.yaml
+cron:
+  wrap_response: false
+```
+
+### é™é»˜æŠ‘åˆ¶
+
+å¦‚æžœ agent çš„æœ€ç»ˆå“åº”ä»¥ `[SILENT]` å¼€å¤´ï¼ŒæŠ•é€’å°†è¢«å®Œå…¨æŠ‘åˆ¶ã€‚è¾“å‡ºä»ä¼šä¿å­˜åˆ°æœ¬åœ°ä»¥ä¾›å®¡è®¡ï¼ˆä½äºŽ `~/.zed/cron/output/`ï¼‰ï¼Œä½†ä¸ä¼šå‘æŠ•é€’ç›®æ ‡å‘é€ä»»ä½•æ¶ˆæ¯ã€‚
+
+è¿™å¯¹äºŽåªåœ¨å‡ºçŽ°é—®é¢˜æ—¶æ‰éœ€è¦ä¸ŠæŠ¥çš„ç›‘æŽ§ä»»åŠ¡å¾ˆæœ‰ç”¨ï¼š
+
+```text
+Check if nginx is running. If everything is healthy, respond with only [SILENT].
+Otherwise, report the issue.
+```
+
+å¤±è´¥çš„ä»»åŠ¡æ— è®º `[SILENT]` æ ‡è®°å¦‚ä½•éƒ½ä¼šæŠ•é€’â€”â€”åªæœ‰æˆåŠŸçš„è¿è¡Œæ‰èƒ½è¢«é™é»˜ã€‚
+
+## è„šæœ¬è¶…æ—¶
+
+é¢„è¿è¡Œè„šæœ¬ï¼ˆé€šè¿‡ `script` å‚æ•°é™„åŠ ï¼‰çš„é»˜è®¤è¶…æ—¶ä¸º 120 ç§’ã€‚å¦‚æžœä½ çš„è„šæœ¬éœ€è¦æ›´é•¿æ—¶é—´â€”â€”ä¾‹å¦‚ï¼ŒåŒ…å«éšæœºå»¶è¿Ÿä»¥é¿å…ç±»æœºå™¨äººçš„æ—¶åºæ¨¡å¼â€”â€”å¯ä»¥å¢žåŠ æ­¤å€¼ï¼š
+
+```yaml
+# ~/.zed/config.yaml
+cron:
+  script_timeout_seconds: 300   # 5 åˆ†é’Ÿ
+```
+
+æˆ–è®¾ç½® `ZED_CRON_SCRIPT_TIMEOUT` çŽ¯å¢ƒå˜é‡ã€‚è§£æžé¡ºåºä¸ºï¼šçŽ¯å¢ƒå˜é‡ â†’ config.yaml â†’ é»˜è®¤ 120 ç§’ã€‚
+
+## æ—  agent æ¨¡å¼ï¼ˆçº¯è„šæœ¬ä»»åŠ¡ï¼‰
+
+å¯¹äºŽä¸éœ€è¦ LLM æŽ¨ç†çš„å‘¨æœŸæ€§ä»»åŠ¡â€”â€”ç»å…¸çš„çœ‹é—¨ç‹—ã€ç£ç›˜/å†…å­˜å‘Šè­¦ã€å¿ƒè·³ã€CI pingâ€”â€”åœ¨åˆ›å»ºæ—¶ä¼ å…¥ `no_agent=True`ã€‚è°ƒåº¦å™¨æŒ‰è®¡åˆ’è¿è¡Œä½ çš„è„šæœ¬ï¼Œå¹¶ç›´æŽ¥æŠ•é€’å…¶ stdoutï¼Œå®Œå…¨è·³è¿‡ agentï¼š
+
+```bash
+zed cron create "every 5m" \
+  --no-agent \
+  --script memory-watchdog.sh \
+  --deliver telegram \
+  --name "memory-watchdog"
+```
+
+è¯­ä¹‰ï¼š
+
+- è„šæœ¬ stdoutï¼ˆåŽ»é™¤é¦–å°¾ç©ºç™½ï¼‰â†’ åŽŸæ ·ä½œä¸ºæ¶ˆæ¯æŠ•é€’ã€‚
+- **stdout ä¸ºç©º â†’ é™é»˜ tick**ï¼Œä¸æŠ•é€’ã€‚è¿™æ˜¯çœ‹é—¨ç‹—æ¨¡å¼ï¼š"åªåœ¨å‡ºçŽ°é—®é¢˜æ—¶æ‰è¯´è¯"ã€‚
+- éžé›¶é€€å‡ºæˆ–è¶…æ—¶ â†’ æŠ•é€’é”™è¯¯å‘Šè­¦ï¼Œç¡®ä¿æŸåçš„çœ‹é—¨ç‹—ä¸ä¼šé™é»˜å¤±è´¥ã€‚
+- æœ€åŽä¸€è¡Œè¾“å‡º `{"wakeAgent": false}` â†’ é™é»˜ tickï¼ˆä¸Ž LLM ä»»åŠ¡ä½¿ç”¨ç›¸åŒçš„é—¨æŽ§ï¼‰ã€‚
+- æ—  tokenã€æ— æ¨¡åž‹ã€æ—  provider å›žé€€â€”â€”ä»»åŠ¡æ°¸è¿œä¸ä¼šè§¦åŠæŽ¨ç†å±‚ã€‚
+
+`.sh`/`.bash` æ–‡ä»¶åœ¨ `/bin/bash` ä¸‹è¿è¡Œï¼›å…¶ä»–æ–‡ä»¶åœ¨å½“å‰ Python è§£é‡Šå™¨ï¼ˆ`sys.executable`ï¼‰ä¸‹è¿è¡Œã€‚è„šæœ¬å¿…é¡»ä½äºŽ `~/.zed/scripts/`ï¼ˆä¸Žé¢„è¿è¡Œè„šæœ¬é—¨æŽ§ç›¸åŒçš„æ²™ç®±è§„åˆ™ï¼‰ã€‚
+
+### Agent ä¸ºä½ è®¾ç½®è¿™äº›
+
+`cronjob` å·¥å…·çš„ schema ç›´æŽ¥å‘ Zed æš´éœ²äº† `no_agent`ï¼Œå› æ­¤ä½ å¯ä»¥åœ¨èŠå¤©ä¸­æè¿°ä¸€ä¸ªçœ‹é—¨ç‹—ï¼Œè®© agent æ¥é…ç½®å®ƒï¼š
+
+```text
+Ping me on Telegram if RAM is over 85%, every 5 minutes.
+```
+
+Zed ä¼šé€šè¿‡ `write_file` å°†æ£€æŸ¥è„šæœ¬å†™å…¥ `~/.zed/scripts/`ï¼Œç„¶åŽè°ƒç”¨ï¼š
+
+```python
+cronjob(action="create", schedule="every 5m",
+        script="memory-watchdog.sh", no_agent=True,
+        deliver="telegram", name="memory-watchdog")
+```
+
+å½“æ¶ˆæ¯å†…å®¹å®Œå…¨ç”±è„šæœ¬å†³å®šæ—¶ï¼ˆçœ‹é—¨ç‹—ã€é˜ˆå€¼å‘Šè­¦ã€å¿ƒè·³ï¼‰ï¼Œå®ƒä¼šè‡ªåŠ¨é€‰æ‹© `no_agent=True`ã€‚åŒä¸€å·¥å…·ä¹Ÿè®© agent å¯ä»¥æš‚åœã€æ¢å¤ã€ç¼–è¾‘å’Œåˆ é™¤ä»»åŠ¡â€”â€”æ•´ä¸ªç”Ÿå‘½å‘¨æœŸéƒ½é€šè¿‡èŠå¤©é©±åŠ¨ï¼Œæ— éœ€ä»»ä½•äººæŽ¥è§¦ CLIã€‚
+
+å‚è§[çº¯è„šæœ¬ Cron ä»»åŠ¡æŒ‡å—](/guides/cron-script-only)èŽ·å–å®žé™…ç¤ºä¾‹ã€‚
+
+## é€šè¿‡ `context_from` ä¸²è”ä»»åŠ¡
+
+Cron ä»»åŠ¡åœ¨éš”ç¦»çš„ä¼šè¯ä¸­è¿è¡Œï¼Œä¸ä¿ç•™ä¹‹å‰è¿è¡Œçš„è®°å¿†ã€‚ä½†æœ‰æ—¶ä¸€ä¸ªä»»åŠ¡çš„è¾“å‡ºæ°å¥½æ˜¯ä¸‹ä¸€ä¸ªä»»åŠ¡æ‰€éœ€çš„è¾“å…¥ã€‚`context_from` å‚æ•°è‡ªåŠ¨å»ºç«‹è¿™ç§è¿žæŽ¥â€”â€”ä»»åŠ¡ B çš„ prompt åœ¨è¿è¡Œæ—¶ä¼šå°†ä»»åŠ¡ A çš„æœ€æ–°è¾“å‡ºä½œä¸ºä¸Šä¸‹æ–‡å‰ç½®ã€‚
+
+```python
+# ä»»åŠ¡ 1ï¼šæ”¶é›†åŽŸå§‹æ•°æ®
+cronjob(
+    action="create",
+    prompt="Fetch the top 10 AI/ML stories from Hacker News. Save them to ~/.zed/data/briefs/raw.md in markdown format with title, URL, and score.",
+    schedule="0 7 * * *",
+    name="AI News Collector",
+)
+
+# ä»»åŠ¡ 2ï¼šåˆ†ç±»â€”â€”æŽ¥æ”¶ä»»åŠ¡ 1 çš„è¾“å‡ºä½œä¸ºä¸Šä¸‹æ–‡
+# ä»Ž cronjob(action="list") èŽ·å–ä»»åŠ¡ 1 çš„ ID
+cronjob(
+    action="create",
+    prompt="Read ~/.zed/data/briefs/raw.md. Score each story 1â€“10 for engagement potential and novelty. Output the top 5 to ~/.zed/data/briefs/ranked.md.",
+    schedule="30 7 * * *",
+    context_from="<job1_id>",
+    name="AI News Triage",
+)
+
+# ä»»åŠ¡ 3ï¼šå‘å¸ƒâ€”â€”æŽ¥æ”¶ä»»åŠ¡ 2 çš„è¾“å‡ºä½œä¸ºä¸Šä¸‹æ–‡
+cronjob(
+    action="create",
+    prompt="Read ~/.zed/data/briefs/ranked.md. Write 3 tweet drafts (hook + body + hashtags). Deliver to telegram:7976161601.",
+    schedule="0 8 * * *",
+    context_from="<job2_id>",
+    name="AI News Brief",
+)
+```
+
+**å·¥ä½œåŽŸç†ï¼š**
+
+- ä»»åŠ¡ 2 è§¦å‘æ—¶ï¼ŒZed ä»Ž `~/.zed/cron/output/{job1_id}/*.md` è¯»å–ä»»åŠ¡ 1 çš„æœ€æ–°è¾“å‡º
+- è¯¥è¾“å‡ºè‡ªåŠ¨å‰ç½®åˆ°ä»»åŠ¡ 2 çš„ prompt
+- ä»»åŠ¡ 2 æ— éœ€ç¡¬ç¼–ç "è¯»å–æ­¤æ–‡ä»¶"â€”â€”å®ƒä»¥ä¸Šä¸‹æ–‡å½¢å¼æŽ¥æ”¶å†…å®¹
+- é“¾å¯ä»¥æ˜¯ä»»æ„é•¿åº¦ï¼šä»»åŠ¡ 1 â†’ ä»»åŠ¡ 2 â†’ ä»»åŠ¡ 3 â†’ â€¦
+
+**`context_from` æŽ¥å—çš„æ ¼å¼ï¼š**
+
+| æ ¼å¼ | ç¤ºä¾‹ |
+|--------|---------|
+| å•ä¸ªä»»åŠ¡ IDï¼ˆå­—ç¬¦ä¸²ï¼‰ | `context_from="a1b2c3d4"` |
+| å¤šä¸ªä»»åŠ¡ IDï¼ˆåˆ—è¡¨ï¼‰ | `context_from=["job_a", "job_b"]` |
+
+è¾“å‡ºæŒ‰åˆ—è¡¨é¡ºåºæ‹¼æŽ¥ã€‚
+
+**é€‚ç”¨åœºæ™¯ï¼š**
+
+- å¤šé˜¶æ®µæµæ°´çº¿ï¼ˆæ”¶é›† â†’ è¿‡æ»¤ â†’ æ ¼å¼åŒ– â†’ æŠ•é€’ï¼‰
+- æ­¥éª¤ N ä¾èµ–æ­¥éª¤ Nâˆ’1 è¾“å‡ºçš„ä¾èµ–ä»»åŠ¡
+- ä¸€ä¸ªä»»åŠ¡èšåˆå¤šä¸ªå…¶ä»–ä»»åŠ¡ç»“æžœçš„æ‰‡å…¥æ¨¡å¼
+
+## Provider æ¢å¤
+
+Cron ä»»åŠ¡ç»§æ‰¿ä½ é…ç½®çš„å›žé€€ provider å’Œå‡­è¯æ± è½®æ¢ã€‚å¦‚æžœä¸» API key è¢«é™é€Ÿæˆ– provider è¿”å›žé”™è¯¯ï¼Œcron agent å¯ä»¥ï¼š
+
+- **å›žé€€åˆ°å¤‡ç”¨ provider**ï¼Œå‰ææ˜¯ä½ åœ¨ `config.yaml` ä¸­é…ç½®äº† `fallback_providers`ï¼ˆæˆ–æ—§ç‰ˆ `fallback_model`ï¼‰
+- **è½®æ¢åˆ°ä¸‹ä¸€ä¸ªå‡­è¯**ï¼Œå³åŒä¸€ provider çš„[å‡­è¯æ± ](/user-guide/configuration#credential-pool-strategies)ä¸­çš„ä¸‹ä¸€ä¸ª
+
+è¿™æ„å‘³ç€é«˜é¢‘è¿è¡Œæˆ–åœ¨é«˜å³°æ—¶æ®µè¿è¡Œçš„ cron ä»»åŠ¡æ›´å…·å¼¹æ€§â€”â€”å•ä¸ªè¢«é™é€Ÿçš„ key ä¸ä¼šå¯¼è‡´æ•´æ¬¡è¿è¡Œå¤±è´¥ã€‚
+
+## è°ƒåº¦æ ¼å¼
+
+Agent çš„æœ€ç»ˆå“åº”ä¼šè‡ªåŠ¨æŠ•é€’â€”â€”ä½ **æ— éœ€**åœ¨ cron prompt ä¸­ä¸ºåŒä¸€ç›®æ ‡åŒ…å« `send_message`ã€‚å¦‚æžœ cron è¿è¡Œè°ƒç”¨äº† `send_message` ä¸”ç›®æ ‡ä¸Žè°ƒåº¦å™¨å·²æŠ•é€’çš„ç›®æ ‡å®Œå…¨ç›¸åŒï¼ŒZed ä¼šè·³è¿‡è¯¥é‡å¤å‘é€ï¼Œå¹¶å‘ŠçŸ¥æ¨¡åž‹å°†é¢å‘ç”¨æˆ·çš„å†…å®¹æ”¾åœ¨æœ€ç»ˆå“åº”ä¸­ã€‚ä»…å¯¹é¢å¤–æˆ–ä¸åŒçš„ç›®æ ‡ä½¿ç”¨ `send_message`ã€‚
+
+### ç›¸å¯¹å»¶è¿Ÿï¼ˆä¸€æ¬¡æ€§ï¼‰
+
+```text
+30m     â†’ 30 åˆ†é’ŸåŽè¿è¡Œä¸€æ¬¡
+2h      â†’ 2 å°æ—¶åŽè¿è¡Œä¸€æ¬¡
+1d      â†’ 1 å¤©åŽè¿è¡Œä¸€æ¬¡
+```
+
+### é—´éš”ï¼ˆå‘¨æœŸæ€§ï¼‰
+
+```text
+every 30m    â†’ æ¯ 30 åˆ†é’Ÿ
+every 2h     â†’ æ¯ 2 å°æ—¶
+every 1d     â†’ æ¯å¤©
+```
+
+### Cron è¡¨è¾¾å¼
+
+```text
+0 9 * * *       â†’ æ¯å¤©ä¸Šåˆ 9:00
+0 9 * * 1-5     â†’ å·¥ä½œæ—¥ä¸Šåˆ 9:00
+0 */6 * * *     â†’ æ¯ 6 å°æ—¶
+30 8 1 * *      â†’ æ¯æœˆ 1 æ—¥ä¸Šåˆ 8:30
+0 0 * * 0       â†’ æ¯å‘¨æ—¥åˆå¤œ
+```
+
+### ISO æ—¶é—´æˆ³
+
+```text
+2026-03-15T09:00:00    â†’ 2026 å¹´ 3 æœˆ 15 æ—¥ä¸Šåˆ 9:00 ä¸€æ¬¡æ€§è¿è¡Œ
+```
+
+## é‡å¤è¡Œä¸º
+
+| è°ƒåº¦ç±»åž‹ | é»˜è®¤é‡å¤æ¬¡æ•° | è¡Œä¸º |
+|--------------|----------------|----------|
+| ä¸€æ¬¡æ€§ï¼ˆ`30m`ã€æ—¶é—´æˆ³ï¼‰ | 1 | è¿è¡Œä¸€æ¬¡ |
+| é—´éš”ï¼ˆ`every 2h`ï¼‰ | æ°¸ä¹… | è¿è¡Œç›´åˆ°åˆ é™¤ |
+| Cron è¡¨è¾¾å¼ | æ°¸ä¹… | è¿è¡Œç›´åˆ°åˆ é™¤ |
+
+å¯ä»¥è¦†ç›–ï¼š
+
+```python
+cronjob(
+    action="create",
+    prompt="...",
+    schedule="every 2h",
+    repeat=5,
+)
+```
+
+## ä»¥ç¼–ç¨‹æ–¹å¼ç®¡ç†ä»»åŠ¡
+
+é¢å‘ agent çš„ API æ˜¯å•ä¸€å·¥å…·ï¼š
+
+```python
+cronjob(action="create", ...)
+cronjob(action="list")
+cronjob(action="update", job_id="...")
+cronjob(action="pause", job_id="...")
+cronjob(action="resume", job_id="...")
+cronjob(action="run", job_id="...")
+cronjob(action="remove", job_id="...")
+```
+
+å¯¹äºŽ `update`ï¼Œä¼ å…¥ `skills=[]` å¯åˆ é™¤æ‰€æœ‰å·²é™„åŠ çš„ skillã€‚
+
+## Cron ä»»åŠ¡å¯ç”¨çš„å·¥å…·é›†
+
+Cron åœ¨å…¨æ–°çš„ agent ä¼šè¯ä¸­è¿è¡Œæ¯ä¸ªä»»åŠ¡ï¼Œä¸é™„åŠ ä»»ä½•èŠå¤©å¹³å°ã€‚é»˜è®¤æƒ…å†µä¸‹ï¼Œcron agent èŽ·å¾—**ä½ åœ¨ `zed tools` ä¸­ä¸º `cron` å¹³å°é…ç½®çš„å·¥å…·é›†**â€”â€”ä¸æ˜¯ CLI é»˜è®¤å€¼ï¼Œä¹Ÿä¸æ˜¯æ‰€æœ‰å·¥å…·ã€‚
+
+```bash
+zed tools
+# â†’ åœ¨ curses UI ä¸­é€‰æ‹© "cron" å¹³å°
+# â†’ åƒ Telegram/Discord ç­‰å¹³å°ä¸€æ ·åˆ‡æ¢å·¥å…·é›†å¼€å…³
+```
+
+é€šè¿‡ `cronjob.create`ï¼ˆæˆ–é€šè¿‡ `cronjob.update` å¯¹çŽ°æœ‰ä»»åŠ¡ï¼‰ä¸Šçš„ `enabled_toolsets` å­—æ®µå¯è¿›è¡Œæ›´ç²¾ç»†çš„å•ä»»åŠ¡æŽ§åˆ¶ï¼š
+
+```text
+cronjob(action="create", name="weekly-news-summary",
+        schedule="every sunday 9am",
+        enabled_toolsets=["web", "file"],      # ä»… web + fileï¼Œæ—  terminal/browser ç­‰
+        prompt="Summarize this week's AI news: ...")
+```
+
+å½“ä»»åŠ¡ä¸Šè®¾ç½®äº† `enabled_toolsets` æ—¶ï¼Œå®ƒä¼˜å…ˆç”Ÿæ•ˆï¼›å¦åˆ™ `zed tools` çš„ cron å¹³å°é…ç½®ç”Ÿæ•ˆï¼›å¦åˆ™ Zed å›žé€€åˆ°å†…ç½®é»˜è®¤å€¼ã€‚è¿™å¯¹æˆæœ¬æŽ§åˆ¶å¾ˆé‡è¦ï¼šåœ¨æ¯ä¸ªå°åž‹"èŽ·å–æ–°é—»"ä»»åŠ¡ä¸­æºå¸¦ `moa`ã€`browser`ã€`delegation` ä¼šåœ¨æ¯æ¬¡ LLM è°ƒç”¨æ—¶è†¨èƒ€å·¥å…· schema promptã€‚
+
+### å®Œå…¨è·³è¿‡ agentï¼š`wakeAgent`
+
+å¦‚æžœä½ çš„ cron ä»»åŠ¡é™„åŠ äº†é¢„æ£€è„šæœ¬ï¼ˆé€šè¿‡ `script=`ï¼‰ï¼Œè„šæœ¬å¯ä»¥åœ¨è¿è¡Œæ—¶å†³å®š Zed æ˜¯å¦åº”è¯¥è°ƒç”¨ agentã€‚åœ¨ stdout æœ€åŽä¸€è¡Œè¾“å‡ºå¦‚ä¸‹æ ¼å¼ï¼š
+
+```text
+{"wakeAgent": false}
+```
+
+â€¦â€¦cron å°†å®Œå…¨è·³è¿‡æœ¬æ¬¡ tick çš„ agent è¿è¡Œã€‚é€‚ç”¨äºŽé«˜é¢‘è½®è¯¢ï¼ˆæ¯ 1â€“5 åˆ†é’Ÿï¼‰ï¼Œåªåœ¨çŠ¶æ€å®žé™…å‘ç”Ÿå˜åŒ–æ—¶æ‰éœ€è¦å”¤é†’ LLMâ€”â€”å¦åˆ™ä½ ä¼šä¸ºä¸€ééçš„é›¶å†…å®¹ agent è½®æ¬¡ä»˜è´¹ã€‚
+
+```python
+# é¢„æ£€è„šæœ¬
+import json, sys
+latest = fetch_latest_issue_count()
+prev = read_state("issue_count")
+if latest == prev:
+    print(json.dumps({"wakeAgent": False}))   # è·³è¿‡æœ¬æ¬¡ tick
+    sys.exit(0)
+write_state("issue_count", latest)
+print(json.dumps({"wakeAgent": True, "context": {"new_issues": latest - prev}}))
+```
+
+çœç•¥ `wakeAgent` æ—¶ï¼Œé»˜è®¤ä¸º `true`ï¼ˆç…§å¸¸å”¤é†’ agentï¼‰ã€‚
+
+#### å®žç”¨æ–¹æ¡ˆï¼šä½Žæˆæœ¬é¢„è¿è¡Œé—¨æŽ§
+
+`wakeAgent` é—¨æŽ§æä¾›äº†ä¸€ç§é›¶æˆæœ¬çš„æ–¹å¼ï¼Œç”¨äºŽå†³å®šå®šæ—¶ä»»åŠ¡æ˜¯å¦åº”è¯¥æ¶ˆè€—ä»»ä½• LLM tokenã€‚ä¸‰ç§æ¨¡å¼è¦†ç›–äº†å¤§å¤šæ•°ä½¿ç”¨åœºæ™¯ã€‚
+
+**æ–‡ä»¶å˜æ›´é—¨æŽ§**â€”â€”ä»…åœ¨è¢«ç›‘è§†æ–‡ä»¶è‡ªä¸Šæ¬¡æˆåŠŸ tick ä»¥æ¥æœ‰æ–°å†…å®¹æ—¶è¿è¡Œã€‚è°ƒåº¦å™¨è®°å½•æ¯ä¸ªä»»åŠ¡çš„ `last_run_at`ï¼›å°†å…¶ä¸Žæ–‡ä»¶çš„ mtime æ¯”è¾ƒã€‚
+
+```bash
+#!/bin/bash
+# ~/.zed/scripts/feed-changed.sh
+FEED="$HOME/data/feed.json"
+STATE="$HOME/.zed/scripts/.feed-changed.last"
+test -f "$FEED" || { echo '{"wakeAgent": false}'; exit 0; }
+mtime=$(stat -c %Y "$FEED")
+last=$(cat "$STATE" 2>/dev/null || echo 0)
+if [ "$mtime" -le "$last" ]; then
+  echo '{"wakeAgent": false}'
+else
+  echo "$mtime" > "$STATE"
+  echo '{"wakeAgent": true}'
+fi
+```
+
+```text
+cronjob(action="create", name="process-feed",
+        schedule="every 30m",
+        script="feed-changed.sh",
+        prompt="A new ~/data/feed.json has landed. Summarize what changed.")
+```
+
+**å¤–éƒ¨æ ‡å¿—é—¨æŽ§**â€”â€”ä»…åœ¨å…¶ä»–è¿›ç¨‹å‘å‡ºå°±ç»ªä¿¡å·æ—¶è¿è¡Œï¼ˆä¾‹å¦‚ï¼Œéƒ¨ç½² hook è½ä¸‹ä¸€ä¸ªæ–‡ä»¶ï¼ŒCI ä»»åŠ¡åœ¨çŠ¶æ€å­˜å‚¨ä¸­è®¾ç½®ä¸€ä¸ªå€¼ï¼‰ã€‚
+
+```bash
+#!/bin/bash
+# ~/.zed/scripts/flag-ready.sh
+if test -f /tmp/new-data-ready; then
+  rm -f /tmp/new-data-ready
+  echo '{"wakeAgent": true}'
+else
+  echo '{"wakeAgent": false}'
+fi
+```
+
+```text
+cronjob(action="create", name="nightly-analysis",
+        schedule="0 9 * * *",
+        script="flag-ready.sh",
+        prompt="Run the nightly analysis over today's batch.")
+```
+
+**SQL è®¡æ•°é—¨æŽ§**â€”â€”ä»…åœ¨ä½ è‡ªå·±çš„æ•°æ®åº“ä¸­æœ‰æ–°è¡Œéœ€è¦å¤„ç†æ—¶è¿è¡Œã€‚è„šæœ¬è¿˜å¯ä»¥é€šè¿‡ `context` å°†è®¡æ•°ä¼ é€’ç»™ agentï¼Œè®© agent æ— éœ€é‡æ–°æŸ¥è¯¢å°±çŸ¥é“æ•°æ®é‡ã€‚
+
+```python
+#!/usr/bin/env python
+# ~/.zed/scripts/new-rows.py
+import json, sqlite3
+conn = sqlite3.connect("/home/me/data/app.db")
+n = conn.execute(
+    "SELECT COUNT(*) FROM messages WHERE ts > strftime('%s','now','-2 hours')"
+).fetchone()[0]
+if n < 1:
+    print(json.dumps({"wakeAgent": False}))
+else:
+    print(json.dumps({"wakeAgent": True, "context": {"new_rows": n}}))
+```
+
+```text
+cronjob(action="create", name="summarize-new-msgs",
+        schedule="every 2h",
+        script="new-rows.py",
+        prompt="Summarize the new messages from the last 2 hours.")
+```
+
+åŒæ ·çš„æ¨¡å¼é€‚ç”¨äºŽä»»ä½•å¯ä»¥ä»Žè„šæœ¬æŸ¥è¯¢çš„æ•°æ®æºâ€”â€”Postgresã€HTTP APIã€ä½ è‡ªå·±çš„çŠ¶æ€å­˜å‚¨â€”â€”æ— éœ€å°† SQL æ±‚å€¼å™¨å†…ç½®åˆ° cron å­ç³»ç»Ÿä¸­ã€‚
+
+:::tip
+Zed è‡ªèº«çš„ `~/.zed/state.db` æ˜¯å†…éƒ¨ schemaï¼Œä¼šåœ¨ç‰ˆæœ¬é—´å˜æ›´ã€‚ä¸è¦ä»Žé¢„è¿è¡Œé—¨æŽ§ä¸­æŸ¥è¯¢å®ƒâ€”â€”æŒ‡å‘ä½ è‡ªå·±çš„æ•°æ®åº“æˆ– feedã€‚
+:::
+
+è‡´è°¢ï¼šæ­¤æ–¹æ¡ˆé›†ç”± @iankar8 åœ¨ [#2654](https://github.com/NousResearch/zed-agent/pull/2654) ä¸­çš„æŽ¢ç´¢æ‰€å¯å‘ï¼Œè¯¥ PR æè®®å°† sql/file/command è§¦å‘å™¨ä½œä¸ºå¹¶è¡Œæœºåˆ¶æ·»åŠ ã€‚`script` + `wakeAgent` é—¨æŽ§å·²ä»¥é›¶æˆæœ¬è¦†ç›–äº†æ‰€æœ‰ä¸‰ç§æƒ…å†µï¼Œå› æ­¤è¯¥å·¥ä½œä»¥æ–‡æ¡£å½¢å¼è½åœ°ã€‚
+
+### ä¸²è”ä»»åŠ¡ï¼š`context_from`
+
+Cron ä»»åŠ¡å¯ä»¥é€šè¿‡åœ¨ `context_from` ä¸­åˆ—å‡ºå…¶ä»–ä»»åŠ¡çš„åç§°ï¼ˆæˆ– IDï¼‰æ¥æ¶ˆè´¹è¿™äº›ä»»åŠ¡æœ€è¿‘ä¸€æ¬¡æˆåŠŸè¿è¡Œçš„è¾“å‡ºï¼š
+
+```text
+cronjob(action="create", name="daily-digest",
+        schedule="every day 7am",
+        context_from=["ai-news-fetch", "github-prs-fetch"],
+        prompt="Write the daily digest using the outputs above.")
+```
+
+è¢«å¼•ç”¨ä»»åŠ¡æœ€è¿‘ä¸€æ¬¡å®Œæˆçš„è¾“å‡ºä¼šä½œä¸ºä¸Šä¸‹æ–‡æ³¨å…¥åˆ°æœ¬æ¬¡è¿è¡Œçš„ prompt ä¹‹ä¸Šã€‚æ¯ä¸ªä¸Šæ¸¸æ¡ç›®å¿…é¡»æ˜¯æœ‰æ•ˆçš„ä»»åŠ¡ ID æˆ–åç§°ï¼ˆå‚è§ `cronjob action="list"`ï¼‰ã€‚æ³¨æ„ï¼šä¸²è”è¯»å–çš„æ˜¯*æœ€è¿‘ä¸€æ¬¡å®Œæˆ*çš„è¾“å‡ºâ€”â€”å®ƒä¸ä¼šç­‰å¾…åŒä¸€ tick ä¸­æ­£åœ¨è¿è¡Œçš„ä¸Šæ¸¸ä»»åŠ¡ã€‚
+
+## ä»»åŠ¡å­˜å‚¨
+
+ä»»åŠ¡å­˜å‚¨åœ¨ `~/.zed/cron/jobs.json`ã€‚ä»»åŠ¡è¿è¡Œçš„è¾“å‡ºä¿å­˜åˆ° `~/.zed/cron/output/{job_id}/{timestamp}.md`ã€‚
+
+ä»»åŠ¡å¯èƒ½å°† `model` å’Œ `provider` å­˜å‚¨ä¸º `null`ã€‚çœç•¥è¿™äº›å­—æ®µæ—¶ï¼ŒZed åœ¨æ‰§è¡Œæ—¶ä»Žå…¨å±€é…ç½®ä¸­è§£æžå®ƒä»¬ã€‚åªæœ‰è®¾ç½®äº†å•ä»»åŠ¡è¦†ç›–æ—¶ï¼Œè¿™äº›å­—æ®µæ‰ä¼šå‡ºçŽ°åœ¨ä»»åŠ¡è®°å½•ä¸­ã€‚
+
+å­˜å‚¨ä½¿ç”¨åŽŸå­æ–‡ä»¶å†™å…¥ï¼Œå› æ­¤ä¸­æ–­çš„å†™å…¥ä¸ä¼šç•™ä¸‹éƒ¨åˆ†å†™å…¥çš„ä»»åŠ¡æ–‡ä»¶ã€‚
+
+## è‡ªåŒ…å«çš„ prompt ä»ç„¶é‡è¦
+
+:::warning é‡è¦
+Cron ä»»åŠ¡åœ¨å®Œå…¨å…¨æ–°çš„ agent ä¼šè¯ä¸­è¿è¡Œã€‚Prompt å¿…é¡»åŒ…å« agent æ‰€éœ€çš„ä¸€åˆ‡ï¼Œé™¤éžå·²ç”±é™„åŠ çš„ skill æä¾›ã€‚
+:::
+
+**é”™è¯¯ï¼š** `"Check on that server issue"`
+
+**æ­£ç¡®ï¼š** `"SSH into server 192.168.1.100 as user 'deploy', check if nginx is running with 'systemctl status nginx', and verify https://example.com returns HTTP 200."`
+
+## å®‰å…¨æ€§
+
+å®šæ—¶ä»»åŠ¡çš„ prompt åœ¨åˆ›å»ºå’Œæ›´æ–°æ—¶ä¼šæ‰«æ prompt æ³¨å…¥å’Œå‡­è¯å¤–æ³„æ¨¡å¼ã€‚åŒ…å«ä¸å¯è§ Unicode æŠ€å·§ã€SSH åŽé—¨å°è¯•æˆ–æ˜Žæ˜¾çš„å¯†é’¥å¤–æ³„è½½è·çš„ prompt ä¼šè¢«æ‹¦æˆªã€‚

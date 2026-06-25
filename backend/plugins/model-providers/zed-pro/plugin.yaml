@@ -1,0 +1,3 @@
+kind: model-provider
+name: zed-pro
+description: "Zed Pro — unified inference API powered by FreeLLMAPI"
