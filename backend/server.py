@@ -229,9 +229,15 @@ def _enhance_system_prompt(system_msg: str, dashboard_state: Optional[Dict[str, 
                 lines.append(f"- {s.get('name')} — {s.get('schedule', s.get('cron', ''))} — enabled={s.get('enabled', True)}")
         plugins = dashboard_state.get("plugins")
         if plugins:
-            lines.append("## Installed Plugins")
+            lines.append("## Connected Plugins & Services")
             for p in plugins:
-                lines.append(f"- {p.get('name')} ({p.get('version', '')})")
+                name = p.get('name', '')
+                desc = p.get('desc', '')
+                if desc:
+                    lines.append(f"- {name} — {desc}")
+                else:
+                    lines.append(f"- {name}")
+            lines.append("These plugins are already connected and authenticated — you can use their tools directly.")
         models = dashboard_state.get("models")
         if models:
             lines.append("## Available Models")

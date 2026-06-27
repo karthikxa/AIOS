@@ -83,23 +83,72 @@ document.addEventListener('DOMContentLoaded', () => {
       div.className = 'task-item-custom' + (task.id === tasksStore.activeId ? ' active-task' : '');
       div.dataset.id = task.id;
 
-      const defaultIcon = `
-        <span class="task-item-icon-wrapper" style="color: #8E8E93; margin-right: 8px; display: inline-flex; align-items: center; flex-shrink: 0;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      function getTaskIconSvg(taskName) {
+        const lowercaseName = taskName.toLowerCase();
+        
+        // Book / document icon
+        if (lowercaseName.includes('format') || lowercaseName.includes('write') || lowercaseName.includes('book') || lowercaseName.includes('read') || lowercaseName.includes('document')) {
+          return `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #6B7280; flex-shrink: 0;">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+          `;
+        }
+        
+        // People / users icon
+        if (lowercaseName.includes('person') || lowercaseName.includes('people') || lowercaseName.includes('identify') || lowercaseName.includes('find') || lowercaseName.includes('who') || lowercaseName.includes('user')) {
+          return `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #6B7280; flex-shrink: 0;">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          `;
+        }
+        
+        // Megaphone / sound/voice or lightbulb/idea
+        if (lowercaseName.includes('llm') || lowercaseName.includes('create') || lowercaseName.includes('make') || lowercaseName.includes('build') || lowercaseName.includes('voice') || lowercaseName.includes('speech')) {
+          return `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #6B7280; flex-shrink: 0;">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+          `;
+        }
+        
+        // Dotted circle / loader / docx / link
+        if (lowercaseName.includes('link') || lowercaseName.includes('docx') || lowercaseName.includes('file') || lowercaseName.includes('open') || lowercaseName.includes('web') || lowercaseName.includes('url')) {
+          return `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #F59E0B; flex-shrink: 0;">
+              <circle cx="12" cy="12" r="10" stroke-dasharray="3 3"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+          `;
+        }
+        
+        // Default chat bubble
+        return `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #6B7280; flex-shrink: 0;">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
-        </span>
-      `;
+        `;
+      }
+
       const starIndicator = `
-        <span class="task-star-indicator" style="color: #EF4444; margin-right: 8px; display: inline-flex; align-items: center; flex-shrink: 0;">
+        <span class="task-star-indicator" style="color: #EF4444; margin-right: 10px; display: inline-flex; align-items: center; flex-shrink: 0;">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#EF4444" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
           </svg>
         </span>
       `;
-      const itemIcon = task.starred ? starIndicator : defaultIcon;
-
-      const timeStr = getRelativeTime(task.id);
+      const itemIcon = task.starred ? starIndicator : `
+        <span class="task-item-icon-wrapper" style="margin-right: 10px; display: inline-flex; align-items: center; flex-shrink: 0;">
+          ${getTaskIconSvg(task.name)}
+        </span>
+      `;
 
       div.innerHTML = `
         <div class="task-name-wrapper">
@@ -107,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
           <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${task.name.replace(/</g, '&lt;')}</span>
         </div>
         <div class="task-right-section">
-          <span class="task-time">${timeStr}</span>
           <button class="task-menu-btn" title="Options">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="5" r="1.5"></circle>
@@ -237,10 +285,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 2. State Toggling Logic
   let isActiveState = false; // Default: Empty State
-  
+
   const conversationHistory = []; // {role, content} pairs
   let lastRoutedModel = null;
-  
+
   const emptyStateView = document.getElementById('emptyStateView');
   const activeStateView = document.getElementById('activeStateView');
   const contextPill = document.getElementById('contextPill');
@@ -249,6 +297,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatMessagesView = document.getElementById('chatMessagesView');
   const agentComputerScreen = document.getElementById('agentComputerScreen');
   const bottomCardsContainer = document.getElementById('bottomCardsContainer');
+
+  // Ensure empty state on load
+  setAppState(false);
 
   function setAppState(active) {
     isActiveState = active;
@@ -282,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Update placeholder
       if (chatPromptInput) {
-        chatPromptInput.placeholder = 'Send a message...';
+        chatPromptInput.placeholder = 'Ask anything...';
       }
     } else {
       // Transition to Empty State
@@ -293,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (chatMessagesView) chatMessagesView.style.display = 'none';
       
       if (chatPromptInput) {
-        chatPromptInput.placeholder = 'Get a detailed report...';
+        chatPromptInput.placeholder = 'Ask anything...';
       }
     }
   }
@@ -551,7 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
           name: s.name, schedule: s.frequency, enabled: s.status === 'active'
         })),
         plugins: (pluginsStore?.installed || []).map(p => ({
-          name: p.name || p.id, version: p.version || ''
+          name: p.name || p.id, version: p.version || '', desc: p.desc || ''
         }))
       };
       const body = JSON.stringify({
@@ -1146,6 +1197,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chatMessagesView) chatMessagesView.style.display = 'flex';
     if (agentComputerScreen) agentComputerScreen.style.display = 'none';
 
+    // Show subagent status bar with slide-down pop-up animation
+    const subagentStatusBar = document.getElementById('subagentStatusBar');
+    if (subagentStatusBar) {
+      subagentStatusBar.style.display = 'flex';
+      subagentStatusBar.style.opacity = '0';
+      subagentStatusBar.style.transform = 'translateY(-10px)';
+      subagentStatusBar.style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+      // Trigger layout reflow
+      subagentStatusBar.offsetHeight;
+      subagentStatusBar.style.opacity = '1';
+      subagentStatusBar.style.transform = 'translateY(0)';
+      
+      const subagentStatusText = document.getElementById('subagentStatusText');
+      if (subagentStatusText) {
+        subagentStatusText.textContent = `Researching best practices for "${promptText.length > 55 ? promptText.slice(0, 55) + '...' : promptText}"...`;
+      }
+      const subagentStepCount = document.getElementById('subagentStepCount');
+      if (subagentStepCount) {
+        subagentStepCount.textContent = '2 / 4';
+      }
+    }
+
     // 2. Execute dashboard actions before calling the API
     const actionResults = executeDashboardActions(promptText);
     const userMsg = actionResults.length > 0
@@ -1492,5 +1565,176 @@ document.addEventListener('DOMContentLoaded', () => {
       webSearchBtn.style.color = webSearchEnabled ? '#2563EB' : '';
       webSearchBtn.title = webSearchEnabled ? 'Web search on' : 'Web search off';
     });
+  }
+
+  // ── Desktop Pop-up (Computer Desktop above chatbox) ─────────────
+  const desktopFrame = document.getElementById('desktopFrame');
+  const desktopConnectingOverlay = document.getElementById('desktopConnectingOverlay');
+  const subagentComputerPopup = document.getElementById('subagentComputerPopup');
+  const closeComputerPopupBtn = document.getElementById('closeComputerPopupBtn');
+  const modeCapsule = document.getElementById('modeCapsule');
+  const closeSubagentStatusBtn = document.getElementById('closeSubagentStatusBtn');
+  const subagentStatusBar = document.getElementById('subagentStatusBar');
+  const subagentThumbnail = document.getElementById('subagentThumbnail');
+
+  let desktopStreamStarted = false;
+  let desktopPollInterval = null;
+
+  function startDesktopStream() {
+    if (desktopStreamStarted || !desktopFrame) return;
+    desktopStreamStarted = true;
+
+    // Try KasmVNC first, fall back to screenshot polling
+    desktopFrame.src = 'http://localhost:6901';
+    desktopFrame.onload = () => {
+      if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
+    };
+    desktopFrame.onerror = () => {
+      // KasmVNC failed — switch to screenshot polling from local desktop API
+      startScreenshotPolling();
+    };
+
+    // If KasmVNC doesn't load in 3s, switch to polling
+    setTimeout(() => {
+      if (desktopConnectingOverlay && desktopConnectingOverlay.style.display !== 'none') {
+        startScreenshotPolling();
+      }
+    }, 3000);
+  }
+
+  function startScreenshotPolling() {
+    if (desktopPollInterval) return;
+    desktopFrame.src = 'about:blank';
+    if (desktopConnectingOverlay) {
+      desktopConnectingOverlay.innerHTML = '<span style="font-size: 13px; color: #999;">Desktop connected</span>';
+      setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 500);
+    }
+    // Poll screenshot every 2s and display as image
+    desktopFrame.style.display = 'none';
+    const img = document.createElement('img');
+    img.id = 'desktopScreenshotImg';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    img.style.background = '#000';
+    const container = desktopFrame.parentElement;
+    if (container) container.appendChild(img);
+    desktopPollInterval = setInterval(() => {
+      img.src = 'http://127.0.0.1:7777/screenshot?_t=' + Date.now();
+    }, 2000);
+  }
+
+  function stopDesktopPolling() {
+    if (desktopPollInterval) {
+      clearInterval(desktopPollInterval);
+      desktopPollInterval = null;
+    }
+    const img = document.getElementById('desktopScreenshotImg');
+    if (img) img.remove();
+    if (desktopFrame) desktopFrame.style.display = '';
+  }
+
+  function togglePopup(show) {
+    if (!subagentComputerPopup) return;
+    const isOpen = subagentComputerPopup.style.display === 'flex';
+    const shouldShow = show !== undefined ? show : !isOpen;
+    subagentComputerPopup.style.display = shouldShow ? 'flex' : 'none';
+    if (shouldShow) {
+      startDesktopStream();
+    } else {
+      stopDesktopPolling();
+    }
+  }
+
+  if (modeCapsule) {
+    console.log('Mode capsule found, initializing...');
+    const modeSlider = document.getElementById('modeSlider');
+
+    function updateSlider(option, animate = true) {
+      if (!modeSlider) return;
+      if (!animate) modeSlider.style.transition = 'none';
+      const capsuleRect = modeCapsule.getBoundingClientRect();
+      const optRect = option.getBoundingClientRect();
+      modeSlider.style.left = (optRect.left - capsuleRect.left) + 'px';
+      modeSlider.style.width = optRect.width + 'px';
+      if (!animate) requestAnimationFrame(() => { modeSlider.style.transition = ''; });
+    }
+
+    function setMode(option) {
+      if (!option || option.classList.contains('active')) return;
+      const mode = option.dataset.mode;
+      modeCapsule.querySelectorAll('.mode-capsule-option').forEach(opt => opt.classList.remove('active'));
+      option.classList.add('active');
+      updateSlider(option, true);
+      if (mode === 'computer') {
+        togglePopup(true);
+      } else {
+        togglePopup(false);
+      }
+    }
+
+    modeCapsule.querySelectorAll('.mode-capsule-option').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setMode(btn);
+      });
+    });
+
+    // Initialize slider position without animation
+    const activeOption = modeCapsule.querySelector('.mode-capsule-option.active');
+    if (activeOption) updateSlider(activeOption, false);
+
+    // Re-position on resize
+    window.addEventListener('resize', () => {
+      const opt = modeCapsule.querySelector('.mode-capsule-option.active');
+      if (opt) updateSlider(opt, false);
+    });
+  }
+
+  if (closeComputerPopupBtn) {
+    closeComputerPopupBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      togglePopup(false);
+    });
+  }
+
+  if (closeSubagentStatusBtn && subagentStatusBar) {
+    closeSubagentStatusBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      subagentStatusBar.style.display = 'none';
+      togglePopup(false);
+    });
+  }
+
+  if (subagentThumbnail) {
+    subagentThumbnail.addEventListener('click', (e) => {
+      e.stopPropagation();
+      togglePopup();
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (subagentComputerPopup && subagentComputerPopup.style.display === 'flex' &&
+        !subagentComputerPopup.contains(e.target) &&
+        !e.target.closest('.mode-capsule') &&
+        e.target !== subagentThumbnail) {
+      togglePopup(false);
+    }
+  });
+
+  // ── Chatbox Placeholder Luxury Cycle Animation ───────────────────
+  const promptInput = document.getElementById('chatPromptInput');
+  if (promptInput) {
+    const phrases = ['Ask anything...', 'What can we work on today?'];
+    let phraseIndex = 0;
+    setInterval(() => {
+      phraseIndex = (phraseIndex + 1) % phrases.length;
+      promptInput.style.transition = 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+      promptInput.style.opacity = '0';
+      setTimeout(() => {
+        promptInput.placeholder = phrases[phraseIndex];
+        promptInput.style.opacity = '1';
+      }, 500);
+    }, 3000);
   }
 });

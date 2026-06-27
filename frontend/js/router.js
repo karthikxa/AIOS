@@ -20,6 +20,23 @@ export function initRouter() {
     if (appHeader) appHeader.style.display = 'flex';
   }
 
+  function showChatView() {
+    if (modelsPageView) modelsPageView.style.display = 'none';
+    if (schedulesPageView) schedulesPageView.style.display = 'none';
+    if (pluginsPageView) pluginsPageView.style.display = 'none';
+    if (voicePageView) voicePageView.style.display = 'none';
+    if (document.getElementById('agentPageView')) document.getElementById('agentPageView').style.display = 'none';
+    showCenterContainer();
+  }
+
+  // Default to "New task" on load
+  const defaultNav = document.getElementById('navNewTask');
+  if (defaultNav) {
+    navItems.forEach(i => i.classList.remove('active'));
+    defaultNav.classList.add('active');
+    showChatView();
+  }
+
   navItems.forEach(item => {
     if (item.classList.contains('user-profile')) return;
 
@@ -78,12 +95,7 @@ export function initRouter() {
         hideCenterContainer();
       } else {
         // Transition to Chat view (New Task, Library, etc.)
-        if (modelsPageView) modelsPageView.style.display = 'none';
-        if (schedulesPageView) schedulesPageView.style.display = 'none';
-        if (pluginsPageView) pluginsPageView.style.display = 'none';
-        if (voicePageView) voicePageView.style.display = 'none';
-        if (document.getElementById('agentPageView')) document.getElementById('agentPageView').style.display = 'none';
-        showCenterContainer();
+        showChatView();
       }
     });
   });

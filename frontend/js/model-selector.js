@@ -72,6 +72,13 @@ export function initModelSelector(onModelChange) {
           <path d="M12 0C12 6.627 17.373 12 24 12C17.373 12 12 17.373 12 24C12 17.373 6.627 12 0 12C6.627 12 12 6.627 12 0Z" fill="url(#geminiSparkleGradOpt)"/>
         </svg>
       `;
+    } else if (m.name === "Zed Pro") {
+      logoHtml = `
+        <svg class="logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 18px; height: 18px; flex-shrink: 0; margin-right: 8px; display: block;">
+          <circle cx="12" cy="12" r="12" fill="#000000"/>
+          <path d="M 7.5,7 H 16.5 V 9.5 L 11.0,14.5 H 16.5 V 17 H 7.5 V 14.5 L 13.0,9.5 H 7.5 Z" fill="#FFFFFF"/>
+        </svg>
+      `;
     } else if (m.logoSrc) {
       logoHtml = `<img class="logo" src="${m.logoSrc}" alt="${m.name}">`;
     } else if (m.logoSvg) {
@@ -329,9 +336,10 @@ export function initModelSelector(onModelChange) {
         modelTriggerBtn.style.backgroundColor = "#F4F4F5";
         modelTriggerBtn.style.border = "none";
         modelTriggerBtn.style.borderRadius = "20px";
-        modelTriggerBtn.style.padding = "4px 10px 4px 8px";
+        modelTriggerBtn.style.padding = "4px 10px 4px 6px";
         modelTriggerBtn.style.display = "inline-flex";
         modelTriggerBtn.style.alignItems = "center";
+        modelTriggerBtn.style.gap = "4px";
         modelTriggerBtn.style.height = "28px";
         
         if (activeModelName) {
@@ -370,11 +378,17 @@ export function initModelSelector(onModelChange) {
     const modelObj = modelsStore.getState().models.find(m => m.name === modelName || m.id === modelName);
     const isConnected = modelObj ? modelObj.status === 'connected' : false;
 
-    const triggerIcon = modelTriggerBtn.querySelector('.model-logo');
-    if (!triggerIcon) return;
+    function setIconHtml(html) {
+      const existing = modelTriggerBtn.querySelector('.model-logo');
+      if (existing) {
+        existing.outerHTML = html;
+      } else {
+        modelTriggerBtn.insertAdjacentHTML('afterbegin', html);
+      }
+    }
 
     if (modelName.toLowerCase().includes('gemini')) {
-      const newIconHtml = `
+      setIconHtml(`
         <svg class="model-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 14px; height: 14px; flex-shrink: 0; margin-right: 4px;">
           <defs>
             <linearGradient id="geminiSparkleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -386,15 +400,14 @@ export function initModelSelector(onModelChange) {
           </defs>
           <path d="M12 0C12 6.627 17.373 12 24 12C17.373 12 12 17.373 12 24C12 17.373 6.627 12 0 12C6.627 12 12 6.627 12 0Z" fill="url(#geminiSparkleGrad)"/>
         </svg>
-      `;
-      triggerIcon.outerHTML = newIconHtml;
+      `);
       return;
     }
 
     if (modelObj) {
       let newIconHtml = '';
       if (modelObj.logoSrc) {
-        newIconHtml = `<img class="model-logo" src="${modelObj.logoSrc}" alt="${modelObj.name}" style="${isConnected ? '' : 'display: none;'}">`;
+        newIconHtml = `<img class="model-logo" src="${modelObj.logoSrc}" alt="${modelObj.name}" style="width:18px;height:18px;object-fit:contain;${isConnected ? '' : 'display: none;'}">`;
       } else if (modelObj.logoSvg) {
         newIconHtml = modelObj.logoSvg.replace('width="20"', 'width="16"').replace('height="20"', 'height="16"').replace('class="logo"', 'class="model-logo"');
         if (!isConnected) {
@@ -403,7 +416,7 @@ export function initModelSelector(onModelChange) {
       } else {
         newIconHtml = `<svg class="model-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:${isConnected ? 'block' : 'none'};width:16px;height:16px;color:#64748B;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`;
       }
-      triggerIcon.outerHTML = newIconHtml;
+      setIconHtml(newIconHtml);
     }
   }
 

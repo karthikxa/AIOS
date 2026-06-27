@@ -40,4 +40,11 @@ export function initSidebar() {
       alert('Simulation: Create new project dialog.');
     });
   }
+
+  const navNewProject = document.getElementById('navNewProject');
+  if (navNewProject) {
+    navNewProject.addEventListener('click', () => {
+      alert('Simulation: Create new project dialog.');
+    });
+  }
 }

@@ -29,7 +29,7 @@ function cpSyncRobust(src, dest, filter) {
 }
 
 console.log('[build] Copying Dashboard...');
-const dashSrc = join(ROOT, 'Dashboard');
+const dashSrc = join(ROOT, 'frontend');
 const dashDst = join(DEPLOY, 'dashboard');
 if (existsSync(dashDst)) {
   try {
@@ -42,7 +42,7 @@ mkdirSync(dashDst, { recursive: true });
 cpSyncRobust(dashSrc, dashDst, SKIP);
 
 console.log('[build] Copying freellmapi (built)...');
-const flmSrc = join(ROOT, 'freellmapi', 'server');
+const flmSrc = join(ROOT, 'LLM', 'LLM Proxy', 'server');
 const flmDst = join(DEPLOY, 'freellmapi', 'server');
 if (existsSync(flmDst)) {
   try {
