@@ -1282,6 +1282,26 @@ document.addEventListener('DOMContentLoaded', () => {
     showStopButton(true);
 
     try {
+      // ── Computer mode: route through Super Agent HITL API ─────────────
+      if (currentMode === 'computer') {
+        showStopButton(false);
+        const resp = await fetch('/agent/inject', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ instruction: promptText }),
+        });
+        if (!resp.ok) {
+          throw new Error('Super Agent rejected instruction');
+        }
+        if (bubble) {
+          bubble.innerHTML = `<div style="padding: 8px 0; font-size: 14px; color: #6B7280;">Sent to agent — watch the desktop for progress.</div>`;
+        }
+        conversationHistory.push({ role: 'assistant', content: `[Agent working on: "${promptText}"]` });
+        const active = tasksStore.tasks.find(t => t.id === tasksStore.activeId);
+        if (active) { active.messages.push({ role: 'assistant', content: `[Agent working on: "${promptText}"]` }); tasksStore.notify(); }
+        return;
+      }
+
       let fullContent = '';
       const cotRenderer = createCoTLiveRenderer();
       let hasReasoning = false;

@@ -31,6 +31,12 @@ export default {
         target: 'http://127.0.0.1:8642',
         changeOrigin: true,
       },
+      // Route /agent to Super Agent HITL server (Computer mode: inject instruction, check status)
+      '/agent': {
+        target: 'http://127.0.0.1:9002',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/agent/, ''),
+      },
     },
     headers: {
       'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' http://localhost:* http://127.0.0.1:* https://accounts.google.com https://oauth2.googleapis.com; form-action 'self' https://accounts.google.com;",

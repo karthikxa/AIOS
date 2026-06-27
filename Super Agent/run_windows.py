@@ -3,6 +3,7 @@
 Starts:
   1. Windows Desktop API server (screenshot + input via mss/Win32) on port 7777
   2. SuperAgent instance connected to the LLM Proxy on port 3002
+  3. HITL HTTP server on port 9001 for frontend instruction injection
 """
 
 from __future__ import annotations
@@ -20,6 +21,31 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger("run_windows")
+
+HITL_PORT = 9002
+
+
+async def agent_worker(agent) -> None:
+    """Persistent background worker: waits for instructions and processes them."""
+    last_processed = 0
+    while True:
+        try:
+            instructions = agent.loop.state.instructions
+            if len(instructions) > last_processed:
+                # Process new instructions
+                for i in range(last_processed, len(instructions)):
+                    instruction = instructions[i]
+                    logger.info("Processing instruction: %s", instruction[:80])
+                    # Run the loop with this instruction as objective
+                    await agent.loop.run(instruction)
+                    logger.info("Finished processing instruction")
+                last_processed = len(instructions)
+            await asyncio.sleep(0.5)
+        except asyncio.CancelledError:
+            break
+        except Exception as exc:
+            logger.error("Agent worker error: %s", exc)
+            await asyncio.sleep(1)
 
 
 async def main() -> None:
@@ -75,12 +101,29 @@ async def main() -> None:
     await agent.start()
     logger.info("SuperAgent started. Agent is ready.")
 
+    # 4. Register desktop API with dashboard
+    from superagent.dashboard_api import register_agent_desktop
+    register_agent_desktop(config.agent_id, agent.desktop_api)
+    logger.info("Desktop API registered with dashboard for %s", config.agent_id)
+
+    # 5. Start HITL server for frontend communication
+    from superagent.hitl import HITLServer
+    hitl = HITLServer(agent=agent, host="127.0.0.1", port=HITL_PORT)
+    await hitl.start()
+
+    # 6. Start persistent agent worker
+    worker_task = asyncio.create_task(agent_worker(agent))
+
+    logger.info("SuperAgent is ready on HITL port %d. Waiting for instructions...", HITL_PORT)
+
     # Keep running
     try:
         while True:
             await asyncio.sleep(1)
     except KeyboardInterrupt:
         logger.info("Shutting down...")
+        worker_task.cancel()
+        await hitl.stop()
         await agent.stop()
 
 
