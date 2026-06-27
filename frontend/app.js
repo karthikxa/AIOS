@@ -1197,6 +1197,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chatMessagesView) chatMessagesView.style.display = 'flex';
     if (agentComputerScreen) agentComputerScreen.style.display = 'none';
 
+    // Automatically open computer side panel if computer mode is active when chat starts
+    const activeModeOpt = document.querySelector('.mode-capsule-option.active');
+    const currentMode = activeModeOpt ? activeModeOpt.dataset.mode : 'search';
+    if (currentMode === 'computer') {
+      toggleComputerSplit(true);
+    }
+
     // Show subagent status bar with slide-down pop-up animation
     const subagentStatusBar = document.getElementById('subagentStatusBar');
     if (subagentStatusBar) {
@@ -1634,15 +1641,57 @@ document.addEventListener('DOMContentLoaded', () => {
     if (desktopFrame) desktopFrame.style.display = '';
   }
 
-  function togglePopup(show) {
-    if (!subagentComputerPopup) return;
-    const isOpen = subagentComputerPopup.style.display === 'flex';
+  function toggleComputerSplit(show) {
+    const mainContent = document.getElementById('mainContent');
+    const computerSplitPane = document.getElementById('computerSplitPane');
+    if (!mainContent || !computerSplitPane) return;
+    
+    const isOpen = mainContent.classList.contains('computer-split-mode');
     const shouldShow = show !== undefined ? show : !isOpen;
-    subagentComputerPopup.style.display = shouldShow ? 'flex' : 'none';
+    
     if (shouldShow) {
+      mainContent.classList.add('computer-split-mode');
+      computerSplitPane.style.display = 'flex';
+      
+      // Sync mode capsule UI state
+      const modeCapsule = document.getElementById('modeCapsule');
+      if (modeCapsule) {
+        const computerOpt = modeCapsule.querySelector('[data-mode="computer"]');
+        if (computerOpt && !computerOpt.classList.contains('active')) {
+          modeCapsule.querySelectorAll('.mode-capsule-option').forEach(opt => opt.classList.remove('active'));
+          computerOpt.classList.add('active');
+          const modeSlider = document.getElementById('modeSlider');
+          if (modeSlider) {
+            const capsuleRect = modeCapsule.getBoundingClientRect();
+            const optRect = computerOpt.getBoundingClientRect();
+            modeSlider.style.left = (optRect.left - capsuleRect.left) + 'px';
+            modeSlider.style.width = optRect.width + 'px';
+          }
+        }
+      }
+      
       startDesktopStream();
     } else {
+      mainContent.classList.remove('computer-split-mode');
+      computerSplitPane.style.display = 'none';
       stopDesktopPolling();
+      
+      // Sync mode capsule UI state
+      const modeCapsule = document.getElementById('modeCapsule');
+      if (modeCapsule) {
+        const searchOpt = modeCapsule.querySelector('[data-mode="search"]');
+        if (searchOpt && !searchOpt.classList.contains('active')) {
+          modeCapsule.querySelectorAll('.mode-capsule-option').forEach(opt => opt.classList.remove('active'));
+          searchOpt.classList.add('active');
+          const modeSlider = document.getElementById('modeSlider');
+          if (modeSlider) {
+            const capsuleRect = modeCapsule.getBoundingClientRect();
+            const optRect = searchOpt.getBoundingClientRect();
+            modeSlider.style.left = (optRect.left - capsuleRect.left) + 'px';
+            modeSlider.style.width = optRect.width + 'px';
+          }
+        }
+      }
     }
   }
 
@@ -1667,9 +1716,9 @@ document.addEventListener('DOMContentLoaded', () => {
       option.classList.add('active');
       updateSlider(option, true);
       if (mode === 'computer') {
-        togglePopup(true);
+        toggleComputerSplit(true);
       } else {
-        togglePopup(false);
+        toggleComputerSplit(false);
       }
     }
 
@@ -1691,10 +1740,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if (closeComputerPopupBtn) {
-    closeComputerPopupBtn.addEventListener('click', (e) => {
+  const closeSplitPaneBtn = document.getElementById('closeSplitPaneBtn');
+  if (closeSplitPaneBtn) {
+    closeSplitPaneBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      togglePopup(false);
+      toggleComputerSplit(false);
     });
   }
 
@@ -1702,39 +1752,71 @@ document.addEventListener('DOMContentLoaded', () => {
     closeSubagentStatusBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       subagentStatusBar.style.display = 'none';
-      togglePopup(false);
+      toggleComputerSplit(false);
     });
   }
 
   if (subagentThumbnail) {
     subagentThumbnail.addEventListener('click', (e) => {
       e.stopPropagation();
-      togglePopup();
+      toggleComputerSplit();
     });
   }
 
-  document.addEventListener('click', (e) => {
-    if (subagentComputerPopup && subagentComputerPopup.style.display === 'flex' &&
-        !subagentComputerPopup.contains(e.target) &&
-        !e.target.closest('.mode-capsule') &&
-        e.target !== subagentThumbnail) {
-      togglePopup(false);
-    }
-  });
+  // Play / Pause simulation on control bar
+  const splitPanePlayBtn = document.getElementById('splitPanePlayBtn');
+  if (splitPanePlayBtn) {
+    let isPaused = false;
+    splitPanePlayBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isPaused = !isPaused;
+      if (isPaused) {
+        // Show play symbol
+        splitPanePlayBtn.innerHTML = '<polygon points="6 4 18 12 6 20 6 4" fill="currentColor"/>';
+        stopDesktopPolling();
+      } else {
+        // Show pause symbol
+        splitPanePlayBtn.innerHTML = '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>';
+        startDesktopStream();
+      }
+    });
+  }
 
-  // ── Chatbox Placeholder Luxury Cycle Animation ───────────────────
+  // Expand / Fullscreen simulation button click
+  const splitPaneExpandBtn = document.getElementById('splitPaneExpandBtn');
+  const computerSplitPane = document.getElementById('computerSplitPane');
+  if (splitPaneExpandBtn && computerSplitPane) {
+    splitPaneExpandBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isExpanded = computerSplitPane.style.width === '100%';
+      const centerContainer = document.querySelector('.center-container');
+      if (isExpanded) {
+        computerSplitPane.style.width = '40%';
+        if (centerContainer) centerContainer.style.display = 'flex';
+      } else {
+        computerSplitPane.style.width = '100%';
+        if (centerContainer) centerContainer.style.display = 'none';
+      }
+    });
+  }
+
+  // Collapse / Expand Task progress panel click
+  const progressHeader = document.getElementById('splitPaneProgressHeader');
+  const progressBody = document.getElementById('splitPaneProgressBody');
+  const progressChevron = document.getElementById('splitPaneProgressChevron');
+  if (progressHeader && progressBody && progressChevron) {
+    progressHeader.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isCollapsed = progressBody.style.maxHeight === '0px';
+      progressBody.style.maxHeight = isCollapsed ? '240px' : '0px';
+      progressBody.style.padding = isCollapsed ? '16px 20px' : '0 20px';
+      progressChevron.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(-180deg)';
+    });
+  }
+
+  // Static input placeholder
   const promptInput = document.getElementById('chatPromptInput');
   if (promptInput) {
-    const phrases = ['Ask anything...', 'What can we work on today?'];
-    let phraseIndex = 0;
-    setInterval(() => {
-      phraseIndex = (phraseIndex + 1) % phrases.length;
-      promptInput.style.transition = 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
-      promptInput.style.opacity = '0';
-      setTimeout(() => {
-        promptInput.placeholder = phrases[phraseIndex];
-        promptInput.style.opacity = '1';
-      }, 500);
-    }, 3000);
+    promptInput.placeholder = 'Message Zed...';
   }
 });

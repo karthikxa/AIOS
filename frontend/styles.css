@@ -323,7 +323,7 @@ main.main-content {
   overflow-y: auto !important;
   overflow-x: hidden !important;
   position: relative;
-  padding: var(--space-lg) 40px;
+  padding: 8px 40px;
   scrollbar-width: none !important; /* Firefox */
   -ms-overflow-style: none !important;  /* IE and Edge */
 }
@@ -338,7 +338,7 @@ header.app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-2xl);
+  margin-bottom: 0px !important;
   position: relative;
 }
 
@@ -3180,7 +3180,7 @@ input:checked + .toggle-slider:before {
 .chat-messages-log {
   flex: 1 !important;
   overflow-y: auto !important;
-  padding: 32px 24px 16px 24px !important; /* Standard padding matching the input box */
+  padding: 0px 24px 16px 24px !important; /* Standard padding matching the input box */
   width: 100% !important;
   box-sizing: border-box !important;
   display: flex !important;
@@ -5272,7 +5272,7 @@ input:checked + .toggle-slider:before {
   display: flex;
   flex-direction: column;
   gap: 28px;
-  padding: 32px 24px 16px 24px !important;
+  padding: 0px 24px 16px 24px !important;
   max-width: 823px !important;
   width: 100%;
   margin: 0 auto;
@@ -5285,6 +5285,7 @@ input:checked + .toggle-slider:before {
   display: flex;
   flex-direction: column;
   width: 100%;
+  padding-top: 1px !important;
   /* No transition, no animation — messages appear instantly */
 }
 
@@ -5357,8 +5358,8 @@ input:checked + .toggle-slider:before {
   box-shadow: none !important;
   color: #1F2937;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 18px;
-  line-height: 1.7;
+  font-size: 15px;
+  line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
   font-weight: 400;
@@ -9194,6 +9195,10 @@ main.main-content:has(.center-container.is-empty) header.app-header {
   order: 4 !important;
 }
 
+.center-container.is-active .feature-cards-row {
+  display: none !important;
+}
+
 .feature-card {
   flex: 1 !important;
   display: flex !important;
@@ -9259,4 +9264,127 @@ main.main-content:has(.center-container.is-empty) header.app-header {
   border-radius: 4px !important;
   letter-spacing: 0.5px !important;
 }
+
+/* ==========================================================================
+   COMPUTER SPLIT SCREEN LAYOUT (60% Chat, 40% Virtual Desktop)
+   ========================================================================== */
+
+main.main-content.computer-split-mode {
+  display: flex !important;
+  flex-direction: row !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background-color: #FFFFFF !important;
+}
+
+main.main-content.computer-split-mode .app-header {
+  display: none !important;
+}
+
+main.main-content.computer-split-mode .center-container {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  width: 60% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  flex: none !important;
+  border-right: 1px solid #E5E7EB !important;
+  background: #FFFFFF !important;
+  overflow: hidden !important;
+}
+
+main.main-content.computer-split-mode .center-container.is-empty .empty-state-view {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex: 1 !important;
+  padding: 40px 20px !important;
+}
+
+main.main-content.computer-split-mode .center-container.is-active .empty-state-view {
+  display: none !important;
+}
+
+main.main-content.computer-split-mode .chat-container {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+}
+
+main.main-content.computer-split-mode .active-state-view {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  padding-top: 0 !important;
+}
+
+main.main-content.computer-split-mode .chat-messages-view {
+  max-width: 100% !important;
+  width: 100% !important;
+  flex: 1 !important;
+  display: flex !important;
+  min-height: 0 !important;
+  justify-content: stretch !important;
+  padding: 0 !important;
+}
+
+main.main-content.computer-split-mode .chat-messages-log {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  width: 100% !important;
+  padding: 5px 24px 0 24px !important;
+}
+
+main.main-content.computer-split-mode #computerSplitPane {
+  width: 40% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  flex-shrink: 0 !important;
+  background: #FFFFFF !important;
+  box-sizing: border-box !important;
+}
+
+/* Custom styles for seek bar input range track & thumb */
+.split-pane-slider::-webkit-slider-runnable-track {
+  background: #E5E7EB;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.split-pane-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #3B82F6;
+  cursor: pointer;
+  margin-top: -4px;
+}
+
+.split-pane-slider::-moz-range-track {
+  background: #E5E7EB;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.split-pane-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #3B82F6;
+  cursor: pointer;
+  border: none;
+}
+
 
