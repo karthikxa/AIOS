@@ -1,7 +1,7 @@
 # launch-all.ps1
-# Script to launch all AVDE services in the background without opening interactive terminal windows (avoiding 0x800700e8 error)
+# Script to launch all AVDE services in the background
 
-Write-Host "=== Stopping any existing services on ports 3001, 3002, 8642, 8000, 7777, 9002 ===" -ForegroundColor Cyan
+Write-Host "=== Stopping any existing services on ports 3001, 3002, 8642, 8000, 8765 ===" -ForegroundColor Cyan
 
 function Stop-Process-On-Port($port) {
     $connections = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
@@ -20,16 +20,13 @@ Stop-Process-On-Port 3001
 Stop-Process-On-Port 3002
 Stop-Process-On-Port 8642
 Stop-Process-On-Port 8000
-Stop-Process-On-Port 7777
-Stop-Process-On-Port 9002
+Stop-Process-On-Port 8765
 
 Start-Sleep -Seconds 2
 
 # 1. Start freellmapi
 Write-Host "=== Starting freellmapi (ports 3001/3002) ===" -ForegroundColor Cyan
 $freellmapiDir = "C:\Users\balur\Downloads\AVDE\llm\llm-proxy"
-$env:PORT = "3001"
-$env:LOCAL_PORT = "3002"
 Start-Process "cmd.exe" -ArgumentList "/k", "cd /d `"$freellmapiDir`" && set PORT=3001 && set LOCAL_PORT=3002 && npm run dev -w server" -WindowStyle Normal
 Write-Host "  freellmapi starting..." -ForegroundColor Gray
 
@@ -46,10 +43,10 @@ $dashboardDir = "C:\Users\balur\Downloads\AVDE\frontend"
 Start-Process "cmd.exe" -ArgumentList "/k", "cd /d `"$dashboardDir`" && npm run dev" -WindowStyle Normal
 Write-Host "  Dashboard frontend starting..." -ForegroundColor Gray
 
-# 4. Start Computer Agent (port 8642)
-Write-Host "=== Starting Computer Agent ===" -ForegroundColor Cyan
-$superAgentDir = "C:\Users\balur\Downloads\AVDE\computer\agent"
-Start-Process "cmd.exe" -ArgumentList "/k", "cd /d `"$superAgentDir`" && `"$pythonPath`" main.py" -WindowStyle Normal
+# 4. Start Computer Agent (port 8765)
+Write-Host "=== Starting Computer Agent (port 8765) ===" -ForegroundColor Cyan
+$agentDir = "C:\Users\balur\Downloads\AVDE\desktop-agent\agent"
+Start-Process "cmd.exe" -ArgumentList "/k", "cd /d `"$agentDir`" && `"$pythonPath`" -m uvicorn main:app --host 0.0.0.0 --port 8765" -WindowStyle Normal
 Write-Host "  Computer Agent starting..." -ForegroundColor Gray
 
 Write-Host "`nWaiting for servers to initialize..." -ForegroundColor Yellow
@@ -72,13 +69,9 @@ if (Get-NetTCPConnection -LocalPort 3002 -ErrorAction SilentlyContinue) {
     Write-Host "  [OK] Local AI: http://127.0.0.1:3002" -ForegroundColor Green
 } else { Write-Host "  [FAIL] Port 3002 (Local AI)" -ForegroundColor Red; $ok = $false }
 
-if (Get-NetTCPConnection -LocalPort 7777 -ErrorAction SilentlyContinue) {
-    Write-Host "  [OK] Desktop API: http://127.0.0.1:7777" -ForegroundColor Green
-} else { Write-Host "  [FAIL] Port 7777 (Desktop API)" -ForegroundColor Red; $ok = $false }
-
-if (Get-NetTCPConnection -LocalPort 9002 -ErrorAction SilentlyContinue) {
-    Write-Host "  [OK] Super Agent HITL: http://127.0.0.1:9002" -ForegroundColor Green
-} else { Write-Host "  [FAIL] Port 9002 (Super Agent)" -ForegroundColor Red; $ok = $false }
+if (Get-NetTCPConnection -LocalPort 8765 -ErrorAction SilentlyContinue) {
+    Write-Host "  [OK] Computer Agent: http://127.0.0.1:8765" -ForegroundColor Green
+} else { Write-Host "  [FAIL] Port 8765 (Computer Agent)" -ForegroundColor Red; $ok = $false }
 
 if ($ok) {
     Write-Host "`nAll servers running successfully! Open http://localhost:8000/" -ForegroundColor Green

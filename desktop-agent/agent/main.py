@@ -1,18 +1,30 @@
-import asyncio, json, os
-from fastapi import FastAPI, WebSocket
+import asyncio, json, os, sys
+from pathlib import Path
+from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.responses import JSONResponse
 import httpx
 
+# Load .env from desktop-agent root
+try:
+    from dotenv import load_dotenv
+    _env_path = Path(__file__).resolve().parent.parent / ".env"
+    if _env_path.exists():
+        load_dotenv(_env_path)
+except ImportError:
+    pass
+
 app = FastAPI()
-LLM_KEY = os.environ["LLM_API_KEY"]
+
+LLM_KEY = os.environ.get("LLM_API_KEY", "no-auth")
 LLM_MODEL = os.environ.get("LLM_MODEL", "zed-pro")
-LLM_BASE = os.environ.get("LLM_BASE_URL", "http://localhost:11434/v1")
+LLM_BASE = os.environ.get("LLM_BASE_URL", "http://127.0.0.1:3002/v1")
 SANDBOX = os.environ.get("SANDBOX_URL", "http://localhost:8080")
 clients: list[WebSocket] = []
 
-SYSTEM_PROMPT = """You control a computer through a sandbox API. You see the screen as structured text (interactive elements with positions).
+SYSTEM_PROMPT = """You are a computer-use agent controlling a Linux desktop via a sandbox API.
+You see the screen as structured text (interactive elements with positions).
 
-Always follow this pattern:
+ALWAYS follow this pattern:
 1. First call get_screen to see what's on screen
 2. Describe what you see
 3. Pick exactly ONE action
@@ -98,14 +110,16 @@ async def broadcast(msg: dict):
 
 
 async def call_llm(messages: list[dict]) -> str:
-    """Call any OpenAI-compatible API (zed-pro, ollama, vllm, etc.)"""
+    """Call the llm-proxy (OpenAI-compatible, no API key needed on localhost)."""
+    headers = {"Content-Type": "application/json"}
+    # Only add Authorization header if we have a real key (not "no-auth")
+    if LLM_KEY and LLM_KEY != "no-auth":
+        headers["Authorization"] = f"Bearer {LLM_KEY}"
+
     async with httpx.AsyncClient(timeout=120) as c:
         resp = await c.post(
             f"{LLM_BASE}/chat/completions",
-            headers={
-                "Authorization": f"Bearer {LLM_KEY}",
-                "Content-Type": "application/json",
-            },
+            headers=headers,
             json={
                 "model": LLM_MODEL,
                 "messages": [
@@ -162,12 +176,54 @@ async def ws_endpoint(ws: WebSocket):
         async for raw in ws.iter_text():
             data = json.loads(raw)
             if data.get("type") == "task":
-                asyncio.create_task(run_agent(data["text"]))
+                text = data.get("text", "")
+                # Handle direct action execution: "execute:{...action JSON...}"
+                if text.startswith("execute:"):
+                    action_json = text[len("execute:"):]
+                    try:
+                        action = json.loads(action_json)
+                        result = await execute_action(action)
+                        await ws.send_json({"type": "screen", "text": result or "Action executed."})
+                    except Exception as e:
+                        await ws.send_json({"type": "screen", "text": f"Error: {e}"})
+                else:
+                    asyncio.create_task(run_agent(text))
     except Exception:
         pass
     finally:
         if ws in clients:
             clients.remove(ws)
+
+
+@app.post("/agent/inject")
+async def agent_inject(request: dict):
+    """Accept instruction from the frontend chatbox and run the agent."""
+    instruction = request.get("instruction", "")
+    if not instruction:
+        raise HTTPException(status_code=400, detail="No instruction provided")
+    asyncio.create_task(run_agent(instruction))
+    return {"status": "accepted", "instruction": instruction}
+
+
+@app.post("/agent/execute")
+async def agent_execute(request: dict):
+    """Execute a single action against the sandbox and return the result.
+    Used by the frontend when the LLM outputs a computer action JSON."""
+    action = request.get("action", "")
+    if not action:
+        raise HTTPException(status_code=400, detail="No action provided")
+    try:
+        result = await execute_action(request)
+        return {"status": "ok", "action": action, "result": result}
+    except Exception as e:
+        return {"status": "error", "action": action, "result": str(e)}
+
+
+@app.get("/agent/screen")
+async def agent_screen():
+    """Get current screen state from the sandbox."""
+    screen = await get_screen()
+    return {"screen": screen}
 
 
 @app.get("/health")

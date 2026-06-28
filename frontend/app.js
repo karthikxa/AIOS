@@ -18,6 +18,20 @@ import { parseReasoningToCoT, createCoTLiveRenderer } from './js/chain-of-though
 
 const tasksStore = new TasksStore();
 
+// Human-readable action descriptions for the agentic status bar
+const actionDescriptions = {
+  get_screen: 'Reading screen',
+  click: 'Clicking element',
+  type: 'Typing text',
+  press_key: 'Pressing key',
+  hotkey: 'Keyboard shortcut',
+  scroll: 'Scrolling',
+  navigate: 'Opening URL',
+  evaluate: 'Running JavaScript',
+  shell: 'Running command',
+  done: 'Task complete',
+};
+
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Initialize Sub-modules
@@ -1218,7 +1232,9 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const subagentStatusText = document.getElementById('subagentStatusText');
       if (subagentStatusText) {
-        subagentStatusText.textContent = `Researching best practices for "${promptText.length > 55 ? promptText.slice(0, 55) + '...' : promptText}"...`;
+        subagentStatusText.textContent = currentMode === 'computer'
+          ? 'Connecting to agent...'
+          : 'Processing...';
       }
       const subagentStepCount = document.getElementById('subagentStepCount');
       if (subagentStepCount) {
@@ -1256,6 +1272,25 @@ document.addEventListener('DOMContentLoaded', () => {
       window._attachedFiles = [];
       document.getElementById('filePreviewChips').innerHTML = '';
     }
+
+    // ── Computer mode: inject computer tools as LLM tool definitions ──
+    let computerTools = [];
+    let computerSystemMsg = '';
+    if (currentMode === 'computer') {
+      computerSystemMsg = 'You are a computer-use agent with access to a live Linux desktop. Use the available computer tools to control it. Start with get_screen to see what is on screen.';
+      computerTools = [
+        { type: 'function', function: { name: 'get_screen', description: 'Get the current screen state: URL, title, and interactive elements with positions', parameters: { type: 'object', properties: {}, required: [] } } },
+        { type: 'function', function: { name: 'click', description: 'Click an element on screen by its ref ID', parameters: { type: 'object', properties: { ref: { type: 'string', description: 'The element ref ID from get_screen' } }, required: ['ref'] } } },
+        { type: 'function', function: { name: 'type', description: 'Type text into an input field', parameters: { type: 'object', properties: { ref: { type: 'string', description: 'The input field ref ID' }, text: { type: 'string', description: 'Text to type' } }, required: ['ref', 'text'] } } },
+        { type: 'function', function: { name: 'press_key', description: 'Press a keyboard key', parameters: { type: 'object', properties: { key: { type: 'string', description: 'Key name: Enter, Tab, Escape, Backspace, etc.' } }, required: ['key'] } } },
+        { type: 'function', function: { name: 'hotkey', description: 'Press a keyboard shortcut', parameters: { type: 'object', properties: { keys: { type: 'array', items: { type: 'string' }, description: 'Keys to press together, e.g. ["ctrl","c"]' } }, required: ['keys'] } } },
+        { type: 'function', function: { name: 'scroll', description: 'Scroll the page', parameters: { type: 'object', properties: { direction: { type: 'string', enum: ['up', 'down'] }, amount: { type: 'number', description: 'Scroll amount (default 3)' } }, required: ['direction'] } } },
+        { type: 'function', function: { name: 'navigate', description: 'Navigate to a URL in the browser', parameters: { type: 'object', properties: { url: { type: 'string', description: 'URL to navigate to' } }, required: ['url'] } } },
+        { type: 'function', function: { name: 'evaluate', description: 'Run JavaScript in the browser page', parameters: { type: 'object', properties: { code: { type: 'string', description: 'JavaScript code to evaluate' } }, required: ['code'] } } },
+        { type: 'function', function: { name: 'shell', description: 'Execute a shell command in the sandbox', parameters: { type: 'object', properties: { command: { type: 'string', description: 'Shell command to run' } }, required: ['command'] } } },
+        { type: 'function', function: { name: 'done', description: 'Mark the task as complete', parameters: { type: 'object', properties: { summary: { type: 'string', description: 'Summary of what was accomplished' } }, required: ['summary'] } } },
+      ];
+    }
     const fullUserMsg = userMsg + fileContext;
 
     // 4. Send message
@@ -1282,23 +1317,175 @@ document.addEventListener('DOMContentLoaded', () => {
     showStopButton(true);
 
     try {
-      // ── Computer mode: route through Super Agent HITL API ─────────────
+      // ── Computer mode: agentic loop — LLM + tools + desktop agent ──────
       if (currentMode === 'computer') {
         showStopButton(false);
-        const resp = await fetch('/agent/inject', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ instruction: promptText }),
+
+        // Status bar
+        const statusBar = document.getElementById('subagentStatusBar');
+        const statusText = document.getElementById('subagentStatusText');
+        const stepCount = document.getElementById('subagentStepCount');
+        if (statusBar) statusBar.style.display = 'flex';
+
+        // Task progress panel in the right split pane
+        const progressBody = document.getElementById('splitPaneProgressBody');
+        const progressStepCount = document.getElementById('splitPaneProgressStepCount');
+        if (progressBody) progressBody.innerHTML = '';
+
+        function updateStatus(text, step) {
+          if (statusText) statusText.textContent = text;
+          if (stepCount) stepCount.textContent = step;
+        }
+
+        function addProgressStep(text, state) {
+          if (!progressBody) return;
+          const colors = { active: '#3B82F6', done: '#10B981', pending: '#9CA3AF' };
+          const color = colors[state] || colors.pending;
+          const opacity = state === 'pending' ? '0.65' : '1';
+          const bg = state === 'active' ? `background-color: ${color}; box-shadow: 0 0 0 3px rgba(59,130,246,0.15);` : state === 'done' ? `background-color: ${color};` : `border: 2px solid ${color}; background-color: transparent;`;
+          const div = document.createElement('div');
+          div.style.cssText = `display:flex;align-items:flex-start;gap:10px;opacity:${opacity};`;
+          div.innerHTML = `<div style="width:10px;height:10px;border-radius:50;margin-top:5px;flex-shrink:0;${bg}"></div><span style="font-size:13.5px;color:${state === 'pending' ? '#4B5563' : '#111111'};font-weight:${state === 'active' ? '500' : '400'};line-height:1.4;">${text}</span>`;
+          progressBody.appendChild(div);
+          progressBody.scrollTop = progressBody.scrollHeight;
+        }
+
+        function updateProgressStep(index, text, state) {
+          if (!progressBody || !progressBody.children[index]) return;
+          const colors = { active: '#3B82F6', done: '#10B981', pending: '#9CA3AF' };
+          const color = colors[state] || colors.pending;
+          const opacity = state === 'pending' ? '0.65' : '1';
+          const bg = state === 'active' ? `background-color: ${color}; box-shadow: 0 0 0 3px rgba(59,130,246,0.15);` : state === 'done' ? `background-color: ${color};` : `border: 2px solid ${color}; background-color: transparent;`;
+          const el = progressBody.children[index];
+          el.style.opacity = opacity;
+          const dot = el.querySelector('div');
+          if (dot) dot.style.cssText = `width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0;${bg}`;
+          const span = el.querySelector('span');
+          if (span) { span.textContent = text; span.style.color = state === 'pending' ? '#4B5563' : '#111111'; span.style.fontWeight = state === 'active' ? '500' : '400'; }
+        }
+
+        updateStatus('Agent starting...', '0 / ?');
+        addProgressStep('Waiting for instructions...', 'active');
+
+        // Connect to desktop agent WebSocket for executing actions
+        const ws = new WebSocket(`ws://${window.location.hostname}:8765/ws`);
+        let agentStep = 0;
+        const maxSteps = 30;
+        let progressIndex = 0;
+
+        // Promise that resolves when the agent sends a screen result
+        let resolveScreenResult = null;
+        ws.onmessage = (event) => {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'screen' && resolveScreenResult) {
+            resolveScreenResult(msg.text);
+            resolveScreenResult = null;
+          } else if (msg.type === 'thinking') {
+            agentStep++;
+            updateStatus(msg.text, `${agentStep} / ${maxSteps}`);
+          } else if (msg.type === 'system') {
+            updateStatus(msg.text, `${agentStep} / ${maxSteps}`);
+          }
+        };
+
+        function waitForScreen() {
+          return new Promise((resolve) => { resolveScreenResult = resolve; });
+        }
+
+        // Wait for WebSocket to open
+        await new Promise((resolve, reject) => {
+          ws.onopen = resolve;
+          ws.onerror = () => reject(new Error('Cannot connect to desktop agent'));
+          setTimeout(() => reject(new Error('Agent connection timeout')), 5000);
         });
-        if (!resp.ok) {
-          throw new Error('Super Agent rejected instruction');
+
+        // Agentic loop: LLM decides action → execute → feed result back
+        const messages = [
+          { role: 'system', content: computerSystemMsg },
+          { role: 'user', content: promptText },
+        ];
+
+        for (let step = 0; step < maxSteps; step++) {
+          updateStatus(`Step ${step + 1}: Thinking...`, `${step + 1} / ${maxSteps}`);
+          if (step === 0) {
+            addProgressStep('Analyzing task...', 'active');
+          } else {
+            addProgressStep(`Step ${step + 1}: Planning next action...`, 'active');
+            if (progressIndex > 0) updateProgressStep(progressIndex - 1, progressBody.children[progressIndex - 1]?.querySelector('span')?.textContent || '', 'done');
+          }
+          progressIndex = progressBody ? progressBody.children.length : 0;
+
+          // Call LLM with tools via Vite proxy (avoids CORS issues)
+          const llmResp = await fetch('/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'zed-pro',
+              messages,
+              tools: computerTools,
+              tool_choice: 'auto',
+              temperature: 0.1,
+              max_tokens: 1024,
+            }),
+          });
+
+          if (!llmResp.ok) {
+            updateStatus(`LLM error: ${llmResp.status}`, '!');
+            break;
+          }
+
+          const llmData = await llmResp.json();
+          const choice = llmData.choices?.[0];
+          if (!choice) break;
+
+          const assistantMsg = choice.message;
+          messages.push(assistantMsg);
+
+          // If no tool calls, the LLM is done talking
+          if (!assistantMsg.tool_calls || assistantMsg.tool_calls.length === 0) {
+            const text = assistantMsg.content || 'Done.';
+            appendMessage('assistant', text);
+            updateStatus('Task complete.', `${step + 1} / ${maxSteps}`);
+            addProgressStep('Delivering result to user', 'done');
+            if (progressBody && progressBody.children.length > 1) {
+              updateProgressStep(progressBody.children.length - 2, progressBody.children[progressBody.children.length - 2]?.querySelector('span')?.textContent || '', 'done');
+            }
+            break;
+          }
+
+          // Execute each tool call
+          for (const toolCall of assistantMsg.tool_calls) {
+            const fn = toolCall.function;
+            const args = JSON.parse(fn.arguments || '{}');
+            const actionName = fn.name;
+            const desc = actionDescriptions[actionName] || actionName;
+            updateStatus(`Executing: ${desc}`, `${step + 1} / ${maxSteps}`);
+            addProgressStep(desc, 'active');
+            if (progressBody && progressBody.children.length > 1) {
+              updateProgressStep(progressBody.children.length - 2, progressBody.children[progressBody.children.length - 2]?.querySelector('span')?.textContent || '', 'done');
+            }
+
+            // Send action to desktop agent via WebSocket
+            ws.send(JSON.stringify({ type: 'task', text: `execute:${JSON.stringify({ action: actionName, ...args })}` }));
+
+            // Wait for screen result
+            const screenResult = await waitForScreen();
+
+            // Feed result back to LLM
+            messages.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              content: screenResult || 'Action executed.',
+            });
+
+            updateStatus(`Observed result`, `${step + 1} / ${maxSteps}`);
+            if (progressStepCount) progressStepCount.textContent = `${step + 1} / ${maxSteps}`;
+          }
         }
-        if (bubble) {
-          bubble.innerHTML = `<div style="padding: 8px 0; font-size: 14px; color: #6B7280;">Sent to agent — watch the desktop for progress.</div>`;
-        }
-        conversationHistory.push({ role: 'assistant', content: `[Agent working on: "${promptText}"]` });
+
+        ws.close();
         const active = tasksStore.tasks.find(t => t.id === tasksStore.activeId);
-        if (active) { active.messages.push({ role: 'assistant', content: `[Agent working on: "${promptText}"]` }); tasksStore.notify(); }
+        if (active) { active.messages.push({ role: 'assistant', content: `[Computer agent completed: "${promptText}"]` }); tasksStore.notify(); }
         return;
       }
 
@@ -1618,6 +1805,14 @@ document.addEventListener('DOMContentLoaded', () => {
         desktopConnectingOverlay.style.display = 'none';
       }
     };
+
+    // Also start the thumbnail VNC stream
+    const thumbnailFrame = document.getElementById('thumbnailFrame');
+    const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
+    if (thumbnailFrame) {
+      thumbnailFrame.src = 'http://localhost:6902/vnc_lite.html?autoconnect=true&scale=true&password=headless&reconnect=true&reconnect_delay=2000&view_only=true';
+      if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'none';
+    }
   }
 
   function startScreenshotPolling() {
@@ -1650,6 +1845,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const img = document.getElementById('desktopScreenshotImg');
     if (img) img.remove();
     if (desktopFrame) desktopFrame.style.display = '';
+    // Stop thumbnail VNC stream
+    const thumbnailFrame = document.getElementById('thumbnailFrame');
+    const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
+    if (thumbnailFrame) thumbnailFrame.src = 'about:blank';
+    if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'flex';
   }
 
   function toggleComputerSplit(show) {
@@ -1770,7 +1970,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (subagentThumbnail) {
     subagentThumbnail.addEventListener('click', (e) => {
       e.stopPropagation();
-      toggleComputerSplit();
+      toggleComputerSplit(true);
+    });
+  }
+
+  // Start thumbnail VNC stream when computer mode is selected (even before chat starts)
+  const computerModeBtn = document.querySelector('[data-mode="computer"]');
+  if (computerModeBtn) {
+    computerModeBtn.addEventListener('click', () => {
+      const thumbnailFrame = document.getElementById('thumbnailFrame');
+      const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
+      if (thumbnailFrame && thumbnailFrame.src === 'about:blank') {
+        thumbnailFrame.src = 'http://localhost:6902/vnc_lite.html?autoconnect=true&scale=true&password=headless&reconnect=true&reconnect_delay=2000&view_only=true';
+        if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'none';
+      }
     });
   }
 

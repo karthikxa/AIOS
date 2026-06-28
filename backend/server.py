@@ -36,7 +36,7 @@ if str(_AGENT_DIR) not in sys.path:
 
 import httpx
 import uvicorn
-from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect, Request
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -392,6 +392,8 @@ class ChatCompletionRequest(BaseModel):
     max_tokens: Optional[int] = None
     temperature: Optional[float] = None
     dashboard_state: Optional[Dict[str, Any]] = None
+    tools: Optional[List[Dict[str, Any]]] = None
+    tool_choice: Optional[str] = None
 
 
 class SessionCreateRequest(BaseModel):
@@ -477,6 +479,51 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
     """
     if not request.messages:
         raise HTTPException(status_code=400, detail="No messages provided")
+
+    if request.tools:
+        # Bypass AIAgent and proxy directly to freellmapi
+        payload = request.dict(exclude_none=True)
+        # Map zed-pro and auto to the fastest model for computer use
+        if payload.get("model", "").lower() in ("zed-pro", "auto"):
+            payload["model"] = "gemini-2.5-flash-lite"
+        
+        if request.stream:
+            async def stream_proxy():
+                try:
+                    async with _http_client.stream(
+                        "POST",
+                        FREELLMAPI_URL,
+                        json=payload,
+                        timeout=httpx.Timeout(120.0)
+                    ) as response:
+                        async for chunk in response.aiter_bytes():
+                            yield chunk
+                except Exception as e:
+                    logger.exception("Error in tools streaming proxy")
+                    yield f"data: {json.dumps({'error': {'message': str(e), 'type': 'proxy_error'}})}\n\n".encode()
+                    yield b"data: [DONE]\n\n"
+
+            return StreamingResponse(
+                stream_proxy(),
+                media_type="text/event-stream",
+                headers={
+                    "Cache-Control": "no-cache",
+                    "Connection": "keep-alive",
+                    "X-Accel-Buffering": "no",
+                    "Access-Control-Allow-Origin": "*",
+                }
+            )
+        else:
+            try:
+                resp = await _http_client.post(FREELLMAPI_URL, json=payload, timeout=120.0)
+                return Response(
+                    content=resp.content,
+                    status_code=resp.status_code,
+                    media_type="application/json"
+                )
+            except Exception as e:
+                logger.exception("Error in tools non-streaming proxy")
+                raise HTTPException(status_code=500, detail=str(e))
 
     session_id = raw_request.headers.get("x-zed-session-id") or raw_request.headers.get("x-session-id")
     if not session_id:

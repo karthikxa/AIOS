@@ -31,11 +31,10 @@ export default {
         target: 'http://127.0.0.1:8642',
         changeOrigin: true,
       },
-      // Route /agent to Super Agent HITL server (Computer mode: inject instruction, check status)
+      // Route /agent to Desktop Agent (Computer mode: inject instruction, check status)
       '/agent': {
-        target: 'http://127.0.0.1:9002',
+        target: 'http://127.0.0.1:8765',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/agent/, ''),
       },
       // Proxy VNC (noVNC on port 6901) — no auth, plain HTTP
       '/kasm': {
