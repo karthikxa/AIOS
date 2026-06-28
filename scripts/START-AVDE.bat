@@ -13,7 +13,7 @@ for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":7777 "') do taskkill
 for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":9002 "') do taskkill /f /pid %%a >nul 2>&1
 timeout /t 2 /nobreak >nul
 echo [1/5] Starting LLM Proxy (ports 3001/3002)...
-start "LLM Proxy" cmd /k "set PORT=3001&& set LOCAL_PORT=3002&& cd /d C:\Users\balur\Downloads\AVDE\LLM\LLM Proxy && npm run dev -w server"
+start "LLM Proxy" cmd /k "set PORT=3001&& set LOCAL_PORT=3002&& cd /d C:\Users\balur\Downloads\AVDE\llm\LLM Proxy && npm run dev -w server"
 timeout /t 3 /nobreak >nul
 echo [2/5] Starting Zed Agent Backend (port 8642)...
 start "Zed Agent Backend" cmd /k "set ZED_HOME=C:\Users\balur\.hermes&& set ZED_PRO_BASE_URL=http://127.0.0.1:3002/v1&& cd /d C:\Users\balur\Downloads\AVDE\backend && C:\Users\balur\AppData\Local\hermes\hermes-agent\venv\Scripts\python.exe -m uvicorn server:app --host 0.0.0.0 --port 8642"
@@ -21,8 +21,8 @@ timeout /t 3 /nobreak >nul
 echo [3/5] Starting Dashboard Frontend (port 8000)...
 start "Zed Dashboard" cmd /k "cd /d C:\Users\balur\Downloads\AVDE\frontend && npm run dev"
 timeout /t 3 /nobreak >nul
-echo [4/5] Starting Super Agent + Windows Desktop API...
-start "Super Agent" cmd /k "cd /d ""C:\Users\balur\Downloads\AVDE\Super Agent"" && C:\Users\balur\AppData\Local\hermes\hermes-agent\venv\Scripts\python.exe run_windows.py"
+echo [4/5] Starting Computer Agent...
+start "Computer Agent" cmd /k "cd /d ""C:\Users\balur\Downloads\AVDE\computer\agent"" && C:\Users\balur\AppData\Local\hermes\hermes-agent\venv\Scripts\python.exe main.py"
 echo.
 echo All services launching! Open http://localhost:8000
 echo The Computer panel will show your LIVE desktop stream.

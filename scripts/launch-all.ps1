@@ -27,7 +27,7 @@ Start-Sleep -Seconds 2
 
 # 1. Start freellmapi
 Write-Host "=== Starting freellmapi (ports 3001/3002) ===" -ForegroundColor Cyan
-$freellmapiDir = "C:\Users\balur\Downloads\AVDE\LLM\LLM Proxy"
+$freellmapiDir = "C:\Users\balur\Downloads\AVDE\llm\LLM Proxy"
 $env:PORT = "3001"
 $env:LOCAL_PORT = "3002"
 Start-Process "cmd.exe" -ArgumentList "/k", "cd /d `"$freellmapiDir`" && set PORT=3001 && set LOCAL_PORT=3002 && npm run dev -w server" -WindowStyle Normal
@@ -46,11 +46,11 @@ $dashboardDir = "C:\Users\balur\Downloads\AVDE\frontend"
 Start-Process "cmd.exe" -ArgumentList "/k", "cd /d `"$dashboardDir`" && npm run dev" -WindowStyle Normal
 Write-Host "  Dashboard frontend starting..." -ForegroundColor Gray
 
-# 4. Start Super Agent / Windows Desktop Server (port 7777 / 9002)
-Write-Host "=== Starting Super Agent & Windows Desktop API ===" -ForegroundColor Cyan
-$superAgentDir = "C:\Users\balur\Downloads\AVDE\Super Agent"
-Start-Process "cmd.exe" -ArgumentList "/k", "cd /d `"$superAgentDir`" && `"$pythonPath`" run_windows.py" -WindowStyle Normal
-Write-Host "  Super Agent & Windows Desktop API starting..." -ForegroundColor Gray
+# 4. Start Computer Agent (port 8642)
+Write-Host "=== Starting Computer Agent ===" -ForegroundColor Cyan
+$superAgentDir = "C:\Users\balur\Downloads\AVDE\computer\agent"
+Start-Process "cmd.exe" -ArgumentList "/k", "cd /d `"$superAgentDir`" && `"$pythonPath`" main.py" -WindowStyle Normal
+Write-Host "  Computer Agent starting..." -ForegroundColor Gray
 
 Write-Host "`nWaiting for servers to initialize..." -ForegroundColor Yellow
 Start-Sleep -Seconds 12

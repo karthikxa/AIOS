@@ -14,13 +14,15 @@ build/
 .idea/
 *.db
 *.sqlite
+*.sqlite3
 coverage/
 
 Dashboard/
+memory/
 
 .superagent/
 test_ws*.py
-ssl-proxy/*.pem
+infra/ssl-proxy/*.pem
 computer/cua/
 computer/sandbox/
 computer/ubuntu-vnc-xfce-g3/
