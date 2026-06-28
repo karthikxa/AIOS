@@ -34,6 +34,14 @@ if %errorlevel%==0 (
     echo         Starting VNC...
     docker run -d --name vnc-desktop -p 6902:6901 -e VNC_PW=headless -e DISPLAY_WIDTH=1024 -e DISPLAY_HEIGHT=600 accetto/ubuntu-vnc-xfce-g3:latest >nul 2>&1
 )
+timeout /t 2 /nobreak >nul
+if exist "C:\Windows\Web\Wallpaper\Windows\img0.jpg" (
+    docker cp "C:\Windows\Web\Wallpaper\Windows\img0.jpg" vnc-desktop:/tmp/wallpaper.jpg >nul 2>&1
+    docker exec vnc-desktop xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorVNC-0/workspace0/last-image -s /tmp/wallpaper.jpg >nul 2>&1
+    docker exec vnc-desktop xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorVNC-0/workspace1/last-image -s /tmp/wallpaper.jpg >nul 2>&1
+    docker exec vnc-desktop xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorVNC-0/workspace2/last-image -s /tmp/wallpaper.jpg >nul 2>&1
+    docker exec vnc-desktop xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorVNC-0/workspace3/last-image -s /tmp/wallpaper.jpg >nul 2>&1
+)
 
 echo.
 echo   Waiting for services to start...

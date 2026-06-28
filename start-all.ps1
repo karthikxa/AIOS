@@ -52,6 +52,14 @@ if ($vnc -match "Up") {
         docker run -d --name vnc-desktop -p 6902:6901 -e VNC_PW=headless -e DISPLAY_WIDTH=1920 -e DISPLAY_HEIGHT=1080 accetto/ubuntu-vnc-xfce-g3:latest
     }
 }
+Start-Sleep -Seconds 2
+if (Test-Path "C:\Windows\Web\Wallpaper\Windows\img0.jpg") {
+    docker cp "C:\Windows\Web\Wallpaper\Windows\img0.jpg" vnc-desktop:/tmp/wallpaper.jpg 2>$null
+    docker exec vnc-desktop xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorVNC-0/workspace0/last-image -s /tmp/wallpaper.jpg 2>$null
+    docker exec vnc-desktop xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorVNC-0/workspace1/last-image -s /tmp/wallpaper.jpg 2>$null
+    docker exec vnc-desktop xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorVNC-0/workspace2/last-image -s /tmp/wallpaper.jpg 2>$null
+    docker exec vnc-desktop xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorVNC-0/workspace3/last-image -s /tmp/wallpaper.jpg 2>$null
+}
 
 # ── Wait for services to come up ──────────────────────────────────────────
 Write-Host ""
