@@ -7,7 +7,7 @@ echo.
 
 :: 1. Start freellmapi (free AI providers / LLM server)
 echo [1/3] Starting freellmapi (LLM server) on ports 3001/3002...
-start "freellmapi (LLM Server) - Ports 3001/3002" cmd /k "cd /d "%~dp0..\llm\LLM Proxy" && npm run dev"
+start "freellmapi (LLM Server) - Ports 3001/3002" cmd /k "cd /d "%~dp0..\llm\llm-proxy" && npm run dev"
 ping 127.0.0.1 -n 4 > nul
 
 :: 2. Start Zed Agent Backend

@@ -27,7 +27,7 @@ Start-Sleep -Seconds 2
 
 # 1. Start freellmapi
 Write-Host "=== Starting freellmapi (ports 3001/3002) ===" -ForegroundColor Cyan
-$freellmapiDir = "C:\Users\balur\Downloads\AVDE\llm\LLM Proxy"
+$freellmapiDir = "C:\Users\balur\Downloads\AVDE\llm\llm-proxy"
 $env:PORT = "3001"
 $env:LOCAL_PORT = "3002"
 Start-Process "cmd.exe" -ArgumentList "/k", "cd /d `"$freellmapiDir`" && set PORT=3001 && set LOCAL_PORT=3002 && npm run dev -w server" -WindowStyle Normal
