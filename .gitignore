@@ -18,4 +18,11 @@ coverage/
 
 Dashboard/
 
+.superagent/
+test_ws*.py
+ssl-proxy/*.pem
+computer/cua/
+computer/sandbox/
+computer/ubuntu-vnc-xfce-g3/
+
 nul

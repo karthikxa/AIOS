@@ -37,9 +37,23 @@ export default {
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/agent/, ''),
       },
+      // Proxy VNC (noVNC on port 6901) — no auth, plain HTTP
+      '/kasm': {
+        target: 'http://127.0.0.1:6902',
+        changeOrigin: true,
+        ws: true,
+        rewrite: (path) => path.replace(/^\/kasm/, '') || '/',
+      },
+      // Proxy Windows Desktop API (port 7777) — screenshot + input for AI agent
+      '/desktop': {
+        target: 'http://127.0.0.1:7777',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/desktop/, ''),
+      },
     },
     headers: {
-      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' http://localhost:* http://127.0.0.1:* https://accounts.google.com https://oauth2.googleapis.com; form-action 'self' https://accounts.google.com;",
+      'Content-Security-Policy': "default-src 'self' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com blob:; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://localhost:6901 https://localhost:6902 https://localhost:* http://localhost:6902; connect-src 'self' http://localhost:* http://127.0.0.1:* https://localhost:* ws://localhost:* wss://localhost:* https://cdn.jsdelivr.net https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' blob: https://localhost:* http://localhost:*; form-action 'self' https://accounts.google.com;",
     },
   },
 };
+

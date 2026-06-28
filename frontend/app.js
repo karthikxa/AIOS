@@ -1611,22 +1611,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (desktopStreamStarted || !desktopFrame) return;
     desktopStreamStarted = true;
 
-    // Try KasmVNC first, fall back to screenshot polling
-    desktopFrame.src = 'http://localhost:6901';
-    desktopFrame.onload = () => {
-      if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
-    };
-    desktopFrame.onerror = () => {
-      // KasmVNC failed — switch to screenshot polling from local desktop API
-      startScreenshotPolling();
-    };
+    desktopFrame.src = 'http://localhost:6902/vnc_lite.html?autoconnect=true&scale=true&password=headless&reconnect=true&reconnect_delay=2000&view_only=true';
 
-    // If KasmVNC doesn't load in 3s, switch to polling
-    setTimeout(() => {
-      if (desktopConnectingOverlay && desktopConnectingOverlay.style.display !== 'none') {
-        startScreenshotPolling();
+    desktopFrame.onload = () => {
+      if (desktopConnectingOverlay) {
+        desktopConnectingOverlay.style.display = 'none';
       }
-    }, 3000);
+    };
   }
 
   function startScreenshotPolling() {

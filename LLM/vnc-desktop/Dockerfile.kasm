@@ -1,0 +1,7 @@
+FROM superagent-desktop
+
+# Override the startup script to remove SSL and auth requirements
+COPY vnc_startup_nossl.sh /dockerstartup/vnc_startup_nossl.sh
+RUN chmod +x /dockerstartup/vnc_startup_nossl.sh
+
+ENTRYPOINT ["/dockerstartup/vnc_startup_nossl.sh"]
