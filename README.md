@@ -578,7 +578,7 @@ The `zed` CLI provides terminal-based access to all platform features:
 
 ### Prerequisites
 - Python 3.11 or higher
-- Node.js 24 or higher
+- Node.js 18 or higher
 - Git (for cloning)
 
 ### Step 1: Clone the Repository
@@ -587,33 +587,42 @@ git clone https://github.com/karthikxa/AIOS.git
 cd AIOS
 ```
 
-### Step 2: Start the Backend
+### Step 2: Start the LLM Proxy (FreeLLMAPI — free 1.7B tokens/month)
+```bash
+cd llm/llm-proxy
+node setup.mjs        # generates .env with encryption key (first-time only)
+npm run dev -w server # starts on http://localhost:3001
+```
+
+> **No API keys needed!** FreeLLMAPI routes to free providers (pollinations, kilo, llm7, ovh).  
+> The ~1.7B token/month budget is shared across all teammates automatically.
+
+### Step 3: Start the Backend
+Open a new terminal:
 ```bash
 cd backend
 pip install -e ".[dev]"
-python server.py
+python server.py      # starts on http://localhost:8642
 ```
 
-The backend starts on **http://localhost:8080**.
-
-### Step 3: Start the Frontend Dashboard
+### Step 4: Start the Frontend Dashboard
 Open a new terminal:
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev           # starts on http://localhost:8000
 ```
 
-The frontend starts on **http://localhost:5173** (proxied to port 8000).
+### Step 5: Access the Dashboard
+Open your browser to **http://localhost:8000** and start interacting with agents.
 
-### Step 4: Access the Dashboard
-Open your browser to **http://localhost:5173** and start interacting with agents.
-
-### Step 5: Full Stack Launch
-Or use the launcher script:
+### Step 6: Full Stack Launch (Windows)
+Or run everything at once:
 ```powershell
 .\scripts\start-all.ps1
 ```
+
+> **Architecture**: Browser (8000) → Vite proxy → Backend (8642) → FreeLLMAPI (3001) → Free LLM providers
 
 ---
 

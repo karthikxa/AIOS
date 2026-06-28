@@ -1,41 +1,70 @@
-Write-Host "=== Killing old processes ===" -ForegroundColor Cyan
-Get-Process -Id 14100 -ErrorAction SilentlyContinue | Stop-Process -Force
-Get-Process -Id 18124 -ErrorAction SilentlyContinue | Stop-Process -Force
-Get-Process -Id 9264 -ErrorAction SilentlyContinue | Stop-Process -Force
+# AVDE Start-All Script
+# ─────────────────────────────────────────────────────────────────────────────
+# Starts all three services in separate windows:
+#   1. FreeLLMAPI LLM Proxy  (port 3001/3002)
+#   2. Backend Python Server  (port 8642)
+#   3. Frontend Vite Dev Server (port 8000)
+#
+# Usage: .\scripts\start-all.ps1
+# ─────────────────────────────────────────────────────────────────────────────
+
+$root = Split-Path $PSScriptRoot -Parent
+
+Write-Host "╔══════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║         AVDE — Starting All Services                 ║" -ForegroundColor Cyan
+Write-Host "╚══════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host ""
+
+# ── 1. FreeLLMAPI LLM Proxy ──────────────────────────────────────────────────
+$llmProxyPath = Join-Path $root "llm\llm-proxy"
+
+# Run first-time setup if .env doesn't exist
+if (-not (Test-Path (Join-Path $llmProxyPath ".env"))) {
+    Write-Host "📦 First-time setup: generating .env for FreeLLMAPI..." -ForegroundColor Yellow
+    Push-Location $llmProxyPath
+    node setup.mjs
+    Pop-Location
+}
+
+Write-Host "🚀 Starting FreeLLMAPI proxy (port 3001)..." -ForegroundColor Green
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$llmProxyPath'; npm run dev -w server" -WindowStyle Normal
+
+Start-Sleep -Seconds 3  # Give proxy time to initialize
+
+# ── 2. Backend Python Server ──────────────────────────────────────────────────
+$backendPath = Join-Path $root "backend"
+Write-Host "🚀 Starting backend server (port 8642)..." -ForegroundColor Green
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$backendPath'; python server.py" -WindowStyle Normal
+
 Start-Sleep -Seconds 2
 
-Write-Host "=== Starting freellmapi (port 3001/3002) ===" -ForegroundColor Cyan
-$freellmapiDir = "C:\Users\balur\Downloads\AVDE\freellmapi"
-$env:PORT = "3001"
-$env:LOCAL_PORT = "3002"
-$npmPath = (Get-Command npm).Source
-Start-Process -NoNewWindow -FilePath "cmd.exe" -ArgumentList "/c", "cd /d $freellmapiDir && $npmPath run dev" -WindowStyle Hidden
-Write-Host "  freellmapi starting..." -ForegroundColor Gray
+# ── 3. Frontend Vite Dev Server ───────────────────────────────────────────────
+$frontendPath = Join-Path $root "frontend"
 
-Write-Host "=== Starting Dashboard backend+frontend (port 8000) ===" -ForegroundColor Cyan
-$backendDir = "C:\Users\balur\Downloads\AVDE\backend"
-$pythonPath = "C:\Users\balur\AppData\Local\hermes\hermes-agent\venv\Scripts\python.exe"
-Start-Process -NoNewWindow -FilePath $pythonPath -ArgumentList "-m", "uvicorn", "server:app", "--host", "127.0.0.1", "--port", "8000" -WorkingDirectory $backendDir -WindowStyle Hidden
-Write-Host "  dashboard starting..." -ForegroundColor Gray
-
-Write-Host "Waiting for servers..." -ForegroundColor Yellow
-Start-Sleep -Seconds 8
-
-$ok = $true
-if (Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue) {
-    Write-Host "  [OK] Dashboard backend: http://127.0.0.1:8000" -ForegroundColor Green
-} else { Write-Host "  [FAIL] Port 8000" -ForegroundColor Red; $ok = $false }
-
-if (Get-NetTCPConnection -LocalPort 3001 -ErrorAction SilentlyContinue) {
-    Write-Host "  [OK] freellmapi: port 3001" -ForegroundColor Green
-} else { Write-Host "  [FAIL] Port 3001" -ForegroundColor Red; $ok = $false }
-
-if (Get-NetTCPConnection -LocalPort 3002 -ErrorAction SilentlyContinue) {
-    Write-Host "  [OK] freellmapi no-auth: port 3002" -ForegroundColor Green
-} else { Write-Host "  [FAIL] Port 3002" -ForegroundColor Red; $ok = $false }
-
-if ($ok) {
-    Write-Host "`nAll servers running! Open http://127.0.0.1:8000/" -ForegroundColor Green
-} else {
-    Write-Host "`nSome servers failed to start. Check above." -ForegroundColor Red
+# Install deps if needed
+if (-not (Test-Path (Join-Path $frontendPath "node_modules"))) {
+    Write-Host "📦 Installing frontend dependencies..." -ForegroundColor Yellow
+    Push-Location $frontendPath
+    npm install
+    Pop-Location
 }
+
+Write-Host "🚀 Starting frontend (port 8000)..." -ForegroundColor Green
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$frontendPath'; npm run dev" -WindowStyle Normal
+
+Start-Sleep -Seconds 3
+
+Write-Host ""
+Write-Host "╔══════════════════════════════════════════════════════╗" -ForegroundColor Green
+Write-Host "║  All services started!                               ║" -ForegroundColor Green
+Write-Host "║                                                      ║" -ForegroundColor Green
+Write-Host "║  Dashboard: http://localhost:8000                    ║" -ForegroundColor Green
+Write-Host "║  Backend:   http://localhost:8642                    ║" -ForegroundColor Green
+Write-Host "║  LLM Proxy: http://localhost:3001                    ║" -ForegroundColor Green
+Write-Host "║  VNC Desktop (Docker): http://localhost:6902         ║" -ForegroundColor Green
+Write-Host "╚══════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host ""
+
+# Open browser
+Start-Sleep -Seconds 2
+Start-Process "http://localhost:8000"

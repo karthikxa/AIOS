@@ -1416,6 +1416,7 @@ document.addEventListener('DOMContentLoaded', () => {
           progressIndex = progressBody ? progressBody.children.length : 0;
 
           // Call LLM with tools via Vite proxy (avoids CORS issues)
+          // stream: false required — we call .json() on the response (not SSE)
           const llmResp = await fetch('/v1/chat/completions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1425,12 +1426,16 @@ document.addEventListener('DOMContentLoaded', () => {
               tools: computerTools,
               tool_choice: 'auto',
               temperature: 0.1,
-              max_tokens: 1024,
+              max_tokens: 2048,
+              stream: false,
             }),
           });
 
           if (!llmResp.ok) {
-            updateStatus(`LLM error: ${llmResp.status}`, '!');
+            let errDetail = `${llmResp.status}`;
+            try { const e = await llmResp.json(); errDetail += ': ' + (e?.error?.message || e?.detail || JSON.stringify(e)); } catch {}
+            updateStatus(`LLM error: ${errDetail}`, '!');
+            console.error('LLM error detail:', errDetail);
             break;
           }
 

@@ -45,12 +45,22 @@ from zed_constants import get_zed_home
 from zed_logging import setup_logging
 from cron.scheduler import tick as cron_tick
 
-# ── Zed Home = C:\Users\balur\.hermes (all sessions, config, memories) ────
-# Override to .hermes regardless of what get_zed_home() returns on this machine
+# ── Zed Home = C:\Users\<user>\.hermes (all sessions, config, memories) ────
+# Strip trailing whitespace from ZED_HOME — some launchers inject a trailing
+# space, causing FileNotFoundError: 'C:\\Users\\balur\\.hermes \\logs'
 _DEFAULT_ZED_HOME = Path.home() / ".hermes"
-ZED_HOME = Path(os.environ.get("ZED_HOME", str(_DEFAULT_ZED_HOME)))
+_raw_zed_home = os.environ.get("ZED_HOME", str(_DEFAULT_ZED_HOME)).strip()
+ZED_HOME = Path(_raw_zed_home)
 _log_dir = ZED_HOME / "logs"
-_log_dir.mkdir(parents=True, exist_ok=True)
+try:
+    _log_dir.mkdir(parents=True, exist_ok=True)
+except OSError as _e:
+    # Fallback: use a logs dir beside this server.py file
+    import warnings
+    warnings.warn(f"Could not create log dir {_log_dir}: {_e}. Using local logs/")
+    _log_dir = Path(__file__).resolve().parent / "logs"
+    _log_dir.mkdir(parents=True, exist_ok=True)
+    ZED_HOME = _log_dir.parent
 setup_logging(zed_home=ZED_HOME, log_level="INFO")
 
 logger = logging.getLogger("zed.server")
@@ -84,7 +94,7 @@ from tools.registry import discover_builtin_tools
 
 # ── Config ──────────────────────────────────────────────────────────────────
 HOST = "0.0.0.0"
-PORT = 8000
+PORT = 8642  # Vite proxies /v1/* and /api/* to this port
 
 # Direct connection to freellmapi local no-auth port — permanent, no key needed
 FREELLMAPI_URL = "http://127.0.0.1:3001/v1/chat/completions"
@@ -380,9 +390,14 @@ app.include_router(google_oauth_router)
 # ── Pydantic Models ──────────────────────────────────────────────────────────
 class ChatMessage(BaseModel):
     role: str
-    content: str = ""
+    content: Optional[str] = None  # null is valid for assistant messages with tool_calls
     tool_calls: Optional[List[Dict[str, Any]]] = None
     tool_call_id: Optional[str] = None
+
+    def dict(self, **kwargs):
+        # Always exclude_none so null content is dropped from the payload
+        kwargs.setdefault('exclude_none', True)
+        return super().dict(**kwargs)
 
 
 class ChatCompletionRequest(BaseModel):
@@ -483,6 +498,11 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
     if request.tools:
         # Bypass AIAgent and proxy directly to freellmapi
         payload = request.dict(exclude_none=True)
+        # Ensure messages are serialized with exclude_none (drop null content)
+        payload['messages'] = [
+            {k: v for k, v in msg.dict(exclude_none=True).items()}
+            for msg in request.messages
+        ]
         # Map zed-pro and auto to the fastest model for computer use
         if payload.get("model", "").lower() in ("zed-pro", "auto"):
             payload["model"] = "gemini-2.5-flash-lite"
