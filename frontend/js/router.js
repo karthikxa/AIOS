@@ -8,16 +8,37 @@ export function initRouter() {
   const voicePageView = document.getElementById('voicePageView');
   const appHeader = document.querySelector('.app-header');
   const centerContainer = document.querySelector('.center-container');
+  const mainContent = document.getElementById('mainContent');
+  const computerSplitPane = document.getElementById('computerSplitPane');
+  let wasComputerSplitOpen = false;
 
   // Helper to hide/show centerContainer, beating !important CSS rules
   function hideCenterContainer() {
     if (centerContainer) centerContainer.classList.add('center-container--hidden');
     if (appHeader) appHeader.style.display = 'none';
+    
+    // Deactivate split pane layout so settings pages have 100% width
+    if (mainContent && mainContent.classList.contains('computer-split-mode')) {
+      wasComputerSplitOpen = true;
+      mainContent.classList.remove('computer-split-mode');
+    }
+    if (computerSplitPane) {
+      computerSplitPane.style.display = 'none';
+    }
   }
 
   function showCenterContainer() {
     if (centerContainer) centerContainer.classList.remove('center-container--hidden');
     if (appHeader) appHeader.style.display = 'flex';
+    
+    // Restore split pane layout if it was active in chat
+    if (wasComputerSplitOpen && mainContent) {
+      mainContent.classList.add('computer-split-mode');
+      if (computerSplitPane) {
+        computerSplitPane.style.display = 'flex';
+      }
+      wasComputerSplitOpen = false;
+    }
   }
 
   function showChatView() {
