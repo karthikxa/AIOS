@@ -96,10 +96,11 @@ from tools.registry import discover_builtin_tools
 HOST = "0.0.0.0"
 PORT = 8642  # Vite proxies /v1/* and /api/* to this port
 
-# Direct connection to freellmapi local no-auth port — permanent, no key needed
+# Direct connection to freellmapi — LOCAL_BYPASS=true allows 127.0.0.1 calls
+# without any API key (no Authorization header = bypass triggers on loopback).
 FREELLMAPI_URL = "http://127.0.0.1:3001/v1/chat/completions"
 
-# Tell zed-agent's provider router to call freellmapi directly (not deploy server)
+# Tell zed-agent's provider router to call freellmapi directly (no auth needed)
 os.environ["ZED_PRO_BASE_URL"] = "http://127.0.0.1:3001/v1"
 
 # ── Dynamic Tool Router ──────────────────────────────────────────────────────
@@ -482,69 +483,99 @@ async def list_models():
     }
 
 
-# ── Chat Completions (SSE streaming via AIAgent) ──────────────────────────────
+# ── Chat Completions — Direct connection to freellmapi (no API key needed) ────
+# Uses port 3002 (createLocalApp — no auth) for direct httpx calls.
+# The AIAgent path is used only when dashboard_state is provided (agentic mode).
 @app.post("/v1/chat/completions")
 @app.post("/api/chat")
 async def chat_completions(request: ChatCompletionRequest, raw_request: Request):
     """
     OpenAI-compatible chat endpoint.
-    Runs the full rebranded Zed AIAgent loop (memories, tools, skills).
-    Proxies LLM requests to freellmapi port 3001 under the hood.
+    - Normal chat: direct httpx proxy to freellmapi port 3002 (no auth needed)
+    - Agentic mode (dashboard_state set): runs full AIAgent loop with tools
     Supports both streaming (SSE) and non-streaming responses.
     """
     if not request.messages:
         raise HTTPException(status_code=400, detail="No messages provided")
 
-    if request.tools:
-        # Bypass AIAgent and proxy directly to freellmapi
-        payload = request.dict(exclude_none=True)
-        # Ensure messages are serialized with exclude_none (drop null content)
-        payload['messages'] = [
+    # ── Build outbound payload ───────────────────────────────────────────────
+    def build_payload() -> dict:
+        payload: dict = {}
+        # Map zed-pro / auto → router picks best model
+        model = request.model or "auto"
+        payload["model"] = "auto" if model.lower() in ("zed-pro", "auto") else model
+        # Serialize messages — drop None fields so freellmapi schema validates
+        payload["messages"] = [
             {k: v for k, v in msg.dict(exclude_none=True).items()}
             for msg in request.messages
         ]
-        # Map zed-pro and auto to the fastest model for computer use
-        if payload.get("model", "").lower() in ("zed-pro", "auto"):
-            payload["model"] = "gemini-2.5-flash-lite"
-        
+        if request.stream is not None:
+            payload["stream"] = request.stream
+        if request.max_tokens is not None:
+            payload["max_tokens"] = request.max_tokens
+        if request.temperature is not None:
+            payload["temperature"] = request.temperature
+        if request.tools:
+            payload["tools"] = request.tools
+        if request.tool_choice:
+            payload["tool_choice"] = request.tool_choice
+        return payload
+
+    # ── Direct proxy path (normal chat + tool-call requests) ─────────────────
+    # Skip AIAgent entirely — go direct to freellmapi via httpx (no auth header).
+    use_agent = bool(request.dashboard_state)  # only agentic mode uses AIAgent
+
+    if not use_agent:
+        payload = build_payload()
+        freellmapi_local = "http://127.0.0.1:3002/v1/chat/completions"
+
         if request.stream:
-            async def stream_proxy():
+            async def stream_direct():
                 try:
                     async with _http_client.stream(
                         "POST",
-                        FREELLMAPI_URL,
+                        freellmapi_local,
                         json=payload,
-                        timeout=httpx.Timeout(120.0)
-                    ) as response:
-                        async for chunk in response.aiter_bytes():
+                        headers={"Content-Type": "application/json"},
+                        timeout=httpx.Timeout(120.0),
+                    ) as resp:
+                        async for chunk in resp.aiter_bytes():
                             yield chunk
                 except Exception as e:
-                    logger.exception("Error in tools streaming proxy")
+                    logger.exception("Direct stream proxy error")
                     yield f"data: {json.dumps({'error': {'message': str(e), 'type': 'proxy_error'}})}\n\n".encode()
                     yield b"data: [DONE]\n\n"
 
             return StreamingResponse(
-                stream_proxy(),
+                stream_direct(),
                 media_type="text/event-stream",
                 headers={
                     "Cache-Control": "no-cache",
                     "Connection": "keep-alive",
                     "X-Accel-Buffering": "no",
                     "Access-Control-Allow-Origin": "*",
-                }
+                },
             )
         else:
             try:
-                resp = await _http_client.post(FREELLMAPI_URL, json=payload, timeout=120.0)
+                resp = await _http_client.post(
+                    freellmapi_local,
+                    json=payload,
+                    headers={"Content-Type": "application/json"},
+                    timeout=120.0,
+                )
+                if not resp.is_success:
+                    logger.error("freellmapi error %s: %s", resp.status_code, resp.text[:500])
                 return Response(
                     content=resp.content,
                     status_code=resp.status_code,
-                    media_type="application/json"
+                    media_type="application/json",
                 )
             except Exception as e:
-                logger.exception("Error in tools non-streaming proxy")
+                logger.exception("Direct proxy error")
                 raise HTTPException(status_code=500, detail=str(e))
 
+    # ── AIAgent path (agentic / dashboard mode) ───────────────────────────────
     session_id = raw_request.headers.get("x-zed-session-id") or raw_request.headers.get("x-session-id")
     if not session_id:
         session_id = str(uuid.uuid4())
@@ -553,22 +584,18 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
     user_msg = request.messages[-1].content if request.messages else ""
     selected_toolsets = route_query(user_msg) if user_msg else None
 
-    # Disable irrelevant core toolsets when Google tools are selected
-    # to minimize token usage per API call
     _DISABLED_CORE = ["moa", "discord", "discord_admin", "spotify",
                        "yuanbao", "rl", "homeassistant"]
-
     if selected_toolsets:
         disabled_toolsets = [t for t in _DISABLED_CORE if t not in selected_toolsets]
     else:
         disabled_toolsets = ["moa", "discord", "discord_admin", "yuanbao", "rl"]
-    # The model name "zed-pro" maps to the fastest available model for lowest latency.
+
     resolved_model = request.model or "gemini-2.5-flash-lite"
     if resolved_model.lower() in ("zed-pro", "auto"):
-        resolved_model = "gemini-2.5-flash-lite"  # fastest low-latency model
+        resolved_model = "gemini-2.5-flash-lite"
 
     if request.stream:
-        # Create an asyncio.Queue to bridge tokens from the thread to the async generator
         q = asyncio.Queue()
         loop = asyncio.get_running_loop()
 
@@ -593,13 +620,13 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                     quiet_mode=True,
                     verbose_logging=False,
                     base_url="http://127.0.0.1:3001/v1",
-                    api_key="no-auth",
+                    api_key="",  # No auth header — LOCAL_BYPASS=true handles 127.0.0.1
                     enabled_toolsets=selected_toolsets,
                     disabled_toolsets=disabled_toolsets,
                 )
                 agent_ref[0] = agent
 
-                user_msg = request.messages[-1].content
+                user_msg_text = request.messages[-1].content
                 history = []
                 system_msg = None
                 for m in request.messages[:-1]:
@@ -610,7 +637,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                 system_msg = _enhance_system_prompt(system_msg, dashboard_state=request.dashboard_state)
 
                 result = agent.run_conversation(
-                    user_message=user_msg,
+                    user_message=user_msg_text,
                     system_message=system_msg,
                     conversation_history=history,
                 )
@@ -619,7 +646,6 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                 logger.exception("Error running AIAgent loop")
                 loop.call_soon_threadsafe(q.put_nowait, ("error", str(e)))
 
-        # Start agent execution in a background thread
         agent_task = asyncio.create_task(asyncio.to_thread(run_agent_thread))
 
         async def event_stream():
@@ -633,13 +659,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                             "object": "chat.completion.chunk",
                             "created": created_time,
                             "model": request.model or "zed-pro",
-                            "choices": [
-                                {
-                                    "index": 0,
-                                    "delta": {"content": val},
-                                    "finish_reason": None
-                                }
-                            ]
+                            "choices": [{"index": 0, "delta": {"content": val}, "finish_reason": None}]
                         }
                         yield f"data: {json.dumps(chunk)}\n\n"
                     elif event_type == "reasoning":
@@ -648,13 +668,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                             "object": "chat.completion.chunk",
                             "created": created_time,
                             "model": request.model or "zed-pro",
-                            "choices": [
-                                {
-                                    "index": 0,
-                                    "delta": {"reasoning_content": val},
-                                    "finish_reason": None
-                                }
-                            ]
+                            "choices": [{"index": 0, "delta": {"reasoning_content": val}, "finish_reason": None}]
                         }
                         yield f"data: {json.dumps(chunk)}\n\n"
                     elif event_type == "done":
@@ -663,36 +677,19 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                             "object": "chat.completion.chunk",
                             "created": created_time,
                             "model": request.model or "zed-pro",
-                            "choices": [
-                                {
-                                    "index": 0,
-                                    "delta": {},
-                                    "finish_reason": "stop"
-                                }
-                            ]
+                            "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}]
                         }
                         yield f"data: {json.dumps(chunk)}\n\n"
                         yield "data: [DONE]\n\n"
                         break
                     elif event_type == "error":
-                        err_chunk = {
-                            "error": {
-                                "message": val,
-                                "type": "agent_error"
-                            }
-                        }
+                        err_chunk = {"error": {"message": val, "type": "agent_error"}}
                         yield f"data: {json.dumps(err_chunk)}\n\n"
                         yield "data: [DONE]\n\n"
                         break
             except Exception as e:
                 logger.exception("Event stream generator error")
-                err_chunk = {
-                    "error": {
-                        "message": str(e),
-                        "type": "generator_error"
-                    }
-                }
-                yield f"data: {json.dumps(err_chunk)}\n\n"
+                yield f"data: {json.dumps({'error': {'message': str(e), 'type': 'generator_error'}})}\n\n"
                 yield "data: [DONE]\n\n"
             finally:
                 if agent_ref[0]:
@@ -714,7 +711,6 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
         )
 
     else:
-        # ── Non-streaming response ────────────────────────────────────────
         def run_agent_sync():
             agent = AIAgent(
                 session_id=session_id,
@@ -723,11 +719,11 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                 quiet_mode=True,
                 verbose_logging=False,
                 base_url="http://127.0.0.1:3001/v1",
-                api_key="no-auth",
+                api_key="",  # No auth header — LOCAL_BYPASS=true handles 127.0.0.1
                 enabled_toolsets=selected_toolsets,
                 disabled_toolsets=disabled_toolsets,
             )
-            user_msg = request.messages[-1].content
+            user_msg_text = request.messages[-1].content
             history = []
             system_msg = None
             for m in request.messages[:-1]:
@@ -737,14 +733,14 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                     history.append({"role": m.role, "content": m.content})
             system_msg = _enhance_system_prompt(system_msg, dashboard_state=request.dashboard_state)
             return agent.run_conversation(
-                user_message=user_msg,
+                user_message=user_msg_text,
                 system_message=system_msg,
                 conversation_history=history,
             )
 
         try:
             result = await asyncio.to_thread(run_agent_sync)
-            final_text = result.get("final_response", "")
+            final_text = result.get("response", "") if isinstance(result, dict) else str(result)
             return {
                 "id": f"chatcmpl-{session_id}",
                 "object": "chat.completion",
@@ -766,6 +762,9 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
         except Exception as e:
             logger.exception("Error in non-streaming AIAgent loop")
             raise HTTPException(status_code=500, detail=str(e))
+
+
+
 
 
 # ── Sessions ──────────────────────────────────────────────────────────────────
