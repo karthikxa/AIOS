@@ -427,6 +427,7 @@ class AgentRequest(BaseModel):
     provider: Optional[str] = "zed-pro"
     schedule: Optional[str] = "Manual"
     status: Optional[str] = "active"
+    skills: Optional[List[str]] = []
 
 
 class CronJobRequest(BaseModel):
@@ -1046,6 +1047,7 @@ async def create_agent(request: AgentRequest):
         "provider": request.provider,
         "schedule": request.schedule,
         "status": request.status,
+        "skills": request.skills or [],
         "created_at": time.time(),
     }
     (AGENTS_DIR / f"{agent_id}.json").write_text(json.dumps(agent, indent=2))
@@ -1067,6 +1069,7 @@ async def update_agent(agent_id: str, request: AgentRequest):
         "provider": request.provider,
         "schedule": request.schedule,
         "status": request.status,
+        "skills": request.skills or existing.get("skills", []),
     })
     agent_file.write_text(json.dumps(existing, indent=2))
     return {"status": "updated", "agent": existing}
@@ -1090,6 +1093,23 @@ async def run_agent_now(agent_id: str):
         raise HTTPException(status_code=404, detail="Agent not found")
     agent = json.loads(agent_file.read_text())
 
+    # Build skill instructions for the agent's prompt
+    skills = agent.get('skills', [])
+    skill_instructions = ""
+    if skills:
+        skill_descriptions = {
+            'web-research': 'Web Research: Search the web, extract content, compile findings with citations.',
+            'competitor-analysis': 'Competitor Analysis: Research competitors, compare products/pricing, generate competitive analysis.',
+            'data-collection': 'Data Collection: Gather structured data from web sources, organize into CSV/JSON.',
+            'report-generator': 'Report Generator: Generate professional reports with analysis and recommendations.',
+            'email-drafter': 'Email Drafter: Draft professional emails with appropriate tone and call-to-action.',
+            'code-analyzer': 'Code Analyzer: Analyze code for bugs, security issues, and performance problems.',
+            'task-automation': 'Task Automation: Create automated workflows combining multiple tools.',
+            'document-writer': 'Document Writer: Write technical documentation, READMEs, and user guides.'
+        }
+        active_skills = [skill_descriptions.get(s, s) for s in skills]
+        skill_instructions = "\n\nActive Skills:\n" + "\n".join(f"- {s}" for s in active_skills)
+
     # Create a one-shot cron job to run this agent immediately
     cron_dir = ZED_HOME / "cron"
     cron_dir.mkdir(parents=True, exist_ok=True)
@@ -1098,7 +1118,7 @@ async def run_agent_now(agent_id: str):
         "id": job_id,
         "name": f"Manual run: {agent['name']}",
         "schedule": "once",
-        "prompt": f"You are {agent['name']}. {agent.get('desc', '')}\n\nExecute your assigned task now. Use all available tools. Report what was done.",
+        "prompt": f"You are {agent['name']}. {agent.get('desc', '')}{skill_instructions}\n\nExecute your assigned task now. Use all available tools and your active skills to complete the work. Report what was done.",
         "enabled": True,
         "created_at": time.time(),
     }

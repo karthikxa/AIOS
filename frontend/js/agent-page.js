@@ -1,3 +1,5 @@
+import { SKILLS_CATALOG, getSkillById } from './skills-catalog.js';
+
 const agentPixelAvatars = {
   security: `<img src="assets/models/security_avatar.png" alt="Security Agent" style="width: 100%; height: 100%; object-fit: cover;">`,
   research: `<img src="assets/models/research_avatar.png" alt="Research Agent" style="width: 100%; height: 100%; object-fit: cover;">`,
@@ -348,6 +350,18 @@ function renderAgentsList(store) {
             <span class="agent-model-name-label">${agent.model}</span>
           </div>
         </div>
+
+        <!-- Skills Section -->
+        ${(agent.skills && agent.skills.length > 0) ? `
+        <div class="agent-item-skills-col" style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap; max-width: 180px;">
+          ${agent.skills.slice(0, 3).map(skillId => {
+            const skill = getSkillById(skillId);
+            if (!skill) return '';
+            return `<span style="font-size: 10.5px; color: #4F46E5; background: #EEF2FF; border-radius: 9999px; padding: 2px 8px; font-weight: 500; white-space: nowrap;" title="${skill.name}: ${skill.desc}">${skill.name}</span>`;
+          }).join('')}
+          ${agent.skills.length > 3 ? `<span style="font-size: 10.5px; color: #6B7280; background: #F3F4F6; border-radius: 9999px; padding: 2px 6px; font-weight: 500;">+${agent.skills.length - 3}</span>` : ''}
+        </div>
+        ` : ''}
 
         <!-- Right Section: Actions -->
         <div class="agent-item-actions-col">

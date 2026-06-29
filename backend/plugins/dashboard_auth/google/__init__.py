@@ -155,13 +155,17 @@ async def google_callback(
     error: str = Query(None),
 ):
     # Dynamically determine the frontend dashboard base domain
+    # Priority: 1. DASHBOARD_BASE_URL env var, 2. origin/referer header, 3. backend's own host
+    import os
+    env_dashboard_base = os.getenv("DASHBOARD_BASE_URL", "").rstrip("/")
     origin = request.headers.get("origin") or request.headers.get("referer")
-    if origin:
+    if env_dashboard_base:
+        dashboard_base = env_dashboard_base
+    elif origin:
         dashboard_base = origin.rstrip("/")
         if "/oauth/" in dashboard_base:
             dashboard_base = dashboard_base.split("/oauth/")[0]
     else:
-        # Build from the backend's own host — the Vercel frontend proxies /oauth to this backend
         scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
         dashboard_base = f"{scheme}://{request.url.netloc}"
 
@@ -270,8 +274,9 @@ async def oauth_status(user_id: str = Query(...)):
     result = {}
     if _connections_db is not None:
         try:
+            # Check all connected providers (including google)
             rows = _connections_db.execute(
-                "SELECT provider, email, name FROM connections WHERE user_id=? AND provider != 'google'",
+                "SELECT provider, email, name FROM connections WHERE user_id=?",
                 (user_id,)
             ).fetchall()
             for r in rows:
@@ -282,7 +287,7 @@ async def oauth_status(user_id: str = Query(...)):
                 }
         except Exception:
             pass
-    result["google"] = any(v["connected"] for v in result.values())
+    result["google"] = result.get("google", {}).get("connected", False)
     return result
 
 
