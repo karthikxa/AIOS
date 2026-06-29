@@ -455,9 +455,7 @@ function toggleAgentRowMenu(triggerBtn, id) {
           window.openEditAgentPage(id);
         }
       } else if (action === "delete") {
-        if (confirm(`Are you sure you want to delete ${agent.name}?`)) {
-          agentsStore.deleteAgent(id);
-        }
+        agentsStore.deleteAgent(id);
       }
       menu.remove();
     });

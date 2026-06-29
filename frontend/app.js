@@ -256,15 +256,13 @@ document.addEventListener('DOMContentLoaded', () => {
         dropdown.querySelector('.delete-item').onclick = (de) => {
           de.stopPropagation();
           closeActiveDropdown();
-          if (confirm('Delete this session?')) {
-            tasksStore.deleteTask(task.id);
-            if (tasksStore.activeId === task.id) {
-              conversationHistory.length = 0;
-              if (chatMessagesLog) chatMessagesLog.innerHTML = '';
-              setAppState(false);
-            }
-            renderTasks();
+          tasksStore.deleteTask(task.id);
+          if (tasksStore.activeId === task.id) {
+            conversationHistory.length = 0;
+            if (chatMessagesLog) chatMessagesLog.innerHTML = '';
+            setAppState(false);
           }
+          renderTasks();
         };
 
         activeDropdown = dropdown;

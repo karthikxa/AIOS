@@ -240,7 +240,7 @@ function updateKPIs(store) {
   const running = activeCount;
   const paused = pausedCount;
   const scheduled = list.length;
-  const completed = Math.max(18, list.length * 4);
+  const completed = 0;
 
   const kpiNumRunning = document.getElementById('kpiNumRunning');
   const kpiNumScheduled = document.getElementById('kpiNumScheduled');
@@ -412,9 +412,7 @@ function toggleRowMenu(triggerBtn, id) {
       if (action === 'toggle-status') {
         schedulesStore.toggleStatus(id);
       } else if (action === 'delete') {
-        if (confirm("Are you sure you want to delete this schedule?")) {
-          schedulesStore.deleteSchedule(id);
-        }
+        schedulesStore.deleteSchedule(id);
       }
       menu.remove();
     });
