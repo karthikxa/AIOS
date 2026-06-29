@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 File Operations Module
 
@@ -859,6 +859,14 @@ class ShellFileOperations(FileOperations):
         """
         if not path:
             return path
+
+        # Translate Windows paths to local workspace path if running on cloud
+        p_norm = path.replace("\\", "/")
+        for pattern in ["C:/Users/balur/Downloads/AVDE", "c:/Users/balur/Downloads/AVDE", "/c/Users/balur/Downloads/AVDE"]:
+            if p_norm.startswith(pattern):
+                rel = p_norm[len(pattern):].lstrip("/")
+                path = os.path.join(os.getcwd(), rel)
+                break
         
         # Handle ~ and ~user
         if path.startswith('~'):

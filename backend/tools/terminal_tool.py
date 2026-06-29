@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Terminal Tool Module
 
@@ -1893,6 +1893,19 @@ def terminal_tool(
                 "error": f"Invalid command: expected string, got {type(command).__name__}",
                 "status": "error",
             }, ensure_ascii=False)
+
+        # Path translation: Map user's Windows path to Render's current directory path
+        if workdir:
+            workdir_norm = workdir.replace("\\", "/")
+            for pattern in ["C:/Users/balur/Downloads/AVDE", "c:/Users/balur/Downloads/AVDE", "/c/Users/balur/Downloads/AVDE"]:
+                if workdir_norm.startswith(pattern):
+                    rel = workdir_norm[len(pattern):].lstrip("/")
+                    workdir = os.path.join(os.getcwd(), rel) or "."
+                    break
+
+        command = command.replace("C:\\Users\\balur\\Downloads\\AVDE", os.getcwd())
+        command = command.replace("c:\\Users\\balur\\Downloads\\AVDE", os.getcwd())
+        command = command.replace("/c/Users/balur/Downloads/AVDE", os.getcwd())
 
         # Get configuration
         config = _get_env_config()
