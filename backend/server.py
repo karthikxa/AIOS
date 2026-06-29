@@ -97,11 +97,13 @@ HOST = "0.0.0.0"
 PORT = 8642  # Vite proxies /v1/* and /api/* to this port
 
 # Upstream proxy endpoint configurations
-FREELLMAPI_URL = os.getenv("ZED_PRO_BASE_URL", "http://127.0.0.1:3001/v1").rstrip("/") + "/chat/completions"
+FREELLMAPI_URL = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1").rstrip("/") + "/chat/completions"
 
 # Tell zed-agent's provider router to call freellmapi directly
 if "ZED_PRO_BASE_URL" not in os.environ:
-    os.environ["ZED_PRO_BASE_URL"] = "http://127.0.0.1:3001/v1"
+    os.environ["ZED_PRO_BASE_URL"] = "https://server-llm-1.onrender.com/v1"
+if "ZED_PRO_API_KEY" not in os.environ:
+    os.environ["ZED_PRO_API_KEY"] = "freellmapi-b8b35f76a87a2e3db4985258c26197a2f22ceabe528eb6ac"
 
 # ── Dynamic Tool Router ──────────────────────────────────────────────────────
 # Maps query intent keywords to enabled toolsets. Router call: ~50 tokens.
