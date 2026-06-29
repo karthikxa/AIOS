@@ -362,27 +362,35 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Message Actions ───────────────────────────────────────────────────
-  function appendMessageActions(msgDiv, messageText) {
+  function appendMessageActions(msgDiv, messageText, sender) {
     if (msgDiv.querySelector('.message-actions')) return;
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'message-actions';
-    actionsDiv.innerHTML = `
-      <button class="msg-action-btn" title="Copy" data-action="copy">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-      </button>
-      <button class="msg-action-btn" title="Edit & Resend" data-action="edit">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
-      </button>
-      <button class="msg-action-btn" title="Regenerate" data-action="regenerate">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-      </button>
-      <button class="msg-action-btn" title="Good response" data-action="thumbsup">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-      </button>
-      <button class="msg-action-btn" title="Bad response" data-action="thumbsdown">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zM17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
-      </button>
-    `;
+
+    if (sender === 'user') {
+      // User messages: retype (pencil) + copy
+      actionsDiv.innerHTML = `
+        <button class="msg-action-btn" title="Retype" data-action="retype">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+        </button>
+        <button class="msg-action-btn" title="Copy" data-action="copy">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+      `;
+    } else {
+      // Assistant messages: copy + thumbsup + thumbsdown
+      actionsDiv.innerHTML = `
+        <button class="msg-action-btn" title="Copy" data-action="copy">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+        <button class="msg-action-btn" title="Good response" data-action="thumbsup">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+        </button>
+        <button class="msg-action-btn" title="Bad response" data-action="thumbsdown">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zM17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+        </button>
+      `;
+    }
     msgDiv.appendChild(actionsDiv);
 
     actionsDiv.querySelectorAll('.msg-action-btn').forEach(btn => {
@@ -393,40 +401,12 @@ document.addEventListener('DOMContentLoaded', () => {
           navigator.clipboard.writeText(text).catch(() => {});
           btn.style.color = '#10B981';
           setTimeout(() => btn.style.color = '', 1000);
-        } else if (action === 'edit') {
+        } else if (action === 'retype') {
           const text = msgDiv.querySelector('.chat-message-bubble')?.textContent || '';
           chatPromptInput.value = text;
+          chatPromptInput.style.height = 'auto';
+          chatPromptInput.style.height = chatPromptInput.scrollHeight + 'px';
           chatPromptInput.focus();
-          // Fork: remove this message and all after
-          const idx = Array.from(chatMessagesLog.children).indexOf(msgDiv);
-          if (idx >= 0) {
-            const msgs = chatMessagesLog.querySelectorAll('.chat-message');
-            let removeFrom = idx;
-            // If this is a user message, also remove the next assistant response
-            if (msgDiv.classList.contains('user') && msgs[idx + 1]) removeFrom = idx;
-            else if (msgDiv.classList.contains('assistant')) removeFrom = idx;
-            while (chatMessagesLog.children.length > removeFrom) {
-              chatMessagesLog.removeChild(chatMessagesLog.lastChild);
-            }
-            conversationHistory.length = idx;
-          }
-        } else if (action === 'regenerate') {
-          // Find the preceding user message and resend
-          const msgs = Array.from(chatMessagesLog.querySelectorAll('.chat-message'));
-          const idx = msgs.indexOf(msgDiv);
-          if (idx > 0) {
-            let userIdx = idx - 1;
-            while (userIdx >= 0 && msgs[userIdx].classList.contains('assistant')) userIdx--;
-            if (userIdx >= 0 && msgs[userIdx].classList.contains('user')) {
-              const userText = msgs[userIdx].querySelector('.chat-message-bubble')?.textContent || '';
-              // Remove from this message onward
-              while (chatMessagesLog.children.length > userIdx) {
-                chatMessagesLog.removeChild(chatMessagesLog.lastChild);
-              }
-              conversationHistory.length = userIdx;
-              handleChatSubmission(userText);
-            }
-          }
         } else if (action === 'thumbsup') {
           btn.classList.toggle('liked');
           actionsDiv.querySelectorAll('[data-action="thumbsdown"]').forEach(b => b.classList.remove('disliked'));
@@ -469,10 +449,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     chatMessagesLog.appendChild(msgDiv);
 
-
-
-    if (isAssistantFinal) {
-      appendMessageActions(msgDiv, text);
+    // Add actions to both user and assistant messages
+    if (sender === 'user') {
+      appendMessageActions(msgDiv, text, 'user');
+    } else if (isAssistantFinal) {
+      appendMessageActions(msgDiv, text, 'assistant');
       // Wire artifact buttons
       msgDiv.querySelectorAll('.view-artifact-btn').forEach(btn => {
         btn.addEventListener('click', () => {
