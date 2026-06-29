@@ -1368,7 +1368,14 @@ document.addEventListener('DOMContentLoaded', () => {
         addProgressStep('Waiting for instructions...', 'active');
 
         // Connect to desktop agent WebSocket for executing actions
-        const ws = new WebSocket(`ws://${window.location.hostname}:8765/ws`);
+        let agentUrl = localStorage.getItem('desktop_agent_url');
+        if (!agentUrl) {
+          const desktopAgentHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? window.location.hostname
+            : '127.0.0.1'; // Fallback to local machine when hosted in cloud
+          agentUrl = `ws://${desktopAgentHost}:8765/ws`;
+        }
+        const ws = new WebSocket(agentUrl);
         let agentStep = 0;
         const maxSteps = 30;
         let progressIndex = 0;
@@ -1415,11 +1422,14 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           progressIndex = progressBody ? progressBody.children.length : 0;
 
-          // Call LLM with tools via Vite proxy (avoids CORS issues)
+          // Call LLM with tools via Vite proxy → backend → Render-deployed llm-proxy
           // stream: false required — we call .json() on the response (not SSE)
           const llmResp = await fetch('/v1/chat/completions', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer freellmapi-b8b35f76a87a2e3db4985258c26197a2f22ceabe528eb6ac',
+            },
             body: JSON.stringify({
               model: 'zed-pro',
               messages,
@@ -1799,11 +1809,24 @@ document.addEventListener('DOMContentLoaded', () => {
   let desktopStreamStarted = false;
   let desktopPollInterval = null;
 
+  function getVncBaseUrl() {
+    let agentUrl = localStorage.getItem('desktop_agent_url');
+    if (agentUrl) {
+      try {
+        // Parse host from websocket URL (e.g. ws://123.45.67.89:8765/ws)
+        const host = agentUrl.split('//')[1]?.split(':')[0]?.split('/')[0];
+        if (host) return `http://${host}:6902`;
+      } catch (e) {}
+    }
+    return 'http://localhost:6902';
+  }
+
   function startDesktopStream() {
     if (desktopStreamStarted || !desktopFrame) return;
     desktopStreamStarted = true;
 
-    desktopFrame.src = 'http://localhost:6902/vnc_lite.html?autoconnect=true&scale=true&password=headless&reconnect=true&reconnect_delay=2000&view_only=true';
+    const vncBase = getVncBaseUrl();
+    desktopFrame.src = `${vncBase}/vnc_lite.html?autoconnect=true&scale=true&password=headless&reconnect=true&reconnect_delay=2000&view_only=true`;
 
     desktopFrame.onload = () => {
       if (desktopConnectingOverlay) {
@@ -1815,7 +1838,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const thumbnailFrame = document.getElementById('thumbnailFrame');
     const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
     if (thumbnailFrame) {
-      thumbnailFrame.src = 'http://localhost:6902/vnc_lite.html?autoconnect=true&scale=true&password=headless&reconnect=true&reconnect_delay=2000&view_only=true';
+      const vncBase = getVncBaseUrl();
+      thumbnailFrame.src = `${vncBase}/vnc_lite.html?autoconnect=true&scale=true&password=headless&reconnect=true&reconnect_delay=2000&view_only=true`;
       if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'none';
     }
   }
@@ -1986,7 +2010,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const thumbnailFrame = document.getElementById('thumbnailFrame');
       const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
       if (thumbnailFrame && thumbnailFrame.src === 'about:blank') {
-        thumbnailFrame.src = 'http://localhost:6902/vnc_lite.html?autoconnect=true&scale=true&password=headless&reconnect=true&reconnect_delay=2000&view_only=true';
+        const vncBase = getVncBaseUrl();
+        thumbnailFrame.src = `${vncBase}/vnc_lite.html?autoconnect=true&scale=true&password=headless&reconnect=true&reconnect_delay=2000&view_only=true`;
         if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'none';
       }
     });
