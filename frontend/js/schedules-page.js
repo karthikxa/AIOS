@@ -3,109 +3,9 @@ import { injectModalStyles } from './modal.js';
 import { agentsStore } from './agent-page.js';
 import { pluginsStore } from './plugins-page.js';
 
-// 8-bit style vector avatars (crisp SVG shapes)
-const avatars = {
-  analyst: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 16 16" shape-rendering="crispEdges">
-    <rect width="16" height="16" fill="#E0F2FE"/>
-    <rect x="3" y="2" width="10" height="3" fill="#0F172A"/>
-    <rect x="2" y="3" width="12" height="4" fill="#0F172A"/>
-    <rect x="4" y="5" width="8" height="7" fill="#FED7AA"/>
-    <rect x="5" y="7" width="2" height="2" fill="#0284C7"/>
-    <rect x="9" y="7" width="2" height="2" fill="#0284C7"/>
-    <rect x="4" y="8" width="8" height="1" fill="#0F172A"/>
-    <rect x="7" y="10" width="2" height="1" fill="#E11D48"/>
-  </svg>`,
-  watcher: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 16 16" shape-rendering="crispEdges">
-    <rect width="16" height="16" fill="#F0FDF4"/>
-    <rect x="2" y="1" width="12" height="3" fill="#78350F"/>
-    <rect x="1" y="2" width="14" height="2" fill="#78350F"/>
-    <rect x="4" y="4" width="8" height="8" fill="#FDBA74"/>
-    <rect x="4" y="6" width="2" height="2" fill="#1E293B"/>
-    <rect x="10" y="6" width="2" height="2" fill="#1E293B"/>
-    <rect x="3" y="5" width="10" height="1" fill="#78350F"/>
-    <rect x="6" y="9" width="4" height="1" fill="#E11D48"/>
-  </svg>`,
-  social: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 16 16" shape-rendering="crispEdges">
-    <rect width="16" height="16" fill="#FDF2F8"/>
-    <rect x="3" y="2" width="10" height="4" fill="#EA580C"/>
-    <rect x="2" y="3" width="12" height="5" fill="#EA580C"/>
-    <rect x="4" y="5" width="8" height="7" fill="#FECDD3"/>
-    <rect x="5" y="7" width="2" height="2" fill="#0F172A"/>
-    <rect x="9" y="7" width="2" height="2" fill="#0F172A"/>
-    <rect x="7" y="9" width="2" height="2" fill="#E11D48"/>
-    <rect x="1" y="5" width="2" height="4" fill="#1E293B"/>
-    <rect x="13" y="5" width="2" height="4" fill="#1E293B"/>
-  </svg>`,
-  writer: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 16 16" shape-rendering="crispEdges">
-    <rect width="16" height="16" fill="#FAF5FF"/>
-    <rect x="3" y="2" width="10" height="3" fill="#451A03"/>
-    <rect x="4" y="5" width="8" height="7" fill="#FDE047"/>
-    <rect x="5" y="7" width="2" height="2" fill="#1E293B"/>
-    <rect x="9" y="7" width="2" height="2" fill="#1E293B"/>
-    <rect x="4" y="6" width="8" height="1" fill="#451A03"/>
-    <rect x="6" y="10" width="4" height="1" fill="#EA580C"/>
-  </svg>`,
-  backup: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 16 16" shape-rendering="crispEdges">
-    <rect width="16" height="16" fill="#F0FDFA"/>
-    <rect x="3" y="1" width="10" height="4" fill="#0D9488"/>
-    <rect x="4" y="5" width="8" height="7" fill="#FEE2E2"/>
-    <rect x="5" y="7" width="2" height="2" fill="#0F172A"/>
-    <rect x="9" y="7" width="2" height="2" fill="#0F172A"/>
-    <rect x="6" y="10" width="4" height="1" fill="#0F172A"/>
-  </svg>`
-};
-
-const initialSchedules = [
-  {
-    id: "sched-1",
-    name: "Daily Market Research",
-    nextRun: "Today, 8:00 AM",
-    role: "Research Analyst",
-    avatarKey: "analyst",
-    status: "active",
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="sched-type-icon"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`
-  },
-  {
-    id: "sched-2",
-    name: "Competitor Monitoring",
-    nextRun: "Today, 10:30 AM",
-    role: "Competitor Watcher",
-    avatarKey: "watcher",
-    status: "active",
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="sched-type-icon"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`
-  },
-  {
-    id: "sched-3",
-    name: "Instagram Report",
-    nextRun: "May 20, 9:00 AM",
-    role: "Social Media Manager",
-    avatarKey: "social",
-    status: "paused",
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="sched-type-icon"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>`
-  },
-  {
-    id: "sched-4",
-    name: "Weekly Newsletter",
-    nextRun: "May 17, 10:00 AM",
-    role: "Content Writer",
-    avatarKey: "writer",
-    status: "active",
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="sched-type-icon"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`
-  },
-  {
-    id: "sched-5",
-    name: "Data Backup",
-    nextRun: "Today, 11:30 PM",
-    role: "Backup Manager",
-    avatarKey: "backup",
-    status: "active",
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="sched-type-icon"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>`
-  }
-];
-
 class SchedulesStore {
   constructor() {
-    this.schedules = [...initialSchedules];
+    this.schedules = [];
     this.activeTab = 'all';
     this.searchQuery = '';
     this.listeners = [];
@@ -136,95 +36,81 @@ class SchedulesStore {
     this.notify();
   }
 
-  toggleStatus(id) {
+  async loadFromBackend() {
+    try {
+      const res = await fetch('/api/cron');
+      if (res.ok) {
+        const data = await res.json();
+        this.schedules = (data.jobs || []).map(job => ({
+          id: job.id,
+          name: job.name,
+          nextRun: job.schedule || 'Manual',
+          role: job.name,
+          avatarKey: 'analyst',
+          status: job.enabled ? 'active' : 'paused',
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="sched-type-icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+          prompt: job.prompt || '',
+          frequency: 'custom'
+        }));
+        this.notify();
+      }
+    } catch (e) {
+      console.warn('[Schedules] Failed to load from backend:', e);
+    }
+  }
+
+  async toggleStatus(id) {
     const item = this.schedules.find(s => s.id === id);
-    if (item) {
-      item.status = item.status === 'active' ? 'paused' : 'active';
-      this.notify();
+    if (!item) return;
+    const newStatus = item.status === 'active' ? 'paused' : 'active';
+    item.status = newStatus;
+    this.notify();
+  }
 
-      // Tell Zed about the status change
-      fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'zed-pro',
-          stream: false,
-          messages: [{
-            role: 'user',
-            content: `Note: Schedule "${item.name}" is now ${item.status}.`
-          }]
-        })
-      }).catch(() => {});
+  async deleteSchedule(id) {
+    try {
+      const res = await fetch(`/api/cron/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        this.schedules = this.schedules.filter(s => s.id !== id);
+        this.notify();
+      }
+    } catch (e) {
+      console.warn('[Schedules] Delete failed:', e);
     }
   }
 
-  deleteSchedule(id) {
-    const sched = this.schedules.find(s => s.id === id);
-    this.schedules = this.schedules.filter(s => s.id !== id);
-    this.notify();
+  async addSchedule(name, role, timeStr, frequency, status = 'active', taskBrief = '', plugins = []) {
+    const cronSchedule = frequency === 'hourly' ? '* * * * *' : frequency === 'daily' ? '0 9 * * *' : '0 9 * * 1';
 
-    // Tell Zed about this by saving to backend memory
-    if (sched) {
-      fetch('/api/chat', {
+    try {
+      const res = await fetch('/api/cron', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'zed-pro',
-          stream: false,
-          messages: [{
-            role: 'user',
-            content: `Note: The scheduled task "${sched.name}" (agent: ${sched.role}) has been deleted. No further runs needed.`
-          }]
+          name: name,
+          schedule: cronSchedule,
+          prompt: taskBrief || `Scheduled task: ${name}`,
+          enabled: true
         })
-      }).catch(() => {});
+      });
+      if (res.ok) {
+        const result = await res.json();
+        this.schedules.push({
+          id: result.job.id,
+          name: name,
+          nextRun: cronSchedule,
+          role: role,
+          avatarKey: 'analyst',
+          status: 'active',
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="sched-type-icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+          prompt: taskBrief,
+          frequency: frequency
+        });
+        this.notify();
+      }
+    } catch (e) {
+      console.warn('[Schedules] Create failed:', e);
     }
-  }
-
-  addSchedule(name, role, timeStr, frequency, status = 'active', taskBrief = '', plugins = []) {
-    const id = `sched-${Date.now()}`;
-    let avatarKey = 'analyst';
-    let icon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="sched-type-icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
-
-    // Look up agent from agentsStore to get proper avatar
-    const matchedAgent = agentsStore.agents.find(a => a.name === role);
-    if (matchedAgent) {
-      const pixelAvatars = {
-        security: `<img src="assets/models/security_avatar.png" style="width:100%;height:100%;object-fit:cover">`,
-        research: `<img src="assets/models/research_avatar.png" style="width:100%;height:100%;object-fit:cover">`,
-        coder: `<img src="assets/models/coder_avatar.png" style="width:100%;height:100%;object-fit:cover">`,
-        finance: `<img src="assets/models/finance_avatar.png" style="width:100%;height:100%;object-fit:cover">`,
-        social: `<img src="assets/models/social_avatar.png" style="width:100%;height:100%;object-fit:cover">`,
-        assistant: `<img src="assets/models/assistant_avatar.png" style="width:100%;height:100%;object-fit:cover">`
-      };
-      icon = matchedAgent.avatar && pixelAvatars[matchedAgent.avatar]
-        ? pixelAvatars[matchedAgent.avatar]
-        : pixelAvatars.assistant;
-    }
-
-    const nextRun = `${frequency === 'daily' ? 'Today' : frequency === 'weekly' ? 'Next Monday' : 'In 1 hour'}, ${timeStr}`;
-
-    this.schedules.push({
-      id, name, nextRun, role, avatarKey, status, icon, frequency, taskBrief, plugins
-    });
-    this.notify();
-
-    // Save to backend memory so Zed is aware of this schedule
-    const pluginsText = plugins.map(p => p.name).join(', ');
-    const briefText = taskBrief ? `Task: ${taskBrief}` : '';
-    const msg = `Schedule created: "${name}" - Agent: ${role} - Frequency: ${frequency} - Next: ${nextRun}. ${briefText}${pluginsText ? ` - Plugins: ${pluginsText}` : ''}`;
-
-    fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'zed-pro',
-        stream: false,
-        messages: [{
-          role: 'user',
-          content: `Save this to memory: ${msg}`
-        }]
-      })
-    }).catch(() => {});
   }
 }
 
@@ -298,13 +184,10 @@ export function initSchedulesPage() {
     updateKPIs(store);
   });
 
-  // Initial render
-  renderTable(schedulesStore);
-  updateKPIs(schedulesStore);
-  renderPremiumVisualGrid('daily');
+  // Load from backend
+  schedulesStore.loadFromBackend();
 
-  // Start schedule trigger checker (every 30 seconds)
-  startScheduleTrigger();
+  renderPremiumVisualGrid('daily');
 }
 
 function renderPremiumVisualGrid(freq = 'daily') {
@@ -418,7 +301,7 @@ function renderTable(store) {
 
     const avatarHtml = customAvatars[item.id]
       ? `<img src="${customAvatars[item.id]}" alt="${item.role}" style="width: 100%; height: 100%; object-fit: cover;">`
-      : (avatars[item.avatarKey] || avatars.analyst);
+      : `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect width="16" height="16" fill="#E0F2FE"/><rect x="3" y="2" width="10" height="3" fill="#0F172A"/><rect x="4" y="5" width="8" height="7" fill="#FED7AA"/><rect x="5" y="7" width="2" height="2" fill="#0284C7"/><rect x="9" y="7" width="2" height="2" fill="#0284C7"/></svg>`;
 
     return `
       <div class="schedules-table-row" id="row-${item.id}">
@@ -773,153 +656,6 @@ function openCreateScheduleSidebar() {
     schedulesStore.addSchedule(name, agentName, timeStr, frequency, 'active', taskBrief, selectedPlugins);
     closeSidebar();
   });
-}
-
-// ── Schedule Trigger Engine ──────────────────────────────────────────────
-function startScheduleTrigger() {
-  // Track which schedules are currently running to avoid double-triggers
-  const runningSchedules = new Set();
-
-  function advanceSchedule(sched, now, freq) {
-    const nextDate = new Date(now);
-    if (freq === 'hourly') {
-      nextDate.setHours(nextDate.getHours() + 1);
-    } else if (freq === 'daily') {
-      nextDate.setDate(nextDate.getDate() + 1);
-    } else if (freq === 'weekly') {
-      nextDate.setDate(nextDate.getDate() + 7);
-    }
-    const nextHour = nextDate.getHours();
-    const nextMin = nextDate.getMinutes();
-    const nextAmPm = nextHour >= 12 ? 'PM' : 'AM';
-    const nextHour12 = nextHour % 12 || 12;
-    const dayLabel = freq === 'hourly' ? 'in 1 hour' : nextDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-    sched.nextRun = `${dayLabel}, ${nextHour12}:${nextMin.toString().padStart(2, '0')} ${nextAmPm}`;
-    sched.lastRunAt = new Date().toLocaleString();
-    sched.lastStatus = 'running';
-    schedulesStore.notify();
-  }
-
-  function getTimeFromNextRun(nextRun) {
-    const timeMatch = nextRun?.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-    if (!timeMatch) return null;
-    let h = parseInt(timeMatch[1], 10);
-    const m = parseInt(timeMatch[2], 10);
-    const ampm = timeMatch[3].toUpperCase();
-    if (ampm === 'PM' && h !== 12) h += 12;
-    if (ampm === 'AM' && h === 12) h = 0;
-    return { h, m };
-  }
-
-  async function executeSchedule(sched, agent) {
-    const taskBrief = sched.taskBrief || `Run scheduled task: ${sched.name}`;
-    const plugins = sched.plugins || [];
-
-    // Build a detailed prompt with all context
-    let prompt = taskBrief;
-    if (plugins.length > 0) {
-      prompt += `\n\nAvailable integrations: ${plugins.map(p => p.name).join(', ')}. Use them if needed.`;
-    }
-    prompt += `\n\nYou have access to: web search, file operations, Python/bash execution, memory storage/retrieval, HTTP requests, git, OCR, and browser screenshots. Use your tools to complete this task thoroughly. Save important findings to memory.`;
-
-    console.log(`[Schedule] Executing "${sched.name}" with task: ${taskBrief}`);
-
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'zed-pro',
-          stream: true,
-          messages: [
-            {
-              role: 'system',
-              content: `You are ${agent.name}, an AI agent executing a scheduled task. ${agent.desc || ''}\n\nYou have the full Zed Pro toolset: web search, file operations, code execution, terminal, browser, memory, image analysis, and all installed skills/plugins.\n\nUse memory_save to store important results and memory_search to retrieve past context.\nThe selected plugins for this task: ${plugins.map(p => p.name).join(', ') || 'none'}.\nComplete the task thoroughly and report what was done at the end.`
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ]
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Backend returned ${response.status}`);
-      }
-
-      let fullResult = '';
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed || trimmed === 'data: [DONE]') continue;
-          if (trimmed.startsWith('data: ')) {
-            try {
-              const parsed = JSON.parse(trimmed.slice(6));
-              const delta = parsed.choices?.[0]?.delta?.content || '';
-              if (delta) {
-                fullResult += delta;
-              }
-            } catch {}
-          }
-        }
-      }
-
-      console.log(`[Schedule] "${sched.name}" completed. Result length: ${fullResult.length} chars`);
-      sched.lastResult = fullResult.slice(0, 500);
-      sched.lastStatus = 'completed';
-
-    } catch (err) {
-      console.error(`[Schedule] "${sched.name}" failed:`, err);
-      sched.lastStatus = 'failed';
-      sched.lastError = err.message;
-    }
-
-    schedulesStore.notify();
-    runningSchedules.delete(sched.id);
-  }
-
-  function checkAndTrigger() {
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMin = now.getMinutes();
-    const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
-
-    const schedules = schedulesStore.getSchedules();
-    for (const sched of schedules) {
-      if (sched.status !== 'active') continue;
-      if (runningSchedules.has(sched.id)) continue; // Already running
-
-      const time = getTimeFromNextRun(sched.nextRun);
-      if (!time) continue;
-
-      const schedTimeStr = `${time.h.toString().padStart(2, '0')}:${time.m.toString().padStart(2, '0')}`;
-
-      // Trigger when time matches
-      if (currentTimeStr === schedTimeStr) {
-        const agent = agentsStore.agents.find(a => a.name === sched.role || a.name === sched.name);
-        if (agent) {
-          runningSchedules.add(sched.id);
-          const freq = sched.frequency || 'daily';
-          advanceSchedule(sched, now, freq);
-          executeSchedule(sched, agent);
-        }
-      }
-    }
-  }
-
-  // Check every 30 seconds
-  checkAndTrigger();
-  setInterval(checkAndTrigger, 30000);
 }
 
 // Auto Initialize if active

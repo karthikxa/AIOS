@@ -419,6 +419,16 @@ class SessionCreateRequest(BaseModel):
     model: Optional[str] = None
 
 
+class AgentRequest(BaseModel):
+    name: str
+    desc: Optional[str] = ""
+    avatar: Optional[str] = "assistant"
+    model: Optional[str] = "Zed Pro"
+    provider: Optional[str] = "zed-pro"
+    schedule: Optional[str] = "Manual"
+    status: Optional[str] = "active"
+
+
 class CronJobRequest(BaseModel):
     name: str
     schedule: str
@@ -1002,6 +1012,105 @@ async def delete_cron(job_id: str):
         raise HTTPException(status_code=404, detail="Cron job not found")
     job_file.unlink()
     return {"status": "deleted", "id": job_id}
+
+
+# ── Agents CRUD ──────────────────────────────────────────────────────────────
+AGENTS_DIR = ZED_HOME / "agents"
+
+
+@app.get("/api/agents")
+async def list_agents():
+    """List all agents from ZED_HOME/agents/."""
+    AGENTS_DIR.mkdir(parents=True, exist_ok=True)
+    agents = []
+    for f in sorted(AGENTS_DIR.glob("*.json")):
+        try:
+            data = json.loads(f.read_text())
+            agents.append(data)
+        except Exception:
+            pass
+    return {"agents": agents, "count": len(agents)}
+
+
+@app.post("/api/agents")
+async def create_agent(request: AgentRequest):
+    """Create a new agent."""
+    AGENTS_DIR.mkdir(parents=True, exist_ok=True)
+    agent_id = f"agent-{str(uuid.uuid4())[:8]}"
+    agent = {
+        "id": agent_id,
+        "name": request.name,
+        "desc": request.desc,
+        "avatar": request.avatar,
+        "model": request.model,
+        "provider": request.provider,
+        "schedule": request.schedule,
+        "status": request.status,
+        "created_at": time.time(),
+    }
+    (AGENTS_DIR / f"{agent_id}.json").write_text(json.dumps(agent, indent=2))
+    return {"status": "created", "agent": agent}
+
+
+@app.put("/api/agents/{agent_id}")
+async def update_agent(agent_id: str, request: AgentRequest):
+    """Update an existing agent."""
+    agent_file = AGENTS_DIR / f"{agent_id}.json"
+    if not agent_file.exists():
+        raise HTTPException(status_code=404, detail="Agent not found")
+    existing = json.loads(agent_file.read_text())
+    existing.update({
+        "name": request.name,
+        "desc": request.desc,
+        "avatar": request.avatar,
+        "model": request.model,
+        "provider": request.provider,
+        "schedule": request.schedule,
+        "status": request.status,
+    })
+    agent_file.write_text(json.dumps(existing, indent=2))
+    return {"status": "updated", "agent": existing}
+
+
+@app.delete("/api/agents/{agent_id}")
+async def delete_agent(agent_id: str):
+    """Delete an agent."""
+    agent_file = AGENTS_DIR / f"{agent_id}.json"
+    if not agent_file.exists():
+        raise HTTPException(status_code=404, detail="Agent not found")
+    agent_file.unlink()
+    return {"status": "deleted", "id": agent_id}
+
+
+@app.post("/api/agents/{agent_id}/run")
+async def run_agent_now(agent_id: str):
+    """Trigger an agent to run immediately via the cron system."""
+    agent_file = AGENTS_DIR / f"{agent_id}.json"
+    if not agent_file.exists():
+        raise HTTPException(status_code=404, detail="Agent not found")
+    agent = json.loads(agent_file.read_text())
+
+    # Create a one-shot cron job to run this agent immediately
+    cron_dir = ZED_HOME / "cron"
+    cron_dir.mkdir(parents=True, exist_ok=True)
+    job_id = f"run-{str(uuid.uuid4())[:8]}"
+    job = {
+        "id": job_id,
+        "name": f"Manual run: {agent['name']}",
+        "schedule": "once",
+        "prompt": f"You are {agent['name']}. {agent.get('desc', '')}\n\nExecute your assigned task now. Use all available tools. Report what was done.",
+        "enabled": True,
+        "created_at": time.time(),
+    }
+    (cron_dir / f"{job_id}.json").write_text(json.dumps(job, indent=2))
+
+    # Trigger the cron tick to pick it up
+    try:
+        cron_tick()
+    except Exception:
+        pass
+
+    return {"status": "triggered", "agent": agent, "job_id": job_id}
 
 
 # ── WebSocket (live events) ────────────────────────────────────────────────────

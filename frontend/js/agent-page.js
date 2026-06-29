@@ -7,81 +7,13 @@ const agentPixelAvatars = {
   assistant: `<img src="assets/models/assistant_avatar.png" alt="Assistant Agent" style="width: 100%; height: 100%; object-fit: cover;">`
 };
 
-const defaultAgents = [
-  {
-    id: "agent-sec",
-    name: "Security Agent",
-    desc: "Monitor threats, scan vulnerabilities, and ensure system security.",
-    status: "active",
-    schedule: "Daily at 7:00 AM",
-    nextRun: "Next run: Tomorrow, 7:00 AM",
-    model: "Zed Pro",
-    avatar: "security",
-    provider: "zed-pro"
-  },
-  {
-    id: "agent-res",
-    name: "Research Agent",
-    desc: "Research topics, collect data, and generate detailed reports.",
-    status: "active",
-    schedule: "Weekly on Monday",
-    nextRun: "Next run: Mon, 9:00 AM",
-    model: "Zed Pro",
-    avatar: "research",
-    provider: "zed-pro"
-  },
-  {
-    id: "agent-code",
-    name: "Coder Agent",
-    desc: "Write code, debug issues, and review pull requests.",
-    status: "active",
-    schedule: "Daily at 10:00 AM",
-    nextRun: "Next run: Today, 10:00 AM",
-    model: "Zed Pro",
-    avatar: "coder",
-    provider: "zed-pro"
-  },
-  {
-    id: "agent-fin",
-    name: "Finance Agent",
-    desc: "Analyze financial data, track markets, and generate insights.",
-    status: "active",
-    schedule: "Daily at 8:30 AM",
-    nextRun: "Next run: Tomorrow, 8:30 AM",
-    model: "Zed Pro",
-    avatar: "finance",
-    provider: "zed-pro"
-  },
-  {
-    id: "agent-soc",
-    name: "Social Media Analyst",
-    desc: "Monitor social platforms, analyze trends, and track engagement.",
-    status: "active",
-    schedule: "Weekly on Friday",
-    nextRun: "Next run: Fri, 9:00 AM",
-    model: "Zed Pro",
-    avatar: "social",
-    provider: "zed-pro"
-  },
-  {
-    id: "agent-ast",
-    name: "Assistant Agent",
-    desc: "Help with daily tasks, reminders, and general assistance.",
-    status: "paused",
-    schedule: "Manual",
-    nextRun: "Not scheduled",
-    model: "Zed Pro",
-    avatar: "assistant",
-    provider: "zed-pro"
-  }
-];
-
 class AgentsStore {
   constructor() {
-    this.agents = [...defaultAgents];
+    this.agents = [];
     this.filter = "all";
     this.searchQuery = "";
     this.listeners = [];
+    this.loaded = false;
   }
 
   subscribe(listener) {
@@ -105,43 +37,119 @@ class AgentsStore {
     this.notify();
   }
 
-  toggleAgentStatus(id) {
-    const agent = this.agents.find(a => a.id === id);
-    if (agent) {
-      agent.status = agent.status === "active" ? "paused" : "active";
-      this.notify();
+  async loadFromBackend() {
+    try {
+      const res = await fetch('/api/agents');
+      if (res.ok) {
+        const data = await res.json();
+        this.agents = data.agents || [];
+        this.loaded = true;
+        this.notify();
+      }
+    } catch (e) {
+      console.warn('[Agents] Failed to load from backend:', e);
     }
   }
 
-  updateAgent(id, data) {
+  async toggleAgentStatus(id) {
     const agent = this.agents.find(a => a.id === id);
-    if (agent) {
-      Object.assign(agent, data);
-      this.notify();
+    if (!agent) return;
+    const newStatus = agent.status === "active" ? "paused" : "active";
+    try {
+      const res = await fetch(`/api/agents/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: agent.name,
+          desc: agent.desc || '',
+          avatar: agent.avatar || 'assistant',
+          model: agent.model || 'Zed Pro',
+          provider: agent.provider || 'zed-pro',
+          schedule: agent.schedule || 'Manual',
+          status: newStatus
+        })
+      });
+      if (res.ok) {
+        agent.status = newStatus;
+        this.notify();
+      }
+    } catch (e) {
+      console.warn('[Agents] Toggle failed:', e);
     }
   }
 
-  deleteAgent(id) {
-    this.agents = this.agents.filter(a => a.id !== id);
-    this.notify();
+  async updateAgent(id, data) {
+    try {
+      const res = await fetch(`/api/agents/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name || '',
+          desc: data.desc || '',
+          avatar: data.avatar || 'assistant',
+          model: data.model || 'Zed Pro',
+          provider: data.provider || 'zed-pro',
+          schedule: data.schedule || 'Manual',
+          status: data.status || 'active'
+        })
+      });
+      if (res.ok) {
+        const result = await res.json();
+        const idx = this.agents.findIndex(a => a.id === id);
+        if (idx !== -1) this.agents[idx] = result.agent;
+        this.notify();
+      }
+    } catch (e) {
+      console.warn('[Agents] Update failed:', e);
+    }
   }
 
-  addAgent(data) {
-    const id = `agent-${Date.now()}`;
-    const agent = {
-      id,
-      name: data.name || 'New Agent',
-      desc: data.desc || '',
-      status: data.status || 'active',
-      schedule: data.schedule || 'Manual',
-      nextRun: data.nextRun || 'Not scheduled',
-      model: data.model || 'Zed Pro',
-      avatar: data.avatar || 'assistant',
-      provider: data.provider || 'zed-pro'
-    };
-    this.agents.push(agent);
-    this.notify();
-    return agent;
+  async deleteAgent(id) {
+    try {
+      const res = await fetch(`/api/agents/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        this.agents = this.agents.filter(a => a.id !== id);
+        this.notify();
+      }
+    } catch (e) {
+      console.warn('[Agents] Delete failed:', e);
+    }
+  }
+
+  async addAgent(data) {
+    try {
+      const res = await fetch('/api/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name || 'New Agent',
+          desc: data.desc || '',
+          avatar: data.avatar || 'assistant',
+          model: data.model || 'Zed Pro',
+          provider: data.provider || 'zed-pro',
+          schedule: data.schedule || 'Manual',
+          status: data.status || 'active'
+        })
+      });
+      if (res.ok) {
+        const result = await res.json();
+        this.agents.push(result.agent);
+        this.notify();
+        return result.agent;
+      }
+    } catch (e) {
+      console.warn('[Agents] Create failed:', e);
+    }
+  }
+
+  async runAgent(id) {
+    try {
+      const res = await fetch(`/api/agents/${id}/run`, { method: 'POST' });
+      return res.ok;
+    } catch (e) {
+      console.warn('[Agents] Run failed:', e);
+      return false;
+    }
   }
 }
 
@@ -171,9 +179,6 @@ export function initAgentPage() {
       agentsStore.setFilter(pill.getAttribute('data-filter'));
     });
   });
-
-  // Create Button bindings
-  // Opened directly via event listener in create-agent-page.js, no alert needed.
 
   // View Toggle bindings
   const btnViewList = document.getElementById('btnViewList');
@@ -218,8 +223,8 @@ export function initAgentPage() {
     renderAgentsList(store);
   });
 
-  // First render
-  renderAgentsList(agentsStore);
+  // Load from backend
+  agentsStore.loadFromBackend();
 }
 
 function renderAgentsList(store) {
@@ -234,14 +239,13 @@ function renderAgentsList(store) {
     // 1. Search Query
     if (searchQuery) {
       const matchName = a.name.toLowerCase().includes(searchQuery);
-      const matchDesc = a.desc.toLowerCase().includes(searchQuery);
+      const matchDesc = (a.desc || '').toLowerCase().includes(searchQuery);
       if (!matchName && !matchDesc) return false;
     }
 
     // 2. Status Pills
     if (filter === "active" && a.status !== "active") return false;
     if (filter === "paused" && a.status !== "paused") return false;
-    // favorites / archived / inactive are empty in default mockup
     if (filter === "inactive") return false; 
     if (filter === "archived") return false;
     if (filter === "favorites") return false;
@@ -257,7 +261,7 @@ function renderAgentsList(store) {
   if (filtered.length === 0) {
     listWrapper.innerHTML = `
       <div style="padding: 40px; text-align: center; color: #6F6F6F; font-size: 14.5px; background: #FFFFFF; border: 1px solid #EAEAEA; border-radius: 20px;">
-        No agents found matching the selected filters.
+        ${agents.length === 0 ? 'No agents yet. Click "Create agent" to get started.' : 'No agents found matching the selected filters.'}
       </div>
     `;
     return;
@@ -331,8 +335,8 @@ function renderAgentsList(store) {
               </svg>
             </div>
             <div class="schedule-text-lines">
-              <div class="sched-line-time">${agent.schedule}</div>
-              <div class="sched-line-next">${agent.nextRun}</div>
+              <div class="sched-line-time">${agent.schedule || 'Manual'}</div>
+              <div class="sched-line-next">${agent.status === 'active' ? 'Active' : 'Paused'}</div>
             </div>
           </div>
         </div>
@@ -405,6 +409,11 @@ function toggleAgentRowMenu(triggerBtn, id) {
   menu.style.left = `${rect.right - 140 + window.scrollX}px`;
 
   menu.innerHTML = `
+    <button class="agent-menu-item" data-action="run-now" style="
+      background: none; border: none; text-align: left; padding: 8px 12px; font-size: 13px; color: #059669; cursor: pointer; border-radius: 8px; font-weight: 550; font-family: inherit; width: 100%;
+    ">
+      Run Now
+    </button>
     <button class="agent-menu-item" data-action="toggle-status" style="
       background: none; border: none; text-align: left; padding: 8px 12px; font-size: 13px; color: #111111; cursor: pointer; border-radius: 8px; font-weight: 550; font-family: inherit; width: 100%;
     ">
@@ -437,7 +446,9 @@ function toggleAgentRowMenu(triggerBtn, id) {
     btnEl.addEventListener('click', (e) => {
       e.stopPropagation();
       const action = btnEl.getAttribute('data-action');
-      if (action === "toggle-status") {
+      if (action === "run-now") {
+        agentsStore.runAgent(id);
+      } else if (action === "toggle-status") {
         agentsStore.toggleAgentStatus(id);
       } else if (action === "edit") {
         if (window.openEditAgentPage) {

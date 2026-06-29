@@ -155,7 +155,7 @@ export function initEditAgentPage() {
     const options = { month: 'short', day: 'numeric', year: 'numeric' };
     const lastUpdated = new Date().toLocaleDateString('en-US', options);
 
-    // Update agent state in store
+    // Update agent state in store (async, calls backend API)
     agentsStore.updateAgent(currentEditingAgentId, {
       name: state.name,
       desc: state.desc,
@@ -163,22 +163,7 @@ export function initEditAgentPage() {
       status: state.status,
       model: state.model,
       provider: state.provider,
-      fallbackModel,
-      modelSettingsType,
-      modelSettingsVal,
-      maxSteps,
-      maxTools,
-      memory,
-      responseStyle,
-      errorHandling,
-      chatSystemPrompt,
-      chatStarterQuestions,
-      chatMaxTokens,
-      desktopWorkspaces,
-      desktopScreenshotInterval,
-      desktopHotkey,
-      desktopShellExecution,
-      lastUpdated
+      schedule: agent.schedule || 'Manual'
     });
 
     // Navigate back to Agent main page view
