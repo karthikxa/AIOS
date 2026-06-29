@@ -42,7 +42,7 @@ def all_connected() -> list:
 # ── Config ─────────────────────────────────────────────────────────────────────
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
-GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/oauth/google/callback")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "")  # Dynamic — built from request at runtime
 
 GOOGLE_SCOPES = [
     "openid",
@@ -161,7 +161,9 @@ async def google_callback(
         if "/oauth/" in dashboard_base:
             dashboard_base = dashboard_base.split("/oauth/")[0]
     else:
-        dashboard_base = "https://aios-lovat-two.vercel.app"
+        # Build from the backend's own host — the Vercel frontend proxies /oauth to this backend
+        scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+        dashboard_base = f"{scheme}://{request.url.netloc}"
 
     if error:
         logger.warning("OAuth error for user %s: %s", state, error)

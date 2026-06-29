@@ -1901,9 +1901,9 @@ DEFAULT_CONFIG = {
                                # Set a specific model id to pin all children to one model instead.
         "provider": "custom",  # "custom" = use delegation.base_url directly (freellmapi loopback).
                                # Empty = inherit parent’s provider + credentials.
-        "base_url": "http://127.0.0.1:3002/v1",  # freellmapi loopback (no-auth). Each child request
-                               # is routed by freellmapi across the full multi-model pool.
-        "api_key": "no-auth",  # freellmapi requires no key (loopback-only, OS-level security).
+        "base_url": "https://server-llm-1.onrender.com/v1",  # Render LLM proxy. Each child request
+                               # is routed across the full multi-model pool.
+        "api_key": "freellmapi-b8b35f76a87a2e3db4985258c26197a2f22ceabe528eb6ac",
         "api_mode": "chat_completions",  # freellmapi speaks OpenAI chat-completions protocol.
         # When delegate_task narrows child toolsets explicitly, preserve any
         # MCP toolsets the parent already has enabled. On by default so

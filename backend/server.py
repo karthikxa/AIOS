@@ -441,7 +441,7 @@ async def get_status():
     """Health check — shows freellmapi connectivity."""
     freellmapi_ok = False
     try:
-        base_url = os.getenv("ZED_PRO_BASE_URL", "http://127.0.0.1:3001/v1")
+        base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
         base_ping_url = base_url.replace("/v1", "") if "/v1" in base_url else base_url
         api_key = os.getenv("ZED_PRO_API_KEY", "")
         headers = {}
@@ -470,7 +470,7 @@ async def get_status():
 async def list_models():
     """List available models via freellmapi."""
     try:
-        base_url = os.getenv("ZED_PRO_BASE_URL", "http://127.0.0.1:3001/v1")
+        base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
         base_ping_url = base_url.replace("/v1", "") if "/v1" in base_url else base_url
         api_key = os.getenv("ZED_PRO_API_KEY", "")
         headers = {}
@@ -543,14 +543,9 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
     if not use_agent:
         payload = build_payload()
         # Route dynamically to remote LLM Proxy URL (like Render) if configured.
-        # Otherwise, fall back to local no-auth completions port (3002).
-        base_url = os.getenv("ZED_PRO_BASE_URL")
+        base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
         api_key = os.getenv("ZED_PRO_API_KEY", "")
-        
-        if base_url and "127.0.0.1" not in base_url and "localhost" not in base_url:
-            freellmapi_target = base_url.rstrip("/") + "/chat/completions"
-        else:
-            freellmapi_target = "http://127.0.0.1:3002/v1/chat/completions"
+        freellmapi_target = base_url.rstrip("/") + "/chat/completions"
             
         proxy_headers = {"Content-Type": "application/json"}
         if api_key:
@@ -646,7 +641,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                     model=resolved_model,
                     quiet_mode=True,
                     verbose_logging=False,
-                    base_url=os.getenv("ZED_PRO_BASE_URL", "http://127.0.0.1:3001/v1"),
+                    base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"),
                     api_key=os.getenv("ZED_PRO_API_KEY", ""),
                     enabled_toolsets=selected_toolsets,
                     disabled_toolsets=disabled_toolsets,
@@ -745,7 +740,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                 model=resolved_model,
                 quiet_mode=True,
                 verbose_logging=False,
-                base_url=os.getenv("ZED_PRO_BASE_URL", "http://127.0.0.1:3001/v1"),
+                base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"),
                 api_key=os.getenv("ZED_PRO_API_KEY", ""),
                 enabled_toolsets=selected_toolsets,
                 disabled_toolsets=disabled_toolsets,
