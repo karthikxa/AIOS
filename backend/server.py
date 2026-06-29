@@ -1053,7 +1053,7 @@ else:
 # ── Entry point ────────────────────────────────────────────────────────────────
 def main():
     host = os.getenv("ZED_SERVER_HOST", HOST)
-    port = int(os.getenv("ZED_SERVER_PORT", str(PORT)))
+    port = int(os.getenv("ZED_SERVER_PORT", os.getenv("PORT", str(PORT))))
     logger.info("Starting Zed Pro backend on %s:%s", host, port)
     uvicorn.run(
         "server:app",

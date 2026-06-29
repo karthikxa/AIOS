@@ -31,6 +31,7 @@ COPY . .
 
 # Render sets PORT env var; default to 10000 to match
 ENV PORT=10000
+ENV ZED_SERVER_PORT=10000
 
 EXPOSE 10000
 
