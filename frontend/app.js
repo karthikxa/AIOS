@@ -1203,13 +1203,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chatMessagesView) chatMessagesView.style.display = 'flex';
     if (agentComputerScreen) agentComputerScreen.style.display = 'none';
 
-    // Automatically open computer side panel if computer mode is active when chat starts
-    const activeModeOpt = document.querySelector('.mode-capsule-option.active');
-    const currentMode = activeModeOpt ? activeModeOpt.dataset.mode : 'search';
-    if (currentMode === 'computer') {
-      toggleComputerSplit(true);
-    }
-
     // Show subagent status bar with slide-down pop-up animation in computer mode
     const subagentStatusBar = document.getElementById('subagentStatusBar');
     if (subagentStatusBar) {
@@ -1475,6 +1468,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Send action to desktop agent via WebSocket
+            toggleComputerSplit(true);
             ws.send(JSON.stringify({ type: 'task', text: `execute:${JSON.stringify({ action: actionName, ...args })}` }));
 
             // Wait for screen result
@@ -1939,9 +1933,7 @@ document.addEventListener('DOMContentLoaded', () => {
       modeCapsule.querySelectorAll('.mode-capsule-option').forEach(opt => opt.classList.remove('active'));
       option.classList.add('active');
       updateSlider(option, true);
-      if (mode === 'computer') {
-        toggleComputerSplit(true);
-      } else {
+      if (mode !== 'computer') {
         toggleComputerSplit(false);
       }
     }
@@ -1984,20 +1976,6 @@ document.addEventListener('DOMContentLoaded', () => {
     subagentThumbnail.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleComputerSplit(true);
-    });
-  }
-
-  // Start thumbnail VNC stream when computer mode is selected (even before chat starts)
-  const computerModeBtn = document.querySelector('[data-mode="computer"]');
-  if (computerModeBtn) {
-    computerModeBtn.addEventListener('click', () => {
-      const thumbnailFrame = document.getElementById('thumbnailFrame');
-      const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
-      if (thumbnailFrame && thumbnailFrame.src === 'about:blank') {
-        const vncBase = getVncBaseUrl();
-        thumbnailFrame.src = `${vncBase}/vnc_lite.html?autoconnect=true&scale=true&password=headless&reconnect=true&reconnect_delay=2000&view_only=true`;
-        if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'none';
-      }
     });
   }
 
