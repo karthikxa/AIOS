@@ -1203,6 +1203,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chatMessagesView) chatMessagesView.style.display = 'flex';
     if (agentComputerScreen) agentComputerScreen.style.display = 'none';
 
+    // Determine current mode from capsule UI
+    const activeModeOpt = document.querySelector('.mode-capsule-option.active');
+    const currentMode = activeModeOpt ? activeModeOpt.dataset.mode : 'search';
+
     // Show subagent status bar with slide-down pop-up animation in computer mode
     const subagentStatusBar = document.getElementById('subagentStatusBar');
     if (subagentStatusBar) {
