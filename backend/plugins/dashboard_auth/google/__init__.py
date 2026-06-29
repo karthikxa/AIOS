@@ -121,6 +121,7 @@ def _make_google_flow(redirect_uri: str):
 
 @router.get("/oauth/google/connect")
 async def google_connect(
+    request: Request,
     user_id: str = Query(..., description="Unique user identifier"),
     plugin_id: str = Query("google", description="Plugin ID to connect (e.g. gmail, google-drive)"),
     redirect_to: str = Query("/plugins", description="URL to redirect after OAuth callback"),
@@ -130,7 +131,11 @@ async def google_connect(
     if not GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=400, detail="GOOGLE_CLIENT_ID not configured in .env")
 
-    flow = _make_google_flow(GOOGLE_REDIRECT_URI)
+    # Dynamically build the redirect URI using the incoming request's scheme and host
+    scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+    redirect_uri = f"{scheme}://{request.url.netloc}/oauth/google/callback"
+
+    flow = _make_google_flow(redirect_uri)
     auth_url, _ = flow.authorization_url(
         access_type="offline",
         prompt="consent",
@@ -138,17 +143,25 @@ async def google_connect(
     )
     # Store PKCE code_verifier + redirect target for callback to use
     _oauth_states[user_id] = (flow.code_verifier, plugin_id, redirect_to)
-    logger.info("Google OAuth connect initiated for user: %s plugin: %s", user_id, plugin_id)
+    logger.info("Google OAuth connect initiated for user: %s plugin: %s redirect_uri: %s", user_id, plugin_id, redirect_uri)
     return RedirectResponse(url=auth_url)
 
 
 @router.get("/oauth/google/callback")
 async def google_callback(
+    request: Request,
     code: str = Query(None),
     state: str = Query(None),
     error: str = Query(None),
 ):
-    dashboard_base = "http://localhost:8000"
+    # Dynamically determine the frontend dashboard base domain
+    origin = request.headers.get("origin") or request.headers.get("referer")
+    if origin:
+        dashboard_base = origin.rstrip("/")
+        if "/oauth/" in dashboard_base:
+            dashboard_base = dashboard_base.split("/oauth/")[0]
+    else:
+        dashboard_base = "https://aios-lovat-two.vercel.app"
 
     if error:
         logger.warning("OAuth error for user %s: %s", state, error)
@@ -166,10 +179,12 @@ async def google_callback(
         plugin_id = parts[1]
 
     try:
-        logger.info("Exchanging code for user %s plugin %s", user_id, plugin_id)
-        flow = _make_google_flow(GOOGLE_REDIRECT_URI)
+        scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+        redirect_uri = f"{scheme}://{request.url.netloc}/oauth/google/callback"
+        logger.info("Exchanging code for user %s plugin %s with redirect_uri %s", user_id, plugin_id, redirect_uri)
+        flow = _make_google_flow(redirect_uri)
         # Restore PKCE code_verifier + redirect_to from connect step
-        redirect_target = dashboard_base + "/plugins?connected=google&user_id=" + urllib.parse.quote(user_id)
+        redirect_target = f"{dashboard_base}/plugins?connected=google&user_id={urllib.parse.quote(user_id)}"
         stored = _oauth_states.pop(user_id, None)
         if stored:
             code_verifier, orig_plugin = stored[0], stored[1]
