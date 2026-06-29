@@ -447,6 +447,18 @@ async def health_check():
     return {"status": "ok", "service": "zed-pro-backend"}
 
 
+@app.get("/api/ping")
+async def api_ping():
+    """Lightweight ping endpoint for cron/keep-alive jobs."""
+    return {"status": "ok", "ts": time.time()}
+
+
+@app.get("/")
+async def root_ping():
+    """Root endpoint — returns OK so external cron jobs don't get 404."""
+    return {"status": "ok", "service": "zed-pro-backend", "ts": time.time()}
+
+
 @app.get("/api/status")
 async def get_status():
     """Health check — shows freellmapi connectivity."""
