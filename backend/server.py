@@ -96,12 +96,12 @@ from tools.registry import discover_builtin_tools
 HOST = "0.0.0.0"
 PORT = 8642  # Vite proxies /v1/* and /api/* to this port
 
-# Direct connection to freellmapi — LOCAL_BYPASS=true allows 127.0.0.1 calls
-# without any API key (no Authorization header = bypass triggers on loopback).
-FREELLMAPI_URL = "http://127.0.0.1:3001/v1/chat/completions"
+# Upstream proxy endpoint configurations
+FREELLMAPI_URL = os.getenv("ZED_PRO_BASE_URL", "http://127.0.0.1:3001/v1").rstrip("/") + "/chat/completions"
 
-# Tell zed-agent's provider router to call freellmapi directly (no auth needed)
-os.environ["ZED_PRO_BASE_URL"] = "http://127.0.0.1:3001/v1"
+# Tell zed-agent's provider router to call freellmapi directly
+if "ZED_PRO_BASE_URL" not in os.environ:
+    os.environ["ZED_PRO_BASE_URL"] = "http://127.0.0.1:3001/v1"
 
 # ── Dynamic Tool Router ──────────────────────────────────────────────────────
 # Maps query intent keywords to enabled toolsets. Router call: ~50 tokens.
@@ -527,16 +527,28 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
 
     if not use_agent:
         payload = build_payload()
-        freellmapi_local = "http://127.0.0.1:3002/v1/chat/completions"
+        # Route dynamically to remote LLM Proxy URL (like Render) if configured.
+        # Otherwise, fall back to local no-auth completions port (3002).
+        base_url = os.getenv("ZED_PRO_BASE_URL")
+        api_key = os.getenv("ZED_PRO_API_KEY", "")
+        
+        if base_url and "127.0.0.1" not in base_url and "localhost" not in base_url:
+            freellmapi_target = base_url.rstrip("/") + "/chat/completions"
+        else:
+            freellmapi_target = "http://127.0.0.1:3002/v1/chat/completions"
+            
+        proxy_headers = {"Content-Type": "application/json"}
+        if api_key:
+            proxy_headers["Authorization"] = f"Bearer {api_key}"
 
         if request.stream:
             async def stream_direct():
                 try:
                     async with _http_client.stream(
                         "POST",
-                        freellmapi_local,
+                        freellmapi_target,
                         json=payload,
-                        headers={"Content-Type": "application/json"},
+                        headers=proxy_headers,
                         timeout=httpx.Timeout(120.0),
                     ) as resp:
                         async for chunk in resp.aiter_bytes():
@@ -559,9 +571,9 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
         else:
             try:
                 resp = await _http_client.post(
-                    freellmapi_local,
+                    freellmapi_target,
                     json=payload,
-                    headers={"Content-Type": "application/json"},
+                    headers=proxy_headers,
                     timeout=120.0,
                 )
                 if not resp.is_success:
