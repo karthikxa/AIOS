@@ -1583,8 +1583,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         appendMessageActions(msgDiv, reply);
       }
+
+      if (subagentStatusBar && currentMode !== 'computer') {
+        subagentStatusBar.style.display = 'none';
+      }
     } catch (err) {
       showStopButton(false);
+      if (subagentStatusBar && currentMode !== 'computer') {
+        subagentStatusBar.style.display = 'none';
+      }
 
       if (err.name === 'AbortError') {
         if (bubble) bubble.innerHTML = '<div style="margin-top:8px;color:#6B7280;font-style:italic;">Generation stopped</div>';
