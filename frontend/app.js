@@ -471,18 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     chatMessagesLog.appendChild(msgDiv);
 
-    if (reasoning && isAssistantFinal) {
-      const cotEl = parseReasoningToCoT(reasoning);
-      if (cotEl) {
-        const cotContainer = document.createElement('div');
-        cotContainer.className = 'cot-message-container';
-        cotContainer.appendChild(cotEl);
-        const bubble = msgDiv.querySelector('.chat-message-bubble');
-        if (bubble) {
-          bubble.after(cotContainer);
-        }
-      }
-    }
+
 
     if (isAssistantFinal) {
       appendMessageActions(msgDiv, text);
@@ -1218,27 +1207,29 @@ document.addEventListener('DOMContentLoaded', () => {
       toggleComputerSplit(true);
     }
 
-    // Show subagent status bar with slide-down pop-up animation
+    // Show subagent status bar with slide-down pop-up animation in computer mode
     const subagentStatusBar = document.getElementById('subagentStatusBar');
     if (subagentStatusBar) {
-      subagentStatusBar.style.display = 'flex';
-      subagentStatusBar.style.opacity = '0';
-      subagentStatusBar.style.transform = 'translateY(-10px)';
-      subagentStatusBar.style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
-      // Trigger layout reflow
-      subagentStatusBar.offsetHeight;
-      subagentStatusBar.style.opacity = '1';
-      subagentStatusBar.style.transform = 'translateY(0)';
-      
-      const subagentStatusText = document.getElementById('subagentStatusText');
-      if (subagentStatusText) {
-        subagentStatusText.textContent = currentMode === 'computer'
-          ? 'Connecting to agent...'
-          : 'Processing...';
-      }
-      const subagentStepCount = document.getElementById('subagentStepCount');
-      if (subagentStepCount) {
-        subagentStepCount.textContent = '2 / 4';
+      if (currentMode === 'computer') {
+        subagentStatusBar.style.display = 'flex';
+        subagentStatusBar.style.opacity = '0';
+        subagentStatusBar.style.transform = 'translateY(-10px)';
+        subagentStatusBar.style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+        // Trigger layout reflow
+        subagentStatusBar.offsetHeight;
+        subagentStatusBar.style.opacity = '1';
+        subagentStatusBar.style.transform = 'translateY(0)';
+        
+        const subagentStatusText = document.getElementById('subagentStatusText');
+        if (subagentStatusText) {
+          subagentStatusText.textContent = 'Connecting to agent...';
+        }
+        const subagentStepCount = document.getElementById('subagentStepCount');
+        if (subagentStepCount) {
+          subagentStepCount.textContent = '0 / ?';
+        }
+      } else {
+        subagentStatusBar.style.display = 'none';
       }
     }
 
@@ -1505,8 +1496,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       let fullContent = '';
-      const cotRenderer = createCoTLiveRenderer();
-      let hasReasoning = false;
       let accumulatedReasoning = '';
 
       let reply = await callRealAPI(model, conversationHistory, (token) => {
@@ -1517,16 +1506,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }, abortController.signal, (reasoningDelta) => {
         accumulatedReasoning += reasoningDelta;
-        if (!hasReasoning) {
-          hasReasoning = true;
-          const cotContainer = document.createElement('div');
-          cotContainer.className = 'cot-message-container';
-          cotContainer.appendChild(cotRenderer.element);
-          bubble.before(cotContainer);
-        }
-        cotRenderer.appendReasoning(reasoningDelta);
-        cotRenderer.parseAndRender();
-        chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
       });
 
       showStopButton(false);
@@ -1536,11 +1515,6 @@ document.addEventListener('DOMContentLoaded', () => {
       let displayText = reply;
       if (connectCardHtml) {
         displayText = reply.replace(/\[CONNECT:[a-z0-9_-]+\]\s*/i, '').trim();
-      }
-
-      if (hasReasoning) {
-        cotRenderer.finalize();
-        chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
       }
 
       if (bubble) {
