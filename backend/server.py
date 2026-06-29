@@ -441,7 +441,14 @@ async def get_status():
     """Health check — shows freellmapi connectivity."""
     freellmapi_ok = False
     try:
-        r = await _http_client.get("http://127.0.0.1:3001/api/ping", timeout=2.0)
+        base_url = os.getenv("ZED_PRO_BASE_URL", "http://127.0.0.1:3001/v1")
+        base_ping_url = base_url.replace("/v1", "") if "/v1" in base_url else base_url
+        api_key = os.getenv("ZED_PRO_API_KEY", "")
+        headers = {}
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+            
+        r = await _http_client.get(f"{base_ping_url.rstrip('/')}/api/ping", headers=headers, timeout=2.0)
         freellmapi_ok = r.status_code == 200
     except Exception:
         pass
@@ -457,14 +464,20 @@ async def get_status():
     }
 
 
-
 # ── Models ───────────────────────────────────────────────────────────────────
 @app.get("/api/models")
 @app.get("/v1/models")
 async def list_models():
     """List available models via freellmapi."""
     try:
-        r = await _http_client.get("http://127.0.0.1:3001/api/models", timeout=5.0)
+        base_url = os.getenv("ZED_PRO_BASE_URL", "http://127.0.0.1:3001/v1")
+        base_ping_url = base_url.replace("/v1", "") if "/v1" in base_url else base_url
+        api_key = os.getenv("ZED_PRO_API_KEY", "")
+        headers = {}
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+
+        r = await _http_client.get(f"{base_ping_url.rstrip('/')}/api/models", headers=headers, timeout=5.0)
         if r.status_code == 200:
             return r.json()
     except Exception:
@@ -633,8 +646,8 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                     model=resolved_model,
                     quiet_mode=True,
                     verbose_logging=False,
-                    base_url="http://127.0.0.1:3001/v1",
-                    api_key="",  # No auth header — LOCAL_BYPASS=true handles 127.0.0.1
+                    base_url=os.getenv("ZED_PRO_BASE_URL", "http://127.0.0.1:3001/v1"),
+                    api_key=os.getenv("ZED_PRO_API_KEY", ""),
                     enabled_toolsets=selected_toolsets,
                     disabled_toolsets=disabled_toolsets,
                 )
@@ -732,8 +745,8 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                 model=resolved_model,
                 quiet_mode=True,
                 verbose_logging=False,
-                base_url="http://127.0.0.1:3001/v1",
-                api_key="",  # No auth header — LOCAL_BYPASS=true handles 127.0.0.1
+                base_url=os.getenv("ZED_PRO_BASE_URL", "http://127.0.0.1:3001/v1"),
+                api_key=os.getenv("ZED_PRO_API_KEY", ""),
                 enabled_toolsets=selected_toolsets,
                 disabled_toolsets=disabled_toolsets,
             )
