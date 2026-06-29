@@ -767,7 +767,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
 
         try:
             result = await asyncio.to_thread(run_agent_sync)
-            final_text = result.get("response", "") if isinstance(result, dict) else str(result)
+            final_text = result.get("final_response", "") if isinstance(result, dict) else str(result)
             return {
                 "id": f"chatcmpl-{session_id}",
                 "object": "chat.completion",

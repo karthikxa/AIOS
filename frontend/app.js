@@ -641,11 +641,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (trimmed.startsWith('data: ')) {
               try {
                 const parsed = JSON.parse(trimmed.slice(6));
+                if (parsed.error) {
+                  throw new Error(parsed.error.message || JSON.stringify(parsed.error));
+                }
                 const delta = parsed.choices?.[0]?.delta?.content || '';
                 const reasoningDelta = parsed.choices?.[0]?.delta?.reasoning_content || '';
                 if (delta) { full += delta; onToken(delta); }
                 if (reasoningDelta && typeof onReasoning === 'function') onReasoning(reasoningDelta);
-              } catch {}
+              } catch (e) {
+                if (parsed && parsed.error) throw e;
+              }
             }
           }
         }
