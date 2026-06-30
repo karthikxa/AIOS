@@ -2394,6 +2394,79 @@ input:checked + .toggle-slider:before {
   }
 }
 
+/* 640px Landscape Phones */
+@media (max-width: 640px) {
+  main.main-content {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  main.main-content:has(.center-container.is-empty) {
+    padding: 60px 10px 0 !important;
+  }
+
+  .center-container {
+    padding: 0 6px;
+  }
+
+  .center-container.is-empty {
+    padding: 80px 10px !important;
+  }
+
+  .center-container.is-active .chat-container {
+    padding: 0 10px !important;
+  }
+
+  .models-page-view,
+  .agent-page-view,
+  .voice-page-view,
+  .create-agent-page-view,
+  .edit-agent-page-view {
+    padding: 20px 4px;
+  }
+
+  .schedules-page-view,
+  .plugins-page-view {
+    padding: 0 0 20px 0;
+  }
+
+  .chat-messages-view {
+    max-width: 100% !important;
+    padding: 0 2px !important;
+  }
+
+  .chat-message.user .chat-message-bubble {
+    max-width: 82% !important;
+  }
+
+  .hero-title {
+    font-size: 32px;
+  }
+
+  .hero-right-visual {
+    display: none !important;
+  }
+
+  .plugins-hero-right-inner {
+    display: none !important;
+  }
+
+  .weekly-grid-card {
+    width: 100% !important;
+    max-width: 280px;
+  }
+
+  .app-card {
+    max-width: 100%;
+  }
+
+  .perplexity-action-pill {
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+    height: 30px !important;
+  }
+}
+
 /* 480px Mobile Devices */
 @media (max-width: 480px) {
   main.main-content {
@@ -2418,22 +2491,16 @@ input:checked + .toggle-slider:before {
   }
 
   .models-page-view,
-  .agent-page-view {
-    padding: 16px 4px;
-  }
-
-  .voice-page-view {
-    padding: 16px 4px;
+  .agent-page-view,
+  .voice-page-view,
+  .create-agent-page-view,
+  .edit-agent-page-view {
+    padding: 16px 2px;
   }
 
   .schedules-page-view,
   .plugins-page-view {
     padding: 0 0 16px 0;
-  }
-
-  .create-agent-page-view,
-  .edit-agent-page-view {
-    padding: 16px 4px;
   }
 
   .hero-title {
@@ -2459,6 +2526,74 @@ input:checked + .toggle-slider:before {
 
   .chat-messages-view {
     padding: 0 4px !important;
+  }
+
+  .chat-message.user .chat-message-bubble {
+    max-width: 85% !important;
+  }
+
+  aside.sidebar {
+    width: 100% !important;
+    max-width: 320px;
+  }
+
+  .schedules-kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 360px Small Phone */
+@media (max-width: 360px) {
+  main.main-content {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
+  main.main-content:has(.center-container.is-empty) {
+    padding: 56px 4px 0 !important;
+  }
+
+  .center-container {
+    padding: 0 2px;
+  }
+
+  .center-container.is-empty {
+    padding: 40px 4px !important;
+  }
+
+  .center-container.is-active .chat-container {
+    padding: 0 4px !important;
+  }
+
+  .models-page-view,
+  .agent-page-view,
+  .voice-page-view,
+  .create-agent-page-view,
+  .edit-agent-page-view {
+    padding: 12px 2px;
+  }
+
+  .hero-title {
+    font-size: 22px;
+  }
+
+  .chat-message.user .chat-message-bubble {
+    max-width: 88% !important;
+  }
+
+  .perplexity-action-pill {
+    font-size: 11px !important;
+    padding: 4px 10px !important;
+    height: 28px !important;
+  }
+
+  .action-pill {
+    font-size: 12px !important;
+    padding: 4px 10px !important;
+  }
+
+  aside.sidebar {
+    max-width: 100%;
   }
 }
 
@@ -9410,6 +9545,22 @@ main.main-content.computer-split-mode {
   padding: 0 !important;
   overflow: hidden !important;
   background-color: #FFFFFF !important;
+}
+
+@media (max-width: 768px) {
+  main.main-content.computer-split-mode {
+    flex-direction: column !important;
+  }
+  main.main-content.computer-split-mode .center-container {
+    width: 100% !important;
+    height: 50% !important;
+    border-right: none !important;
+    border-bottom: 1px solid #E5E7EB !important;
+  }
+  main.main-content.computer-split-mode .computer-split-pane {
+    width: 100% !important;
+    height: 50% !important;
+  }
 }
 
 main.main-content.computer-split-mode .app-header {
