@@ -2601,6 +2601,18 @@ input:checked + .toggle-slider:before {
     font-size: 12px !important;
   }
 
+  .chat-box {
+    overflow: hidden;
+  }
+
+  .chat-right-wrapper {
+    flex-shrink: 1 !important;
+  }
+
+  .model-trigger-btn-new #activeModelName {
+    display: none;
+  }
+
   .chat-messages-view {
     padding: 0 4px !important;
   }
@@ -2679,6 +2691,11 @@ input:checked + .toggle-slider:before {
   .mode-capsule-option {
     padding: 0 8px !important;
     font-size: 11px !important;
+  }
+
+  .chat-right-wrapper {
+    flex-shrink: 1 !important;
+    gap: 4px !important;
   }
 
   aside.sidebar {
@@ -9087,6 +9104,7 @@ input:checked + .toggle-slider:before {
   align-items: center !important;
   gap: 8px !important;
   flex-shrink: 0 !important;
+  min-width: 0 !important;
 }
 
 .model-select-wrapper {

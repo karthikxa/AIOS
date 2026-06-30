@@ -291,8 +291,11 @@ function bindPopularActions() {
   });
 }
 
+let pluginModalOpen = false;
+
 async function openPluginConnectModal(item) {
-  if (document.getElementById('pluginConfigOverlay')) return;
+  if (pluginModalOpen) return;
+  pluginModalOpen = true;
   currentConfigPluginId = item.id;
 
   try {
@@ -843,7 +846,7 @@ function showConfigModal(item, config) {
   const closeBtn = div.querySelector('#cfgCancelBtn');
   const mainConnectBtn = div.querySelector('#cfgMainConnectBtn');
 
-  const destroyModal = () => div.remove();
+  const destroyModal = () => { pluginModalOpen = false; div.remove(); };
 
   closeBtn.addEventListener('click', destroyModal);
   closeBtn.addEventListener('mouseenter', () => { closeBtn.style.backgroundColor = '#F3F4F6'; });
