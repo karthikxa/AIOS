@@ -1507,8 +1507,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // ── Computer mode: agentic loop — LLM + tools + desktop agent ──────
       if (currentMode === 'computer') {
         window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Analyzing' } }));
-        showStopButton(false);
-        clearAllToolIndicators();
+      showStopButton(false);
+      clearAllToolIndicators();
+      clearActiveSteps();
 
         // Status bar
         const statusBar = document.getElementById('subagentStatusBar');
@@ -1702,6 +1703,12 @@ document.addEventListener('DOMContentLoaded', () => {
       let reply = await callRealAPI(model, conversationHistory, (token) => {
         if (!fullContent) {
           window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Writing response' } }));
+          // Remove the old typing placeholder bubble before creating the real one
+          const oldPlaceholder = chatMessagesLog.querySelector('.typing-indicator');
+          if (oldPlaceholder) {
+            const oldMsg = oldPlaceholder.closest('.chat-message');
+            if (oldMsg) oldMsg.remove();
+          }
           // Create the assistant bubble now that we are streaming
           appendMessage('assistant', '');
           msgDiv = chatMessagesLog.lastElementChild;
@@ -2261,7 +2268,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!chatMessagesLog) return;
 
     // Remove any simple typing placeholder bubbles if we are showing the premium typing status
-    const existingPlaceholder = chatMessagesLog.querySelector('.typing-placeholder');
+    const existingPlaceholder = chatMessagesLog.querySelector('.typing-placeholder, .typing-indicator');
     if (existingPlaceholder) {
       existingPlaceholder.closest('.chat-message')?.remove();
     }
@@ -2400,6 +2407,14 @@ document.addEventListener('DOMContentLoaded', () => {
         container.remove();
       }, 250);
       typingStatusContainer = null;
+    }
+    // Also remove any lingering typing indicator bubbles
+    if (chatMessagesLog) {
+      const staleTyping = chatMessagesLog.querySelectorAll('.typing-indicator, .typing-placeholder');
+      staleTyping.forEach(el => {
+        const msg = el.closest('.chat-message');
+        if (msg) msg.remove();
+      });
     }
   }
 
