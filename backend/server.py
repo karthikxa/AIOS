@@ -653,7 +653,11 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                 loop.call_soon_threadsafe(q.put_nowait, ("reasoning", reasoning))
 
         def tool_start_cb(tool_call_id, function_name, function_args):
-            loop.call_soon_threadsafe(q.put_nowait, ("tool_start", {"id": tool_call_id, "name": function_name, "args": function_args}))
+            try:
+                safe_args = json.loads(json.dumps(function_args, default=str))
+            except Exception:
+                safe_args = str(function_args)[:500]
+            loop.call_soon_threadsafe(q.put_nowait, ("tool_start", {"id": tool_call_id, "name": function_name, "args": safe_args}))
 
         def tool_complete_cb(tool_call_id, function_name, function_args, result):
             loop.call_soon_threadsafe(q.put_nowait, ("tool_complete", {"id": tool_call_id, "name": function_name}))
