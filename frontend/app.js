@@ -454,24 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
       appendMessageActions(msgDiv, text, 'user');
     } else if (isAssistantFinal) {
       appendMessageActions(msgDiv, text, 'assistant');
-      // Wire artifact buttons
-      msgDiv.querySelectorAll('.view-artifact-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const codeBlocks = extractCodeBlocks(text);
-          const idx = Array.from(msgDiv.querySelectorAll('.view-artifact-btn')).indexOf(btn);
-          const block = codeBlocks[idx];
-          if (block) openArtifact(block.lang, block.code);
-        });
-      });
-      // Wire copy-code buttons
-      msgDiv.querySelectorAll('.copy-code-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const code = btn.dataset.code;
-          navigator.clipboard.writeText(code).catch(() => {});
-          btn.textContent = 'Copied!';
-          setTimeout(() => btn.textContent = 'Copy', 1500);
-        });
-      });
+      wireCodeBlockActions(msgDiv);
     }
 
     chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
@@ -510,6 +493,185 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeArtifact() {
     artifactPanel.style.width = '0px';
     setTimeout(() => { artifactPanel.style.display = 'none'; }, 250);
+  }
+
+  function wireCodeBlockActions(container) {
+    if (!container) return;
+
+    // 1. Wire copy-code buttons
+    container.querySelectorAll('.copy-code-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const code = btn.dataset.code || '';
+        navigator.clipboard.writeText(code).then(() => {
+          const originalText = btn.textContent;
+          btn.textContent = 'Copied!';
+          btn.style.background = 'rgba(16, 185, 129, 0.2)';
+          btn.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = 'rgba(255,255,255,0.05)';
+            btn.style.borderColor = 'rgba(255,255,255,0.1)';
+          }, 1500);
+        }).catch(err => {
+          console.error('Failed to copy text: ', err);
+        });
+      });
+    });
+
+    // 2. Wire download-code-btn
+    container.querySelectorAll('.download-code-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const box = btn.closest('.code-artifact-box');
+        if (!box) return;
+        const copyBtn = box.querySelector('.copy-code-btn');
+        const code = copyBtn ? copyBtn.dataset.code : '';
+        const langLabel = box.querySelector('.code-lang-label');
+        const lang = langLabel ? langLabel.textContent.toLowerCase().trim() : 'text';
+        
+        const ext = { 
+          javascript: 'js', js: 'js', 
+          typescript: 'ts', ts: 'ts', 
+          python: 'py', py: 'py', 
+          html: 'html', css: 'css', 
+          json: 'json', xml: 'xml', 
+          markdown: 'md', md: 'md', 
+          bash: 'sh', sh: 'sh', shell: 'sh', 
+          sql: 'sql', rust: 'rs', rs: 'rs', 
+          go: 'go', java: 'java', cpp: 'cpp', c: 'c', 
+          ruby: 'rb', php: 'php' 
+        };
+        const filename = `code.${ext[lang] || 'txt'}`;
+        const blob = new Blob([code], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(a.href);
+
+        // Visual feedback
+        const originalText = btn.textContent;
+        btn.textContent = 'Downloaded!';
+        btn.style.background = 'rgba(59, 130, 246, 0.2)';
+        btn.style.borderColor = 'rgba(59, 130, 246, 0.4)';
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = 'rgba(255,255,255,0.05)';
+          btn.style.borderColor = 'rgba(255,255,255,0.1)';
+        }, 1500);
+      });
+    });
+
+    // 3. Wire share-code-btn
+    container.querySelectorAll('.share-code-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const box = btn.closest('.code-artifact-box');
+        if (!box) return;
+        const copyBtn = box.querySelector('.copy-code-btn');
+        const code = copyBtn ? copyBtn.dataset.code : '';
+        const langLabel = box.querySelector('.code-lang-label');
+        const lang = langLabel ? langLabel.textContent.toUpperCase().trim() : 'TEXT';
+
+        const shareText = `// Shareable Code Snippet (${lang})\n${code}`;
+        navigator.clipboard.writeText(shareText).then(() => {
+          const originalText = btn.textContent;
+          btn.textContent = 'Link Copied!';
+          btn.style.background = 'rgba(139, 92, 246, 0.2)';
+          btn.style.borderColor = 'rgba(139, 92, 246, 0.4)';
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = 'rgba(255,255,255,0.05)';
+            btn.style.borderColor = 'rgba(255,255,255,0.1)';
+          }, 1500);
+        }).catch(() => {});
+      });
+    });
+
+    // 4. Wire edit-code-btn
+    container.querySelectorAll('.edit-code-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const box = btn.closest('.code-artifact-box');
+        if (!box) return;
+        
+        const viewEl = box.querySelector('.code-content-view');
+        const editEl = box.querySelector('.code-content-edit');
+        const editFooter = box.querySelector('.code-edit-footer');
+        const headerActions = box.querySelector('.code-artifact-actions');
+        const copyBtn = box.querySelector('.copy-code-btn');
+
+        if (viewEl && editEl && editFooter && headerActions && copyBtn) {
+          editEl.value = copyBtn.dataset.code || '';
+          viewEl.style.display = 'none';
+          editEl.style.display = 'block';
+          editFooter.style.display = 'flex';
+          headerActions.style.visibility = 'hidden';
+          editEl.focus();
+        }
+      });
+    });
+
+    // 5. Wire cancel-edit-btn
+    container.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const box = btn.closest('.code-artifact-box');
+        if (!box) return;
+
+        const viewEl = box.querySelector('.code-content-view');
+        const editEl = box.querySelector('.code-content-edit');
+        const editFooter = box.querySelector('.code-edit-footer');
+        const headerActions = box.querySelector('.code-artifact-actions');
+
+        if (viewEl && editEl && editFooter && headerActions) {
+          viewEl.style.display = 'block';
+          editEl.style.display = 'none';
+          editFooter.style.display = 'none';
+          headerActions.style.visibility = 'visible';
+        }
+      });
+    });
+
+    // 6. Wire save-edit-btn
+    container.querySelectorAll('.save-edit-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const box = btn.closest('.code-artifact-box');
+        if (!box) return;
+
+        const viewEl = box.querySelector('.code-content-view');
+        const editEl = box.querySelector('.code-content-edit');
+        const editFooter = box.querySelector('.code-edit-footer');
+        const headerActions = box.querySelector('.code-artifact-actions');
+        const copyBtn = box.querySelector('.copy-code-btn');
+
+        if (viewEl && editEl && editFooter && headerActions && copyBtn) {
+          const newCode = editEl.value;
+          copyBtn.dataset.code = newCode;
+          const escapedCode = newCode.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          viewEl.innerHTML = escapedCode;
+          viewEl.style.display = 'block';
+          editEl.style.display = 'none';
+          editFooter.style.display = 'none';
+          headerActions.style.visibility = 'visible';
+        }
+      });
+    });
+
+    // 7. Wire view-artifact-btn
+    container.querySelectorAll('.view-artifact-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const box = btn.closest('.code-artifact-box');
+        if (!box) return;
+        const copyBtn = box.querySelector('.copy-code-btn');
+        const code = copyBtn ? copyBtn.dataset.code : '';
+        const lang = btn.dataset.lang || 'text';
+        openArtifact(lang, code);
+      });
+    });
   }
 
   /**
@@ -1333,8 +1495,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Show typing indicator
     appendMessage('assistant', '<div class="typing-placeholder"></div>');
-    const msgDiv = chatMessagesLog.lastElementChild;
-    const bubble = msgDiv.querySelector('.chat-message-bubble');
+    let msgDiv = chatMessagesLog.lastElementChild;
+    let bubble = msgDiv.querySelector('.chat-message-bubble');
     bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
 
     abortController = new AbortController();
@@ -1540,6 +1702,14 @@ document.addEventListener('DOMContentLoaded', () => {
       let reply = await callRealAPI(model, conversationHistory, (token) => {
         if (!fullContent) {
           window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Writing response' } }));
+          // Create the assistant bubble now that we are streaming
+          appendMessage('assistant', '');
+          msgDiv = chatMessagesLog.lastElementChild;
+          bubble = msgDiv.querySelector('.chat-message-bubble');
+          // Move the active status container to the bottom
+          if (typingStatusContainer && typingStatusContainer.parentNode === chatMessagesLog) {
+            chatMessagesLog.appendChild(typingStatusContainer);
+          }
         }
         fullContent += token;
         if (bubble) {
@@ -1568,7 +1738,7 @@ document.addEventListener('DOMContentLoaded', () => {
         displayText = reply.replace(/\[CONNECT:[a-z0-9_-]+\]\s*/i, '').trim();
       }
 
-      if (bubble) {
+      if (bubble && bubble.parentNode) {
         bubble.innerHTML = renderMarkdown(displayText || '');
         bubble.classList.remove('error-bubble');
       }
@@ -1586,26 +1756,11 @@ document.addEventListener('DOMContentLoaded', () => {
         openArtifact(blocks[0].lang, blocks[0].code);
       }
 
-      if (bubble) {
+      if (bubble && bubble.parentNode) {
         const markdownHtml = renderMarkdown(reply);
         bubble.innerHTML = markdownHtml;
 
-        bubble.querySelectorAll('.view-artifact-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const codeBlocks = extractCodeBlocks(reply);
-            const idx = Array.from(bubble.querySelectorAll('.view-artifact-btn')).indexOf(btn);
-            const block = codeBlocks[idx];
-            if (block) openArtifact(block.lang, block.code);
-          });
-        });
-        bubble.querySelectorAll('.copy-code-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const code = btn.dataset.code;
-            navigator.clipboard.writeText(code).catch(() => {});
-            btn.textContent = 'Copied!';
-            setTimeout(() => btn.textContent = 'Copy', 1500);
-          });
-        });
+        wireCodeBlockActions(bubble);
         appendMessageActions(msgDiv, reply);
       }
 
@@ -1620,10 +1775,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (err.name === 'AbortError') {
-        if (bubble) bubble.innerHTML = '<div style="margin-top:8px;color:#6B7280;font-style:italic;">Generation stopped</div>';
+        if (bubble && bubble.parentNode) {
+          bubble.innerHTML = '<div style="margin-top:8px;color:#6B7280;font-style:italic;">Generation stopped</div>';
+        } else {
+          appendMessage('assistant', '<div style="margin-top:8px;color:#6B7280;font-style:italic;">Generation stopped</div>');
+        }
         return;
       }
-      if (bubble) {
+      if (bubble && bubble.parentNode) {
         bubble.classList.add('error-bubble');
         bubble.innerHTML = `<span class="error-title">Connection Failed</span><span class="error-desc">${DOMPurify.sanitize(err.message)}</span>`;
       } else {
@@ -2122,19 +2281,44 @@ document.addEventListener('DOMContentLoaded', () => {
       
       let iconHtml = '';
       if (step.status === 'in_progress') {
-        iconHtml = `
-          <svg class="status-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="3" style="animation: spin 1s linear infinite; flex-shrink: 0;">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-dasharray="32" stroke-linecap="round" style="opacity: 0.25;"/>
-            <path d="M12 2 C 6.48 2 2 6.48 2 12" stroke="currentColor" stroke-linecap="round"/>
-          </svg>
-        `;
+        if (step.icon === 'gmail') {
+          iconHtml = `
+            <div class="gmail-icon-container" style="position: relative; width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg class="gmail-logo" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation: pulse 1.5s ease-in-out infinite; flex-shrink: 0;">
+                <path d="M20 4H18V13.5L12 9.5L6 13.5V4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H6V10.5L12 14.5L18 10.5V20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4Z" fill="#EA4335"/>
+                <path d="M4 20H6V10.5L2 7.5V18C2 19.1 2.9 20 4 20Z" fill="#34A853"/>
+                <path d="M20 20H18V10.5L22 7.5V18C22 19.1 21.1 20 20 20Z" fill="#4285F4"/>
+                <path d="M18 4H20C21.1 4 22 4.9 22 6V7.5L18 4.5V4Z" fill="#FBBC05"/>
+                <path d="M6 4H4C2.9 4 2 4.9 2 6V7.5L6 4.5V4Z" fill="#FBBC05"/>
+              </svg>
+            </div>
+          `;
+        } else {
+          iconHtml = `
+            <svg class="status-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.5" style="animation: spin 1.2s linear infinite; flex-shrink: 0;">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-dasharray="4 4" stroke-linecap="round"/>
+            </svg>
+          `;
+        }
       } else {
         if (step.icon === 'lightbulb') {
           iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`;
         } else if (step.icon === 'eye') {
           iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+        } else if (step.icon === 'search') {
+          iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
         } else if (step.icon === 'terminal') {
           iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`;
+        } else if (step.icon === 'gmail') {
+          iconHtml = `
+            <svg class="gmail-logo" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0; vertical-align: middle;">
+              <path d="M20 4H18V13.5L12 9.5L6 13.5V4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H6V10.5L12 14.5L18 10.5V20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4Z" fill="#EA4335"/>
+              <path d="M4 20H6V10.5L2 7.5V18C2 19.1 2.9 20 4 20Z" fill="#34A853"/>
+              <path d="M20 20H18V10.5L22 7.5V18C22 19.1 21.1 20 20 20Z" fill="#4285F4"/>
+              <path d="M18 4H20C21.1 4 22 4.9 22 6V7.5L18 4.5V4Z" fill="#FBBC05"/>
+              <path d="M6 4H4C2.9 4 2 4.9 2 6V7.5L6 4.5V4Z" fill="#FBBC05"/>
+            </svg>
+          `;
         } else {
           iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
         }
@@ -2165,6 +2349,17 @@ document.addEventListener('DOMContentLoaded', () => {
             </svg>
             <span style="vertical-align: middle;">${step.badge}</span>
           `;
+        } else if (step.icon === 'gmail' || step.name?.includes('gmail')) {
+          badgeSpan.innerHTML = `
+            <svg class="gmail-logo" width="11" height="11" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 4px; display: inline-block; vertical-align: middle; flex-shrink: 0;">
+              <path d="M20 4H18V13.5L12 9.5L6 13.5V4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H6V10.5L12 14.5L18 10.5V20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4Z" fill="#EA4335"/>
+              <path d="M4 20H6V10.5L2 7.5V18C2 19.1 2.9 20 4 20Z" fill="#34A853"/>
+              <path d="M20 20H18V10.5L22 7.5V18C22 19.1 21.1 20 20 20Z" fill="#4285F4"/>
+              <path d="M18 4H20C21.1 4 22 4.9 22 6V7.5L18 4.5V4Z" fill="#FBBC05"/>
+              <path d="M6 4H4C2.9 4 2 4.9 2 6V7.5L6 4.5V4Z" fill="#FBBC05"/>
+            </svg>
+            <span style="vertical-align: middle;">${step.badge}</span>
+          `;
         } else {
           badgeSpan.textContent = step.badge;
         }
@@ -2174,7 +2369,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (step.text) {
         const textSpan = document.createElement('span');
         textSpan.className = 'step-text';
-        textSpan.textContent = ' ' + step.text;
+        textSpan.textContent = (step.title ? ' ' : '') + step.text;
         if (step.status === 'complete') {
           textSpan.style.color = '#9CA3AF';
         } else {
@@ -2199,7 +2394,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function clearActiveSteps() {
     activeSteps = [];
     if (typingStatusContainer) {
-      typingStatusContainer.remove();
+      const container = typingStatusContainer;
+      container.classList.add('fade-out');
+      setTimeout(() => {
+        container.remove();
+      }, 250);
       typingStatusContainer = null;
     }
   }
@@ -2235,7 +2434,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let badgeText = '';
     let text = '';
 
-    if (toolName === 'web_search') {
+    const nameLower = toolName.toLowerCase();
+    if (nameLower.includes('gmail') || nameLower.includes('email')) {
+      title = 'Gmail';
+      icon = 'gmail';
+      if (nameLower.includes('search')) {
+        text = 'Searching emails...';
+        badgeText = args.query ? `Search: "${args.query}"` : 'Gmail Search';
+      } else if (nameLower.includes('get') || nameLower.includes('read')) {
+        text = 'Fetching email details...';
+        badgeText = args.message_id || 'Email Detail';
+      } else if (nameLower.includes('send') || nameLower.includes('draft') || nameLower.includes('compose')) {
+        text = 'Writing draft/sending...';
+        badgeText = 'Compose';
+      } else {
+        text = 'Accessing emails...';
+        badgeText = 'Gmail';
+      }
+    } else if (toolName === 'web_search') {
       title = 'Searching';
       icon = 'search';
       badgeText = args.query || 'Web Search';

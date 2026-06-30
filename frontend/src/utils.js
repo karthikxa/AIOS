@@ -4,9 +4,37 @@ export function renderMarkdown(text) {
   let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   // Code blocks
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
-    const langLabel = lang ? `<span style="font-size:11px;color:#6B7280;padding:2px 10px;background:#F3F4F6;border-radius:4px 4px 0 0;display:inline-block;font-family:monospace;">${lang}</span>` : '';
-    const safeCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-    return `<div style="margin:10px 0;border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;">${langLabel}<pre style="background:#1E1E2E;color:#CDD6F4;padding:14px;margin:0;overflow-x:auto;font-size:13px;line-height:1.5;font-family:'JetBrains Mono',monospace;">${safeCode}</pre><div style="display:flex;gap:6px;padding:6px 10px;background:#F9FAFB;border-top:1px solid #E5E7EB;"><button class="view-artifact-btn" data-lang="${lang}" style="background:none;border:1px solid #D1D5DB;border-radius:5px;padding:3px 10px;font-size:12px;cursor:pointer;color:#374151;">Open in Artifact</button><button class="copy-code-btn" data-code="${safeCode.replace(/"/g, '&quot;')}" style="background:none;border:1px solid #D1D5DB;border-radius:5px;padding:3px 10px;font-size:12px;cursor:pointer;color:#374151;">Copy</button></div></div>`;
+    const safeCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const rawCodeEscaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+    const langLabel = lang || 'code';
+    
+    return `<div class="code-artifact-box" style="margin: 16px 0; background: rgba(30, 30, 46, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);">
+  <div class="code-artifact-header" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: rgba(26, 26, 38, 0.85); border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="width: 10px; height: 10px; border-radius: 50%; background: #FF5F56; display: inline-block;"></span>
+      <span style="width: 10px; height: 10px; border-radius: 50%; background: #FFBD2E; display: inline-block;"></span>
+      <span style="width: 10px; height: 10px; border-radius: 50%; background: #27C93F; display: inline-block;"></span>
+      <span class="code-lang-label" style="margin-left: 12px; font-size: 11px; color: #9CA3AF; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">${langLabel}</span>
+    </div>
+    <div class="code-artifact-actions" style="display: flex; gap: 6px; align-items: center;">
+      <button class="code-btn edit-code-btn" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; color: #E0E0E6; transition: all 0.2s; font-family: inherit;">Edit</button>
+      <button class="code-btn share-code-btn" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; color: #E0E0E6; transition: all 0.2s; font-family: inherit;">Share</button>
+      <button class="code-btn download-code-btn" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; color: #E0E0E6; transition: all 0.2s; font-family: inherit;">Download</button>
+      <button class="code-btn copy-code-btn" data-code="${rawCodeEscaped}" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; color: #E0E0E6; transition: all 0.2s; font-family: inherit;">Copy</button>
+    </div>
+  </div>
+  <div class="code-content-wrapper" style="position: relative; background: #1E1E2E;">
+    <pre class="code-content-view" style="color: #CDD6F4; padding: 16px; margin: 0; overflow-x: auto; font-size: 13px; line-height: 1.6; font-family: 'JetBrains Mono', monospace; background: transparent;">${safeCode}</pre>
+    <textarea class="code-content-edit" style="display: none; width: 100%; min-height: 150px; background: #151520; color: #CDD6F4; border: none; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; outline: none; resize: vertical; box-sizing: border-box;"></textarea>
+  </div>
+  <div class="code-edit-footer" style="display: none; justify-content: flex-end; gap: 8px; padding: 8px 16px; background: rgba(20, 20, 30, 0.9); border-top: 1px solid rgba(255, 255, 255, 0.05);">
+    <button class="code-btn cancel-edit-btn" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 5px 12px; font-size: 12px; cursor: pointer; color: #E0E0E6; font-family: inherit;">Cancel</button>
+    <button class="code-btn save-edit-btn" style="background: #3B82F6; border: none; border-radius: 6px; padding: 5px 12px; font-size: 12px; cursor: pointer; color: white; font-weight: 500; font-family: inherit;">Save</button>
+  </div>
+  <div class="code-artifact-footer" style="display: flex; gap: 8px; padding: 8px 16px; background: rgba(20, 20, 30, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.05); align-items: center;">
+    <button class="code-btn view-artifact-btn" data-lang="${lang}" style="background: none; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; color: #A6ADC8; transition: all 0.2s; font-family: inherit;">Open in Artifact</button>
+  </div>
+</div>`;
   });
   // Tables
   html = html.replace(/\n((\|[^\n]+\|\n)((\|[^\n]+\|\n?))+)/g, (match) => {
@@ -44,7 +72,7 @@ export function renderMarkdown(text) {
   html = html.replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #E5E7EB;margin:16px 0;">');
   // Line breaks
   html = html.replace(/\n/g, '<br>');
-  return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['div', 'span', 'pre', 'code', 'br', 'strong', 'em', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'a', 'button', 'hr', 'ul', 'li', 'ol', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'text'], ALLOWED_ATTR: ['style', 'class', 'id', 'href', 'target', 'rel', 'src', 'alt', 'title', 'data-lang', 'data-code', 'width', 'height', 'viewbox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'xmlns', 'd', 'cx', 'cy', 'r', 'x1', 'x2', 'y1', 'y2', 'font-family', 'font-weight', 'font-size', 'dominant-baseline', 'text-anchor'] });
+  return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['div', 'span', 'pre', 'code', 'textarea', 'br', 'strong', 'em', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'a', 'button', 'hr', 'ul', 'li', 'ol', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'text'], ALLOWED_ATTR: ['style', 'class', 'id', 'href', 'target', 'rel', 'src', 'alt', 'title', 'data-lang', 'data-code', 'width', 'height', 'viewbox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'xmlns', 'd', 'cx', 'cy', 'r', 'x1', 'x2', 'y1', 'y2', 'font-family', 'font-weight', 'font-size', 'dominant-baseline', 'text-anchor'] });
 }
 
 export function extractCodeBlocks(text) {
