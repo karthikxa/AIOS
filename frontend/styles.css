@@ -1609,10 +1609,17 @@ header.app-header {
 .message-actions {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   margin-top: 6px;
   opacity: 0;
   transition: opacity 0.15s;
+}
+.chat-message.user {
+  flex-direction: column !important;
+  align-items: flex-end !important;
+}
+.chat-message.user .message-actions {
+  justify-content: flex-end;
 }
 .chat-message:hover .message-actions {
   opacity: 1;
@@ -3198,18 +3205,20 @@ input:checked + .toggle-slider:before {
 
 .chat-message {
   display: flex;
-  gap: var(--space-sm, 12px);
+  flex-direction: column;
+  gap: 4px;
   max-width: 100% !important;
   animation: none;
 }
 
 .chat-message.user {
   align-self: flex-end;
-  flex-direction: row-reverse;
+  align-items: flex-end;
 }
 
 .chat-message.assistant {
   align-self: flex-start;
+  align-items: flex-start;
 }
 
 .chat-message-avatar {
@@ -8394,9 +8403,11 @@ input:checked + .toggle-slider:before {
 .message-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: -8px !important;
-  margin-bottom: 32px; /* Gap between actions and input box/next items */
+  gap: 6px;
+  margin-top: 4px;
+}
+.chat-message.user .message-actions {
+  justify-content: flex-end;
 }
 
 .msg-action-btn {
