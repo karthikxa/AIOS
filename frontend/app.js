@@ -1508,12 +1508,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Send action to desktop agent via WebSocket
-            window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Coding' } }));
+            window.dispatchEvent(new CustomEvent('agent-tool-start', { detail: { name: actionName, id: 'comp-' + step, args: args } }));
             toggleComputerSplit(true);
             ws.send(JSON.stringify({ type: 'task', text: `execute:${JSON.stringify({ action: actionName, ...args })}` }));
 
             // Wait for screen result
             const screenResult = await waitForScreen();
+            window.dispatchEvent(new CustomEvent('agent-tool-complete', { detail: { name: actionName, id: 'comp-' + step } }));
 
             // Feed result back to LLM
             messages.push({
@@ -1550,10 +1551,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }, (toolUsage) => {
         if (toolUsage.type === 'tool_start') {
           showToolIndicator(toolUsage.name);
-          window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Analyzing' } }));
+          window.dispatchEvent(new CustomEvent('agent-tool-start', { detail: { name: toolUsage.name, id: toolUsage.id, args: toolUsage.args || {} } }));
         } else if (toolUsage.type === 'tool_complete') {
           hideToolIndicator(toolUsage.name);
-          window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Synthesizing' } }));
+          window.dispatchEvent(new CustomEvent('agent-tool-complete', { detail: { name: toolUsage.name, id: toolUsage.id } }));
         }
       });
 
@@ -2094,77 +2095,223 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Real-time Agent Typing / Thinking Status Updates ─────────────────
+  let activeSteps = [];
   let typingStatusContainer = null;
-  
-  function getBadgeStyle(status) {
-    const s = status.toLowerCase();
-    if (s.includes('plan')) {
-      return { bg: '#EFF6FF', fg: '#1D4ED8', border: '#BFDBFE' };
-    } else if (s.includes('analyz') || s.includes('think')) {
-      return { bg: '#F5F3FF', fg: '#6D28D9', border: '#DDD6FE' };
-    } else if (s.includes('code') || s.includes('execut')) {
-      return { bg: '#ECFDF5', fg: '#047857', border: '#A7F3D0' };
-    } else if (s.includes('refactor') || s.includes('rewrit')) {
-      return { bg: '#FFF7ED', fg: '#C2410C', border: '#FED7AA' };
-    } else if (s.includes('synthesiz')) {
-      return { bg: '#EEF2FF', fg: '#4338CA', border: '#C7D2FE' };
-    } else if (s.includes('writ') || s.includes('respond')) {
-      return { bg: '#F0FDFA', fg: '#0F766E', border: '#99F6E4' };
-    }
-    // Default
-    return { bg: '#F3F4F6', fg: '#374151', border: '#E5E7EB' };
-  }
 
-  function showAgentTypingStatus(statusText = 'Thinking') {
+  function renderActiveSteps() {
     if (!chatMessagesLog) return;
-    
-    // Remove existing typing status if any
-    hideAgentTypingStatus();
 
     // Remove any simple typing placeholder bubbles if we are showing the premium typing status
     const existingPlaceholder = chatMessagesLog.querySelector('.typing-placeholder');
     if (existingPlaceholder) {
       existingPlaceholder.closest('.chat-message')?.remove();
     }
-    
-    typingStatusContainer = document.createElement('div');
-    typingStatusContainer.className = 'chat-typing-status-container';
-    typingStatusContainer.id = 'chatTypingStatusContainer';
-    
-    const colors = getBadgeStyle(statusText);
-    
-    typingStatusContainer.innerHTML = `
-      <div class="status-item">
-        <svg class="status-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="animation: spin 1s linear infinite; color: #3B82F6; flex-shrink: 0;">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-dasharray="32" stroke-linecap="round" style="opacity: 0.25;"/>
-          <path d="M12 2 C 6.48 2 2 6.48 2 12" stroke="currentColor" stroke-linecap="round"/>
-        </svg>
-        <span style="font-weight: 500; color: #374151;">Agent is active:</span>
-        <span class="status-badge" style="background: ${colors.bg}; color: ${colors.fg}; border: 1px solid ${colors.border};">${statusText}</span>
-      </div>
-    `;
-    
-    chatMessagesLog.appendChild(typingStatusContainer);
+
+    if (!typingStatusContainer) {
+      typingStatusContainer = document.createElement('div');
+      typingStatusContainer.className = 'chat-typing-status-container';
+      typingStatusContainer.id = 'chatTypingStatusContainer';
+      chatMessagesLog.appendChild(typingStatusContainer);
+    }
+
+    typingStatusContainer.innerHTML = '';
+
+    activeSteps.forEach(step => {
+      const row = document.createElement('div');
+      row.className = 'status-step-row';
+      
+      let iconHtml = '';
+      if (step.status === 'in_progress') {
+        iconHtml = `
+          <svg class="status-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="3" style="animation: spin 1s linear infinite; flex-shrink: 0;">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-dasharray="32" stroke-linecap="round" style="opacity: 0.25;"/>
+            <path d="M12 2 C 6.48 2 2 6.48 2 12" stroke="currentColor" stroke-linecap="round"/>
+          </svg>
+        `;
+      } else {
+        if (step.icon === 'lightbulb') {
+          iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`;
+        } else if (step.icon === 'eye') {
+          iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+        } else if (step.icon === 'terminal') {
+          iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`;
+        } else {
+          iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+        }
+      }
+
+      const iconContainer = document.createElement('div');
+      iconContainer.className = 'step-icon';
+      iconContainer.innerHTML = iconHtml;
+      row.appendChild(iconContainer);
+
+      const titleSpan = document.createElement('span');
+      titleSpan.className = 'step-title';
+      titleSpan.textContent = step.title;
+      if (step.status === 'complete') {
+        titleSpan.style.color = '#9CA3AF';
+      } else {
+        titleSpan.style.color = '#374151';
+      }
+      row.appendChild(titleSpan);
+
+      if (step.badge) {
+        const badgeSpan = document.createElement('span');
+        badgeSpan.className = 'step-badge';
+        if (step.icon === 'eye' || step.name === 'browser') {
+          badgeSpan.innerHTML = `
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 4px; display: inline-block; vertical-align: middle;">
+              <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+            </svg>
+            <span style="vertical-align: middle;">${step.badge}</span>
+          `;
+        } else {
+          badgeSpan.textContent = step.badge;
+        }
+        row.appendChild(badgeSpan);
+      }
+
+      if (step.text) {
+        const textSpan = document.createElement('span');
+        textSpan.className = 'step-text';
+        textSpan.textContent = ' ' + step.text;
+        if (step.status === 'complete') {
+          textSpan.style.color = '#9CA3AF';
+        } else {
+          textSpan.style.color = '#374151';
+        }
+        row.appendChild(textSpan);
+      }
+
+      if (step.status === 'complete' && !step.text && step.title === 'Thought') {
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'step-status-completed';
+        statusSpan.textContent = ' Completed';
+        row.appendChild(statusSpan);
+      }
+
+      typingStatusContainer.appendChild(row);
+    });
+
     chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
   }
 
-  function hideAgentTypingStatus() {
+  function clearActiveSteps() {
+    activeSteps = [];
     if (typingStatusContainer) {
       typingStatusContainer.remove();
       typingStatusContainer = null;
     }
-    const containerEl = document.getElementById('chatTypingStatusContainer');
-    if (containerEl) {
-      containerEl.remove();
+  }
+
+  function addThoughtStep() {
+    if (activeSteps.length === 0) {
+      activeSteps.push({
+        id: 'thought',
+        name: 'thought',
+        title: 'Thought',
+        icon: 'lightbulb',
+        status: 'in_progress',
+        badge: '',
+        text: ''
+      });
+      renderActiveSteps();
+    }
+  }
+
+  function completeThoughtStep() {
+    const step = activeSteps.find(s => s.id === 'thought');
+    if (step) {
+      step.status = 'complete';
+      renderActiveSteps();
+    }
+  }
+
+  function startToolStep(toolName, id, args = {}) {
+    completeThoughtStep();
+
+    let title = TOOL_LABELS[toolName] || toolName;
+    let icon = 'terminal';
+    let badgeText = '';
+    let text = '';
+
+    if (toolName === 'web_search') {
+      title = 'Searching';
+      icon = 'search';
+      badgeText = args.query || 'Web Search';
+    } else if (toolName === 'browser' || toolName === 'navigate' || toolName === 'get_screen' || toolName === 'click' || toolName === 'type') {
+      title = 'Viewed';
+      icon = 'eye';
+      
+      let url = args.url || '';
+      if (url) {
+        if (url.includes('demo') || url.includes('onboarding')) {
+          badgeText = 'Onboarding Demo';
+        } else {
+          try {
+            badgeText = new URL(url).hostname;
+          } catch {
+            badgeText = url;
+          }
+        }
+      } else {
+        badgeText = 'Onboarding Demo';
+      }
+    } else if (toolName === 'terminal' || toolName === 'shell' || toolName === 'code_execution') {
+      icon = 'terminal';
+      const cmd = args.command || '';
+      if (cmd.includes('workflow') || cmd.includes('project')) {
+        text = 'Generating project workflow...';
+      } else if (cmd) {
+        text = cmd.length > 40 ? cmd.slice(0, 37) + '...' : cmd;
+      } else {
+        text = 'Generating project workflow...';
+      }
+      title = '';
+    }
+
+    let stepObj = activeSteps.find(s => s.id === id);
+    if (!stepObj) {
+      stepObj = { id, name: toolName, title, icon, status: 'in_progress', badge: badgeText, text };
+      activeSteps.push(stepObj);
+    } else {
+      stepObj.status = 'in_progress';
+      stepObj.title = title;
+      stepObj.icon = icon;
+      stepObj.badge = badgeText;
+      stepObj.text = text;
+    }
+    renderActiveSteps();
+  }
+
+  function completeToolStep(id) {
+    const step = activeSteps.find(s => s.id === id);
+    if (step) {
+      step.status = 'complete';
+      renderActiveSteps();
     }
   }
 
   window.addEventListener('agent-typing-start', (e) => {
     const status = e.detail?.status || 'Thinking';
-    showAgentTypingStatus(status);
+    if (status === 'Planning' || status === 'Analyzing') {
+      addThoughtStep();
+    } else if (status === 'Writing response' || status === 'Synthesizing') {
+      completeThoughtStep();
+    }
+  });
+
+  window.addEventListener('agent-tool-start', (e) => {
+    const { name, id, args } = e.detail || {};
+    if (name) startToolStep(name, id, args);
+  });
+
+  window.addEventListener('agent-tool-complete', (e) => {
+    const { id } = e.detail || {};
+    if (id) completeToolStep(id);
   });
 
   window.addEventListener('agent-typing-end', () => {
-    hideAgentTypingStatus();
+    clearActiveSteps();
   });
 });

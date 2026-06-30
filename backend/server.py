@@ -734,7 +734,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                             "object": "chat.completion.chunk",
                             "created": created_time,
                             "model": request.model or "zed-pro",
-                            "choices": [{"index": 0, "delta": {"tool_usage": {"type": "tool_start", "name": val.get("name", ""), "id": val.get("id", "")}}, "finish_reason": None}]
+                            "choices": [{"index": 0, "delta": {"tool_usage": {"type": "tool_start", "name": val.get("name", ""), "id": val.get("id", ""), "args": val.get("args", {})}}, "finish_reason": None}]
                         }
                         yield f"data: {json.dumps(chunk)}\n\n"
                     elif event_type == "tool_complete":
