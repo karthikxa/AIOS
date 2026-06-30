@@ -1,5 +1,4 @@
 // Sidebar functionality
-import { showToast } from './toast.js';
 export function initSidebar() {
   const sidebar = document.getElementById('sidebar');
   const mobileHamburger = document.getElementById('mobileHamburger');

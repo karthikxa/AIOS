@@ -17,7 +17,7 @@ function ensureContainer() {
  * @param {'info'|'success'|'error'|'warning'} type - Toast type
  * @param {number} duration - Auto-dismiss in ms (default 3500)
  */
-export function showToast(message, type = 'info', duration = 3500) {
+function showToast(message, type = 'info', duration = 3500) {
   const container = ensureContainer();
 
   const colors = {
@@ -79,7 +79,7 @@ function dismiss(toast) {
  * @param {string} message - The question to display
  * @returns {Promise<boolean>} - true if confirmed, false if cancelled
  */
-export function confirmDialog(message) {
+function confirmDialog(message) {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.style.cssText = `

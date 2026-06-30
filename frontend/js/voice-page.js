@@ -1,5 +1,3 @@
-import { showToast, confirmDialog } from './toast.js';
-
 const agentPixelAvatars = {
   security: `<img src="assets/models/security_avatar.png" alt="Security Agent" style="width: 100%; height: 100%; object-fit: cover;">`,
   research: `<img src="assets/models/research_avatar.png" alt="Research Agent" style="width: 100%; height: 100%; object-fit: cover;">`,

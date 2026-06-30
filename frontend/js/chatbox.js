@@ -1,5 +1,4 @@
 // Chat Box input interactions
-import { showToast } from './toast.js';
 export function initChatBox(onSend) {
   const chatPromptInput = document.getElementById('chatPromptInput');
   const btnSend = document.getElementById('btnSend');

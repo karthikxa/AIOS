@@ -2,7 +2,6 @@
 import { injectModalStyles } from './modal.js';
 import { agentsStore } from './agent-page.js';
 import { pluginsStore } from './plugins-page.js';
-import { showToast } from './toast.js';
 
 class SchedulesStore {
   constructor() {

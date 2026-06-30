@@ -1,5 +1,3 @@
-import { showToast, confirmDialog } from './toast.js';
-
 class PluginsStore {
   constructor() {
     // Generate or restore a stable user_id for this browser
