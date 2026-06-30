@@ -2,6 +2,7 @@ import { agentsStore } from './agent-page.js';
 import { modelsStore } from './models-store.js';
 import { pluginsStore } from './plugins-page.js';
 import { SKILLS_CATALOG, getSkillById } from './skills-catalog.js';
+import { showToast } from './toast.js';
 
 export function initCreateAgentPage() {
   const createAgentPage = document.getElementById('createAgentPageView');
@@ -151,7 +152,7 @@ export function initCreateAgentPage() {
 
   const createSkillBtn = document.getElementById('caCreateSkillBtn');
   createSkillBtn?.addEventListener('click', () => {
-    alert('Simulation: Open Custom Skill Creator Wizard.');
+    showToast('Custom skill creator coming soon.', 'info');
   });
 
   function renderCreateAgentPlugins() {
@@ -434,14 +435,14 @@ export function initCreateAgentPage() {
   const btnCreateAgent = document.getElementById('btnCreateAgentSubmit');
   btnCreateAgent?.addEventListener('click', () => {
     if (!state.name.trim()) {
-      alert('Please enter an agent name.');
+      showToast('Please enter an agent name.', 'warning');
       return;
     }
 
     // Check that at least one plugin is connected
     const installed = pluginsStore.installed || [];
     if (installed.length === 0) {
-      alert('Please connect at least one plugin before creating an agent. Go to Plugins to add one.');
+      showToast('Connect at least one plugin before creating an agent.', 'warning');
       return;
     }
 

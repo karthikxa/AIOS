@@ -2,6 +2,7 @@ import { agentsStore } from './agent-page.js';
 import { modelsStore } from './models-store.js';
 import { pluginsStore } from './plugins-page.js';
 import { SKILLS_CATALOG, getSkillById } from './skills-catalog.js';
+import { showToast } from './toast.js';
 
 let currentEditingAgentId = null;
 const state = {
@@ -133,7 +134,7 @@ export function initEditAgentPage() {
   const btnSave = document.getElementById('btnEditAgentSave');
   btnSave?.addEventListener('click', () => {
     if (!state.name.trim()) {
-      alert('Please enter an agent name.');
+      showToast('Please enter an agent name.', 'warning');
       return;
     }
 
@@ -187,7 +188,7 @@ export function initEditAgentPage() {
 
   const createSkillBtn = document.getElementById('eaCreateSkillBtn');
   createSkillBtn?.addEventListener('click', () => {
-    alert('Simulation: Open Custom Skill Creator Wizard.');
+    showToast('Custom skill creator coming soon.', 'info');
   });
 
   const addModelBtn = document.getElementById('eaBtnAddModel');

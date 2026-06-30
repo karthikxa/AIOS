@@ -8704,6 +8704,38 @@ input:checked + .toggle-slider:before {
 }
 
 /* Center Input Override */
+.tool-indicator-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.tool-indicator-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  font-size: 12px;
+  font-weight: 500;
+  color: #6366f1;
+  animation: toolFadeIn 0.2s ease;
+}
+.tool-spinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(99, 102, 241, 0.25);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: toolSpin 0.7s linear infinite;
+}
+@keyframes toolSpin { to { transform: rotate(360deg); } }
+@keyframes toolFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
 .chat-input-center-wrapper {
   width: 100% !important;
   display: flex !important;

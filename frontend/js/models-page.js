@@ -1,6 +1,7 @@
 // Models Page orchestrator and renderer
 import { modelsStore } from './models-store.js';
 import { openSettingsModal, openConnectFlow, openAddProviderModal } from './modal.js';
+import { showToast } from './toast.js';
 
 // Static agent usage dataset to match mockup exactly
 const agentUsageData = [
@@ -90,7 +91,7 @@ export function initModelsPage() {
   if (learnHowBtn) {
     learnHowBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      alert("Bring Your Own Model Guide:\nTo configure any OpenAI-compatible API endpoint:\n1. Click '+ Connect Model' or 'Add Custom Provider'.\n2. Enter the custom API base URL (e.g. Local Ollama, vLLM, or LM Studio).\n3. Input your API key and specify model names.");
+      showToast('Add a custom API base URL, API key, and model names to connect any OpenAI-compatible endpoint.', 'info', 5000);
     });
   }
 
@@ -285,7 +286,7 @@ function renderView(state) {
       tableBody.querySelectorAll('.agent-row-menu-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          alert("Agent options menu is under development.");
+          showToast('Agent options coming soon.', 'info');
         });
       });
     }

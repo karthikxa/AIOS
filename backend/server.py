@@ -652,6 +652,12 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
             if reasoning:
                 loop.call_soon_threadsafe(q.put_nowait, ("reasoning", reasoning))
 
+        def tool_start_cb(tool_call_id, function_name, function_args):
+            loop.call_soon_threadsafe(q.put_nowait, ("tool_start", {"id": tool_call_id, "name": function_name, "args": function_args}))
+
+        def tool_complete_cb(tool_call_id, function_name, function_args, result):
+            loop.call_soon_threadsafe(q.put_nowait, ("tool_complete", {"id": tool_call_id, "name": function_name}))
+
         agent_ref = [None]
 
         def run_agent_thread():
@@ -661,6 +667,8 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                     session_db=session_db,
                     stream_delta_callback=stream_delta_cb,
                     reasoning_callback=reasoning_cb,
+                    tool_start_callback=tool_start_cb,
+                    tool_complete_callback=tool_complete_cb,
                     model=resolved_model,
                     quiet_mode=True,
                     verbose_logging=False,
@@ -714,6 +722,24 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                             "created": created_time,
                             "model": request.model or "zed-pro",
                             "choices": [{"index": 0, "delta": {"reasoning_content": val}, "finish_reason": None}]
+                        }
+                        yield f"data: {json.dumps(chunk)}\n\n"
+                    elif event_type == "tool_start":
+                        chunk = {
+                            "id": f"chatcmpl-{session_id}",
+                            "object": "chat.completion.chunk",
+                            "created": created_time,
+                            "model": request.model or "zed-pro",
+                            "choices": [{"index": 0, "delta": {"tool_usage": {"type": "tool_start", "name": val.get("name", ""), "id": val.get("id", "")}}, "finish_reason": None}]
+                        }
+                        yield f"data: {json.dumps(chunk)}\n\n"
+                    elif event_type == "tool_complete":
+                        chunk = {
+                            "id": f"chatcmpl-{session_id}",
+                            "object": "chat.completion.chunk",
+                            "created": created_time,
+                            "model": request.model or "zed-pro",
+                            "choices": [{"index": 0, "delta": {"tool_usage": {"type": "tool_complete", "name": val.get("name", ""), "id": val.get("id", "")}}, "finish_reason": None}]
                         }
                         yield f"data: {json.dumps(chunk)}\n\n"
                     elif event_type == "done":

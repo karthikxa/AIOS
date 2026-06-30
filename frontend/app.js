@@ -558,7 +558,56 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sendBtn) sendBtn.style.display = show ? 'none' : 'flex';
   }
 
-  async function callRealAPI(model, messages, onToken, signal, onReasoning) {
+  const _activeToolIndicators = {};
+  const TOOL_LABELS = {
+    web_search: 'Searching the web...',
+    browser: 'Browsing...',
+    terminal: 'Running command...',
+    file: 'Working with files...',
+    code_execution: 'Running code...',
+    memory: 'Checking memory...',
+    email: 'Composing email...',
+    gmail: 'Reading Gmail...',
+    drive: 'Accessing Drive...',
+    calendar: 'Checking calendar...',
+    contacts: 'Looking up contacts...',
+    docs: 'Editing doc...',
+    sheets: 'Editing spreadsheet...',
+    slides: 'Editing presentation...',
+    tts: 'Speaking...',
+    vision: 'Analyzing image...',
+    image: 'Generating image...',
+    video: 'Processing video...',
+    delegation: 'Delegating to subagent...',
+    swarm: 'Coordinating agents...',
+    cronjob: 'Managing schedule...',
+    todo: 'Updating tasks...',
+    session_search: 'Searching sessions...',
+    skill: 'Using skill...',
+  };
+  function showToolIndicator(toolName) {
+    if (_activeToolIndicators[toolName]) return;
+    const bar = document.getElementById('toolIndicatorBar');
+    if (!bar) return;
+    const el = document.createElement('div');
+    el.className = 'tool-indicator-item';
+    el.dataset.tool = toolName;
+    el.innerHTML = `<span class="tool-spinner"></span><span>${TOOL_LABELS[toolName] || toolName}</span>`;
+    bar.appendChild(el);
+    bar.style.display = 'flex';
+    _activeToolIndicators[toolName] = el;
+  }
+  function hideToolIndicator(toolName) {
+    const el = _activeToolIndicators[toolName];
+    if (el) { el.remove(); delete _activeToolIndicators[toolName]; }
+    const bar = document.getElementById('toolIndicatorBar');
+    if (bar && Object.keys(_activeToolIndicators).length === 0) bar.style.display = 'none';
+  }
+  function clearAllToolIndicators() {
+    Object.keys(_activeToolIndicators).forEach(hideToolIndicator);
+  }
+
+  async function callRealAPI(model, messages, onToken, signal, onReasoning, onToolUsage) {
     const settings = model.settings || {};
     const apiKey = settings.apiKey || '';
     const rawBaseUrl = settings.baseUrl || '';
@@ -625,8 +674,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const delta = parsed.choices?.[0]?.delta?.content || '';
                 const reasoningDelta = parsed.choices?.[0]?.delta?.reasoning_content || '';
+                const toolUsage = parsed.choices?.[0]?.delta?.tool_usage;
                 if (delta) { full += delta; onToken(delta); }
                 if (reasoningDelta && typeof onReasoning === 'function') onReasoning(reasoningDelta);
+                if (toolUsage && typeof onToolUsage === 'function') onToolUsage(toolUsage);
               } catch (e) {
                 if (parsed && parsed.error) throw e;
               }
@@ -1292,6 +1343,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // ── Computer mode: agentic loop — LLM + tools + desktop agent ──────
       if (currentMode === 'computer') {
         showStopButton(false);
+        clearAllToolIndicators();
 
         // Status bar
         const statusBar = document.getElementById('subagentStatusBar');
@@ -1488,9 +1540,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }, abortController.signal, (reasoningDelta) => {
         accumulatedReasoning += reasoningDelta;
+      }, (toolUsage) => {
+        if (toolUsage.type === 'tool_start') {
+          showToolIndicator(toolUsage.name);
+        } else if (toolUsage.type === 'tool_complete') {
+          hideToolIndicator(toolUsage.name);
+        }
       });
 
       showStopButton(false);
+      clearAllToolIndicators();
 
       // Agentic connect card: model emits [CONNECT:plugin_id] when it needs a service
       const connectCardHtml = _renderConnectCardIfNeeded(reply, promptText);
@@ -1545,6 +1604,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (err) {
       showStopButton(false);
+      clearAllToolIndicators();
       if (subagentStatusBar && currentMode !== 'computer') {
         subagentStatusBar.style.display = 'none';
       }
@@ -1608,6 +1668,7 @@ document.addEventListener('DOMContentLoaded', () => {
       abortController = null;
     }
     showStopButton(false);
+    clearAllToolIndicators();
   });
 
   // ── Voice Input ──────────────────────────────────────────────────────

@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: llm-proxy
+    runtime: docker
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: PORT
+        value: 3001
+      - key: LOCAL_BYPASS
+        value: "false"
+    healthCheckPath: /api/ping
+    plan: free
