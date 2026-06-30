@@ -131,9 +131,17 @@ async def google_connect(
     if not GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=400, detail="GOOGLE_CLIENT_ID not configured in .env")
 
-    # Dynamically build the redirect URI using the incoming request's scheme and host
-    scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
-    redirect_uri = f"{scheme}://{request.url.netloc}/oauth/google/callback"
+    # Build redirect URI for Google OAuth
+    # Priority: 1. GOOGLE_REDIRECT_URI env var, 2. DASHBOARD_BASE_URL + path, 3. request host
+    env_redirect = os.getenv("GOOGLE_REDIRECT_URI", "").rstrip("/")
+    env_dashboard_base = os.getenv("DASHBOARD_BASE_URL", "").rstrip("/")
+    if env_redirect:
+        redirect_uri = env_redirect
+    elif env_dashboard_base:
+        redirect_uri = f"{env_dashboard_base}/oauth/google/callback"
+    else:
+        scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+        redirect_uri = f"{scheme}://{request.url.netloc}/oauth/google/callback"
 
     flow = _make_google_flow(redirect_uri)
     auth_url, _ = flow.authorization_url(
@@ -156,7 +164,6 @@ async def google_callback(
 ):
     # Dynamically determine the frontend dashboard base domain
     # Priority: 1. DASHBOARD_BASE_URL env var, 2. origin/referer header, 3. backend's own host
-    import os
     env_dashboard_base = os.getenv("DASHBOARD_BASE_URL", "").rstrip("/")
     origin = request.headers.get("origin") or request.headers.get("referer")
     if env_dashboard_base:
@@ -185,8 +192,15 @@ async def google_callback(
         plugin_id = parts[1]
 
     try:
-        scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
-        redirect_uri = f"{scheme}://{request.url.netloc}/oauth/google/callback"
+        # Build redirect_uri using the same priority as connect endpoint
+        env_redirect = os.getenv("GOOGLE_REDIRECT_URI", "").rstrip("/")
+        if env_redirect:
+            redirect_uri = env_redirect
+        elif env_dashboard_base:
+            redirect_uri = f"{env_dashboard_base}/oauth/google/callback"
+        else:
+            scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+            redirect_uri = f"{scheme}://{request.url.netloc}/oauth/google/callback"
         logger.info("Exchanging code for user %s plugin %s with redirect_uri %s", user_id, plugin_id, redirect_uri)
         flow = _make_google_flow(redirect_uri)
         # Restore PKCE code_verifier + redirect_to from connect step
