@@ -22,9 +22,9 @@ WORKDIR /app
 # Copy dependency manifests first (layer-cache friendly)
 COPY pyproject.toml uv.lock ./
 
-# Install Python dependencies from the lockfile (no extras that need playwright/ffmpeg)
-RUN uv pip install --system --no-cache -e "." 2>/dev/null || \
-    pip install --no-cache-dir -e "."
+# Install Python dependencies from the lockfile + google extra for OAuth
+RUN uv pip install --system --no-cache -e ".[google]" 2>/dev/null || \
+    pip install --no-cache-dir -e ".[google]"
 
 # Copy the rest of the source
 COPY . .
