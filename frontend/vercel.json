@@ -1,4 +1,5 @@
 {
+  "cleanUrls": true,
   "rewrites": [
     {
       "source": "/api/:path*",
@@ -11,10 +12,6 @@
     {
       "source": "/oauth/:path*",
       "destination": "https://backend-server-6ghr.onrender.com/oauth/:path*"
-    },
-    {
-      "source": "/((?!api|v1|oauth|assets|js|css|img|fonts|favicon).*)",
-      "destination": "/index.html"
     }
   ]
 }
