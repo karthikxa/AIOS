@@ -2631,6 +2631,12 @@ input:checked + .toggle-slider:before {
     max-width: 300px !important;
   }
 
+  .quick-actions-grid {
+    width: 100% !important;
+    overflow: hidden !important;
+    gap: var(--space-sm) !important;
+  }
+
   .chat-messages-view {
     padding: 0 4px !important;
   }
