@@ -1,3 +1,4 @@
+import { inject } from '@vercel/analytics';
 import { initSidebar } from './js/sidebar.js';
 import { initModelSelector } from './js/model-selector.js';
 import { initChatBox } from './js/chatbox.js';
@@ -17,6 +18,9 @@ import { renderMarkdown, extractCodeBlocks, isMaskedKey, normalizeBaseUrl, Tasks
 import { parseReasoningToCoT, createCoTLiveRenderer } from './js/chain-of-thought.js';
 
 const tasksStore = new TasksStore();
+
+// Initialize Vercel Web Analytics
+inject();
 
 // Human-readable action descriptions for the agentic status bar
 const actionDescriptions = {
