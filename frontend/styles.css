@@ -2392,6 +2392,54 @@ input:checked + .toggle-slider:before {
     left: 0;
     right: 0;
   }
+
+  .plugins-header-row {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .agent-header-right {
+    width: 100%;
+  }
+  .agent-search-wrapper {
+    width: 100% !important;
+  }
+
+  .agent-hero-banner-card.agent-hero-interactive {
+    grid-template-columns: 1fr;
+  }
+  .agent-hero-illustration {
+    display: none !important;
+  }
+  .agent-hero-text {
+    padding: 24px !important;
+  }
+
+  .voice-banner-card {
+    grid-template-columns: 1fr;
+  }
+  .voice-banner-left {
+    padding: 24px;
+  }
+  .voice-banner-right {
+    display: none;
+  }
+
+  .schedules-hero-card-premium {
+    grid-template-columns: 1fr;
+    padding: 24px;
+  }
+  .hero-left-panel h1 {
+    font-size: 28px;
+  }
+
+  .schedules-table-container-card {
+    overflow-x: auto;
+  }
+
+  .schedules-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* 640px Landscape Phones */
@@ -2465,6 +2513,27 @@ input:checked + .toggle-slider:before {
     padding: 6px 12px !important;
     height: 30px !important;
   }
+
+  .voice-filters-row {
+    flex-wrap: wrap;
+  }
+
+  .models-usage-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .models-usage-search input {
+    width: 140px;
+  }
+
+  .schedules-table-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .schedules-search-box {
+    width: 100%;
+  }
 }
 
 /* 480px Mobile Devices */
@@ -2524,6 +2593,14 @@ input:checked + .toggle-slider:before {
     display: none;
   }
 
+  .mode-capsule {
+    min-width: 140px !important;
+  }
+  .mode-capsule-option {
+    padding: 0 10px !important;
+    font-size: 12px !important;
+  }
+
   .chat-messages-view {
     padding: 0 4px !important;
   }
@@ -2539,6 +2616,10 @@ input:checked + .toggle-slider:before {
 
   .schedules-kpi-grid {
     grid-template-columns: 1fr !important;
+  }
+
+  .schedules-table-container-card {
+    padding: 16px;
   }
 }
 
@@ -2590,6 +2671,14 @@ input:checked + .toggle-slider:before {
   .action-pill {
     font-size: 12px !important;
     padding: 4px 10px !important;
+  }
+
+  .mode-capsule {
+    min-width: 120px !important;
+  }
+  .mode-capsule-option {
+    padding: 0 8px !important;
+    font-size: 11px !important;
   }
 
   aside.sidebar {

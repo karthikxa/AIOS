@@ -292,6 +292,7 @@ function bindPopularActions() {
 }
 
 async function openPluginConnectModal(item) {
+  if (document.getElementById('pluginConfigOverlay')) return;
   currentConfigPluginId = item.id;
 
   try {

@@ -1077,6 +1077,27 @@ export function injectModalStyles() {
     .wizard-footer-actions .zed-btn-bw-primary:hover {
       background-color: #1F2937 !important;
     }
+
+    @media (max-width: 768px) {
+      .connect-page-view.wizard-layout {
+        padding: 24px 20px !important;
+      }
+      .wizard-header h2 {
+        font-size: 22px !important;
+      }
+      .zed-checkbox-list .checkbox-text,
+      .models-list-box .model-name-label {
+        max-width: 180px !important;
+      }
+    }
+    @media (max-width: 480px) {
+      .connect-page-view.wizard-layout {
+        padding: 16px 12px !important;
+      }
+      .wizard-header h2 {
+        font-size: 18px !important;
+      }
+    }
   `;
   document.head.appendChild(styleEl);
 }
