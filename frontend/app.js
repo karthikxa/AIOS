@@ -730,7 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
     memory: 'Checking memory...',
     email: 'Composing email...',
     gmail: 'Reading Gmail...',
-    drive: 'Accessing Drive...',
+    drive: 'Fetching Drive...',
     calendar: 'Checking calendar...',
     contacts: 'Looking up contacts...',
     docs: 'Editing doc...',
@@ -2408,10 +2408,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 250);
       typingStatusContainer = null;
     }
-    // Also remove any lingering typing indicator bubbles
+    // Also remove any lingering status containers or typing indicator bubbles by DOM query
     if (chatMessagesLog) {
-      const staleTyping = chatMessagesLog.querySelectorAll('.typing-indicator, .typing-placeholder');
-      staleTyping.forEach(el => {
+      chatMessagesLog.querySelectorAll('.chat-typing-status-container').forEach(el => el.remove());
+      chatMessagesLog.querySelectorAll('.typing-indicator, .typing-placeholder').forEach(el => {
         const msg = el.closest('.chat-message');
         if (msg) msg.remove();
       });
@@ -2463,7 +2463,7 @@ document.addEventListener('DOMContentLoaded', () => {
         text = 'Writing draft/sending...';
         badgeText = 'Compose';
       } else {
-        text = 'Accessing emails...';
+        text = 'Fetching emails...';
         badgeText = 'Gmail';
       }
     } else if (toolName === 'web_search') {
@@ -2501,10 +2501,23 @@ document.addEventListener('DOMContentLoaded', () => {
       title = '';
     }
 
+    // Deduplicate by id first, then by icon (so only one Gmail step shows at a time)
     let stepObj = activeSteps.find(s => s.id === id);
     if (!stepObj) {
-      stepObj = { id, name: toolName, title, icon, status: 'in_progress', badge: badgeText, text };
-      activeSteps.push(stepObj);
+      // If a step with the same icon exists, update it instead of adding a duplicate
+      const existingByIcon = activeSteps.find(s => s.icon === icon);
+      if (existingByIcon) {
+        existingByIcon.id = id;
+        existingByIcon.name = toolName;
+        existingByIcon.title = title;
+        existingByIcon.badge = badgeText;
+        existingByIcon.text = text;
+        existingByIcon.status = 'in_progress';
+        stepObj = existingByIcon;
+      } else {
+        stepObj = { id, name: toolName, title, icon, status: 'in_progress', badge: badgeText, text };
+        activeSteps.push(stepObj);
+      }
     } else {
       stepObj.status = 'in_progress';
       stepObj.title = title;

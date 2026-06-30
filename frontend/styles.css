@@ -5692,7 +5692,7 @@ input:checked + .toggle-slider:before {
   display: flex;
   align-items: center;
   gap: 9px;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
   user-select: none;
 }
 
