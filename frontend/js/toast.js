@@ -74,6 +74,65 @@ function dismiss(toast) {
   setTimeout(() => toast.remove(), 200);
 }
 
+/**
+ * Show a custom confirm dialog (replaces ugly browser confirm())
+ * @param {string} message - The question to display
+ * @returns {Promise<boolean>} - true if confirmed, false if cancelled
+ */
+export function confirmDialog(message) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position:fixed;inset:0;z-index:100000;
+      background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);
+      display:flex;align-items:center;justify-content:center;
+      animation:confirmFadeIn 0.15s ease-out;
+    `;
+
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+      background:#fff;border-radius:16px;padding:28px 32px 24px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.15);
+      max-width:400px;width:90%;text-align:center;
+      font-family:'Inter',-apple-system,sans-serif;
+    `;
+    dialog.innerHTML = `
+      <p style="font-size:15px;font-weight:500;color:#1f2937;margin:0 0 24px;line-height:1.5;">${message}</p>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button id="confirmCancel" style="
+          padding:9px 22px;border-radius:10px;border:1px solid #e5e7eb;
+          background:#fff;color:#374151;font-size:13.5px;font-weight:500;
+          cursor:pointer;transition:background 0.15s;
+        ">Cancel</button>
+        <button id="confirmOk" style="
+          padding:9px 22px;border-radius:10px;border:none;
+          background:#16a34a;color:#fff;font-size:13.5px;font-weight:500;
+          cursor:pointer;transition:background 0.15s;
+        ">OK</button>
+      </div>
+    `;
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    const cleanup = (result) => {
+      overlay.style.opacity = '0';
+      overlay.style.transition = 'opacity 0.15s';
+      setTimeout(() => overlay.remove(), 150);
+      resolve(result);
+    };
+
+    dialog.querySelector('#confirmOk').addEventListener('click', () => cleanup(true));
+    dialog.querySelector('#confirmCancel').addEventListener('click', () => cleanup(false));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) cleanup(false); });
+
+    dialog.querySelector('#confirmOk').addEventListener('mouseenter', function() { this.style.background = '#15803d'; });
+    dialog.querySelector('#confirmOk').addEventListener('mouseleave', function() { this.style.background = '#16a34a'; });
+    dialog.querySelector('#confirmCancel').addEventListener('mouseenter', function() { this.style.background = '#f9fafb'; });
+    dialog.querySelector('#confirmCancel').addEventListener('mouseleave', function() { this.style.background = '#fff'; });
+  });
+}
+
 // Inject keyframes once
 if (!document.getElementById('toastStyles')) {
   const style = document.createElement('style');
@@ -82,6 +141,10 @@ if (!document.getElementById('toastStyles')) {
     @keyframes toastSlideIn {
       from { opacity: 0; transform: translateX(30px); }
       to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes confirmFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
   `;
   document.head.appendChild(style);

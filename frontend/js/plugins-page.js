@@ -1,3 +1,5 @@
+import { showToast, confirmDialog } from './toast.js';
+
 class PluginsStore {
   constructor() {
     // Generate or restore a stable user_id for this browser
@@ -94,7 +96,7 @@ class PluginsStore {
         this.notify();
       }
     } catch (err) {
-      alert('Failed to disconnect: ' + err.message);
+      showToast('Failed to disconnect: ' + err.message, 'error');
     }
   }
 
@@ -128,12 +130,12 @@ export function initPluginsPage() {
 
   if (btnCreate) {
     btnCreate.addEventListener('click', () => {
-      alert('Add custom plugin packages from the Zed marketplace (coming soon).');
+      showToast('Add custom plugin packages from the Zed marketplace (coming soon).', 'info');
     });
   }
   if (btnExplore) {
     btnExplore.addEventListener('click', () => {
-      alert('Browse the Zed plugin marketplace (coming soon).');
+      showToast('Browse the Zed plugin marketplace (coming soon).', 'info');
     });
   }
 
@@ -895,9 +897,9 @@ function showPluginMenu(triggerBtn, id) {
   menuItem.addEventListener('mouseenter', () => { menuItem.style.backgroundColor = '#FFF5F5'; });
   menuItem.addEventListener('mouseleave', () => { menuItem.style.backgroundColor = 'transparent'; });
 
-  menuItem.addEventListener('click', (e) => {
+  menuItem.addEventListener('click', async (e) => {
     e.stopPropagation();
-    if (confirm(`Are you sure you want to disconnect ${item.name}?`)) {
+    if (await confirmDialog(`Are you sure you want to disconnect ${item.name}?`)) {
       pluginsStore.uninstall(id);
     }
     menu.remove();

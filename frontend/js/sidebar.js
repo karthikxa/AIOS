@@ -1,4 +1,5 @@
 // Sidebar functionality
+import { showToast } from './toast.js';
 export function initSidebar() {
   const sidebar = document.getElementById('sidebar');
   const mobileHamburger = document.getElementById('mobileHamburger');
@@ -31,20 +32,20 @@ export function initSidebar() {
   if (addProjectBtn) {
     addProjectBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      alert('Simulation: Create new project dialog.');
+      showToast('Simulation: Create new project dialog.', 'info');
     });
   }
 
   if (newProjectBtn) {
     newProjectBtn.addEventListener('click', () => {
-      alert('Simulation: Create new project dialog.');
+      showToast('Simulation: Create new project dialog.', 'info');
     });
   }
 
   const navNewProject = document.getElementById('navNewProject');
   if (navNewProject) {
     navNewProject.addEventListener('click', () => {
-      alert('Simulation: Create new project dialog.');
+      showToast('Simulation: Create new project dialog.', 'info');
     });
   }
 }

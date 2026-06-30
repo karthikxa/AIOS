@@ -1,4 +1,5 @@
 // Chat Box input interactions
+import { showToast } from './toast.js';
 export function initChatBox(onSend) {
   const chatPromptInput = document.getElementById('chatPromptInput');
   const btnSend = document.getElementById('btnSend');
@@ -62,7 +63,7 @@ export function initChatBox(onSend) {
           input.multiple = true;
           input.click();
         } else {
-          alert(`"${action}" is not yet implemented.`);
+          showToast(`"${action}" is not yet implemented.`, 'info');
         }
       });
     });

@@ -1,3 +1,5 @@
+import { showToast, confirmDialog } from './toast.js';
+
 const agentPixelAvatars = {
   security: `<img src="assets/models/security_avatar.png" alt="Security Agent" style="width: 100%; height: 100%; object-fit: cover;">`,
   research: `<img src="assets/models/research_avatar.png" alt="Research Agent" style="width: 100%; height: 100%; object-fit: cover;">`,
@@ -180,14 +182,14 @@ export function initVoicePage() {
     btnSaveData.addEventListener('click', () => {
       const agentId = voiceAgentsStore.selectedAgentId;
       if (!agentId) {
-        alert("Please select a voice agent first by clicking on a row.");
+        showToast("Please select a voice agent first by clicking on a row.", 'warning');
         return;
       }
       const text = textareaInput.value;
       const agent = voiceAgentsStore.agents.find(a => a.id === agentId);
       const filename = agent ? agent.scriptFile : "script.txt";
       voiceAgentsStore.updateAgentScript(agentId, filename, text);
-      alert("Script data saved successfully for " + (agent ? agent.name : "Agent") + "!");
+      showToast("Script data saved successfully for " + (agent ? agent.name : "Agent") + "!", 'success');
     });
   }
 
@@ -227,7 +229,7 @@ export function initVoicePage() {
   function handleFileUpload(file) {
     const agentId = voiceAgentsStore.selectedAgentId;
     if (!agentId) {
-      alert("Please select a voice agent first.");
+      showToast("Please select a voice agent first.", 'warning');
       return;
     }
     const reader = new FileReader();
@@ -239,7 +241,7 @@ export function initVoicePage() {
         if (charCounter) charCounter.textContent = `${len}/5000`;
       }
       voiceAgentsStore.updateAgentScript(agentId, file.name, text);
-      alert(`File "${file.name}" uploaded and saved successfully!`);
+      showToast(`File "${file.name}" uploaded and saved successfully!`, 'success');
     };
     reader.readAsText(file);
   }
@@ -519,13 +521,13 @@ function toggleVoiceRowMenu(triggerBtn, id) {
       btnEl.style.backgroundColor = 'transparent';
     });
 
-    btnEl.addEventListener('click', (e) => {
+    btnEl.addEventListener('click', async (e) => {
       e.stopPropagation();
       const action = btnEl.getAttribute('data-action');
       if (action === "toggle-status") {
         voiceAgentsStore.toggleAgentStatus(id);
       } else if (action === "delete") {
-        if (confirm(`Are you sure you want to delete ${agent.name}?`)) {
+        if (await confirmDialog(`Are you sure you want to delete ${agent.name}?`)) {
           voiceAgentsStore.deleteAgent(id);
         }
       }

@@ -2,6 +2,7 @@
 import { injectModalStyles } from './modal.js';
 import { agentsStore } from './agent-page.js';
 import { pluginsStore } from './plugins-page.js';
+import { showToast } from './toast.js';
 
 class SchedulesStore {
   constructor() {
@@ -630,11 +631,11 @@ function openCreateScheduleSidebar() {
     }));
 
     if (!name) {
-      alert("Schedule Name is required.");
+      showToast("Schedule Name is required.", 'warning');
       return;
     }
     if (!agentName) {
-      alert("Please select an agent.");
+      showToast("Please select an agent.", 'warning');
       return;
     }
 
