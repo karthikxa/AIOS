@@ -17,7 +17,7 @@ function ensureContainer() {
  * @param {'info'|'success'|'error'|'warning'} type - Toast type
  * @param {number} duration - Auto-dismiss in ms (default 3500)
  */
-function showToast(message, type = 'info', duration = 3500) {
+export function showToast(message, type = 'info', duration = 3500) {
   const container = ensureContainer();
 
   const colors = {
@@ -79,7 +79,7 @@ function dismiss(toast) {
  * @param {string} message - The question to display
  * @returns {Promise<boolean>} - true if confirmed, false if cancelled
  */
-function confirmDialog(message) {
+export function confirmDialog(message) {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.style.cssText = `
@@ -133,8 +133,8 @@ function confirmDialog(message) {
   });
 }
 
-// Inject keyframes once
-if (!document.getElementById('toastStyles')) {
+// Inject keyframes once (guard for SSR/Vite build environments)
+if (typeof document !== 'undefined' && !document.getElementById('toastStyles')) {
   const style = document.createElement('style');
   style.id = 'toastStyles';
   style.textContent = `
@@ -148,4 +148,10 @@ if (!document.getElementById('toastStyles')) {
     }
   `;
   document.head.appendChild(style);
+}
+
+// Expose as globals for files that use showToast() without importing
+if (typeof window !== 'undefined') {
+  window.showToast = showToast;
+  window.confirmDialog = confirmDialog;
 }
