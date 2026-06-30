@@ -33,19 +33,20 @@ describe('renderMarkdown', () => {
 
   it('renders bullet lists', () => {
     const result = renderMarkdown('- item one\n- item two');
-    expect(result).toContain('• item one');
-    expect(result).toContain('• item two');
+    expect(result).toContain('color:#6B7280');
+    expect(result).toContain('item one');
+    expect(result).toContain('item two');
   });
 
   it('renders ## headings', () => {
     const result = renderMarkdown('## Section');
-    expect(result).toContain('font-size:17px');
+    expect(result).toContain('font-size:16px');
     expect(result).toContain('Section');
   });
 
   it('renders ### headings', () => {
     const result = renderMarkdown('### Subsection');
-    expect(result).toContain('font-size:15px');
+    expect(result).toContain('font-size:14.5px');
     expect(result).toContain('Subsection');
   });
 

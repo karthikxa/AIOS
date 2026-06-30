@@ -1231,6 +1231,7 @@ document.addEventListener('DOMContentLoaded', () => {
   })();
 
   async function handleChatSubmission(promptText) {
+    hideAgentTypingStatus();
     // 1. Show message view, hide computer mock screen
     if (chatMessagesView) chatMessagesView.style.display = 'flex';
     if (agentComputerScreen) agentComputerScreen.style.display = 'none';
@@ -1338,10 +1339,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     abortController = new AbortController();
     showStopButton(true);
+    window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Planning' } }));
 
     try {
       // ── Computer mode: agentic loop — LLM + tools + desktop agent ──────
       if (currentMode === 'computer') {
+        window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Analyzing' } }));
         showStopButton(false);
         clearAllToolIndicators();
 
@@ -1505,6 +1508,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Send action to desktop agent via WebSocket
+            window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Coding' } }));
             toggleComputerSplit(true);
             ws.send(JSON.stringify({ type: 'task', text: `execute:${JSON.stringify({ action: actionName, ...args })}` }));
 
@@ -1533,6 +1537,9 @@ document.addEventListener('DOMContentLoaded', () => {
       let accumulatedReasoning = '';
 
       let reply = await callRealAPI(model, conversationHistory, (token) => {
+        if (!fullContent) {
+          window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Writing response' } }));
+        }
         fullContent += token;
         if (bubble) {
           bubble.innerHTML = renderMarkdown(fullContent);
@@ -1543,8 +1550,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }, (toolUsage) => {
         if (toolUsage.type === 'tool_start') {
           showToolIndicator(toolUsage.name);
+          window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Analyzing' } }));
         } else if (toolUsage.type === 'tool_complete') {
           hideToolIndicator(toolUsage.name);
+          window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Synthesizing' } }));
         }
       });
 
@@ -1619,6 +1628,8 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         appendMessage('assistant', `<span class="error-title">Connection Failed</span><span class="error-desc">${DOMPurify.sanitize(err.message)}</span>`);
       }
+    } finally {
+      window.dispatchEvent(new CustomEvent('agent-typing-end'));
     }
   }
 
@@ -2081,4 +2092,79 @@ document.addEventListener('DOMContentLoaded', () => {
   if (promptInput) {
     promptInput.placeholder = 'Message Zed...';
   }
+
+  // ── Real-time Agent Typing / Thinking Status Updates ─────────────────
+  let typingStatusContainer = null;
+  
+  function getBadgeStyle(status) {
+    const s = status.toLowerCase();
+    if (s.includes('plan')) {
+      return { bg: '#EFF6FF', fg: '#1D4ED8', border: '#BFDBFE' };
+    } else if (s.includes('analyz') || s.includes('think')) {
+      return { bg: '#F5F3FF', fg: '#6D28D9', border: '#DDD6FE' };
+    } else if (s.includes('code') || s.includes('execut')) {
+      return { bg: '#ECFDF5', fg: '#047857', border: '#A7F3D0' };
+    } else if (s.includes('refactor') || s.includes('rewrit')) {
+      return { bg: '#FFF7ED', fg: '#C2410C', border: '#FED7AA' };
+    } else if (s.includes('synthesiz')) {
+      return { bg: '#EEF2FF', fg: '#4338CA', border: '#C7D2FE' };
+    } else if (s.includes('writ') || s.includes('respond')) {
+      return { bg: '#F0FDFA', fg: '#0F766E', border: '#99F6E4' };
+    }
+    // Default
+    return { bg: '#F3F4F6', fg: '#374151', border: '#E5E7EB' };
+  }
+
+  function showAgentTypingStatus(statusText = 'Thinking') {
+    if (!chatMessagesLog) return;
+    
+    // Remove existing typing status if any
+    hideAgentTypingStatus();
+
+    // Remove any simple typing placeholder bubbles if we are showing the premium typing status
+    const existingPlaceholder = chatMessagesLog.querySelector('.typing-placeholder');
+    if (existingPlaceholder) {
+      existingPlaceholder.closest('.chat-message')?.remove();
+    }
+    
+    typingStatusContainer = document.createElement('div');
+    typingStatusContainer.className = 'chat-typing-status-container';
+    typingStatusContainer.id = 'chatTypingStatusContainer';
+    
+    const colors = getBadgeStyle(statusText);
+    
+    typingStatusContainer.innerHTML = `
+      <div class="status-item">
+        <svg class="status-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="animation: spin 1s linear infinite; color: #3B82F6; flex-shrink: 0;">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-dasharray="32" stroke-linecap="round" style="opacity: 0.25;"/>
+          <path d="M12 2 C 6.48 2 2 6.48 2 12" stroke="currentColor" stroke-linecap="round"/>
+        </svg>
+        <span style="font-weight: 500; color: #374151;">Agent is active:</span>
+        <span class="status-badge" style="background: ${colors.bg}; color: ${colors.fg}; border: 1px solid ${colors.border};">${statusText}</span>
+      </div>
+    `;
+    
+    chatMessagesLog.appendChild(typingStatusContainer);
+    chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
+  }
+
+  function hideAgentTypingStatus() {
+    if (typingStatusContainer) {
+      typingStatusContainer.remove();
+      typingStatusContainer = null;
+    }
+    const containerEl = document.getElementById('chatTypingStatusContainer');
+    if (containerEl) {
+      containerEl.remove();
+    }
+  }
+
+  window.addEventListener('agent-typing-start', (e) => {
+    const status = e.detail?.status || 'Thinking';
+    showAgentTypingStatus(status);
+  });
+
+  window.addEventListener('agent-typing-end', () => {
+    hideAgentTypingStatus();
+  });
 });

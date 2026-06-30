@@ -10001,11 +10001,20 @@ main.main-content.computer-split-mode #computerSplitPane {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 15px;
-  padding-left: 0;
-  animation: fadeInStatus 0.3s ease-out;
+  margin-top: 12px;
+  margin-bottom: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  animation: fadeInStatus 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   user-select: none;
+  width: fit-content;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .chat-typing-status-container .status-item {
@@ -10013,18 +10022,20 @@ main.main-content.computer-split-mode #computerSplitPane {
   align-items: center;
   gap: 8px;
   font-size: 13.5px;
-  color: #6B7280;
+  color: #374151;
 }
 
 .chat-typing-status-container .status-badge {
   font-size: 11px;
-  font-weight: 500;
-  padding: 2px 6px;
-  border-radius: 4px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 /* Spinner Animations */
