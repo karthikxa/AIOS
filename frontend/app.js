@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatMessagesLog = document.getElementById('chatMessagesLog');
   const chatMessagesView = document.getElementById('chatMessagesView');
   const agentComputerScreen = document.getElementById('agentComputerScreen');
-  const bottomCardsContainer = document.getElementById('bottomCardsContainer');
+  const bottomCardsContainer = document.getElementById('featureCardsRow');
 
   // Ensure empty state on load
   setAppState(false);
@@ -1393,7 +1393,7 @@ document.addEventListener('DOMContentLoaded', () => {
   })();
 
   async function handleChatSubmission(promptText) {
-    hideAgentTypingStatus();
+    clearActiveSteps();
     // 1. Show message view, hide computer mock screen
     if (chatMessagesView) chatMessagesView.style.display = 'flex';
     if (agentComputerScreen) agentComputerScreen.style.display = 'none';
