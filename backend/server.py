@@ -59,13 +59,9 @@ try:
 except Exception:
     setup_logging = lambda **kw: None
 
-# Optional cron scheduler — may fail if dependencies missing on Render
-try:
-    from cron.scheduler import tick as cron_tick
-    HAS_CRON_SCHEDULER = True
-except Exception:
-    cron_tick = None
-    HAS_CRON_SCHEDULER = False
+# Self-contained cron daemon — no dependency on cron.scheduler.tick
+# (which requires resolve_runtime_provider and full zed-agent setup)
+HAS_CRON_SCHEDULER = True  # always available — we use httpx directly
 
 # Optional cron.jobs module — for properly-formatted job creation
 # that the tick() scheduler can actually execute
@@ -378,25 +374,188 @@ async def lifespan(app: FastAPI):
                 len(_plugin_manager.list_plugins()) if _plugin_manager else 0,
                 len(tool_defs))
 
-    # ── Cron scheduler daemon thread ────────────────────────────────────
-    # Runs tick() every 60 seconds in the background so scheduled agents
-    # execute even when no dashboard tab is open.
+    # ── Self-contained Cron scheduler daemon ─────────────────────────────
+    # Uses httpx directly to call the LLM proxy — no zed-agent provider
+    # resolution required. Reads jobs from jobs.json, checks croniter for
+    # due jobs, fires them, saves output to disk.
     _cron_stop = threading.Event()
 
-    if HAS_CRON_SCHEDULER:
-        def _cron_loop():
-            logger.info("Cron scheduler daemon started (interval=60s)")
-            while not _cron_stop.is_set():
-                try:
-                    cron_tick(verbose=True)
-                except Exception:
-                    logger.exception("Cron tick failed")
-                _cron_stop.wait(timeout=60)
+    def _cron_tick_self_contained():
+        """Check for due cron jobs and fire them via httpx to the LLM proxy."""
+        jobs_file = ZED_HOME / "cron" / "jobs.json"
+        if not jobs_file.exists():
+            return
+        try:
+            data = json.loads(jobs_file.read_text(encoding="utf-8"))
+            jobs = data.get("jobs", []) if isinstance(data, dict) else data
+        except Exception:
+            return
 
-        _cron_thread = threading.Thread(target=_cron_loop, name="cron-daemon", daemon=True)
-        _cron_thread.start()
-    else:
-        logger.warning("Cron scheduler not available — scheduled jobs will not auto-execute")
+        now = time.time()
+        changed = False
+
+        for job in jobs:
+            if not job.get("enabled", True):
+                continue
+
+            # Check if due
+            schedule = job.get("schedule")
+            if not isinstance(schedule, dict):
+                continue  # raw string schedules not supported in self-contained mode
+
+            kind = schedule.get("kind", "")
+            is_due = False
+
+            if kind == "interval":
+                # Interval schedule: check minutes
+                minutes = schedule.get("minutes", 60)
+                last_run = job.get("last_run_at")
+                if last_run:
+                    try:
+                        last_ts = last_run.timestamp() if hasattr(last_run, 'timestamp') else float(last_run)
+                        if now - last_ts >= minutes * 60:
+                            is_due = True
+                    except Exception:
+                        is_due = True
+                else:
+                    is_due = True
+            elif kind == "cron":
+                # Cron expression — try croniter
+                expr = schedule.get("expr", "")
+                if not expr:
+                    continue
+                try:
+                    from croniter import croniter
+                    last_run = job.get("last_run_at")
+                    if last_run:
+                        try:
+                            last_ts = last_run.timestamp() if hasattr(last_run, 'timestamp') else float(last_run)
+                        except Exception:
+                            last_ts = now - 60
+                    else:
+                        last_ts = now - 60
+                    # Get next run time after last_run
+                    cron = croniter(expr, last_ts)
+                    next_run = cron.get_next(float)
+                    if next_run <= now + 5:  # 5s tolerance
+                        is_due = True
+                except ImportError:
+                    # croniter not available — fall back to simple minute check
+                    if schedule.get("expr", "").strip() == "* * * * *":
+                        last_run = job.get("last_run_at")
+                        if last_run:
+                            try:
+                                last_ts = last_run.timestamp() if hasattr(last_run, 'timestamp') else float(last_run)
+                                if now - last_ts >= 55:
+                                    is_due = True
+                            except Exception:
+                                is_due = True
+                        else:
+                            is_due = True
+                except Exception:
+                    logger.debug("Cron expr parse failed for job %s: %s", job.get("id"), schedule.get("expr"))
+                    continue
+
+            if not is_due:
+                continue
+
+            # Fire the job
+            job_id = job.get("id", "unknown")
+            job_name = job.get("name", job_id)
+            prompt = job.get("prompt", f"Execute scheduled task: {job_name}")
+            llm_model = job.get("model", "auto") or "auto"
+            if llm_model.lower() in ("zed-pro", ""):
+                llm_model = "auto"
+
+            logger.info("Cron daemon firing job '%s' (id=%s)", job_name, job_id)
+
+            run_id = f"run-{uuid.uuid4().hex[:8]}"
+
+            def _fire_job(_job_id=job_id, _job_name=job_name, _prompt=prompt, _llm_model=llm_model, _run_id=run_id):
+                output_dir = ZED_HOME / "cron_output" / _job_id
+                output_dir.mkdir(parents=True, exist_ok=True)
+                try:
+                    llm_base_url = os.environ.get(
+                        "ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"
+                    ).rstrip("/")
+                    llm_api_key = os.environ.get(
+                        "ZED_PRO_API_KEY", os.environ.get("OPENAI_API_KEY", "no-key")
+                    )
+                    if not llm_base_url.endswith("/v1"):
+                        llm_base_url += "/v1"
+                    resp = httpx.post(
+                        f"{llm_base_url}/chat/completions",
+                        json={
+                            "model": _llm_model,
+                            "messages": [{"role": "user", "content": _prompt}],
+                            "max_tokens": 4096,
+                        },
+                        headers={
+                            "Authorization": f"Bearer {llm_api_key}",
+                            "Content-Type": "application/json",
+                        },
+                        timeout=120.0,
+                    )
+                    if resp.status_code == 200:
+                        result = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "No response")
+                        status = "success"
+                    else:
+                        result = f"LLM error {resp.status_code}: {resp.text[:200]}"
+                        status = "error"
+                except Exception as e:
+                    result = f"Execution failed: {e}"
+                    status = "error"
+
+                # Save output
+                output_file = output_dir / f"{_run_id}.json"
+                output_file.write_text(json.dumps({
+                    "run_id": _run_id,
+                    "job_id": _job_id,
+                    "job_name": _job_name,
+                    "prompt": _prompt,
+                    "result": result,
+                    "model": _llm_model,
+                    "status": status,
+                    "created_at": time.time(),
+                }, indent=2), encoding="utf-8")
+
+                # Update job state in jobs.json
+                try:
+                    jobs_data = json.loads(jobs_file.read_text(encoding="utf-8"))
+                    jobs_list = jobs_data.get("jobs", []) if isinstance(jobs_data, dict) else jobs_data
+                    for j in jobs_list:
+                        if j.get("id") == _job_id:
+                            j["last_run_at"] = time.time()
+                            j["last_status"] = status
+                            j["last_error"] = result if status == "error" else None
+                            repeat = j.get("repeat") or {}
+                            repeat["completed"] = repeat.get("completed", 0) + 1
+                            j["repeat"] = repeat
+                            break
+                    if isinstance(jobs_data, dict):
+                        jobs_data["jobs"] = jobs_list
+                    else:
+                        jobs_data = {"jobs": jobs_list}
+                    jobs_file.write_text(json.dumps(jobs_data, indent=2), encoding="utf-8")
+                except Exception:
+                    pass
+
+                logger.info("Cron daemon job '%s' run %s: %s", _job_name, _run_id, status)
+
+            threading.Thread(target=_fire_job, daemon=True).start()
+            changed = True
+
+    def _cron_loop():
+        logger.info("Cron scheduler daemon started (interval=60s, self-contained mode)")
+        while not _cron_stop.is_set():
+            try:
+                _cron_tick_self_contained()
+            except Exception:
+                logger.exception("Cron tick failed")
+            _cron_stop.wait(timeout=60)
+
+    _cron_thread = threading.Thread(target=_cron_loop, name="cron-daemon", daemon=True)
+    _cron_thread.start()
 
     logger.info("Zed Pro backend ready — http://127.0.0.1:%s", PORT)
     yield
