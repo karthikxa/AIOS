@@ -672,6 +672,46 @@ async def api_ping():
     return {"status": "ok", "ts": time.time()}
 
 
+@app.get("/api/debug/filesystem")
+async def debug_filesystem():
+    """Debug endpoint — checks ZED_HOME writability and cron_output state."""
+    result = {
+        "zed_home": str(ZED_HOME),
+        "zed_home_exists": ZED_HOME.exists(),
+        "zed_home_writable": False,
+        "cron_output_exists": False,
+        "recent_outputs": [],
+    }
+    try:
+        ZED_HOME.mkdir(parents=True, exist_ok=True)
+        test_file = ZED_HOME / ".write_test"
+        test_file.write_text("ok", encoding="utf-8")
+        test_file.unlink()
+        result["zed_home_writable"] = True
+    except Exception as e:
+        result["write_error"] = str(e)
+
+    cron_output_dir = ZED_HOME / "cron_output"
+    if cron_output_dir.exists():
+        result["cron_output_exists"] = True
+        for job_dir in sorted(cron_output_dir.iterdir()):
+            if job_dir.is_dir():
+                files = sorted(job_dir.glob("*.json"), key=lambda f: f.stat().st_mtime, reverse=True)
+                if files:
+                    latest = files[0]
+                    try:
+                        data = json.loads(latest.read_text(encoding="utf-8"))
+                        result["recent_outputs"].append({
+                            "job_id": job_dir.name,
+                            "file": latest.name,
+                            "status": data.get("status"),
+                            "result_preview": str(data.get("result", ""))[:200],
+                        })
+                    except Exception as e:
+                        result["recent_outputs"].append({"job_id": job_dir.name, "read_error": str(e)})
+    return result
+
+
 @app.get("/api/agent_output/{agent_id}")
 async def get_agent_output(agent_id: str):
     """Get the latest output from an agent run."""
