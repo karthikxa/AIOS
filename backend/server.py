@@ -473,7 +473,12 @@ async def lifespan(app: FastAPI):
 
             def _fire_job(_job_id=job_id, _job_name=job_name, _prompt=prompt, _llm_model=llm_model, _run_id=run_id):
                 output_dir = ZED_HOME / "cron_output" / _job_id
-                output_dir.mkdir(parents=True, exist_ok=True)
+                try:
+                    output_dir.mkdir(parents=True, exist_ok=True)
+                except Exception as mkdir_err:
+                    logger.error("Cron daemon: mkdir failed for %s: %s", output_dir, mkdir_err)
+                    return
+
                 try:
                     llm_base_url = os.environ.get(
                         "ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"
@@ -506,18 +511,22 @@ async def lifespan(app: FastAPI):
                     result = f"Execution failed: {e}"
                     status = "error"
 
-                # Save output
+                # Save output — wrap in try/except so Render filesystem errors are logged
                 output_file = output_dir / f"{_run_id}.json"
-                output_file.write_text(json.dumps({
-                    "run_id": _run_id,
-                    "job_id": _job_id,
-                    "job_name": _job_name,
-                    "prompt": _prompt,
-                    "result": result,
-                    "model": _llm_model,
-                    "status": status,
-                    "created_at": time.time(),
-                }, indent=2), encoding="utf-8")
+                try:
+                    output_file.write_text(json.dumps({
+                        "run_id": _run_id,
+                        "job_id": _job_id,
+                        "job_name": _job_name,
+                        "prompt": _prompt,
+                        "result": result,
+                        "model": _llm_model,
+                        "status": status,
+                        "created_at": time.time(),
+                    }, indent=2), encoding="utf-8")
+                    logger.info("Cron daemon: wrote output to %s", output_file)
+                except Exception as write_err:
+                    logger.error("Cron daemon: FAILED to write output to %s: %s", output_file, write_err)
 
                 # Update job state in jobs.json
                 try:
@@ -537,8 +546,8 @@ async def lifespan(app: FastAPI):
                     else:
                         jobs_data = {"jobs": jobs_list}
                     jobs_file.write_text(json.dumps(jobs_data, indent=2), encoding="utf-8")
-                except Exception:
-                    pass
+                except Exception as state_err:
+                    logger.error("Cron daemon: failed to update job state: %s", state_err)
 
                 logger.info("Cron daemon job '%s' run %s: %s", _job_name, _run_id, status)
 
@@ -683,6 +692,80 @@ async def get_agent_output(agent_id: str):
 async def root_ping():
     """Root endpoint — returns OK so external cron jobs don't get 404."""
     return {"status": "ok", "service": "zed-pro-backend", "ts": time.time()}
+
+
+@app.get("/api/debug/filesystem")
+async def debug_filesystem():
+    """Diagnostic: show what's actually on disk in ZED_HOME.
+    Use this to verify whether output files are being written on Render.
+    """
+    def _walk(path: Path, depth: int = 0, max_depth: int = 3):
+        if depth > max_depth or not path.exists():
+            return []
+        result = []
+        try:
+            for child in sorted(path.iterdir()):
+                entry = {
+                    "name": child.name,
+                    "path": str(child),
+                    "is_dir": child.is_dir(),
+                }
+                if child.is_file():
+                    try:
+                        entry["size_bytes"] = child.stat().st_size
+                        entry["mtime"] = child.stat().st_mtime
+                    except Exception:
+                        pass
+                if child.is_dir() and depth < max_depth:
+                    entry["children"] = _walk(child, depth + 1, max_depth)
+                result.append(entry)
+        except PermissionError:
+            pass
+        return result
+
+    # Also read last 3 output files from each cron job
+    cron_output_root = ZED_HOME / "cron_output"
+    recent_outputs = {}
+    if cron_output_root.exists():
+        for job_dir in sorted(cron_output_root.iterdir()):
+            if job_dir.is_dir():
+                files = sorted(job_dir.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True)
+                recent_outputs[job_dir.name] = []
+                for f in files[:3]:
+                    try:
+                        recent_outputs[job_dir.name].append(json.loads(f.read_text(encoding="utf-8")))
+                    except Exception as e:
+                        recent_outputs[job_dir.name].append({"error": str(e), "file": f.name})
+
+    return {
+        "zed_home": str(ZED_HOME),
+        "zed_home_exists": ZED_HOME.exists(),
+        "zed_home_writable": os.access(ZED_HOME, os.W_OK) if ZED_HOME.exists() else False,
+        "cron_output_exists": cron_output_root.exists(),
+        "tree": _walk(ZED_HOME, max_depth=3),
+        "recent_outputs": recent_outputs,
+        "tmp_writable": os.access("/tmp", os.W_OK),
+    }
+
+
+@app.get("/api/debug/logs")
+async def debug_logs():
+    """Return the last 200 lines of the server log for diagnosing issues on Render."""
+    log_file = ZED_HOME / "logs" / "server.log"
+    # Try common log paths
+    candidates = [
+        log_file,
+        ZED_HOME / "logs" / "zed.log",
+        Path(__file__).resolve().parent / "logs" / "server.log",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            try:
+                lines = candidate.read_text(encoding="utf-8", errors="replace").splitlines()
+                return {"log_file": str(candidate), "lines": lines[-200:], "total_lines": len(lines)}
+            except Exception as e:
+                return {"error": str(e), "log_file": str(candidate)}
+    return {"error": "No log file found", "checked": [str(c) for c in candidates]}
 
 
 @app.get("/api/status")
