@@ -16,22 +16,25 @@ export default {
   server: {
     port: 8000,
     proxy: {
-      // Route /v1 to zed-agent backend (runs AIAgent loop on port 8642)
+      // Route /v1 to cloud LLM proxy (Render)
       '/v1': {
-        target: 'http://127.0.0.1:8642',
+        target: 'https://server-llm-1.onrender.com',
         changeOrigin: true,
+        secure: true,
       },
-      // Route /api to zed-agent backend (for sessions, skills, status)
+      // Route /api to cloud backend (Render)
       '/api': {
-        target: 'http://127.0.0.1:8642',
+        target: 'https://backend-server-6ghr.onrender.com',
         changeOrigin: true,
+        secure: true,
       },
-      // Route /oauth to zed-agent backend (Google OAuth connect + callback + status)
+      // Route /oauth to cloud backend (Render)
       '/oauth': {
-        target: 'http://127.0.0.1:8642',
+        target: 'https://backend-server-6ghr.onrender.com',
         changeOrigin: true,
+        secure: true,
       },
-      // Route /agent to Desktop Agent (Computer mode: inject instruction, check status)
+      // Route /agent to local Desktop Agent (Computer mode)
       '/agent': {
         target: 'http://127.0.0.1:8765',
         changeOrigin: true,
@@ -49,9 +52,23 @@ export default {
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/desktop/, ''),
       },
+      // Proxy Sandbox (port 8080) — browser API + VNC + screenshots
+      '/sandbox': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true,
+        ws: true,
+        rewrite: (path) => path.replace(/^\/sandbox/, '') || '/',
+      },
+      // Direct VNC WebSocket proxy for live streaming
+      '/vncws': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true,
+        ws: true,
+        rewrite: (path) => '/websockify',
+      },
     },
     headers: {
-      'Content-Security-Policy': "default-src 'self' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com blob:; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://localhost:6901 https://localhost:6902 https://localhost:* http://localhost:6902; connect-src 'self' http://localhost:* http://127.0.0.1:* https://localhost:* ws://localhost:* wss://localhost:* https://cdn.jsdelivr.net https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' blob: https://localhost:* http://localhost:*; form-action 'self' https://accounts.google.com;",
+      'Content-Security-Policy': "default-src 'self' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com blob:; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: http://localhost:* http://127.0.0.1:* https://localhost:*; connect-src 'self' http://localhost:* http://127.0.0.1:* https://localhost:* ws://localhost:* wss://localhost:* wss://*.localhost:* https://cdn.jsdelivr.net https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' blob: https://localhost:* http://localhost:*; form-action 'self' https://accounts.google.com;",
     },
   },
 };

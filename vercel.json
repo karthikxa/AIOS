@@ -15,6 +15,10 @@
     {
       "source": "/oauth/:path*",
       "destination": "https://backend-server-6ghr.onrender.com/oauth/:path*"
+    },
+    {
+      "source": "/((?!assets/|api/|v1/|oauth/).*)",
+      "destination": "/index.html"
     }
   ]
 }

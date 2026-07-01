@@ -204,14 +204,16 @@ async def google_callback(
         logger.info("Exchanging code for user %s plugin %s with redirect_uri %s", user_id, plugin_id, redirect_uri)
         flow = _make_google_flow(redirect_uri)
         # Restore PKCE code_verifier + redirect_to from connect step
-        redirect_target = f"{dashboard_base}/plugins?connected=google&user_id={urllib.parse.quote(user_id)}"
+        redirect_target = f"{dashboard_base}/plugins?connected={urllib.parse.quote(plugin_id)}&user_id={urllib.parse.quote(user_id)}"
         stored = _oauth_states.pop(user_id, None)
         if stored:
             code_verifier, orig_plugin = stored[0], stored[1]
             flow.code_verifier = code_verifier
             plugin_id = orig_plugin
-            if len(stored) >= 3:
-                redirect_target = stored[2]
+            if len(stored) >= 3 and stored[2]:
+                # Append connection status query params to the stored redirect URL
+                base_url = stored[2].rstrip('/')
+                redirect_target = f"{base_url}?connected={urllib.parse.quote(plugin_id)}&user_id={urllib.parse.quote(user_id)}"
         flow.fetch_token(code=code)
         logger.info("Token fetched successfully for user %s plugin %s", user_id, plugin_id)
         creds = flow.credentials

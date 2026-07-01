@@ -10090,4 +10090,31 @@ main.main-content.computer-split-mode #computerSplitPane {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ==========================================================================
+   VNC IFRAME FIXES - Remove scrollbars, proper scaling
+   ========================================================================== */
+
+/* Ensure split pane viewport fills space properly */
+.split-pane-viewport {
+  flex: 1 !important;
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 0 !important;
+}
+
+/* Ensure iframe fills the viewport completely */
+.split-pane-viewport iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  display: block !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Hide any scrollbars on the computer split pane */
+#computerSplitPane {
+  overflow: hidden !important;
+}
 

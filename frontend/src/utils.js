@@ -70,8 +70,10 @@ export function renderMarkdown(text) {
   html = html.replace(/^## (.+)$/gm, '<div style="font-size:16px;font-weight:600;margin:14px 0 6px;color:#111827;">$1</div>');
   // Horizontal rules
   html = html.replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #E5E7EB;margin:16px 0;">');
-  // Line breaks
+  // Line breaks — but NOT inside <pre> blocks (code blocks preserve their own newlines)
+  html = html.replace(/(<pre[\s\S]*?<\/pre>)/g, (match) => '%%PRE_BLOCK%%' + btoa(unescape(encodeURIComponent(match))) + '%%/PRE_BLOCK%%');
   html = html.replace(/\n/g, '<br>');
+  html = html.replace(/%%PRE_BLOCK%%([A-Za-z0-9+/=]+)%%\/PRE_BLOCK%%/g, (_, encoded) => decodeURIComponent(escape(atob(encoded))));
   return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['div', 'span', 'pre', 'code', 'textarea', 'br', 'strong', 'em', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'a', 'button', 'hr', 'ul', 'li', 'ol', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'text'], ALLOWED_ATTR: ['style', 'class', 'id', 'href', 'target', 'rel', 'src', 'alt', 'title', 'data-lang', 'data-code', 'width', 'height', 'viewbox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'xmlns', 'd', 'cx', 'cy', 'r', 'x1', 'x2', 'y1', 'y2', 'font-family', 'font-weight', 'font-size', 'dominant-baseline', 'text-anchor'] });
 }
 
@@ -80,7 +82,11 @@ export function extractCodeBlocks(text) {
   const regex = /```(\w*)\n([\s\S]*?)```/g;
   let match;
   while ((match = regex.exec(text)) !== null) {
-    blocks.push({ lang: match[1] || 'text', code: match[2] });
+    let code = match[2];
+    // Strip HTML tags that the LLM may have injected into code blocks
+    code = code.replace(/<br\s*\/?>/gi, '\n');
+    code = code.replace(/<[^>]+>/g, '');
+    blocks.push({ lang: match[1] || 'text', code });
   }
   return blocks;
 }

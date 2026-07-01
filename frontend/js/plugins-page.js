@@ -72,7 +72,8 @@ class PluginsStore {
 
   async connect(pluginId) {
     // Redirect to OAuth connector (proxied via Vite to backend on port 8642)
-    window.location.href = `/oauth/google/connect?user_id=${encodeURIComponent(this.userId)}&plugin_id=${encodeURIComponent(pluginId)}`;
+    const redirectTarget = window.location.origin + '/plugins';
+    window.location.href = `/oauth/google/connect?user_id=${encodeURIComponent(this.userId)}&plugin_id=${encodeURIComponent(pluginId)}&redirect_to=${encodeURIComponent(redirectTarget)}`;
   }
 
   async disconnect(pluginId) {

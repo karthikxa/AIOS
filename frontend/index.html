@@ -423,11 +423,17 @@
       display: block;
       min-height: 0;
       min-width: 0;
+      overflow: hidden;
     "
     src="about:blank"
-    allow="clipboard-read; clipboard-write; fullscreen"
+    allow="fullscreen"
     scrolling="no">
   </iframe>
+
+  <!-- CSS injected into iframe to hide noVNC chrome -->
+  <style id="vncFrameStyles">
+    #desktopFrame {}
+  </style>
 
   <!-- Blocks all user clicks — view only -->
   <div style="position:absolute;inset:0;z-index:10;cursor:default;"></div>

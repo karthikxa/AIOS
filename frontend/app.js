@@ -29,6 +29,10 @@ const actionDescriptions = {
   navigate: 'Opening URL',
   evaluate: 'Running JavaScript',
   shell: 'Running command',
+  open_tab: 'Opening new tab',
+  list_tabs: 'Listing tabs',
+  switch_tab: 'Switching tab',
+  close_tab: 'Closing tab',
   done: 'Task complete',
 };
 
@@ -151,13 +155,13 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
       }
 
-      const starIndicator = `
-        <span class="task-star-indicator" style="color: #EF4444; margin-right: 10px; display: inline-flex; align-items: center; flex-shrink: 0;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#EF4444" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-          </svg>
-        </span>
-      `;
+const starIndicator = `
+  <span class="task-star-indicator" style="color: #6366F1; margin-right: 10px; display: inline-flex; align-items: center; flex-shrink: 0;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#6366F1" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+    </svg>
+  </span>
+`;
       const itemIcon = task.starred ? starIndicator : `
         <span class="task-item-icon-wrapper" style="margin-right: 10px; display: inline-flex; align-items: center; flex-shrink: 0;">
           ${getTaskIconSvg(task.name)}
@@ -214,8 +218,8 @@ document.addEventListener('DOMContentLoaded', () => {
         dropdown.innerHTML = `
           <div class="task-dropdown-item favorite-item">
             ${task.starred
-              ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#EF4444" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Unfavorite</span>'
-              : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Favorite</span>'}
+              ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#6366F1" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg><span>Unpin</span>'
+              : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg><span>Pin</span>'}
           </div>
           <div class="task-dropdown-item rename-item">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"/></svg>
@@ -449,12 +453,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     chatMessagesLog.appendChild(msgDiv);
 
-    // Add actions to both user and assistant messages
+    // Add actions to user messages immediately; assistant actions are added after response completes
     if (sender === 'user') {
       appendMessageActions(msgDiv, text, 'user');
-    } else if (isAssistantFinal) {
-      appendMessageActions(msgDiv, text, 'assistant');
-      wireCodeBlockActions(msgDiv);
     }
 
     chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
@@ -799,7 +800,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }))
       };
       const body = JSON.stringify({
-        model: 'zed-pro',
+        model: 'auto',
         messages: apiMessages,
         stream: useStream,
         dashboard_state: dashboardState
@@ -1401,11 +1402,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Determine current mode from capsule UI
     const activeModeOpt = document.querySelector('.mode-capsule-option.active');
     const currentMode = activeModeOpt ? activeModeOpt.dataset.mode : 'search';
+    
+    // Use the selected mode directly - LLM decides if computer tools are needed
+    const effectiveMode = currentMode;
 
     // Show subagent status bar with slide-down pop-up animation in computer mode
     const subagentStatusBar = document.getElementById('subagentStatusBar');
     if (subagentStatusBar) {
-      if (currentMode === 'computer') {
+      if (effectiveMode === 'computer') {
         subagentStatusBar.style.display = 'flex';
         subagentStatusBar.style.opacity = '0';
         subagentStatusBar.style.transform = 'translateY(-10px)';
@@ -1462,19 +1466,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Computer mode: inject computer tools as LLM tool definitions ──
     let computerTools = [];
     let computerSystemMsg = '';
-    if (currentMode === 'computer') {
-      computerSystemMsg = 'You are a computer-use agent with access to a live Linux desktop. Use the available computer tools to control it. Start with get_screen to see what is on screen.';
+    if (effectiveMode === 'computer') {
+      computerSystemMsg = 'You are a helpful AI assistant with optional computer control. For simple greetings, questions, or conversation - just respond with text directly using normal chat. Only use computer tools when the user explicitly asks you to DO something on the computer (open websites, search, click, type, etc). For computer tasks: call get_screen ONCE, execute actions efficiently (3-5 steps max), call done when finished. For chat: just respond naturally without any tools.';
       computerTools = [
-        { type: 'function', function: { name: 'get_screen', description: 'Get the current screen state: URL, title, and interactive elements with positions', parameters: { type: 'object', properties: {}, required: [] } } },
-        { type: 'function', function: { name: 'click', description: 'Click an element on screen by its ref ID', parameters: { type: 'object', properties: { ref: { type: 'string', description: 'The element ref ID from get_screen' } }, required: ['ref'] } } },
-        { type: 'function', function: { name: 'type', description: 'Type text into an input field', parameters: { type: 'object', properties: { ref: { type: 'string', description: 'The input field ref ID' }, text: { type: 'string', description: 'Text to type' } }, required: ['ref', 'text'] } } },
+        { type: 'function', function: { name: 'get_screen', description: 'Get the current screen state: URL, title, open tabs, and all interactive elements with their index, tag, text, role, and position', parameters: { type: 'object', properties: {}, required: [] } } },
+        { type: 'function', function: { name: 'click', description: 'Click an element on screen by its index number (e.g. 0, 1, 2)', parameters: { type: 'object', properties: { index: { type: 'number', description: 'The element index from get_screen (the number in square brackets)' } }, required: ['index'] } } },
+        { type: 'function', function: { name: 'type', description: 'Type text into an input field by its index', parameters: { type: 'object', properties: { index: { type: 'number', description: 'The input field index from get_screen' }, text: { type: 'string', description: 'Text to type' } }, required: ['index', 'text'] } } },
         { type: 'function', function: { name: 'press_key', description: 'Press a keyboard key', parameters: { type: 'object', properties: { key: { type: 'string', description: 'Key name: Enter, Tab, Escape, Backspace, etc.' } }, required: ['key'] } } },
         { type: 'function', function: { name: 'hotkey', description: 'Press a keyboard shortcut', parameters: { type: 'object', properties: { keys: { type: 'array', items: { type: 'string' }, description: 'Keys to press together, e.g. ["ctrl","c"]' } }, required: ['keys'] } } },
         { type: 'function', function: { name: 'scroll', description: 'Scroll the page', parameters: { type: 'object', properties: { direction: { type: 'string', enum: ['up', 'down'] }, amount: { type: 'number', description: 'Scroll amount (default 3)' } }, required: ['direction'] } } },
-        { type: 'function', function: { name: 'navigate', description: 'Navigate to a URL in the browser', parameters: { type: 'object', properties: { url: { type: 'string', description: 'URL to navigate to' } }, required: ['url'] } } },
+        { type: 'function', function: { name: 'navigate', description: 'Navigate to a URL in the browser', parameters: { type: 'object', properties: { url: { type: 'string', description: 'Full URL to navigate to (e.g. https://google.com)' } }, required: ['url'] } } },
         { type: 'function', function: { name: 'evaluate', description: 'Run JavaScript in the browser page', parameters: { type: 'object', properties: { code: { type: 'string', description: 'JavaScript code to evaluate' } }, required: ['code'] } } },
         { type: 'function', function: { name: 'shell', description: 'Execute a shell command in the sandbox', parameters: { type: 'object', properties: { command: { type: 'string', description: 'Shell command to run' } }, required: ['command'] } } },
-        { type: 'function', function: { name: 'done', description: 'Mark the task as complete', parameters: { type: 'object', properties: { summary: { type: 'string', description: 'Summary of what was accomplished' } }, required: ['summary'] } } },
+        { type: 'function', function: { name: 'open_tab', description: 'Open a new browser tab and optionally navigate to a URL', parameters: { type: 'object', properties: { url: { type: 'string', description: 'URL to open in the new tab (default: about:blank)' } }, required: [] } } },
+        { type: 'function', function: { name: 'list_tabs', description: 'List all open browser tabs with their index, title, URL, and active status', parameters: { type: 'object', properties: {}, required: [] } } },
+        { type: 'function', function: { name: 'switch_tab', description: 'Switch to a specific tab by its index number', parameters: { type: 'object', properties: { index: { type: 'number', description: 'Tab index number from list_tabs' } }, required: ['index'] } } },
+        { type: 'function', function: { name: 'close_tab', description: 'Close a specific tab by its index number', parameters: { type: 'object', properties: { index: { type: 'number', description: 'Tab index number to close' } }, required: ['index'] } } },
+        { type: 'function', function: { name: 'done', description: 'Mark the task as complete with a summary', parameters: { type: 'object', properties: { summary: { type: 'string', description: 'Detailed summary of what was accomplished and what was found' } }, required: ['summary'] } } },
       ];
     }
     const fullUserMsg = userMsg + fileContext;
@@ -1505,11 +1513,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       // ── Computer mode: agentic loop — LLM + tools + desktop agent ──────
-      if (currentMode === 'computer') {
+      if (effectiveMode === 'computer') {
         window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Analyzing' } }));
-      showStopButton(false);
       clearAllToolIndicators();
       clearActiveSteps();
+      // Remove typing indicator - computer mode shows its own progress
+      const typingMsg = chatMessagesLog.querySelector('.typing-placeholder')?.closest('.chat-message');
+      if (typingMsg) typingMsg.remove();
+      // Keep stop button visible for computer mode
+      showStopButton(true);
 
         // Status bar
         const statusBar = document.getElementById('subagentStatusBar');
@@ -1527,31 +1539,66 @@ document.addEventListener('DOMContentLoaded', () => {
           if (stepCount) stepCount.textContent = step;
         }
 
+        let progressStepNum = 0;
+        
         function addProgressStep(text, state) {
           if (!progressBody) return;
-          const colors = { active: '#3B82F6', done: '#10B981', pending: '#9CA3AF' };
+          progressStepNum++;
+          const num = progressStepNum;
+          const colors = { active: '#3B82F6', done: '#10B981', pending: '#D1D5DB' };
           const color = colors[state] || colors.pending;
-          const opacity = state === 'pending' ? '0.65' : '1';
-          const bg = state === 'active' ? `background-color: ${color}; box-shadow: 0 0 0 3px rgba(59,130,246,0.15);` : state === 'done' ? `background-color: ${color};` : `border: 2px solid ${color}; background-color: transparent;`;
+          const opacity = state === 'pending' ? '0.7' : '1';
+          
+          let circleHtml = '';
+          if (state === 'done') {
+            circleHtml = `<div style="width:22px;height:22px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>`;
+          } else if (state === 'active') {
+            circleHtml = `<div style="width:22px;height:22px;border-radius:50%;background:${color};box-shadow:0 0 0 3px rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span style="color:#fff;font-size:11px;font-weight:600;">${num}</span>
+            </div>`;
+          } else {
+            circleHtml = `<div style="width:22px;height:22px;border-radius:50%;border:2px solid ${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span style="color:${color};font-size:11px;font-weight:500;">${num}</span>
+            </div>`;
+          }
+          
           const div = document.createElement('div');
-          div.style.cssText = `display:flex;align-items:flex-start;gap:10px;opacity:${opacity};`;
-          div.innerHTML = `<div style="width:10px;height:10px;border-radius:50;margin-top:5px;flex-shrink:0;${bg}"></div><span style="font-size:13.5px;color:${state === 'pending' ? '#4B5563' : '#111111'};font-weight:${state === 'active' ? '500' : '400'};line-height:1.4;">${text}</span>`;
+          div.style.cssText = `display:flex;align-items:center;gap:10px;opacity:${opacity};padding:4px 0;`;
+          div.innerHTML = `${circleHtml}<span style="font-size:13px;color:${state === 'pending' ? '#6B7280' : '#111827'};font-weight:${state === 'active' ? '500' : '400'};line-height:1.4;">${text}</span>`;
           progressBody.appendChild(div);
           progressBody.scrollTop = progressBody.scrollHeight;
         }
 
         function updateProgressStep(index, text, state) {
           if (!progressBody || !progressBody.children[index]) return;
-          const colors = { active: '#3B82F6', done: '#10B981', pending: '#9CA3AF' };
+          const colors = { active: '#3B82F6', done: '#10B981', pending: '#D1D5DB' };
           const color = colors[state] || colors.pending;
-          const opacity = state === 'pending' ? '0.65' : '1';
-          const bg = state === 'active' ? `background-color: ${color}; box-shadow: 0 0 0 3px rgba(59,130,246,0.15);` : state === 'done' ? `background-color: ${color};` : `border: 2px solid ${color}; background-color: transparent;`;
+          const opacity = state === 'pending' ? '0.7' : '1';
           const el = progressBody.children[index];
           el.style.opacity = opacity;
+          
+          const num = index + 1;
+          let circleHtml = '';
+          if (state === 'done') {
+            circleHtml = `<div style="width:22px;height:22px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>`;
+          } else if (state === 'active') {
+            circleHtml = `<div style="width:22px;height:22px;border-radius:50%;background:${color};box-shadow:0 0 0 3px rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span style="color:#fff;font-size:11px;font-weight:600;">${num}</span>
+            </div>`;
+          } else {
+            circleHtml = `<div style="width:22px;height:22px;border-radius:50%;border:2px solid ${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span style="color:${color};font-size:11px;font-weight:500;">${num}</span>
+            </div>`;
+          }
+          
           const dot = el.querySelector('div');
-          if (dot) dot.style.cssText = `width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0;${bg}`;
+          if (dot) dot.outerHTML = circleHtml;
           const span = el.querySelector('span');
-          if (span) { span.textContent = text; span.style.color = state === 'pending' ? '#4B5563' : '#111111'; span.style.fontWeight = state === 'active' ? '500' : '400'; }
+          if (span) { span.textContent = text; span.style.color = state === 'pending' ? '#6B7280' : '#111827'; span.style.fontWeight = state === 'active' ? '500' : '400'; }
         }
 
         updateStatus('Agent starting...', '0 / ?');
@@ -1567,7 +1614,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const ws = new WebSocket(agentUrl);
         let agentStep = 0;
-        const maxSteps = 30;
+        const maxSteps = 7;
         let progressIndex = 0;
 
         // Promise that resolves when the agent sends a screen result
@@ -1602,7 +1649,15 @@ document.addEventListener('DOMContentLoaded', () => {
           { role: 'user', content: promptText },
         ];
 
-        for (let step = 0; step < maxSteps; step++) {
+        let consecutiveErrors = 0;
+        const maxConsecutiveErrors = 3;
+        let stopped = false;
+
+        // Wire stop button to break the loop
+        const stopHandler = () => { stopped = true; };
+        abortController.signal.addEventListener('abort', stopHandler);
+
+        for (let step = 0; step < maxSteps && !stopped; step++) {
           updateStatus(`Step ${step + 1}: Thinking...`, `${step + 1} / ${maxSteps}`);
           if (step === 0) {
             addProgressStep('Analyzing task...', 'active');
@@ -1613,33 +1668,69 @@ document.addEventListener('DOMContentLoaded', () => {
           progressIndex = progressBody ? progressBody.children.length : 0;
 
           // Call LLM with tools via Vite proxy → backend → Render-deployed llm-proxy
-          // stream: false required — we call .json() on the response (not SSE)
-          const llmResp = await fetch('/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer freellmapi-b8b35f76a87a2e3db4985258c26197a2f22ceabe528eb6ac',
-            },
-            body: JSON.stringify({
-              model: 'zed-pro',
-              messages,
-              tools: computerTools,
-              tool_choice: 'auto',
-              temperature: 0.1,
-              max_tokens: 2048,
-              stream: false,
-            }),
-          });
+          let llmData;
+          let retries = 0;
+          const maxRetries = 3;
+          
+          while (retries <= maxRetries && !stopped) {
+            try {
+              const llmResp = await fetch('/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer freellmapi-b8b35f76a87a2e3db4985258c26197a2f22ceabe528eb6ac',
+                },
+                body: JSON.stringify({
+                  model: 'auto',
+                  messages,
+                  tools: computerTools,
+                  tool_choice: 'auto',
+                  temperature: 0.1,
+                  max_tokens: 1024,
+                  stream: false,
+                }),
+                signal: abortController.signal,
+              });
 
-          if (!llmResp.ok) {
-            let errDetail = `${llmResp.status}`;
-            try { const e = await llmResp.json(); errDetail += ': ' + (e?.error?.message || e?.detail || JSON.stringify(e)); } catch {}
-            updateStatus(`LLM error: ${errDetail}`, '!');
-            console.error('LLM error detail:', errDetail);
-            break;
+              // Handle rate limiting (429)
+              if (llmResp.status === 429) {
+                retries++;
+                if (retries > maxRetries) {
+                  throw new Error('Rate limited - too many requests');
+                }
+                const waitTime = Math.pow(2, retries) * 1000; // 2s, 4s, 8s
+                updateStatus(`Rate limited, waiting ${waitTime/1000}s...`, `${step + 1} / ${maxSteps}`);
+                await new Promise(r => setTimeout(r, waitTime));
+                continue;
+              }
+
+              if (!llmResp.ok) {
+                let errDetail = `${llmResp.status}`;
+                try { const e = await llmResp.json(); errDetail += ': ' + (e?.error?.message || e?.detail || JSON.stringify(e)); } catch {}
+                throw new Error(`LLM error: ${errDetail}`);
+              }
+
+              llmData = await llmResp.json();
+              consecutiveErrors = 0;
+              break; // Success, exit retry loop
+            } catch (err) {
+              if (err.name === 'AbortError') {
+                stopped = true;
+                break;
+              }
+              consecutiveErrors++;
+              retries++;
+              if (retries > maxRetries || consecutiveErrors >= maxConsecutiveErrors) {
+                throw err;
+              }
+              const waitTime = Math.pow(2, retries) * 1000;
+              updateStatus(`Retrying in ${waitTime/1000}s...`, `${step + 1} / ${maxSteps}`);
+              await new Promise(r => setTimeout(r, waitTime));
+            }
           }
+          
+          if (stopped || !llmData) break;
 
-          const llmData = await llmResp.json();
           const choice = llmData.choices?.[0];
           if (!choice) break;
 
@@ -1649,6 +1740,11 @@ document.addEventListener('DOMContentLoaded', () => {
           // If no tool calls, the LLM is done talking
           if (!assistantMsg.tool_calls || assistantMsg.tool_calls.length === 0) {
             const text = assistantMsg.content || 'Done.';
+            // Remove the typing indicator message entirely, then append the real response
+            const existingTypingMsg = chatMessagesLog.querySelector('.typing-placeholder')?.closest('.chat-message');
+            if (existingTypingMsg) {
+              existingTypingMsg.remove();
+            }
             appendMessage('assistant', text);
             updateStatus('Task complete.', `${step + 1} / ${maxSteps}`);
             addProgressStep('Delivering result to user', 'done');
@@ -1660,6 +1756,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // Execute each tool call
           for (const toolCall of assistantMsg.tool_calls) {
+            if (stopped) break;
             const fn = toolCall.function;
             const args = JSON.parse(fn.arguments || '{}');
             const actionName = fn.name;
@@ -1671,13 +1768,33 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Send action to desktop agent via WebSocket
-            window.dispatchEvent(new CustomEvent('agent-tool-start', { detail: { name: actionName, id: 'comp-' + step, args: args } }));
+            window.dispatchEvent(new CustomEvent('agent-tool-start', { detail: { name: actionName, id: 'comp-' + step + '-' + toolCall.id, args: args } }));
             toggleComputerSplit(true);
-            ws.send(JSON.stringify({ type: 'task', text: `execute:${JSON.stringify({ action: actionName, ...args })}` }));
-
-            // Wait for screen result
-            const screenResult = await waitForScreen();
-            window.dispatchEvent(new CustomEvent('agent-tool-complete', { detail: { name: actionName, id: 'comp-' + step } }));
+            
+            // Send action and wait for result with timeout
+            let screenResult;
+            try {
+              ws.send(JSON.stringify({ type: 'task', text: `execute:${JSON.stringify({ action: actionName, ...args })}` }));
+              screenResult = await Promise.race([
+                waitForScreen(),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Action timeout')), 30000)),
+                new Promise((_, reject) => {
+                  const checkStopped = () => { if (stopped) reject(new Error('Stopped by user')); };
+                  abortController.signal.addEventListener('abort', checkStopped);
+                  // Clean up after 30s
+                  setTimeout(() => abortController.signal.removeEventListener('abort', checkStopped), 30000);
+                })
+              ]);
+            } catch (err) {
+              if (stopped || err.message === 'Stopped by user') {
+                screenResult = 'Stopped by user';
+              } else {
+                screenResult = `Action '${actionName}' failed: ${err.message}`;
+                console.error('Action execution error:', err);
+              }
+            }
+            
+            window.dispatchEvent(new CustomEvent('agent-tool-complete', { detail: { name: actionName, id: 'comp-' + step + '-' + toolCall.id } }));
 
             // Feed result back to LLM
             messages.push({
@@ -1691,9 +1808,23 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
 
+        // Clean up stop handler
+        abortController.signal.removeEventListener('abort', stopHandler);
+        
         ws.close();
-        const active = tasksStore.tasks.find(t => t.id === tasksStore.activeId);
-        if (active) { active.messages.push({ role: 'assistant', content: `[Computer agent completed: "${promptText}"]` }); tasksStore.notify(); }
+        
+        if (stopped) {
+          appendMessage('assistant', 'Task stopped by user.');
+          updateStatus('Stopped by user.', '!');
+        } else {
+          // Only save to task history if it was a computer task (not just chat)
+          const lastMsg = messages[messages.length - 1];
+          const wasComputerTask = lastMsg && lastMsg.tool_calls && lastMsg.tool_calls.length > 0;
+          if (wasComputerTask) {
+            const active = tasksStore.tasks.find(t => t.id === tasksStore.activeId);
+            if (active) { active.messages.push({ role: 'assistant', content: `[Computer task completed: "${promptText}"]` }); tasksStore.notify(); }
+          }
+        }
         return;
       }
 
@@ -1703,16 +1834,21 @@ document.addEventListener('DOMContentLoaded', () => {
       let reply = await callRealAPI(model, conversationHistory, (token) => {
         if (!fullContent) {
           window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Writing response' } }));
-          // Remove the old typing placeholder bubble before creating the real one
-          const oldPlaceholder = chatMessagesLog.querySelector('.typing-indicator');
-          if (oldPlaceholder) {
-            const oldMsg = oldPlaceholder.closest('.chat-message');
-            if (oldMsg) oldMsg.remove();
+          // Reuse the existing message div (with zed pro header) — just replace the bubble content
+          const oldTypingIndicator = chatMessagesLog.querySelector('.typing-indicator');
+          if (oldTypingIndicator) {
+            const oldMsg = oldTypingIndicator.closest('.chat-message');
+            if (oldMsg) {
+              msgDiv = oldMsg;
+              bubble = msgDiv.querySelector('.chat-message-bubble');
+            }
           }
-          // Create the assistant bubble now that we are streaming
-          appendMessage('assistant', '');
-          msgDiv = chatMessagesLog.lastElementChild;
-          bubble = msgDiv.querySelector('.chat-message-bubble');
+          if (!bubble) {
+            // Fallback: create a new message if the old one wasn't found
+            appendMessage('assistant', '');
+            msgDiv = chatMessagesLog.lastElementChild;
+            bubble = msgDiv.querySelector('.chat-message-bubble');
+          }
           // Move the active status container to the bottom
           if (typingStatusContainer && typingStatusContainer.parentNode === chatMessagesLog) {
             chatMessagesLog.appendChild(typingStatusContainer);
@@ -1771,13 +1907,13 @@ document.addEventListener('DOMContentLoaded', () => {
         appendMessageActions(msgDiv, reply);
       }
 
-      if (subagentStatusBar && currentMode !== 'computer') {
+      if (subagentStatusBar && effectiveMode !== 'computer') {
         subagentStatusBar.style.display = 'none';
       }
     } catch (err) {
       showStopButton(false);
       clearAllToolIndicators();
-      if (subagentStatusBar && currentMode !== 'computer') {
+      if (subagentStatusBar && effectiveMode !== 'computer') {
         subagentStatusBar.style.display = 'none';
       }
 
@@ -2012,23 +2148,23 @@ document.addEventListener('DOMContentLoaded', () => {
   let desktopPollInterval = null;
 
   function getVncBaseUrl() {
+    // Sandbox has its own VNC on port 8080
     let agentUrl = localStorage.getItem('desktop_agent_url');
     if (agentUrl) {
       try {
-        // Parse host from websocket URL (e.g. ws://123.45.67.89:8765/ws)
         const host = agentUrl.split('//')[1]?.split(':')[0]?.split('/')[0];
-        if (host) return `http://${host}:6902`;
+        if (host) return `http://${host}:8080`;
       } catch (e) {}
     }
-    return 'http://localhost:6902';
+    return 'http://localhost:8080';
   }
 
   function startDesktopStream() {
     if (desktopStreamStarted || !desktopFrame) return;
     desktopStreamStarted = true;
 
-    const vncBase = getVncBaseUrl();
-    desktopFrame.src = `${vncBase}/vnc_lite.html?autoconnect=true&scale=true&password=headless&reconnect=true&reconnect_delay=2000&view_only=true`;
+    // Live VNC streaming through WebSocket proxy - real-time 4K
+    desktopFrame.src = '/vnc_live.html';
 
     desktopFrame.onload = () => {
       if (desktopConnectingOverlay) {
@@ -2040,8 +2176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const thumbnailFrame = document.getElementById('thumbnailFrame');
     const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
     if (thumbnailFrame) {
-      const vncBase = getVncBaseUrl();
-      thumbnailFrame.src = `${vncBase}/vnc_lite.html?autoconnect=true&scale=true&password=headless&reconnect=true&reconnect_delay=2000&view_only=true`;
+      thumbnailFrame.src = '/vnc_live.html';
       if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'none';
     }
   }
@@ -2268,7 +2403,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!chatMessagesLog) return;
 
     // Remove any simple typing placeholder bubbles if we are showing the premium typing status
-    const existingPlaceholder = chatMessagesLog.querySelector('.typing-placeholder, .typing-indicator');
+    const existingPlaceholder = chatMessagesLog.querySelector('.typing-placeholder');
     if (existingPlaceholder) {
       existingPlaceholder.closest('.chat-message')?.remove();
     }
@@ -2408,13 +2543,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 250);
       typingStatusContainer = null;
     }
-    // Also remove any lingering status containers or typing indicator bubbles by DOM query
+    // Remove any lingering status containers by DOM query (but NOT typing-indicator bubbles — those are managed separately)
     if (chatMessagesLog) {
       chatMessagesLog.querySelectorAll('.chat-typing-status-container').forEach(el => el.remove());
-      chatMessagesLog.querySelectorAll('.typing-indicator, .typing-placeholder').forEach(el => {
-        const msg = el.closest('.chat-message');
-        if (msg) msg.remove();
-      });
     }
   }
 
@@ -2499,6 +2630,22 @@ document.addEventListener('DOMContentLoaded', () => {
         text = 'Generating project workflow...';
       }
       title = '';
+    } else if (toolName === 'open_tab') {
+      title = 'Opening tab';
+      icon = 'eye';
+      badgeText = args.url ? new URL(args.url).hostname : 'New Tab';
+    } else if (toolName === 'list_tabs') {
+      title = 'Listing tabs';
+      icon = 'eye';
+      badgeText = 'All Tabs';
+    } else if (toolName === 'switch_tab') {
+      title = 'Switching tab';
+      icon = 'eye';
+      badgeText = `Tab ${args.index || 0}`;
+    } else if (toolName === 'close_tab') {
+      title = 'Closing tab';
+      icon = 'eye';
+      badgeText = `Tab ${args.index || 0}`;
     }
 
     // Deduplicate by id first, then by icon (so only one Gmail step shows at a time)
