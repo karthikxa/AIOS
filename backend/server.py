@@ -41,16 +41,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from zed_constants import get_zed_home
-from zed_logging import setup_logging
-from cron.scheduler import tick as cron_tick
-
 # ── Zed Home = C:\Users\<user>\.hermes (all sessions, config, memories) ────
-# Strip trailing whitespace from ZED_HOME — some launchers inject a trailing
-# space, causing FileNotFoundError: 'C:\\Users\\balur\\.hermes \\logs'
+# CRITICAL: Must set ZED_HOME env var BEFORE importing cron modules,
+# because cron/jobs.py resolves get_zed_home() at import time.
 _DEFAULT_ZED_HOME = Path.home() / ".hermes"
 _raw_zed_home = os.environ.get("ZED_HOME", str(_DEFAULT_ZED_HOME)).strip()
 ZED_HOME = Path(_raw_zed_home)
+os.environ["ZED_HOME"] = str(ZED_HOME)
+
+from zed_constants import get_zed_home
+from zed_logging import setup_logging
+from cron.scheduler import tick as cron_tick
 _log_dir = ZED_HOME / "logs"
 try:
     _log_dir.mkdir(parents=True, exist_ok=True)
@@ -451,6 +452,22 @@ async def health_check():
 async def api_ping():
     """Lightweight ping endpoint for cron/keep-alive jobs."""
     return {"status": "ok", "ts": time.time()}
+
+
+@app.get("/api/agent_output/{agent_id}")
+async def get_agent_output(agent_id: str):
+    """Get the latest output from an agent run."""
+    output_dir = ZED_HOME / "agent_output" / agent_id
+    if not output_dir.exists():
+        return {"outputs": [], "count": 0}
+    outputs = []
+    for f in sorted(output_dir.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True):
+        try:
+            data = json.loads(f.read_text())
+            outputs.append(data)
+        except Exception:
+            pass
+    return {"outputs": outputs[:10], "count": len(outputs)}
 
 
 @app.get("/")
@@ -1015,46 +1032,68 @@ async def list_memory():
 # ── Cron ──────────────────────────────────────────────────────────────────────
 @app.get("/api/cron")
 async def list_cron():
-    """List cron jobs from ZED_HOME/cron/."""
-    cron_dir = ZED_HOME / "cron"
-    jobs = []
-    if cron_dir.exists():
-        for f in sorted(cron_dir.glob("*.json")):
-            try:
-                data = json.loads(f.read_text())
-                jobs.append(data)
-            except Exception:
-                pass
-    return {"jobs": jobs, "count": len(jobs)}
+    """List cron jobs using the cron.jobs module (reads from jobs.json)."""
+    try:
+        from cron.jobs import list_jobs as _list_jobs, load_jobs as _load_jobs
+        jobs = _list_jobs(include_disabled=True)
+        # Flatten parsed schedule for frontend display
+        result = []
+        for j in jobs:
+            result.append({
+                "id": j.get("id", ""),
+                "name": j.get("name", ""),
+                "schedule": j.get("schedule_display", ""),
+                "prompt": j.get("prompt", ""),
+                "enabled": j.get("enabled", True),
+                "created_at": j.get("created_at", ""),
+                "next_run_at": j.get("next_run_at", ""),
+                "skills": j.get("skills", []),
+                "model": j.get("model", ""),
+            })
+        return {"jobs": result, "count": len(result)}
+    except Exception as e:
+        logger.error("Failed to list cron jobs: %s", e)
+        return {"jobs": [], "count": 0, "error": str(e)}
 
 
 @app.post("/api/cron")
 async def create_cron(request: CronJobRequest):
-    """Create a new cron job."""
-    cron_dir = ZED_HOME / "cron"
-    cron_dir.mkdir(parents=True, exist_ok=True)
-    job_id = str(uuid.uuid4())[:8]
-    job = {
-        "id": job_id,
-        "name": request.name,
-        "schedule": request.schedule,
-        "prompt": request.prompt,
-        "enabled": request.enabled,
-        "created_at": time.time(),
-    }
-    (cron_dir / f"{job_id}.json").write_text(json.dumps(job, indent=2))
-    return {"status": "created", "job": job}
+    """Create a new cron job using the cron.jobs module."""
+    try:
+        from cron.jobs import create_job as _create_job
+        job = _create_job(
+            prompt=request.prompt,
+            schedule=request.schedule,
+            name=request.name,
+            enabled=request.enabled,
+        )
+        return {"status": "created", "job": {
+            "id": job.get("id", ""),
+            "name": job.get("name", ""),
+            "schedule": job.get("schedule_display", request.schedule),
+            "prompt": job.get("prompt", ""),
+            "enabled": job.get("enabled", True),
+            "created_at": job.get("created_at", ""),
+        }}
+    except Exception as e:
+        logger.error("Failed to create cron job: %s", e)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.delete("/api/cron/{job_id}")
 async def delete_cron(job_id: str):
-    """Delete a cron job."""
-    cron_dir = ZED_HOME / "cron"
-    job_file = cron_dir / f"{job_id}.json"
-    if not job_file.exists():
-        raise HTTPException(status_code=404, detail="Cron job not found")
-    job_file.unlink()
-    return {"status": "deleted", "id": job_id}
+    """Delete a cron job using the cron.jobs module."""
+    try:
+        from cron.jobs import remove_job as _remove_job
+        removed = _remove_job(job_id)
+        if not removed:
+            raise HTTPException(status_code=404, detail="Cron job not found")
+        return {"status": "deleted", "id": job_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Failed to delete cron job %s: %s", job_id, e)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ── Agents CRUD ──────────────────────────────────────────────────────────────
@@ -1129,50 +1168,94 @@ async def delete_agent(agent_id: str):
 
 @app.post("/api/agents/{agent_id}/run")
 async def run_agent_now(agent_id: str):
-    """Trigger an agent to run immediately via the cron system."""
+    """Trigger an agent to run immediately — executes directly via LLM, not cron."""
     agent_file = AGENTS_DIR / f"{agent_id}.json"
     if not agent_file.exists():
         raise HTTPException(status_code=404, detail="Agent not found")
     agent = json.loads(agent_file.read_text())
 
-    # Build skill instructions for the agent's prompt
-    skills = agent.get('skills', [])
-    skill_instructions = ""
+    # Build the system prompt from the agent's config
+    agent_name = agent.get("name", "Agent")
+    agent_desc = agent.get("desc", agent.get("description", ""))
+    skills = agent.get("skills", [])
+
+    system_prompt = f"You are {agent_name}."
+    if agent_desc:
+        system_prompt += f" {agent_desc}"
+
+    # Load real skill content if available
     if skills:
-        skill_descriptions = {
-            'web-research': 'Web Research: Search the web, extract content, compile findings with citations.',
-            'competitor-analysis': 'Competitor Analysis: Research competitors, compare products/pricing, generate competitive analysis.',
-            'data-collection': 'Data Collection: Gather structured data from web sources, organize into CSV/JSON.',
-            'report-generator': 'Report Generator: Generate professional reports with analysis and recommendations.',
-            'email-drafter': 'Email Drafter: Draft professional emails with appropriate tone and call-to-action.',
-            'code-analyzer': 'Code Analyzer: Analyze code for bugs, security issues, and performance problems.',
-            'task-automation': 'Task Automation: Create automated workflows combining multiple tools.',
-            'document-writer': 'Document Writer: Write technical documentation, READMEs, and user guides.'
-        }
-        active_skills = [skill_descriptions.get(s, s) for s in skills]
-        skill_instructions = "\n\nActive Skills:\n" + "\n".join(f"- {s}" for s in active_skills)
+        skill_content = ""
+        for s in skills:
+            # Map skill IDs to descriptive instructions the LLM can follow
+            skill_map = {
+                'web-research': 'Use web_search and web_extract to find information. Cite sources.',
+                'competitor-analysis': 'Research competitors, compare products/pricing, generate competitive analysis.',
+                'data-collection': 'Gather structured data from web sources, organize into CSV/JSON.',
+                'report-generator': 'Generate professional reports with analysis and recommendations.',
+                'email-drafter': 'Draft professional emails with appropriate tone and call-to-action.',
+                'code-analyzer': 'Analyze code for bugs, security issues, and performance problems.',
+                'task-automation': 'Create automated workflows combining multiple tools.',
+                'document-writer': 'Write technical documentation, READMEs, and user guides.',
+                'gmail-organizer': 'Label, archive, and organize Gmail emails based on rules.',
+                'google-drive-manager': 'Manage Google Drive files — search, organize, share.',
+                'calendar-manager': 'Manage Google Calendar events — create, update, delete.',
+                'youtube-research': 'Search YouTube videos, get transcripts, analyze content.',
+            }
+            desc = skill_map.get(s, s)
+            skill_content += f"\n- {s}: {desc}"
+        if skill_content:
+            system_prompt += "\n\nYour active skills:" + skill_content
 
-    # Create a one-shot cron job to run this agent immediately
-    cron_dir = ZED_HOME / "cron"
-    cron_dir.mkdir(parents=True, exist_ok=True)
-    job_id = f"run-{str(uuid.uuid4())[:8]}"
-    job = {
-        "id": job_id,
-        "name": f"Manual run: {agent['name']}",
-        "schedule": "once",
-        "prompt": f"You are {agent['name']}. {agent.get('desc', '')}{skill_instructions}\n\nExecute your assigned task now. Use all available tools and your active skills to complete the work. Report what was done.",
-        "enabled": True,
-        "created_at": time.time(),
-    }
-    (cron_dir / f"{job_id}.json").write_text(json.dumps(job, indent=2))
+    system_prompt += "\n\nExecute your assigned task now. Use all available tools to complete the work. Report what was done."
 
-    # Trigger the cron tick to pick it up
-    try:
-        cron_tick()
-    except Exception:
-        pass
+    # Get the user's prompt from the agent config or use a default task
+    prompt = agent.get("task", agent.get("prompt", f"Execute the task for {agent_name}"))
 
-    return {"status": "triggered", "agent": agent, "job_id": job_id}
+    # Get LLM config
+    llm_model = agent.get("model", "auto")
+    llm_base_url = os.environ.get("LLM_BASE_URL", os.environ.get("OPENAI_BASE_URL", ""))
+    llm_api_key = os.environ.get("LLM_API_KEY", os.environ.get("OPENAI_API_KEY", ""))
+
+    # Run in background thread so endpoint returns immediately
+    run_id = f"run-{uuid.uuid4().hex[:8]}"
+
+    def _execute_agent():
+        try:
+            import openai
+            client = openai.OpenAI(
+                api_key=llm_api_key or "no-key",
+                base_url=llm_base_url or "https://server-llm-1.onrender.com/v1",
+            )
+            response = client.chat.completions.create(
+                model=llm_model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt},
+                ],
+                max_tokens=4096,
+            )
+            result = response.choices[0].message.content
+            logger.info("Agent %s (%s) completed: %s", agent_id, agent_name, result[:200])
+
+            # Save result
+            output_dir = ZED_HOME / "agent_output" / agent_id
+            output_dir.mkdir(parents=True, exist_ok=True)
+            (output_dir / f"{run_id}.json").write_text(json.dumps({
+                "run_id": run_id,
+                "agent_id": agent_id,
+                "prompt": prompt,
+                "result": result,
+                "model": llm_model,
+                "created_at": time.time(),
+            }, indent=2))
+        except Exception as e:
+            logger.error("Agent %s execution failed: %s", agent_id, e)
+
+    thread = threading.Thread(target=_execute_agent, daemon=True)
+    thread.start()
+
+    return {"status": "triggered", "agent": agent, "run_id": run_id}
 
 
 # ── WebSocket (live events) ────────────────────────────────────────────────────
