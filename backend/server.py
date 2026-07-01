@@ -1189,6 +1189,92 @@ async def delete_cron(job_id: str):
     return {"status": "deleted", "id": job_id}
 
 
+@app.patch("/api/cron/{job_id}")
+async def update_cron(job_id: str, request: Request):
+    """Toggle enabled state or update fields of a cron job."""
+    body = await request.json()
+    if HAS_CRON_JOBS:
+        try:
+            from cron.jobs import load_jobs as _lj, save_jobs as _sj
+            jobs = _lj()
+            found = next((j for j in jobs if j.get("id") == job_id), None)
+            if not found:
+                raise HTTPException(status_code=404, detail="Cron job not found")
+            for key, val in body.items():
+                if key in ("enabled", "name", "prompt", "schedule"):
+                    found[key] = val
+            _sj(jobs)
+            return {"status": "updated", "job": found}
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.warning("cron.jobs PATCH failed (%s), using fallback", e)
+
+    # Fallback
+    jobs = _load_cron_jobs_fallback()
+    found = next((j for j in jobs if j.get("id") == job_id), None)
+    if not found:
+        raise HTTPException(status_code=404, detail="Cron job not found")
+    for key, val in body.items():
+        if key in ("enabled", "name", "prompt", "schedule"):
+            found[key] = val
+    _save_cron_jobs_fallback(jobs)
+    return {"status": "updated", "job": found}
+
+
+@app.post("/api/cron/{job_id}/run")
+async def run_cron_now(job_id: str):
+    """Trigger a cron job to run immediately — fires its prompt via LLM in background."""
+    # Load the job
+    if HAS_CRON_JOBS:
+        try:
+            jobs = _cron_load_jobs()
+        except Exception:
+            jobs = _load_cron_jobs_fallback()
+    else:
+        jobs = _load_cron_jobs_fallback()
+
+    job = next((j for j in jobs if j.get("id") == job_id), None)
+    if not job:
+        raise HTTPException(status_code=404, detail="Cron job not found")
+
+    prompt = job.get("prompt", f"Execute scheduled task: {job.get('name', job_id)}")
+    llm_model = job.get("model", "auto") or "auto"
+    llm_base_url = os.environ.get("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
+    llm_api_key  = os.environ.get("ZED_PRO_API_KEY", os.environ.get("OPENAI_API_KEY", "no-key"))
+    run_id = f"run-{uuid.uuid4().hex[:8]}"
+
+    def _fire():
+        output_dir = ZED_HOME / "cron_output" / job_id
+        output_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            base_url = llm_base_url.rstrip("/")
+            if not base_url.endswith("/v1"):
+                base_url += "/v1"
+            resp = httpx.post(
+                f"{base_url}/chat/completions",
+                json={"model": llm_model, "messages": [{"role": "user", "content": prompt}], "max_tokens": 4096},
+                headers={"Authorization": f"Bearer {llm_api_key}", "Content-Type": "application/json"},
+                timeout=120.0,
+            )
+            result = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "No response") if resp.status_code == 200 else f"Error {resp.status_code}: {resp.text[:200]}"
+            status = "success" if resp.status_code == 200 else "error"
+        except Exception as e:
+            result = f"Execution failed: {e}"
+            status = "error"
+
+        (output_dir / f"{run_id}.json").write_text(json.dumps({
+            "run_id": run_id, "job_id": job_id,
+            "job_name": job.get("name"),
+            "prompt": prompt, "result": result, "status": status,
+            "created_at": time.time(),
+        }, indent=2))
+        logger.info("Cron job %s manual run %s: %s", job_id, run_id, status)
+
+    threading.Thread(target=_fire, daemon=True).start()
+    return {"status": "triggered", "job_id": job_id, "run_id": run_id}
+
+
 # ── Agents CRUD ──────────────────────────────────────────────────────────────
 AGENTS_DIR = ZED_HOME / "agents"
 
