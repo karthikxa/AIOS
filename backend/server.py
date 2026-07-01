@@ -1235,21 +1235,33 @@ async def run_agent_now(agent_id: str):
 
     def _execute_agent():
         try:
-            import openai
-            client = openai.OpenAI(
-                api_key=llm_api_key or "no-key",
-                base_url=llm_base_url or "https://server-llm-1.onrender.com/v1",
-            )
-            response = client.chat.completions.create(
-                model=llm_model,
-                messages=[
+            base_url = llm_base_url or "https://server-llm-1.onrender.com/v1"
+            api_key = llm_api_key or "no-key"
+            url = f"{base_url}/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            }
+            body = {
+                "model": llm_model,
+                "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt},
                 ],
-                max_tokens=4096,
-            )
-            result = response.choices[0].message.content
-            logger.info("Agent %s (%s) completed: %s", agent_id, agent_name, result[:200])
+                "max_tokens": 4096,
+            }
+            logger.info("Agent %s calling LLM at %s with model %s", agent_id, url, llm_model)
+            resp = httpx.post(url, json=body, headers=headers, timeout=120.0)
+            logger.info("Agent %s LLM response status: %s", agent_id, resp.status_code)
+
+            if resp.status_code != 200:
+                error_text = resp.text[:500]
+                logger.error("Agent %s LLM error: %s %s", agent_id, resp.status_code, error_text)
+                result = f"LLM error {resp.status_code}: {error_text}"
+            else:
+                data = resp.json()
+                result = data.get("choices", [{}])[0].get("message", {}).get("content", "No response")
+                logger.info("Agent %s completed: %s", agent_id, result[:200])
 
             # Save result
             output_dir = ZED_HOME / "agent_output" / agent_id
@@ -1263,7 +1275,7 @@ async def run_agent_now(agent_id: str):
                 "created_at": time.time(),
             }, indent=2))
         except Exception as e:
-            logger.error("Agent %s execution failed: %s", agent_id, e)
+            logger.error("Agent %s execution failed: %s", agent_id, e, exc_info=True)
 
     thread = threading.Thread(target=_execute_agent, daemon=True)
     thread.start()
