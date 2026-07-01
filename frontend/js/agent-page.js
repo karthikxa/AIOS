@@ -1,4 +1,5 @@
 import { SKILLS_CATALOG, getSkillById } from './skills-catalog.js';
+import { showToast } from './toast.js';
 
 const agentPixelAvatars = {
   security: `<img src="assets/models/security_avatar.png" alt="Security Agent" style="width: 100%; height: 100%; object-fit: cover;">`,
@@ -146,10 +147,18 @@ class AgentsStore {
 
   async runAgent(id) {
     try {
+      showToast('Agent is running... Check output shortly.', 'info');
       const res = await fetch(`/api/agents/${id}/run`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        showToast(`Agent triggered! Run ID: ${data.run_id || 'started'}`, 'success');
+      } else {
+        showToast('Failed to run agent.', 'error');
+      }
       return res.ok;
     } catch (e) {
       console.warn('[Agents] Run failed:', e);
+      showToast('Agent run failed: ' + e.message, 'error');
       return false;
     }
   }
