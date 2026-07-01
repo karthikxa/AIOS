@@ -67,6 +67,23 @@ except Exception:
     cron_tick = None
     HAS_CRON_SCHEDULER = False
 
+# Optional cron.jobs module — for properly-formatted job creation
+# that the tick() scheduler can actually execute
+try:
+    from cron.jobs import (
+        create_job as _cron_create_job,
+        load_jobs as _cron_load_jobs,
+        remove_job as _cron_remove_job,
+        parse_schedule as _cron_parse_schedule,
+    )
+    HAS_CRON_JOBS = True
+except Exception:
+    _cron_create_job = None
+    _cron_load_jobs = None
+    _cron_remove_job = None
+    _cron_parse_schedule = None
+    HAS_CRON_JOBS = False
+
 _log_dir = ZED_HOME / "logs"
 try:
     _log_dir.mkdir(parents=True, exist_ok=True)
@@ -442,13 +459,26 @@ class SessionCreateRequest(BaseModel):
 
 class AgentRequest(BaseModel):
     name: str
-    desc: Optional[str] = ""
+    desc: Optional[str] = ""          # primary description field
+    description: Optional[str] = None  # alias — curl tests send this key
+    task: Optional[str] = None         # what the agent should do when run
+    prompt: Optional[str] = None       # alias for task
     avatar: Optional[str] = "assistant"
-    model: Optional[str] = "Zed Pro"
+    model: Optional[str] = "auto"
     provider: Optional[str] = "zed-pro"
     schedule: Optional[str] = "Manual"
     status: Optional[str] = "active"
     skills: Optional[List[str]] = []
+
+    @property
+    def effective_desc(self) -> str:
+        """Return the best available description, preferring description over desc."""
+        return (self.description or self.desc or "").strip()
+
+    @property
+    def effective_task(self) -> str:
+        """Return the best available task/prompt."""
+        return (self.task or self.prompt or self.effective_desc or "").strip()
 
 
 class CronJobRequest(BaseModel):
@@ -1052,8 +1082,9 @@ async def list_memory():
 # ── Cron ──────────────────────────────────────────────────────────────────────
 CRON_JOBS_FILE = ZED_HOME / "cron" / "jobs.json"
 
-def _load_cron_jobs():
-    """Load jobs from jobs.json."""
+
+def _load_cron_jobs_fallback():
+    """Fallback: load jobs from jobs.json without cron.jobs module."""
     if not CRON_JOBS_FILE.exists():
         return []
     try:
@@ -1066,8 +1097,9 @@ def _load_cron_jobs():
         pass
     return []
 
-def _save_cron_jobs(jobs):
-    """Save jobs to jobs.json."""
+
+def _save_cron_jobs_fallback(jobs):
+    """Fallback: save jobs to jobs.json without cron.jobs module."""
     CRON_JOBS_FILE.parent.mkdir(parents=True, exist_ok=True)
     CRON_JOBS_FILE.write_text(json.dumps({"jobs": jobs}, indent=2), encoding="utf-8")
 
@@ -1075,14 +1107,48 @@ def _save_cron_jobs(jobs):
 @app.get("/api/cron")
 async def list_cron():
     """List cron jobs."""
-    jobs = _load_cron_jobs()
+    if HAS_CRON_JOBS:
+        try:
+            jobs = _cron_load_jobs()
+            return {"jobs": jobs, "count": len(jobs)}
+        except Exception as e:
+            logger.warning("cron.jobs.load_jobs() failed, using fallback: %s", e)
+    jobs = _load_cron_jobs_fallback()
     return {"jobs": jobs, "count": len(jobs)}
 
 
 @app.post("/api/cron")
 async def create_cron(request: CronJobRequest):
-    """Create a new cron job."""
-    jobs = _load_cron_jobs()
+    """Create a new cron job with properly-parsed schedule so tick() can fire it."""
+    # Prefer cron.jobs.create_job() — it calls parse_schedule() which produces
+    # the dict format {kind, expr/minutes/run_at} that get_due_jobs() requires.
+    # Jobs saved with a raw schedule string would be silently skipped by tick().
+    if HAS_CRON_JOBS:
+        try:
+            job = _cron_create_job(
+                prompt=request.prompt,
+                schedule=request.schedule,
+                name=request.name,
+                deliver="local",
+            )
+            # Disable if requested
+            if request.enabled is False:
+                jobs = _cron_load_jobs()
+                for j in jobs:
+                    if j["id"] == job["id"]:
+                        j["enabled"] = False
+                        break
+                from cron.jobs import save_jobs as _cron_save_jobs
+                _cron_save_jobs(jobs)
+                job["enabled"] = False
+            logger.info("Cron job '%s' created via cron.jobs (id=%s, next=%s)",
+                        job.get("name"), job.get("id"), job.get("next_run_at"))
+            return {"status": "created", "job": job}
+        except Exception as e:
+            logger.warning("cron.jobs.create_job() failed (%s), using fallback", e)
+
+    # Fallback: save raw job (scheduler may not fire it, but at least it's stored)
+    jobs = _load_cron_jobs_fallback()
     job_id = uuid.uuid4().hex[:12]
     now_iso = __import__("datetime").datetime.utcnow().isoformat()
     job = {
@@ -1094,18 +1160,32 @@ async def create_cron(request: CronJobRequest):
         "created_at": now_iso,
     }
     jobs.append(job)
-    _save_cron_jobs(jobs)
+    _save_cron_jobs_fallback(jobs)
+    logger.warning("Cron job '%s' created via fallback (no schedule parsing — tick() may not fire it)",
+                   request.name)
     return {"status": "created", "job": job}
 
 
 @app.delete("/api/cron/{job_id}")
 async def delete_cron(job_id: str):
     """Delete a cron job."""
-    jobs = _load_cron_jobs()
+    if HAS_CRON_JOBS:
+        try:
+            removed = _cron_remove_job(job_id)
+            if not removed:
+                raise HTTPException(status_code=404, detail="Cron job not found")
+            return {"status": "deleted", "id": job_id}
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.warning("cron.jobs.remove_job() failed (%s), using fallback", e)
+
+    # Fallback
+    jobs = _load_cron_jobs_fallback()
     new_jobs = [j for j in jobs if j.get("id") != job_id]
     if len(new_jobs) == len(jobs):
         raise HTTPException(status_code=404, detail="Cron job not found")
-    _save_cron_jobs(new_jobs)
+    _save_cron_jobs_fallback(new_jobs)
     return {"status": "deleted", "id": job_id}
 
 
@@ -1135,7 +1215,9 @@ async def create_agent(request: AgentRequest):
     agent = {
         "id": agent_id,
         "name": request.name,
-        "desc": request.desc,
+        "desc": request.effective_desc,
+        "description": request.effective_desc,  # store both keys for compat
+        "task": request.effective_task,
         "avatar": request.avatar,
         "model": request.model,
         "provider": request.provider,
@@ -1157,7 +1239,9 @@ async def update_agent(agent_id: str, request: AgentRequest):
     existing = json.loads(agent_file.read_text())
     existing.update({
         "name": request.name,
-        "desc": request.desc,
+        "desc": request.effective_desc,
+        "description": request.effective_desc,
+        "task": request.effective_task,
         "avatar": request.avatar,
         "model": request.model,
         "provider": request.provider,
@@ -1224,22 +1308,34 @@ async def run_agent_now(agent_id: str):
 
     # Get the user's prompt from the agent config or use a default task
     prompt = agent.get("task", agent.get("prompt", f"Execute the task for {agent_name}"))
+    # If task/prompt is empty, use the description as the task
+    if not prompt or prompt == f"Execute the task for {agent_name}":
+        if agent_desc:
+            prompt = agent_desc
 
-    # Get LLM config
+    # Get LLM config — prefer ZED_PRO keys (set at server startup)
     llm_model = agent.get("model", "auto")
-    llm_base_url = os.environ.get("LLM_BASE_URL", os.environ.get("OPENAI_BASE_URL", ""))
-    llm_api_key = os.environ.get("LLM_API_KEY", os.environ.get("OPENAI_API_KEY", ""))
+    # Normalize legacy model name
+    if not llm_model or llm_model in ("Zed Pro", "zed-pro", ""):
+        llm_model = "auto"
+    llm_base_url = os.environ.get("LLM_BASE_URL", os.environ.get(
+        "ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"))
+    llm_api_key = os.environ.get("LLM_API_KEY", os.environ.get(
+        "ZED_PRO_API_KEY", os.environ.get("OPENAI_API_KEY", "no-key")))
 
     # Run in background thread so endpoint returns immediately
     run_id = f"run-{uuid.uuid4().hex[:8]}"
 
     def _execute_agent():
+        output_dir = ZED_HOME / "agent_output" / agent_id
+        output_dir.mkdir(parents=True, exist_ok=True)
         try:
-            base_url = llm_base_url or "https://server-llm-1.onrender.com/v1"
-            api_key = llm_api_key or "no-key"
+            base_url = llm_base_url.rstrip("/")
+            if not base_url.endswith("/v1"):
+                base_url = base_url + "/v1"
             url = f"{base_url}/chat/completions"
             headers = {
-                "Authorization": f"Bearer {api_key}",
+                "Authorization": f"Bearer {llm_api_key}",
                 "Content-Type": "application/json",
             }
             body = {
@@ -1258,29 +1354,46 @@ async def run_agent_now(agent_id: str):
                 error_text = resp.text[:500]
                 logger.error("Agent %s LLM error: %s %s", agent_id, resp.status_code, error_text)
                 result = f"LLM error {resp.status_code}: {error_text}"
+                status = "error"
             else:
                 data = resp.json()
                 result = data.get("choices", [{}])[0].get("message", {}).get("content", "No response")
+                status = "success"
                 logger.info("Agent %s completed: %s", agent_id, result[:200])
 
-            # Save result
-            output_dir = ZED_HOME / "agent_output" / agent_id
-            output_dir.mkdir(parents=True, exist_ok=True)
+            # Save result (success or error — always write so /api/agent_output shows something)
             (output_dir / f"{run_id}.json").write_text(json.dumps({
                 "run_id": run_id,
                 "agent_id": agent_id,
+                "agent_name": agent_name,
                 "prompt": prompt,
                 "result": result,
                 "model": llm_model,
+                "status": status,
                 "created_at": time.time(),
             }, indent=2))
         except Exception as e:
             logger.error("Agent %s execution failed: %s", agent_id, e, exc_info=True)
+            # Write failure record so the user can see what went wrong
+            try:
+                (output_dir / f"{run_id}.json").write_text(json.dumps({
+                    "run_id": run_id,
+                    "agent_id": agent_id,
+                    "agent_name": agent_name,
+                    "prompt": prompt,
+                    "result": f"Execution failed: {e}",
+                    "model": llm_model,
+                    "status": "error",
+                    "created_at": time.time(),
+                }, indent=2))
+            except Exception:
+                pass
 
     thread = threading.Thread(target=_execute_agent, daemon=True)
     thread.start()
 
     return {"status": "triggered", "agent": agent, "run_id": run_id}
+
 
 
 # ── WebSocket (live events) ────────────────────────────────────────────────────
