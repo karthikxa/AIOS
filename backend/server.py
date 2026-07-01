@@ -1312,21 +1312,85 @@ async def list_public_api_categories():
     return {"categories": categories, "count": len(categories)}
 
 
+# Curated mapping: API name (case-insensitive) -> actual base API URL
+# Many entries in public-api-lists have docs URLs, not API endpoints
+_PUBLIC_API_BASE_URLS = {
+    # Animals
+    "cat facts": "https://catfact.ninja",
+    "cataas": "https://cataas.com",
+    "cats": "https://api.thecatapi.com/v1",
+    "dog api": "https://dogapi.dog/api/v2",
+    "dogs": "https://dog.ceo/api",
+    "http dogs": "https://http.dog",
+    "httpcat": "https://http.cat",
+    "randomdog": "https://random.dog",
+    "randomfox": "https://randomfox.ca",
+    # Anime
+    "anilist": "https://graphql.anilist.co",
+    "jikan": "https://api.jikan.moe/v4",
+    "mangadex": "https://api.mangadex.org",
+    # Development
+    "github": "https://api.github.com",
+    "gitlab": "https://gitlab.com/api/v4",
+    "ipify": "https://api.ipify.org",
+    "ipinfo": "https://ipinfo.io",
+    "jsonbin.io": "https://api.jsonbin.io/v3",
+    # Weather
+    "openweathermap": "https://api.openweathermap.org/data/2.5",
+    # News
+    "newsapi": "https://newsapi.org/v2",
+    # Currency
+    "coingecko": "https://api.coingecko.com/api/v3",
+    "coinmarketcap": "https://pro-api.coinmarketcap.com/v1",
+    "exchangerate-api": "https://v6.exchangerate-api.com/v6",
+    "frankfurter": "https://api.frankfurter.app",
+    # Books
+    "open library": "https://openlibrary.org/api",
+    # Calendar
+    "nager.date": "https://date.nager.at/api/v3",
+    # Games
+    "rawg": "https://api.rawg.io/api",
+    # Music
+    "lyrics.ovh": "https://api.lyrics.ovh/v1",
+    # Social
+    "reddit": "https://www.reddit.com/r",
+    # Shopping
+    "dummyjson": "https://dummyjson.com",
+    # Test Data
+    "jsonplaceholder": "https://jsonplaceholder.typicode.com",
+    "reqres": "https://reqres.in/api",
+}
+
+
 @app.post("/api/public_apis/call/{api_name}")
 async def call_public_api(
     api_name: str,
     request: Request,
-    endpoint: Optional[str] = Query(None, description="API endpoint path"),
-    method: str = Query("GET", description="HTTP method")
+    endpoint: Optional[str] = Query(None, description="API endpoint path (appended to base URL)"),
+    method: str = Query("GET", description="HTTP method"),
+    url: Optional[str] = Query(None, description="Full URL override (if docs URL is wrong)")
 ):
-    """Call a public API by name. Finds the API by name, constructs the URL, and makes the request."""
+    """Call a public API by name. Finds the API by name, resolves the base URL, and makes the request.
+    
+    The public-api-lists 'url' field often points to documentation, not the API endpoint.
+    This endpoint uses a curated mapping for known APIs, or you can provide a full URL override.
+    """
     # Find the API by name (case-insensitive)
     entries = _fetch_public_apis().get("entries", [])
     api = next((e for e in entries if e.get("name").lower() == api_name.lower()), None)
     if not api:
         raise HTTPException(status_code=404, detail=f"Public API '{api_name}' not found")
     
-    base_url = api.get("url", "").rstrip("/")
+    # Resolve base URL: use override, then curated mapping, then docs URL as fallback
+    if url:
+        base_url = url.rstrip("/")
+    else:
+        # Check curated mapping (case-insensitive)
+        base_url = _PUBLIC_API_BASE_URLS.get(api_name.lower())
+        if not base_url:
+            # Fallback to the docs URL from the dataset
+            base_url = api.get("url", "").rstrip("/")
+    
     full_url = f"{base_url}/{endpoint}" if endpoint else base_url
     
     # Get request body
