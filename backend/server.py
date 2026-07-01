@@ -49,9 +49,24 @@ _raw_zed_home = os.environ.get("ZED_HOME", str(_DEFAULT_ZED_HOME)).strip()
 ZED_HOME = Path(_raw_zed_home)
 os.environ["ZED_HOME"] = str(ZED_HOME)
 
-from zed_constants import get_zed_home
-from zed_logging import setup_logging
-from cron.scheduler import tick as cron_tick
+try:
+    from zed_constants import get_zed_home
+except Exception:
+    get_zed_home = lambda: ZED_HOME
+
+try:
+    from zed_logging import setup_logging
+except Exception:
+    setup_logging = lambda **kw: None
+
+# Optional cron scheduler — may fail if dependencies missing on Render
+try:
+    from cron.scheduler import tick as cron_tick
+    HAS_CRON_SCHEDULER = True
+except Exception:
+    cron_tick = None
+    HAS_CRON_SCHEDULER = False
+
 _log_dir = ZED_HOME / "logs"
 try:
     _log_dir.mkdir(parents=True, exist_ok=True)
@@ -62,7 +77,10 @@ except OSError as _e:
     _log_dir = Path(__file__).resolve().parent / "logs"
     _log_dir.mkdir(parents=True, exist_ok=True)
     ZED_HOME = _log_dir.parent
-setup_logging(zed_home=ZED_HOME, log_level="INFO")
+try:
+    setup_logging(zed_home=ZED_HOME, log_level="INFO")
+except Exception:
+    pass
 
 logger = logging.getLogger("zed.server")
 
@@ -345,21 +363,23 @@ async def lifespan(app: FastAPI):
 
     # ── Cron scheduler daemon thread ────────────────────────────────────
     # Runs tick() every 60 seconds in the background so scheduled agents
-    # execute even when no dashboard tab is open.  Uses the same file lock
-    # (cron/.tick.lock) as the gateway, so multiple processes never collide.
+    # execute even when no dashboard tab is open.
     _cron_stop = threading.Event()
 
-    def _cron_loop():
-        logger.info("Cron scheduler daemon started (interval=60s)")
-        while not _cron_stop.is_set():
-            try:
-                cron_tick(verbose=True)
-            except Exception:
-                logger.exception("Cron tick failed")
-            _cron_stop.wait(timeout=60)
+    if HAS_CRON_SCHEDULER:
+        def _cron_loop():
+            logger.info("Cron scheduler daemon started (interval=60s)")
+            while not _cron_stop.is_set():
+                try:
+                    cron_tick(verbose=True)
+                except Exception:
+                    logger.exception("Cron tick failed")
+                _cron_stop.wait(timeout=60)
 
-    _cron_thread = threading.Thread(target=_cron_loop, name="cron-daemon", daemon=True)
-    _cron_thread.start()
+        _cron_thread = threading.Thread(target=_cron_loop, name="cron-daemon", daemon=True)
+        _cron_thread.start()
+    else:
+        logger.warning("Cron scheduler not available — scheduled jobs will not auto-execute")
 
     logger.info("Zed Pro backend ready — http://127.0.0.1:%s", PORT)
     yield
@@ -1030,69 +1050,63 @@ async def list_memory():
 
 
 # ── Cron ──────────────────────────────────────────────────────────────────────
+CRON_JOBS_FILE = ZED_HOME / "cron" / "jobs.json"
+
+def _load_cron_jobs():
+    """Load jobs from jobs.json."""
+    if not CRON_JOBS_FILE.exists():
+        return []
+    try:
+        data = json.loads(CRON_JOBS_FILE.read_text(encoding="utf-8"))
+        if isinstance(data, dict):
+            return data.get("jobs", [])
+        if isinstance(data, list):
+            return data
+    except Exception:
+        pass
+    return []
+
+def _save_cron_jobs(jobs):
+    """Save jobs to jobs.json."""
+    CRON_JOBS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    CRON_JOBS_FILE.write_text(json.dumps({"jobs": jobs}, indent=2), encoding="utf-8")
+
+
 @app.get("/api/cron")
 async def list_cron():
-    """List cron jobs using the cron.jobs module (reads from jobs.json)."""
-    try:
-        from cron.jobs import list_jobs as _list_jobs, load_jobs as _load_jobs
-        jobs = _list_jobs(include_disabled=True)
-        # Flatten parsed schedule for frontend display
-        result = []
-        for j in jobs:
-            result.append({
-                "id": j.get("id", ""),
-                "name": j.get("name", ""),
-                "schedule": j.get("schedule_display", ""),
-                "prompt": j.get("prompt", ""),
-                "enabled": j.get("enabled", True),
-                "created_at": j.get("created_at", ""),
-                "next_run_at": j.get("next_run_at", ""),
-                "skills": j.get("skills", []),
-                "model": j.get("model", ""),
-            })
-        return {"jobs": result, "count": len(result)}
-    except Exception as e:
-        logger.error("Failed to list cron jobs: %s", e)
-        return {"jobs": [], "count": 0, "error": str(e)}
+    """List cron jobs."""
+    jobs = _load_cron_jobs()
+    return {"jobs": jobs, "count": len(jobs)}
 
 
 @app.post("/api/cron")
 async def create_cron(request: CronJobRequest):
-    """Create a new cron job using the cron.jobs module."""
-    try:
-        from cron.jobs import create_job as _create_job
-        job = _create_job(
-            prompt=request.prompt,
-            schedule=request.schedule,
-            name=request.name,
-        )
-        return {"status": "created", "job": {
-            "id": job.get("id", ""),
-            "name": job.get("name", ""),
-            "schedule": job.get("schedule_display", request.schedule),
-            "prompt": job.get("prompt", ""),
-            "enabled": job.get("enabled", True),
-            "created_at": job.get("created_at", ""),
-        }}
-    except Exception as e:
-        logger.error("Failed to create cron job: %s", e)
-        raise HTTPException(status_code=400, detail=str(e))
+    """Create a new cron job."""
+    jobs = _load_cron_jobs()
+    job_id = uuid.uuid4().hex[:12]
+    now_iso = __import__("datetime").datetime.utcnow().isoformat()
+    job = {
+        "id": job_id,
+        "name": request.name,
+        "schedule": request.schedule,
+        "prompt": request.prompt,
+        "enabled": request.enabled if request.enabled is not None else True,
+        "created_at": now_iso,
+    }
+    jobs.append(job)
+    _save_cron_jobs(jobs)
+    return {"status": "created", "job": job}
 
 
 @app.delete("/api/cron/{job_id}")
 async def delete_cron(job_id: str):
-    """Delete a cron job using the cron.jobs module."""
-    try:
-        from cron.jobs import remove_job as _remove_job
-        removed = _remove_job(job_id)
-        if not removed:
-            raise HTTPException(status_code=404, detail="Cron job not found")
-        return {"status": "deleted", "id": job_id}
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error("Failed to delete cron job %s: %s", job_id, e)
-        raise HTTPException(status_code=500, detail=str(e))
+    """Delete a cron job."""
+    jobs = _load_cron_jobs()
+    new_jobs = [j for j in jobs if j.get("id") != job_id]
+    if len(new_jobs) == len(jobs):
+        raise HTTPException(status_code=404, detail="Cron job not found")
+    _save_cron_jobs(new_jobs)
+    return {"status": "deleted", "id": job_id}
 
 
 # ── Agents CRUD ──────────────────────────────────────────────────────────────
