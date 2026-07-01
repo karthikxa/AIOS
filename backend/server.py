@@ -1249,6 +1249,131 @@ async def list_tools():
         return {"tools": [], "count": 0}
 
 
+# ── Public API Tools (from public-api-lists) ────────────────────────────────────
+# Fetches 775+ free public APIs across 48 categories and makes them callable as tools
+_PUBLIC_API_LIST_URL = "https://public-api-lists.github.io/public-api-lists/api/all.json"
+_public_api_cache: Optional[Dict[str, Any]] = None
+_public_api_cache_time: float = 0
+_PUBLIC_API_CACHE_TTL = 3600  # 1 hour
+
+
+def _fetch_public_apis() -> Dict[str, Any]:
+    """Fetch and cache the public API list."""
+    global _public_api_cache, _public_api_cache_time
+    now = time.time()
+    if _public_api_cache and now - _public_api_cache_time < _PUBLIC_API_CACHE_TTL:
+        return _public_api_cache
+    try:
+        resp = httpx.get(_PUBLIC_API_LIST_URL, timeout=10.0)
+        if resp.status_code == 200:
+            _public_api_cache = resp.json()
+            _public_api_cache_time = now
+            logger.info("Fetched %s public APIs from %s", 
+                       _public_api_cache.get("count", 0), _PUBLIC_API_LIST_URL)
+    except Exception as e:
+        logger.warning("Failed to fetch public APIs: %s", e)
+        _public_api_cache = {"count": 0, "entries": []}
+    return _public_api_cache
+
+
+def _get_public_apis_by_category(category: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Get public APIs, optionally filtered by category."""
+    data = _fetch_public_apis()
+    entries = data.get("entries", [])
+    if category:
+        entries = [e for e in entries if e.get("category") == category]
+    return entries
+
+
+def _get_public_api_categories() -> List[str]:
+    """Get all unique categories from public APIs."""
+    data = _fetch_public_apis()
+    entries = data.get("entries", [])
+    categories = sorted(set(e.get("category") for e in entries if e.get("category")))
+    return categories
+
+
+@app.get("/api/public_apis")
+async def list_public_apis(
+    category: Optional[str] = Query(None, description="Filter by category"),
+    limit: int = Query(100, le=500, description="Max results")
+):
+    """List public APIs from public-api-lists, optionally filtered by category."""
+    entries = _get_public_apis_by_category(category)
+    if category:
+        return {"apis": entries[:limit], "count": len(entries), "category": category}
+    return {"apis": entries[:limit], "count": len(entries)}
+
+
+@app.get("/api/public_apis/categories")
+async def list_public_api_categories():
+    """List all available public API categories."""
+    categories = _get_public_api_categories()
+    return {"categories": categories, "count": len(categories)}
+
+
+@app.post("/api/public_apis/call/{api_name}")
+async def call_public_api(
+    api_name: str,
+    request: Request,
+    endpoint: Optional[str] = Query(None, description="API endpoint path"),
+    method: str = Query("GET", description="HTTP method")
+):
+    """Call a public API by name. Finds the API by name, constructs the URL, and makes the request."""
+    # Find the API by name (case-insensitive)
+    entries = _fetch_public_apis().get("entries", [])
+    api = next((e for e in entries if e.get("name").lower() == api_name.lower()), None)
+    if not api:
+        raise HTTPException(status_code=404, detail=f"Public API '{api_name}' not found")
+    
+    base_url = api.get("url", "").rstrip("/")
+    full_url = f"{base_url}/{endpoint}" if endpoint else base_url
+    
+    # Get request body
+    body = None
+    try:
+        body = await request.json()
+    except Exception:
+        pass
+    
+    # Make the HTTP request
+    try:
+        headers = {"Content-Type": "application/json"}
+        
+        if method.upper() == "GET":
+            resp = httpx.get(full_url, headers=headers, timeout=30.0)
+        elif method.upper() == "POST":
+            resp = httpx.post(full_url, json=body, headers=headers, timeout=30.0)
+        elif method.upper() == "PUT":
+            resp = httpx.put(full_url, json=body, headers=headers, timeout=30.0)
+        elif method.upper() == "DELETE":
+            resp = httpx.delete(full_url, headers=headers, timeout=30.0)
+        elif method.upper() == "PATCH":
+            resp = httpx.patch(full_url, json=body, headers=headers, timeout=30.0)
+        else:
+            raise HTTPException(status_code=400, detail=f"Unsupported method: {method}")
+        
+        return {
+            "api": api.get("name"),
+            "url": full_url,
+            "method": method,
+            "status": resp.status_code,
+            "data": resp.json() if resp.content else resp.text,
+            "headers": dict(resp.headers)
+        }
+    except httpx.HTTPStatusError as e:
+        return {
+            "api": api.get("name"),
+            "url": full_url,
+            "method": method,
+            "status": e.response.status_code,
+            "error": str(e),
+            "data": e.response.text[:1000]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ── Config ────────────────────────────────────────────────────────────────────
 @app.get("/api/config")
 async def get_config():
