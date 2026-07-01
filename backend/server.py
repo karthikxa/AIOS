@@ -1381,6 +1381,22 @@ async def update_cron(job_id: str, request: Request):
     return {"status": "updated", "job": found}
 
 
+@app.get("/api/cron_output/{job_id}")
+async def get_cron_output(job_id: str):
+    """Get the latest outputs for a cron job."""
+    output_dir = ZED_HOME / "cron_output" / job_id
+    if not output_dir.exists():
+        return {"outputs": [], "count": 0}
+    outputs = []
+    for f in sorted(output_dir.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+            outputs.append(data)
+        except Exception:
+            pass
+    return {"outputs": outputs[:10], "count": len(outputs)}
+
+
 @app.post("/api/cron/{job_id}/run")
 async def run_cron_now(job_id: str):
     """Trigger a cron job to run immediately — fires its prompt via LLM in background."""
