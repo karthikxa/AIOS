@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VNC Screen</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #1a1a1a; }
+  #screenImg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    background: #000;
+  }
+  #status {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font: 11px -apple-system, sans-serif;
+    background: rgba(0,0,0,0.7);
+    padding: 3px 10px;
+    border-radius: 10px;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+<img id="screenImg" src="about:blank" alt="Screen">
+<div id="status">Connecting...</div>
+<script>
+(function() {
+  const img = document.getElementById('screenImg');
+  const status = document.getElementById('status');
+  const params = new URLSearchParams(window.location.search);
+  const interval = parseInt(params.get('interval') || '1500', 10);
+  // Use the Vite proxy: /sandbox/* → http://localhost:8080/*
+  const sandboxBase = '/sandbox';
+
+  let connected = false;
+  let failCount = 0;
+
+  async function takeScreenshot() {
+    try {
+      const resp = await fetch(sandboxBase + '/v1/browser/screenshot?_t=' + Date.now());
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const oldUrl = img.src;
+      img.src = url;
+      if (oldUrl && oldUrl.startsWith('blob:')) URL.revokeObjectURL(oldUrl);
+      if (!connected) {
+        connected = true;
+        status.style.display = 'none';
+      }
+      failCount = 0;
+    } catch (e) {
+      failCount++;
+      if (failCount > 3) {
+        status.textContent = 'Reconnecting...';
+        status.style.display = 'block';
+        connected = false;
+      }
+    }
+  }
+
+  takeScreenshot();
+  setInterval(takeScreenshot, interval);
+})();
+</script>
+</body>
+</html>

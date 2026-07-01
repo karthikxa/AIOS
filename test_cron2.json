@@ -1,0 +1,1 @@
+{"name":"Test Fixed Cron","schedule":"every 1h","prompt":"Say hello world","enabled":true}

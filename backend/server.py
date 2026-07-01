@@ -1065,7 +1065,6 @@ async def create_cron(request: CronJobRequest):
             prompt=request.prompt,
             schedule=request.schedule,
             name=request.name,
-            enabled=request.enabled,
         )
         return {"status": "created", "job": {
             "id": job.get("id", ""),
