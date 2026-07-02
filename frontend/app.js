@@ -1210,20 +1210,29 @@ const starIndicator = `
       body: JSON.stringify({
         model: model.modelId || model.name || 'auto',
         messages: [
-          { role: 'system', content: `You are a task orchestrator. Given a user task, decompose it into 2-5 sub-agent tasks. Each sub-agent has a role name and a specific task. Return ONLY valid JSON array, no markdown.\n\nFormat: [{"name":"Role Name","task":"specific task description","avatar":"emoji"}]\n\nAvatars: use one of 👨‍💻 👩‍🎨 👩‍🚀 👨‍🔬 👩‍⚖️ 👨‍🏫 👩‍⚕️ 👨‍🎨 👩‍🔧 👨‍✈️\n\nKeep each task focused and actionable. Names should be short (2-3 words like "Researcher", "Writer", "Analyst").` },
+          { role: 'system', content: `You are a task orchestrator. Given a user task, decompose it into 2-5 sub-agent tasks. Return ONLY a valid JSON array. No reasoning, no explanation, no markdown. Just the JSON.\n\nFormat: [{"name":"Role Name","task":"specific task description","avatar":"emoji"}]\n\nAvatars: 👨‍💻 👩‍🎨 👩‍🚀 👨‍🔬 👩‍⚖️ 👨‍🏫 👩‍⚕️ 👨‍🎨 👩‍🔧 👨‍✈️\n\nNames: Researcher, Writer, Analyst, Coder, Designer, etc.` },
           { role: 'user', content: promptText }
         ],
         temperature: 0.3,
-        max_tokens: 1024,
+        max_tokens: 4096,
       }),
     });
     const decomposeData = await decomposeResp.json();
     const rawContent = decomposeData.choices?.[0]?.message?.content || '[]';
     let subAgents;
     try {
-      const jsonMatch = rawContent.match(/\[[\s\S]*\]/);
-      subAgents = JSON.parse(jsonMatch ? jsonMatch[0] : rawContent);
-    } catch { subAgents = [{ name: 'Researcher', task: promptText, avatar: '👨‍💻' }]; }
+      // Try to extract JSON array from response (handles reasoning model output)
+      const jsonMatch = rawContent.match(/\[[\s\S]*?\]/);
+      if (jsonMatch) {
+        subAgents = JSON.parse(jsonMatch[0]);
+      } else {
+        // Try parsing the whole content as JSON
+        subAgents = JSON.parse(rawContent);
+      }
+    } catch { 
+      // Fallback: create a single agent with the full task
+      subAgents = [{ name: 'Agent', task: promptText, avatar: '🤖' }]; 
+    }
 
     subAgents = subAgents.map((a, i) => ({
       idStr: String(i + 1).padStart(2, '0'),
@@ -1270,7 +1279,7 @@ const starIndicator = `
                 { role: 'user', content: promptText }
               ],
               temperature: 0.5,
-              max_tokens: 1024,
+              max_tokens: 4096,
             }),
           });
           const data = await resp.json();
@@ -2836,6 +2845,12 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
       let msgDiv = null;
       let bubble = null;
+      let hasEndedThinking = false;
+      let thinkingStartTime = null;
+      let cotSection = null;
+      let cotContentDiv = null;
+      let firstReasoningToken = true;
+      let accumulatedReasoning = '';
 
       const ensureAssistantBubble = () => {
         if (!bubble) {
