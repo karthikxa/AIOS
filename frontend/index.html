@@ -432,6 +432,13 @@
   </div>
 </div>
 
+      <!-- Agent Mode Content (shown in agent mode instead of VNC) -->
+      <div id="splitPaneAgentContent" style="display: none; flex: 1; overflow-y: auto; background: #FFFFFF; padding: 16px 20px;">
+        <div id="agentSubAgentsList" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Dynamically populated with sub-agent cards -->
+        </div>
+      </div>
+
       <!-- Task Progress List -->
       <div id="splitPaneProgress" class="split-pane-progress" style="display: flex; flex-direction: column; background: #FFFFFF; flex-shrink: 0; font-family: 'Inter', sans-serif;">
         <div id="splitPaneProgressHeader" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid #F3F4F6; cursor: pointer; user-select: none;">

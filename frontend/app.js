@@ -1182,7 +1182,7 @@ const starIndicator = `
   }
 
   async function triggerSwarmVisualization(promptText, bubbleElement) {
-    toggleComputerSplit(true);
+    toggleAgentSplit(true);
     
     let blocksContainer = bubbleElement.querySelector('.message-collapsible-blocks');
     if (!blocksContainer) {
@@ -1247,15 +1247,65 @@ const starIndicator = `
     const listCard = createSwarmSubagentsList(subAgents.map(a => ({ name: a.name, avatar: a.avatarHtml })));
     blocksContainer.appendChild(listCard);
 
-    // Step 3: Show parallel cards
+    // Step 3: Show parallel cards in chat
     const parallelCards = createSwarmParallelCards(subAgents);
     blocksContainer.appendChild(parallelCards);
 
+    // Step 3b: Populate right panel with step-based progress (matching the screenshot design)
+    if (progressBody) {
+      progressBody.innerHTML = '';
+      progressBody.style.maxHeight = 'none';
+      progressBody.style.padding = '0';
+      progressBody.style.gap = '0';
+
+      // Add each sub-agent as an expandable step row
+      subAgents.forEach((agent, idx) => {
+        const stepRow = document.createElement('div');
+        stepRow.id = `agent-step-${idx}`;
+        stepRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #F3F4F6;cursor:pointer;transition:background 0.15s;';
+        stepRow.onmouseenter = () => stepRow.style.background = '#F9FAFB';
+        stepRow.onmouseleave = () => stepRow.style.background = 'transparent';
+
+        // Left: icon + task text
+        const left = document.createElement('div');
+        left.style.cssText = 'display:flex;align-items:center;gap:10px;flex:1;min-width:0;';
+
+        // Icon based on task type
+        const taskLower = agent.task.toLowerCase();
+        let iconSvg = '';
+        if (taskLower.includes('read') || taskLower.includes('fetch') || taskLower.includes('analyze')) {
+          iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+        } else if (taskLower.includes('write') || taskLower.includes('create') || taskLower.includes('format')) {
+          iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+        } else if (taskLower.includes('execute') || taskLower.includes('run') || taskLower.includes('code')) {
+          iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+        } else if (taskLower.includes('think') || taskLower.includes('reason') || taskLower.includes('plan')) {
+          iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+        } else {
+          iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>';
+        }
+
+        left.innerHTML = `
+          <span style="flex-shrink:0;">${iconSvg}</span>
+          <span style="font-size:13px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${agent.task}</span>
+        `;
+
+        // Right: chevron
+        const chevron = document.createElement('div');
+        chevron.style.cssText = 'flex-shrink:0;color:#9CA3AF;';
+        chevron.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+
+        stepRow.appendChild(left);
+        stepRow.appendChild(chevron);
+        progressBody.appendChild(stepRow);
+      });
+    }
+
     // Update right panel header
     const splitH2 = document.querySelector('.split-pane-sub-header h2');
-    if (splitH2) splitH2.textContent = `Swarm: ${subAgents.length} agents`;
+    if (splitH2) splitH2.textContent = 'Agent 01';
     const splitUrl = document.getElementById('splitPaneSubHeaderUrl');
-    if (splitUrl) splitUrl.innerHTML = `<span style="color:#6B7280;">${subAgents.length} sub-agents active</span>`;
+    if (splitUrl) splitUrl.innerHTML = '<span style="color:#6B7280;display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Agent\'s Window</span>';
 
     // Step 4: Execute all sub-agents in parallel
     if (progressHeader) {
@@ -1288,6 +1338,18 @@ const starIndicator = `
           agent.result = result;
           allResults[idx] = result;
           updateProgressStep(stepIdx, `${agent.name}: Done`, 'done');
+          // Update right panel step row with green check
+          const stepRow = document.getElementById(`agent-step-${idx}`);
+          if (stepRow) {
+            const left = stepRow.querySelector('div');
+            if (left) {
+              const iconSpan = left.querySelector('span');
+              if (iconSpan) {
+                iconSpan.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+              }
+            }
+            stepRow.style.background = '#F0FDF4';
+          }
           return result;
         } catch (err) {
           agent.status = 'failed';
@@ -2275,7 +2337,7 @@ const starIndicator = `
     // Use the selected mode directly - LLM decides if computer tools are needed
     const effectiveMode = currentMode;
 
-    // Swarm mode variables — swarm triggers in Agent (search) mode
+    // Swarm mode variables — agent mode triggers swarm, computer mode uses VNC panel
     let isPromptSwarmTrigger = effectiveMode === 'search';
     let swarmVisualized = false;
 
@@ -3663,6 +3725,17 @@ Here are the current findings:
       mainContent.classList.add('computer-split-mode');
       computerSplitPane.style.display = 'flex';
       
+      // Set header to Computer mode
+      const splitH2 = document.querySelector('.split-pane-sub-header h2');
+      if (splitH2) splitH2.textContent = "Zed's computer";
+      const splitUrl = document.getElementById('splitPaneSubHeaderUrl');
+      if (splitUrl) splitUrl.textContent = 'Browser ready';
+      // Show VNC viewport, hide agent content
+      const viewport = document.getElementById('splitPaneViewport');
+      if (viewport) viewport.style.display = 'block';
+      const agentContent = document.getElementById('splitPaneAgentContent');
+      if (agentContent) agentContent.style.display = 'none';
+      
       // Sync mode capsule UI state
       const modeCapsule = document.getElementById('modeCapsule');
       if (modeCapsule) {
@@ -3702,6 +3775,43 @@ Here are the current findings:
           }
         }
       }
+    }
+  }
+
+  function toggleAgentSplit(show) {
+    const mainContent = document.getElementById('mainContent');
+    const computerSplitPane = document.getElementById('computerSplitPane');
+    if (!mainContent || !computerSplitPane) return;
+    
+    const isOpen = mainContent.classList.contains('computer-split-mode');
+    const shouldShow = show !== undefined ? show : !isOpen;
+    
+    if (shouldShow) {
+      mainContent.classList.add('computer-split-mode');
+      computerSplitPane.style.display = 'flex';
+      
+      // Set header to Agent mode
+      const outerHeader = computerSplitPane.querySelector('.split-pane-outer-header span');
+      if (outerHeader) outerHeader.textContent = 'Agents';
+      const splitH2 = document.querySelector('.split-pane-sub-header h2');
+      if (splitH2) splitH2.textContent = 'Agent 01';
+      const splitUrl = document.getElementById('splitPaneSubHeaderUrl');
+      if (splitUrl) splitUrl.innerHTML = '<span style="color:#6B7280;display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Agent\'s Window</span>';
+      
+      // Hide VNC viewport, show agent content
+      const viewport = document.getElementById('splitPaneViewport');
+      if (viewport) viewport.style.display = 'none';
+      const agentContent = document.getElementById('splitPaneAgentContent');
+      if (agentContent) agentContent.style.display = 'block';
+      
+      // Show progress, hide agent list (use progress body instead)
+      const progressEl = document.getElementById('splitPaneProgress');
+      if (progressEl) progressEl.style.display = 'flex';
+    } else {
+      mainContent.classList.remove('computer-split-mode');
+      computerSplitPane.style.display = 'none';
+      const agentContent = document.getElementById('splitPaneAgentContent');
+      if (agentContent) agentContent.style.display = 'none';
     }
   }
 
