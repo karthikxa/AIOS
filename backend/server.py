@@ -1406,36 +1406,47 @@ async def call_public_api(
     # Make the HTTP request
     try:
         headers = {"Content-Type": "application/json"}
+        kwargs = {"headers": headers, "timeout": 30.0, "follow_redirects": True}
         
         if method.upper() == "GET":
-            resp = httpx.get(full_url, headers=headers, timeout=30.0)
+            resp = httpx.get(full_url, **kwargs)
         elif method.upper() == "POST":
-            resp = httpx.post(full_url, json=body, headers=headers, timeout=30.0)
+            resp = httpx.post(full_url, json=body, **kwargs)
         elif method.upper() == "PUT":
-            resp = httpx.put(full_url, json=body, headers=headers, timeout=30.0)
+            resp = httpx.put(full_url, json=body, **kwargs)
         elif method.upper() == "DELETE":
-            resp = httpx.delete(full_url, headers=headers, timeout=30.0)
+            resp = httpx.delete(full_url, **kwargs)
         elif method.upper() == "PATCH":
-            resp = httpx.patch(full_url, json=body, headers=headers, timeout=30.0)
+            resp = httpx.patch(full_url, json=body, **kwargs)
         else:
             raise HTTPException(status_code=400, detail=f"Unsupported method: {method}")
+        
+        # Parse response — handle non-JSON gracefully
+        try:
+            data = resp.json()
+        except ValueError:
+            data = resp.text[:5000]
         
         return {
             "api": api.get("name"),
             "url": full_url,
             "method": method,
             "status": resp.status_code,
-            "data": resp.json() if resp.content else resp.text,
+            "data": data,
             "headers": dict(resp.headers)
         }
     except httpx.HTTPStatusError as e:
+        try:
+            error_data = e.response.json()
+        except ValueError:
+            error_data = e.response.text[:1000]
         return {
             "api": api.get("name"),
             "url": full_url,
             "method": method,
             "status": e.response.status_code,
             "error": str(e),
-            "data": e.response.text[:1000]
+            "data": error_data
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
