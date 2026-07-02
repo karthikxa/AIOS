@@ -1637,8 +1637,9 @@ const starIndicator = `
             const trimmed = line.trim();
             if (!trimmed || trimmed === 'data: [DONE]') continue;
             if (trimmed.startsWith('data: ')) {
+              let parsed = null;
               try {
-                const parsed = JSON.parse(trimmed.slice(6));
+                parsed = JSON.parse(trimmed.slice(6));
                 if (parsed.error) {
                   throw new Error(parsed.error.message || JSON.stringify(parsed.error));
                 }
@@ -2814,6 +2815,38 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         
         return bubble;
       };
+
+      // Throttle rendering configuration
+      let renderPending = false;
+      let lastRenderTime = 0;
+      const RENDER_THROTTLE_MS = 80;
+
+      function performRender() {
+        renderPending = false;
+        lastRenderTime = Date.now();
+        if (bubble) {
+          let textContainer = bubble.querySelector('.cot-response-text-container');
+          if (!textContainer) {
+            textContainer = document.createElement('div');
+            textContainer.className = 'cot-response-text-container';
+            bubble.appendChild(textContainer);
+          }
+          textContainer.innerHTML = renderMarkdown(fullContent.trimStart());
+          chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
+        }
+      }
+
+      function requestThrottledRender() {
+        if (renderPending) return;
+        const now = Date.now();
+        const timeSinceLastRender = now - lastRenderTime;
+        if (timeSinceLastRender >= RENDER_THROTTLE_MS) {
+          performRender();
+        } else {
+          renderPending = true;
+          setTimeout(performRender, RENDER_THROTTLE_MS - timeSinceLastRender);
+        }
+      }
         
        const onTokenCb = (token) => {
         // onToken callback
@@ -3134,7 +3167,7 @@ Here are the current findings:
           textContainer.className = 'cot-response-text-container';
           bubble.appendChild(textContainer);
         }
-        textContainer.innerHTML = renderMarkdown(displayText || '');
+        textContainer.innerHTML = renderMarkdown((displayText || '').trimStart());
         bubble.classList.remove('error-bubble');
       }
       // Append connect card as a separate assistant message
@@ -3145,7 +3178,7 @@ Here are the current findings:
       // Save to conversationHistory and active session
       conversationHistory.push({
         role: 'assistant',
-        content: displayText,
+        content: displayText.trimStart(),
         reasoning: accumulatedReasoning,
         tool_calls: JSON.parse(JSON.stringify(streamedToolCalls))
       });
