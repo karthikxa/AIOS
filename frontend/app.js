@@ -1627,22 +1627,22 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           
           let circleHtml = '';
           if (state === 'done') {
-            circleHtml = `<div style="width:22px;height:22px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            circleHtml = `<div class="progress-step-circle" style="width:22px;height:22px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>`;
           } else if (state === 'active') {
-            circleHtml = `<div style="width:22px;height:22px;border-radius:50%;background:${color};box-shadow:0 0 0 3px rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            circleHtml = `<div class="progress-step-circle" style="width:22px;height:22px;border-radius:50%;background:${color};box-shadow:0 0 0 3px rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
               <span style="color:#fff;font-size:11px;font-weight:600;">${num}</span>
             </div>`;
           } else {
-            circleHtml = `<div style="width:22px;height:22px;border-radius:50%;border:2px solid ${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            circleHtml = `<div class="progress-step-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid ${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
               <span style="color:${color};font-size:11px;font-weight:500;">${num}</span>
             </div>`;
           }
           
           const div = document.createElement('div');
           div.style.cssText = `display:flex;align-items:center;gap:10px;opacity:${opacity};padding:4px 0;`;
-          div.innerHTML = `${circleHtml}<span style="font-size:13px;color:${state === 'pending' ? '#6B7280' : '#111827'};font-weight:${state === 'active' ? '500' : '400'};line-height:1.4;">${text}</span>`;
+          div.innerHTML = `${circleHtml}<span class="progress-step-text" style="font-size:13px;color:${state === 'pending' ? '#6B7280' : '#111827'};font-weight:${state === 'active' ? '500' : '400'};line-height:1.4;">${text}</span>`;
           progressBody.appendChild(div);
           progressBody.scrollTop = progressBody.scrollHeight;
         }
@@ -1671,14 +1671,13 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             </div>`;
           }
           
-          const dot = el.querySelector('div');
+          const dot = el.querySelector('.progress-step-circle');
           if (dot) dot.outerHTML = circleHtml;
-          const span = el.querySelector('span');
+          const span = el.querySelector('.progress-step-text');
           if (span) { span.textContent = text; span.style.color = state === 'pending' ? '#6B7280' : '#111827'; span.style.fontWeight = state === 'active' ? '500' : '400'; }
         }
 
         updateStatus('Agent starting...', '0 / ?');
-        addProgressStep('Waiting for instructions...', 'active');
 
         // Connect to desktop agent WebSocket for executing actions
         let agentUrl = localStorage.getItem('desktop_agent_url');
@@ -1750,12 +1749,13 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
         for (let step = 0; step < maxSteps && !stopped; step++) {
           updateStatus(`Step ${step + 1}: Thinking...`, `${step + 1} / ${maxSteps}`);
-          if (step === 0) {
-            addProgressStep('Analyzing task...', 'active');
-          } else {
-            addProgressStep(`Step ${step + 1}: Planning next action...`, 'active');
-            if (progressIndex > 0) updateProgressStep(progressIndex - 1, progressBody.children[progressIndex - 1]?.querySelector('span')?.textContent || '', 'done');
+          // Mark previous step as done before adding new one
+          if (progressBody && progressBody.children.length > 0) {
+            const prevIdx = progressBody.children.length - 1;
+            const prevText = progressBody.children[prevIdx]?.querySelector('.progress-step-text')?.textContent || progressBody.children[prevIdx]?.querySelector('span')?.textContent || '';
+            updateProgressStep(prevIdx, prevText, 'done');
           }
+          addProgressStep(`Step ${step + 1}: Thinking...`, 'active');
           progressIndex = progressBody ? progressBody.children.length : 0;
 
           // Call LLM with tools via Vite proxy → backend → Render-deployed llm-proxy
@@ -1840,7 +1840,9 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             updateStatus('Task complete.', `${step + 1} / ${maxSteps}`);
             addProgressStep('Delivering result to user', 'done');
             if (progressBody && progressBody.children.length > 1) {
-              updateProgressStep(progressBody.children.length - 2, progressBody.children[progressBody.children.length - 2]?.querySelector('span')?.textContent || '', 'done');
+              const prevIdx = progressBody.children.length - 2;
+              const prevText = progressBody.children[prevIdx]?.querySelector('.progress-step-text')?.textContent || progressBody.children[prevIdx]?.querySelector('span')?.textContent || '';
+              updateProgressStep(prevIdx, prevText, 'done');
             }
             break;
           }
@@ -1855,7 +1857,9 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             updateStatus(`Executing: ${desc}`, `${step + 1} / ${maxSteps}`);
             addProgressStep(desc, 'active');
             if (progressBody && progressBody.children.length > 1) {
-              updateProgressStep(progressBody.children.length - 2, progressBody.children[progressBody.children.length - 2]?.querySelector('span')?.textContent || '', 'done');
+              const prevIdx = progressBody.children.length - 2;
+              const prevText = progressBody.children[prevIdx]?.querySelector('.progress-step-text')?.textContent || progressBody.children[prevIdx]?.querySelector('span')?.textContent || '';
+              updateProgressStep(prevIdx, prevText, 'done');
             }
 
             // Send action to desktop agent via WebSocket
