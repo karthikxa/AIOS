@@ -215,7 +215,7 @@ const starIndicator = `
         if (chatMessagesLog) {
           chatMessagesLog.innerHTML = '';
           for (const msg of task.messages) {
-            appendMessage(msg.role, msg.content, '', msg.reasoning);
+            appendMessage(msg.role, msg.content, '', msg.reasoning, msg.tool_calls);
           }
         }
         setAppState(task.messages.length > 0);
@@ -443,7 +443,195 @@ const starIndicator = `
     });
   }
 
-  function appendMessage(sender, text, avatarUrlOrText = '', reasoning = '') {
+  function createCollapsibleSection({ type, title, iconHtml, contentHtml, defaultOpen = false, isPurpleTheme = false }) {
+    const section = document.createElement('div');
+    section.className = `cot-section ${type}-section ${isPurpleTheme ? 'purple-theme' : ''}`;
+    section.style.cssText = `
+      margin-bottom: 12px;
+      border: 1px solid ${isPurpleTheme ? 'rgba(139, 92, 246, 0.2)' : '#E5E7EB'};
+      border-radius: 10px;
+      background: ${isPurpleTheme ? 'rgba(139, 92, 246, 0.02)' : '#FAFBFC'};
+      overflow: hidden;
+      transition: all 0.2s ease-in-out;
+      width: 100%;
+    `;
+
+    const header = document.createElement('button');
+    header.className = 'cot-header-btn';
+    header.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      border: none;
+      background: ${isPurpleTheme ? 'rgba(139, 92, 246, 0.05)' : '#F3F4F6'};
+      padding: 10px 14px;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: ${isPurpleTheme ? '#8B5CF6' : '#374151'};
+      outline: none;
+      transition: background 0.15s;
+    `;
+
+    const left = document.createElement('div');
+    left.style.cssText = 'display: flex; align-items: center; gap: 8px; flex: 1;';
+    
+    const iconContainer = document.createElement('span');
+    iconContainer.className = 'cot-icon-container';
+    iconContainer.style.cssText = 'display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; flex-shrink: 0;';
+    iconContainer.innerHTML = iconHtml;
+    left.appendChild(iconContainer);
+
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'cot-header-title';
+    titleSpan.textContent = title;
+    left.appendChild(titleSpan);
+
+    header.appendChild(left);
+
+    // Chevron SVG
+    const chevronSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    chevronSvg.setAttribute('class', 'cot-chevron');
+    chevronSvg.setAttribute('width', '14');
+    chevronSvg.setAttribute('height', '14');
+    chevronSvg.setAttribute('viewBox', '0 0 16 16');
+    chevronSvg.setAttribute('fill', 'none');
+    chevronSvg.setAttribute('stroke', 'currentColor');
+    chevronSvg.setAttribute('stroke-width', '2');
+    chevronSvg.setAttribute('stroke-linecap', 'round');
+    chevronSvg.setAttribute('stroke-linejoin', 'round');
+    chevronSvg.style.cssText = 'transition: transform 0.2s; flex-shrink: 0;';
+    const chevronPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    chevronPath.setAttribute('d', 'M6 3l5 5-5 5');
+    chevronSvg.appendChild(chevronPath);
+    header.appendChild(chevronSvg);
+
+    const contentContainer = document.createElement('div');
+    contentContainer.className = 'cot-content-container';
+    contentContainer.style.cssText = `
+      transition: max-height 0.25s ease-out, padding 0.25s ease-out;
+      overflow: hidden;
+      background: #FFFFFF;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #4B5563;
+      box-sizing: border-box;
+    `;
+    
+    // Set default state
+    if (defaultOpen) {
+      contentContainer.style.maxHeight = '2000px';
+      contentContainer.style.padding = '12px 14px';
+      contentContainer.style.borderTop = `1px solid ${isPurpleTheme ? 'rgba(139, 92, 246, 0.1)' : '#E5E7EB'}`;
+      chevronSvg.style.transform = 'rotate(90deg)';
+    } else {
+      contentContainer.style.maxHeight = '0px';
+      contentContainer.style.padding = '0px 14px';
+      contentContainer.style.borderTop = '1px solid transparent';
+      chevronSvg.style.transform = 'rotate(0deg)';
+    }
+
+    if (typeof contentHtml === 'string') {
+      contentContainer.innerHTML = contentHtml;
+    } else if (contentHtml instanceof Node) {
+      contentContainer.appendChild(contentHtml);
+    }
+
+    header.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = contentContainer.style.maxHeight !== '0px';
+      if (isOpen) {
+        contentContainer.style.maxHeight = '0px';
+        contentContainer.style.padding = '0px 14px';
+        contentContainer.style.borderTop = '1px solid transparent';
+        chevronSvg.style.transform = 'rotate(0deg)';
+      } else {
+        contentContainer.style.maxHeight = '2000px';
+        contentContainer.style.padding = '12px 14px';
+        contentContainer.style.borderTop = `1px solid ${isPurpleTheme ? 'rgba(139, 92, 246, 0.1)' : '#E5E7EB'}`;
+        chevronSvg.style.transform = 'rotate(90deg)';
+      }
+    });
+
+    section.appendChild(header);
+    section.appendChild(contentContainer);
+    return section;
+  }
+
+  function formatToolArgs(name, args) {
+    if (!args || Object.keys(args).length === 0) {
+      return '<div style="color: #9CA3AF; font-style: italic;">No input arguments</div>';
+    }
+    
+    const nameLower = name.toLowerCase();
+    
+    // Special formatting for specific tool types
+    if (name === 'web_search') {
+      return `<div style="display: flex; flex-direction: column; gap: 4px;">
+        <div><strong>Query:</strong> <code style="background:#F3F4F6;padding:2px 5px;border-radius:4px;font-family:monospace;">${DOMPurify.sanitize(args.query || '')}</code></div>
+      </div>`;
+    }
+    if (name === 'browser' || name === 'open_tab' || name === 'navigate') {
+      return `<div style="display: flex; flex-direction: column; gap: 4px;">
+        <div><strong>URL:</strong> <a href="${DOMPurify.sanitize(args.url || '#')}" target="_blank" style="color:#3B82F6;text-decoration:none;">${DOMPurify.sanitize(args.url || '')}</a></div>
+      </div>`;
+    }
+    if (name === 'terminal' || name === 'shell' || name === 'code_execution') {
+      return `<div style="display: flex; flex-direction: column; gap: 4px;">
+        <strong>Command:</strong>
+        <pre style="background:#1E1E2E;color:#CDD6F4;padding:10px;border-radius:6px;font-family:monospace;margin:4px 0;overflow-x:auto;">$ ${DOMPurify.sanitize(args.command || '')}</pre>
+      </div>`;
+    }
+    if (nameLower.includes('file')) {
+      const op = name.includes('write') ? 'Write' : name.includes('edit') ? 'Edit' : 'Read';
+      return `<div style="display: flex; flex-direction: column; gap: 4px;">
+        <div><strong>File Operation:</strong> ${op}</div>
+        <div><strong>Path:</strong> <code style="background:#F3F4F6;padding:2px 5px;border-radius:4px;font-family:monospace;">${DOMPurify.sanitize(args.path || args.filename || '')}</code></div>
+      </div>`;
+    }
+
+    // Generic JSON formatting fallback
+    try {
+      const formatted = JSON.stringify(args, null, 2);
+      return `<pre style="background:#F3F4F6;padding:8px;border-radius:6px;font-family:monospace;margin:4px 0;overflow-x:auto;font-size:11px;">${DOMPurify.sanitize(formatted)}</pre>`;
+    } catch {
+      return `<div style="font-family:monospace;font-size:11px;">${DOMPurify.sanitize(String(args))}</div>`;
+    }
+  }
+
+  function getToolIconHtml(toolName) {
+    const nameLower = toolName.toLowerCase();
+    if (nameLower.includes('gmail') || nameLower.includes('email')) {
+      return `
+        <svg class="gmail-logo" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0; vertical-align: middle;">
+          <path d="M20 4H18V13.5L12 9.5L6 13.5V4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H6V10.5L12 14.5L18 10.5V20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4Z" fill="#EA4335"/>
+          <path d="M4 20H6V10.5L2 7.5V18C2 19.1 2.9 20 4 20Z" fill="#34A853"/>
+          <path d="M20 20H18V10.5L22 7.5V18C22 19.1 21.1 20 20 20Z" fill="#4285F4"/>
+          <path d="M18 4H20C21.1 4 22 4.9 22 6V7.5L18 4.5V4Z" fill="#FBBC05"/>
+          <path d="M6 4H4C2.9 4 2 4.9 2 6V7.5L6 4.5V4Z" fill="#FBBC05"/>
+        </svg>
+      `;
+    }
+    if (nameLower.includes('search')) {
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+    }
+    if (nameLower.includes('browser') || nameLower.includes('navigate') || nameLower.includes('tab') || nameLower.includes('screen') || nameLower.includes('click') || nameLower.includes('type')) {
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+    }
+    if (nameLower.includes('terminal') || nameLower.includes('shell') || nameLower.includes('code') || nameLower.includes('run')) {
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`;
+    }
+    if (nameLower.includes('file')) {
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+    }
+    // Default fallback icon
+    return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`;
+  }
+
+  function appendMessage(sender, text, avatarUrlOrText = '', reasoning = '', tool_calls = []) {
     if (!chatMessagesLog) return;
     
     const msgDiv = document.createElement('div');
@@ -467,10 +655,48 @@ const starIndicator = `
 
     const isAssistantFinal = sender === 'assistant' && !text.includes('thinking-line') && !text.includes('activity-phase');
     const content = isAssistantFinal ? renderMarkdown(text) : text;
+    
     msgDiv.innerHTML = `
       ${headerHtml}
-      <div class="chat-message-bubble">${content}</div>
+      <div class="chat-message-bubble">
+        <div class="message-collapsible-blocks"></div>
+        <div class="cot-response-text-container">${content}</div>
+      </div>
     `;
+
+    const blocksContainer = msgDiv.querySelector('.message-collapsible-blocks');
+
+    // 1. Render collapsed reasoning if present
+    if (sender === 'assistant' && reasoning) {
+      const cotBlock = createCollapsibleSection({
+        type: 'reasoning',
+        title: 'Thought',
+        iconHtml: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`,
+        contentHtml: DOMPurify.sanitize(reasoning),
+        defaultOpen: false,
+        isPurpleTheme: true
+      });
+      blocksContainer.appendChild(cotBlock);
+    }
+
+    // 2. Render tool calls if present
+    if (sender === 'assistant' && Array.isArray(tool_calls)) {
+      tool_calls.forEach(tc => {
+        const toolLabel = TOOL_LABELS[tc.name] || tc.name;
+        const stateWord = tc.status === 'complete' ? 'Completed' : tc.status === 'failed' ? 'Failed' : 'Running';
+        const title = `${stateWord}: ${toolLabel}`;
+        
+        const toolBlock = createCollapsibleSection({
+          type: 'tool',
+          title: title,
+          iconHtml: getToolIconHtml(tc.name),
+          contentHtml: formatToolArgs(tc.name, tc.args),
+          defaultOpen: false,
+          isPurpleTheme: false
+        });
+        blocksContainer.appendChild(toolBlock);
+      });
+    }
 
     chatMessagesLog.appendChild(msgDiv);
 
@@ -1617,7 +1843,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
         let progressStepNum = 0;
         
-        function addProgressStep(text, state) {
+        function addProgressStep(text, state, detailsHtml = '') {
           if (!progressBody) return;
           progressStepNum++;
           const num = progressStepNum;
@@ -1640,41 +1866,109 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             </div>`;
           }
           
-          const div = document.createElement('div');
-          div.style.cssText = `display:flex;align-items:center;gap:10px;opacity:${opacity};padding:4px 0;`;
-          div.innerHTML = `${circleHtml}<span class="progress-step-text" style="font-size:13px;color:${state === 'pending' ? '#6B7280' : '#111827'};font-weight:${state === 'active' ? '500' : '400'};line-height:1.4;">${text}</span>`;
-          progressBody.appendChild(div);
+          const stepDiv = document.createElement('div');
+          stepDiv.className = 'progress-step-block';
+          stepDiv.style.cssText = `margin-bottom: 8px; border: 1px solid #E5E7EB; border-radius: 8px; background: #FAFBFC; overflow: hidden; opacity: ${opacity}; transition: opacity 0.2s;`;
+
+          const header = document.createElement('button');
+          header.className = 'progress-step-header';
+          header.style.cssText = `
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            border: none;
+            background: none;
+            padding: 8px 10px;
+            cursor: pointer;
+            text-align: left;
+            outline: none;
+          `;
+          
+          const left = document.createElement('div');
+          left.style.cssText = 'display: flex; align-items: center; gap: 10px; flex: 1;';
+          left.innerHTML = `${circleHtml}<span class="progress-step-text" style="font-size:13px;color:${state === 'pending' ? '#6B7280' : '#111827'};font-weight:${state === 'active' ? '500' : '400'};line-height:1.4;">${text}</span>`;
+          header.appendChild(left);
+
+          // Chevron
+          const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          chevron.setAttribute('width', '12');
+          chevron.setAttribute('height', '12');
+          chevron.setAttribute('viewBox', '0 0 16 16');
+          chevron.setAttribute('fill', 'none');
+          chevron.setAttribute('stroke', '#9CA3AF');
+          chevron.setAttribute('stroke-width', '2');
+          chevron.setAttribute('stroke-linecap', 'round');
+          chevron.setAttribute('stroke-linejoin', 'round');
+          chevron.style.cssText = 'transition: transform 0.2s; transform: rotate(0deg); margin-left: 6px; flex-shrink: 0;';
+          const chevronPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          chevronPath.setAttribute('d', 'M6 3l5 5-5 5');
+          chevron.appendChild(chevronPath);
+          header.appendChild(chevron);
+
+          const content = document.createElement('div');
+          content.className = 'progress-step-content';
+          content.style.cssText = 'max-height: 0px; padding: 0 10px; overflow: hidden; font-size: 12px; color: #4B5563; transition: all 0.2s ease-out; box-sizing: border-box;';
+          content.innerHTML = detailsHtml || '<div style="padding: 6px 0; color: #9CA3AF; font-style: italic;">No details available</div>';
+
+          header.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = content.style.maxHeight !== '0px';
+            if (isOpen) {
+              content.style.maxHeight = '0px';
+              content.style.padding = '0 10px';
+              chevron.style.transform = 'rotate(0deg)';
+            } else {
+              content.style.maxHeight = '500px';
+              content.style.padding = '8px 10px';
+              chevron.style.transform = 'rotate(90deg)';
+            }
+          });
+
+          stepDiv.appendChild(header);
+          stepDiv.appendChild(content);
+          progressBody.appendChild(stepDiv);
           progressBody.scrollTop = progressBody.scrollHeight;
         }
 
-        function updateProgressStep(index, text, state) {
+        function updateProgressStep(index, text, state, detailsHtml = '') {
           if (!progressBody || !progressBody.children[index]) return;
+          const el = progressBody.children[index];
+          el.style.opacity = state === 'pending' ? '0.7' : '1';
+          
           const colors = { active: '#3B82F6', done: '#10B981', pending: '#D1D5DB' };
           const color = colors[state] || colors.pending;
-          const opacity = state === 'pending' ? '0.7' : '1';
-          const el = progressBody.children[index];
-          el.style.opacity = opacity;
-          
           const num = index + 1;
+          
           let circleHtml = '';
           if (state === 'done') {
-            circleHtml = `<div style="width:22px;height:22px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            circleHtml = `<div class="progress-step-circle" style="width:22px;height:22px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>`;
           } else if (state === 'active') {
-            circleHtml = `<div style="width:22px;height:22px;border-radius:50%;background:${color};box-shadow:0 0 0 3px rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            circleHtml = `<div class="progress-step-circle" style="width:22px;height:22px;border-radius:50%;background:${color};box-shadow:0 0 0 3px rgba(59,130,246,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
               <span style="color:#fff;font-size:11px;font-weight:600;">${num}</span>
             </div>`;
           } else {
-            circleHtml = `<div style="width:22px;height:22px;border-radius:50%;border:2px solid ${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            circleHtml = `<div class="progress-step-circle" style="width:22px;height:22px;border-radius:50%;border:2px solid ${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
               <span style="color:${color};font-size:11px;font-weight:500;">${num}</span>
             </div>`;
           }
           
-          const dot = el.querySelector('.progress-step-circle');
-          if (dot) dot.outerHTML = circleHtml;
+          const circleContainer = el.querySelector('.progress-step-circle');
+          if (circleContainer) {
+            circleContainer.outerHTML = circleHtml;
+          }
           const span = el.querySelector('.progress-step-text');
-          if (span) { span.textContent = text; span.style.color = state === 'pending' ? '#6B7280' : '#111827'; span.style.fontWeight = state === 'active' ? '500' : '400'; }
+          if (span) {
+            span.textContent = text;
+            span.style.color = state === 'pending' ? '#6B7280' : '#111827';
+            span.style.fontWeight = state === 'active' ? '500' : '400';
+          }
+          if (detailsHtml) {
+            const content = el.querySelector('.progress-step-content');
+            if (content) content.innerHTML = detailsHtml;
+          }
         }
 
         updateStatus('Agent starting...', '0 / ?');
@@ -1925,11 +2219,77 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
       let fullContent = '';
       let accumulatedReasoning = '';
+      let streamedToolCalls = []; // Array to collect { id, name, args, status }
+      
+      let thinkingStartTime = null;
+      let firstReasoningToken = true;
+      let hasEndedThinking = false;
+
+      let cotSection = null;
+      let cotContentDiv = null;
+      let cotLabelSpan = null;
+      let cotChevronSvg = null;
+      let cotSpinnerSvg = null;
+
+      let toolBlocksMap = {}; // mapping of toolId -> { blockElement, headerTitleSpan, contentContainer, chevronSvg }
+
+      // Throttle rendering configuration
+      let renderPending = false;
+      let lastRenderTime = 0;
+      const RENDER_THROTTLE_MS = 80;
+
+      function performRender() {
+        renderPending = false;
+        lastRenderTime = Date.now();
+        if (bubble) {
+          let textContainer = bubble.querySelector('.cot-response-text-container');
+          if (!textContainer) {
+            textContainer = document.createElement('div');
+            textContainer.className = 'cot-response-text-container';
+            bubble.appendChild(textContainer);
+          }
+          textContainer.innerHTML = renderMarkdown(fullContent);
+          chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
+        }
+      }
+
+      function requestThrottledRender() {
+        if (renderPending) return;
+        const now = Date.now();
+        const timeSinceLastRender = now - lastRenderTime;
+        if (timeSinceLastRender >= RENDER_THROTTLE_MS) {
+          performRender();
+        } else {
+          renderPending = true;
+          setTimeout(performRender, RENDER_THROTTLE_MS - timeSinceLastRender);
+        }
+      }
 
       let reply = await callRealAPI(model, conversationHistory, (token) => {
+        // onToken callback
+        
+        // 1. Finalize thinking duration if thinking was active
+        if (!hasEndedThinking && thinkingStartTime) {
+          hasEndedThinking = true;
+          const duration = Math.round((Date.now() - thinkingStartTime) / 1000);
+          const durationText = duration < 1 ? '<1s' : `${duration}s`;
+          if (cotLabelSpan) cotLabelSpan.textContent = `Thought for ${durationText}`;
+          if (cotSpinnerSvg) {
+            cotSpinnerSvg.style.animation = 'none';
+            cotSpinnerSvg.innerHTML = '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>';
+          }
+          // Auto-collapse thinking block
+          if (cotContentDiv) {
+            cotContentDiv.style.maxHeight = '0px';
+            cotContentDiv.style.padding = '0px 14px';
+            cotContentDiv.style.borderTop = '1px solid transparent';
+          }
+          if (cotChevronSvg) cotChevronSvg.style.transform = 'rotate(0deg)';
+        }
+
         if (!fullContent) {
           window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Writing response' } }));
-          // Reuse the existing message div (with zed pro header) — just replace the bubble content
+          // Reuse existing message div
           const oldTypingIndicator = chatMessagesLog.querySelector('.typing-indicator');
           if (oldTypingIndicator) {
             const oldMsg = oldTypingIndicator.closest('.chat-message');
@@ -1939,37 +2299,187 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             }
           }
           if (!bubble) {
-            // Fallback: create a new message if the old one wasn't found
             appendMessage('assistant', '');
             msgDiv = chatMessagesLog.lastElementChild;
             bubble = msgDiv.querySelector('.chat-message-bubble');
           }
-          // Move the active status container to the bottom
-          if (typingStatusContainer && typingStatusContainer.parentNode === chatMessagesLog) {
-            chatMessagesLog.appendChild(typingStatusContainer);
+          
+          // Clear typing indicator inside the bubble
+          const indicator = bubble.querySelector('.typing-indicator');
+          if (indicator) indicator.remove();
+          
+          // Ensure structure
+          let textContainer = bubble.querySelector('.cot-response-text-container');
+          if (!textContainer) {
+            textContainer = document.createElement('div');
+            textContainer.className = 'cot-response-text-container';
+            bubble.appendChild(textContainer);
           }
         }
+
         fullContent += token;
-        if (bubble) {
-          bubble.innerHTML = renderMarkdown(fullContent);
-          chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
-        }
-        // Update browser URL in split pane sub-header from content
+        requestThrottledRender();
         updateSplitPaneUrl(fullContent);
       }, abortController.signal, (reasoningDelta) => {
+        // onReasoning callback
+        if (firstReasoningToken) {
+          firstReasoningToken = false;
+          thinkingStartTime = Date.now();
+          window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Thinking' } }));
+
+          const oldTypingIndicator = chatMessagesLog.querySelector('.typing-indicator');
+          if (oldTypingIndicator) {
+            const oldMsg = oldTypingIndicator.closest('.chat-message');
+            if (oldMsg) {
+              msgDiv = oldMsg;
+              bubble = msgDiv.querySelector('.chat-message-bubble');
+            }
+          }
+          if (!bubble) {
+            appendMessage('assistant', '');
+            msgDiv = chatMessagesLog.lastElementChild;
+            bubble = msgDiv.querySelector('.chat-message-bubble');
+          }
+
+          // Clear typing indicator inside the bubble
+          const indicator = bubble.querySelector('.typing-indicator');
+          if (indicator) indicator.remove();
+
+          // Ensure blocks container exists
+          let blocksContainer = bubble.querySelector('.message-collapsible-blocks');
+          if (!blocksContainer) {
+            blocksContainer = document.createElement('div');
+            blocksContainer.className = 'message-collapsible-blocks';
+            bubble.insertBefore(blocksContainer, bubble.firstChild);
+          }
+
+          // Create thinking block
+          cotSection = createCollapsibleSection({
+            type: 'reasoning',
+            title: 'Thinking...',
+            iconHtml: `
+              <svg class="cot-spinner-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1.2s linear infinite; flex-shrink: 0;">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-dasharray="4 4" stroke-linecap="round"/>
+              </svg>
+            `,
+            contentHtml: '',
+            defaultOpen: true,
+            isPurpleTheme: true
+          });
+          blocksContainer.appendChild(cotSection);
+
+          cotContentDiv = cotSection.querySelector('.cot-content-container');
+          cotLabelSpan = cotSection.querySelector('.cot-header-title');
+          cotChevronSvg = cotSection.querySelector('.cot-chevron');
+          cotSpinnerSvg = cotSection.querySelector('.cot-spinner-icon');
+        }
+
         accumulatedReasoning += reasoningDelta;
+        if (cotContentDiv) {
+          cotContentDiv.textContent = accumulatedReasoning;
+        }
+        chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
       }, (toolUsage) => {
+        // onToolUsage callback
+        const oldTypingIndicator = chatMessagesLog.querySelector('.typing-indicator');
+        if (oldTypingIndicator) {
+          const oldMsg = oldTypingIndicator.closest('.chat-message');
+          if (oldMsg) {
+            msgDiv = oldMsg;
+            bubble = msgDiv.querySelector('.chat-message-bubble');
+          }
+        }
+        if (!bubble) {
+          appendMessage('assistant', '');
+          msgDiv = chatMessagesLog.lastElementChild;
+          bubble = msgDiv.querySelector('.chat-message-bubble');
+        }
+
+        // Clear typing indicator inside the bubble
+        const indicator = bubble.querySelector('.typing-indicator');
+        if (indicator) indicator.remove();
+
+        // Ensure blocks container exists
+        let blocksContainer = bubble.querySelector('.message-collapsible-blocks');
+        if (!blocksContainer) {
+          blocksContainer = document.createElement('div');
+          blocksContainer.className = 'message-collapsible-blocks';
+          bubble.insertBefore(blocksContainer, bubble.firstChild);
+        }
+
         if (toolUsage.type === 'tool_start') {
           showToolIndicator(toolUsage.name);
           window.dispatchEvent(new CustomEvent('agent-tool-start', { detail: { name: toolUsage.name, id: toolUsage.id, args: toolUsage.args || {} } }));
+
+          // Save to toolCalls list
+          const toolCall = { id: toolUsage.id, name: toolUsage.name, args: toolUsage.args || {}, status: 'running' };
+          streamedToolCalls.push(toolCall);
+
+          const toolLabel = TOOL_LABELS[toolUsage.name] || toolUsage.name;
+
+          // Create tool block
+          const toolSection = createCollapsibleSection({
+            type: 'tool',
+            title: `Running: ${toolLabel}`,
+            iconHtml: getToolIconHtml(toolUsage.name),
+            contentHtml: formatToolArgs(toolUsage.name, toolUsage.args),
+            defaultOpen: true,
+            isPurpleTheme: false
+          });
+          blocksContainer.appendChild(toolSection);
+
+          toolBlocksMap[toolUsage.id] = {
+            blockElement: toolSection,
+            headerTitleSpan: toolSection.querySelector('.cot-header-title'),
+            contentContainer: toolSection.querySelector('.cot-content-container'),
+            chevronSvg: toolSection.querySelector('.cot-chevron')
+          };
         } else if (toolUsage.type === 'tool_complete') {
           hideToolIndicator(toolUsage.name);
           window.dispatchEvent(new CustomEvent('agent-tool-complete', { detail: { name: toolUsage.name, id: toolUsage.id } }));
+
+          // Update status
+          const tc = streamedToolCalls.find(x => x.id === toolUsage.id);
+          if (tc) tc.status = 'complete';
+
+          // Update UI block and collapse it
+          const mapEntry = toolBlocksMap[toolUsage.id];
+          if (mapEntry) {
+            const toolLabel = TOOL_LABELS[toolUsage.name] || toolUsage.name;
+            mapEntry.headerTitleSpan.textContent = `Completed: ${toolLabel}`;
+            
+            // Auto-collapse completed tool call
+            mapEntry.contentContainer.style.maxHeight = '0px';
+            mapEntry.contentContainer.style.padding = '0px 14px';
+            mapEntry.contentContainer.style.borderTop = '1px solid transparent';
+            mapEntry.chevronSvg.style.transform = 'rotate(0deg)';
+          }
         }
       });
 
       showStopButton(false);
       clearAllToolIndicators();
+
+      // Finalize thinking duration if thinking was still active at stream end
+      if (!hasEndedThinking && thinkingStartTime) {
+        hasEndedThinking = true;
+        const duration = Math.round((Date.now() - thinkingStartTime) / 1000);
+        const durationText = duration < 1 ? '<1s' : `${duration}s`;
+        if (cotLabelSpan) cotLabelSpan.textContent = `Thought for ${durationText}`;
+        if (cotSpinnerSvg) {
+          cotSpinnerSvg.style.animation = 'none';
+          cotSpinnerSvg.innerHTML = '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>';
+        }
+        if (cotContentDiv) {
+          cotContentDiv.style.maxHeight = '0px';
+          cotContentDiv.style.padding = '0px 14px';
+          cotContentDiv.style.borderTop = '1px solid transparent';
+        }
+        if (cotChevronSvg) cotChevronSvg.style.transform = 'rotate(0deg)';
+      }
+
+      // Force final synchronous render
+      performRender();
 
       // Agentic connect card: model emits [CONNECT:plugin_id] when it needs a service
       const connectCardHtml = _renderConnectCardIfNeeded(reply, promptText);
@@ -1979,7 +2489,13 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       }
 
       if (bubble && bubble.parentNode) {
-        bubble.innerHTML = renderMarkdown(displayText || '');
+        let textContainer = bubble.querySelector('.cot-response-text-container');
+        if (!textContainer) {
+          textContainer = document.createElement('div');
+          textContainer.className = 'cot-response-text-container';
+          bubble.appendChild(textContainer);
+        }
+        textContainer.innerHTML = renderMarkdown(displayText || '');
         bubble.classList.remove('error-bubble');
       }
       // Append connect card as a separate assistant message
@@ -1987,9 +2503,23 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         appendMessage('assistant', connectCardHtml);
       }
 
-      conversationHistory.push({ role: 'assistant', content: displayText, reasoning: accumulatedReasoning });
+      // Save to conversationHistory and active session
+      conversationHistory.push({
+        role: 'assistant',
+        content: displayText,
+        reasoning: accumulatedReasoning,
+        tool_calls: JSON.parse(JSON.stringify(streamedToolCalls))
+      });
       const active = tasksStore.tasks.find(t => t.id === tasksStore.activeId);
-      if (active) { active.messages.push({ role: 'assistant', content: reply, reasoning: accumulatedReasoning }); tasksStore.notify(); }
+      if (active) {
+        active.messages.push({
+          role: 'assistant',
+          content: reply,
+          reasoning: accumulatedReasoning,
+          tool_calls: JSON.parse(JSON.stringify(streamedToolCalls))
+        });
+        tasksStore.notify();
+      }
 
       const blocks = extractCodeBlocks(reply);
       if (blocks.length > 0) {
@@ -1997,11 +2527,11 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       }
 
       if (bubble && bubble.parentNode) {
-        const markdownHtml = renderMarkdown(reply);
-        bubble.innerHTML = markdownHtml;
-
-        wireCodeBlockActions(bubble);
-        appendMessageActions(msgDiv, reply);
+        let textContainer = bubble.querySelector('.cot-response-text-container');
+        if (textContainer) {
+          wireCodeBlockActions(textContainer);
+          appendMessageActions(msgDiv, reply);
+        }
       }
 
       if (subagentStatusBar && effectiveMode !== 'computer') {
@@ -2010,23 +2540,66 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
     } catch (err) {
       showStopButton(false);
       clearAllToolIndicators();
-      if (subagentStatusBar && effectiveMode !== 'computer') {
+      if (subagentStatusBar) {
         subagentStatusBar.style.display = 'none';
       }
 
+      // Mark the active/last computer step in the plan panel as failed
+      if (progressBody && progressBody.children.length > 0) {
+        const lastIdx = progressBody.children.length - 1;
+        const lastStepEl = progressBody.children[lastIdx];
+        if (lastStepEl) {
+          lastStepEl.style.opacity = '1';
+          const textEl = lastStepEl.querySelector('.progress-step-text');
+          if (textEl) {
+            textEl.textContent += ' (Connection Lost)';
+            textEl.style.color = '#EF4444';
+          }
+        }
+      }
+
+      const escapedPrompt = promptText.replace(/'/g, "\\'");
+      const errorContent = `
+        <div class="error-bubble" style="display: flex; flex-direction: column; gap: 8px;">
+          <span class="error-title">Connection Failed</span>
+          <span class="error-desc">${DOMPurify.sanitize(err.message)}</span>
+          <button class="retry-btn" onclick="window.triggerQuickAction('${escapedPrompt}')" style="margin-top: 4px; padding: 6px 12px; font-size: 12px; background: #EF4444; color: white; border: none; border-radius: 6px; cursor: pointer; width: fit-content; font-weight: 600; font-family: inherit; transition: background 0.15s;">✕ Retry Message</button>
+        </div>
+      `;
+
       if (err.name === 'AbortError') {
-        if (bubble && bubble.parentNode) {
-          bubble.innerHTML = '<div style="margin-top:8px;color:#6B7280;font-style:italic;">Generation stopped</div>';
+        let textContainer = bubble ? bubble.querySelector('.cot-response-text-container') : null;
+        let container = textContainer || bubble;
+        if (container && bubble.parentNode) {
+          container.innerHTML = renderMarkdown(fullContent || '') + '<div style="margin-top:8px;color:#9CA3AF;font-style:italic;font-size:12px;">✕ Generation stopped</div>';
         } else {
-          appendMessage('assistant', '<div style="margin-top:8px;color:#6B7280;font-style:italic;">Generation stopped</div>');
+          appendMessage('assistant', renderMarkdown(fullContent || '') + '<div style="margin-top:8px;color:#9CA3AF;font-style:italic;font-size:12px;">✕ Generation stopped</div>');
+        }
+        
+        conversationHistory.push({
+          role: 'assistant',
+          content: fullContent,
+          reasoning: accumulatedReasoning,
+          tool_calls: JSON.parse(JSON.stringify(streamedToolCalls))
+        });
+        const active = tasksStore.tasks.find(t => t.id === tasksStore.activeId);
+        if (active) {
+          active.messages.push({
+            role: 'assistant',
+            content: fullContent,
+            reasoning: accumulatedReasoning,
+            tool_calls: JSON.parse(JSON.stringify(streamedToolCalls))
+          });
+          tasksStore.notify();
         }
         return;
       }
+      
       if (bubble && bubble.parentNode) {
         bubble.classList.add('error-bubble');
-        bubble.innerHTML = `<span class="error-title">Connection Failed</span><span class="error-desc">${DOMPurify.sanitize(err.message)}</span>`;
+        bubble.innerHTML = errorContent;
       } else {
-        appendMessage('assistant', `<span class="error-title">Connection Failed</span><span class="error-desc">${DOMPurify.sanitize(err.message)}</span>`);
+        appendMessage('assistant', errorContent);
       }
     } finally {
       window.dispatchEvent(new CustomEvent('agent-typing-end'));
@@ -2073,13 +2646,22 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   });
 
   // ── Stop Button ──────────────────────────────────────────────────────
-  document.getElementById('stopGenerationBtn')?.addEventListener('click', () => {
+  document.getElementById('stopGenerationBtn')?.addEventListener('click', async () => {
     if (abortController) {
       abortController.abort();
       abortController = null;
     }
     showStopButton(false);
     clearAllToolIndicators();
+
+    const activeTaskId = tasksStore.activeId;
+    if (activeTaskId) {
+      try {
+        await fetch(`/api/chat/${activeTaskId}/stop`, { method: 'POST' });
+      } catch (e) {
+        console.warn('Failed to send stop signal to backend:', e);
+      }
+    }
   });
 
   // ── Voice Input ──────────────────────────────────────────────────────
