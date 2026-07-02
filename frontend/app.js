@@ -2781,22 +2781,39 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       let bubble = null;
 
       const ensureAssistantBubble = () => {
-        if (bubble) return bubble;
-        
-        const lastMsg = chatMessagesLog.lastElementChild;
-        if (lastMsg && lastMsg.classList.contains('assistant')) {
-          msgDiv = lastMsg;
-          bubble = msgDiv.querySelector('.chat-message-bubble');
-        }
-        
         if (!bubble) {
-          appendMessage('assistant', '');
-          msgDiv = chatMessagesLog.lastElementChild;
-          bubble = msgDiv.querySelector('.chat-message-bubble');
+          const lastMsg = chatMessagesLog.lastElementChild;
+          if (lastMsg && lastMsg.classList.contains('assistant')) {
+            msgDiv = lastMsg;
+            bubble = msgDiv.querySelector('.chat-message-bubble');
+          }
+          if (!bubble) {
+            appendMessage('assistant', '');
+            msgDiv = chatMessagesLog.lastElementChild;
+            bubble = msgDiv.querySelector('.chat-message-bubble');
+          }
         }
         
         const indicator = bubble.querySelector('.typing-indicator');
         if (indicator) indicator.remove();
+        
+        let blocksContainer = bubble.querySelector('.message-collapsible-blocks');
+        if (!blocksContainer) {
+          blocksContainer = document.createElement('div');
+          blocksContainer.className = 'message-collapsible-blocks';
+          blocksContainer.style.cssText = 'width: 100%;';
+          bubble.insertBefore(blocksContainer, bubble.firstChild);
+        }
+        
+        let textContainer = bubble.querySelector('.cot-response-text-container');
+        if (!textContainer) {
+          textContainer = document.createElement('div');
+          textContainer.className = 'cot-response-text-container';
+          bubble.appendChild(textContainer);
+        }
+        
+        return bubble;
+      };
         
        const onTokenCb = (token) => {
         // onToken callback
@@ -3088,9 +3105,10 @@ Here are the current findings:
           if (statusSpan) {
             statusSpan.textContent = 'Completed';
           }
-          if (cotContentDiv) {
-            cotContentDiv.style.maxHeight = '0px';
-            cotContentDiv.style.padding = '0px 12px 0px 24px';
+          const contentContainer = cotSection.querySelector('.activity-content-container');
+          if (contentContainer) {
+            contentContainer.style.maxHeight = '0px';
+            contentContainer.style.padding = '0px 12px 0px 24px';
           }
           const chevron = cotSection.querySelector('.activity-chevron');
           if (chevron) {
@@ -3994,6 +4012,11 @@ Here are the current findings:
   }
 
   window.addEventListener('agent-typing-start', (e) => {
+    const activeModeOpt = document.querySelector('.chat-mode-option.active');
+    const effectiveMode = activeModeOpt ? activeModeOpt.dataset.mode : 'search';
+    if (effectiveMode !== 'computer') {
+      return;
+    }
     const status = e.detail?.status || 'Thinking';
     if (status === 'Planning' || status === 'Analyzing') {
       addThoughtStep();

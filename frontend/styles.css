@@ -3588,8 +3588,8 @@ input:checked + .toggle-slider:before {
 }
 
 .chat-message.assistant {
-  align-self: flex-start;
-  align-items: flex-start;
+  align-self: stretch;
+  align-items: stretch;
 }
 
 .chat-message-avatar {
