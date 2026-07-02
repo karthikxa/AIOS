@@ -2629,8 +2629,6 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
       let toolBlocksMap = {}; // mapping of toolId -> { blockElement, headerTitleSpan, contentContainer, chevronSvg }
 
-      const queryLower = promptText.toLowerCase();
-      const isSwarmTrigger = queryLower.includes('spawn') || queryLower.includes('swarm') || queryLower.includes('agents') || queryLower.includes('parallel') || queryLower.includes('250');
       let swarmVisualized = false;
 
       // Throttle rendering configuration
@@ -2687,26 +2685,6 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           if (cotChevronSvg) cotChevronSvg.style.transform = 'rotate(0deg)';
         }
 
-        if (isSwarmTrigger && !swarmVisualized) {
-          swarmVisualized = true;
-          const oldTypingIndicator = chatMessagesLog.querySelector('.typing-indicator');
-          if (oldTypingIndicator) {
-            const oldMsg = oldTypingIndicator.closest('.chat-message');
-            if (oldMsg) {
-              msgDiv = oldMsg;
-              bubble = msgDiv.querySelector('.chat-message-bubble');
-            }
-          }
-          if (!bubble) {
-            appendMessage('assistant', '');
-            msgDiv = chatMessagesLog.lastElementChild;
-            bubble = msgDiv.querySelector('.chat-message-bubble');
-          }
-          const indicator = bubble.querySelector('.typing-indicator');
-          if (indicator) indicator.remove();
-          triggerSwarmVisualization(promptText, bubble);
-        }
-
         if (!fullContent) {
           window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Writing response' } }));
           // Reuse existing message div
@@ -2744,26 +2722,6 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
       const onReasoningCb = (reasoningDelta) => {
         // onReasoning callback
-        if (isSwarmTrigger && !swarmVisualized) {
-          swarmVisualized = true;
-          const oldTypingIndicator = chatMessagesLog.querySelector('.typing-indicator');
-          if (oldTypingIndicator) {
-            const oldMsg = oldTypingIndicator.closest('.chat-message');
-            if (oldMsg) {
-              msgDiv = oldMsg;
-              bubble = msgDiv.querySelector('.chat-message-bubble');
-            }
-          }
-          if (!bubble) {
-            appendMessage('assistant', '');
-            msgDiv = chatMessagesLog.lastElementChild;
-            bubble = msgDiv.querySelector('.chat-message-bubble');
-          }
-          const indicator = bubble.querySelector('.typing-indicator');
-          if (indicator) indicator.remove();
-          triggerSwarmVisualization(promptText, bubble);
-        }
-
         if (firstReasoningToken) {
           firstReasoningToken = false;
           thinkingStartTime = Date.now();
@@ -2851,6 +2809,14 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           bubble.insertBefore(blocksContainer, bubble.firstChild);
         }
 
+        // AGENTIC DECISION TRIGGER FOR SWARM: trigger visualizer when delegate_task tool starts
+        if (toolUsage.type === 'tool_start' && toolUsage.name === 'delegate_task') {
+          if (!swarmVisualized) {
+            swarmVisualized = true;
+            triggerSwarmVisualization(promptText, bubble);
+          }
+        }
+
         if (toolUsage.type === 'tool_start') {
           showToolIndicator(toolUsage.name);
           window.dispatchEvent(new CustomEvent('agent-tool-start', { detail: { name: toolUsage.name, id: toolUsage.id, args: toolUsage.args || {} } }));
@@ -2917,6 +2883,14 @@ I'll tackle this massive literature review project by creating specialized sub-a
         onReasoningCb("Thinking... verifying access... reading mailbox...\n");
         await new Promise(r => setTimeout(r, 600));
 
+        // AGENTIC MOCK TRIGGER: simulate a delegate_task tool call start
+        onToolUsageCb({
+          type: 'tool_start',
+          name: 'delegate_task',
+          id: 'mock-delegate-1',
+          args: { task: 'Literature review compilation and parallel paper analysis' }
+        });
+
         await new Promise((resolve) => {
           const tokenInterval = setInterval(() => {
             if (currentWordIndex < words.length) {
@@ -2928,6 +2902,13 @@ I'll tackle this massive literature review project by creating specialized sub-a
               resolve();
             }
           }, 30);
+        });
+
+        // Simulate delegate_task tool completion
+        onToolUsageCb({
+          type: 'tool_complete',
+          name: 'delegate_task',
+          id: 'mock-delegate-1'
         });
       } else {
         reply = await callRealAPI(model, conversationHistory, onTokenCb, abortController.signal, onReasoningCb, onToolUsageCb);
