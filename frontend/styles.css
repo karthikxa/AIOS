@@ -10243,3 +10243,29 @@ main.main-content.computer-split-mode #computerSplitPane {
   flex-shrink: 0;
 }
 
+/* Premium compact spacing rules for assistant message flow */
+.chat-assistant-header {
+  margin-bottom: 2px !important;
+}
+
+.activity-row-container {
+  margin-top: 2px !important;
+  margin-bottom: 6px !important;
+}
+
+.cot-response-text-container {
+  margin-top: 4px !important;
+}
+
+.cot-response-text-container p {
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
+}
+
+.cot-response-text-container p:first-child {
+  margin-top: 2px !important;
+}
+
+.cot-response-text-container p:last-child {
+  margin-bottom: 0px !important;
+}
