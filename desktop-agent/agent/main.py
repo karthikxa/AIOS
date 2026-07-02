@@ -622,7 +622,9 @@ async def execute_action(action: dict) -> str:
 
         # ── Dynamic planner actions ────────────────────────────────────
         elif a == "add_subtask":
-            desc = action.get("description", "")
+            desc = action.get("description", "").strip()
+            if not desc:
+                return "Error: subtask description cannot be empty"
             st = _planner.add_subtask(desc)
             return f"Added subtask #{st['id']}: {desc}\nPlan:\n{_planner.to_text()}"
 
@@ -815,6 +817,16 @@ def reset_agent_state():
     _screenshot_after = ""
 
 
+async def maximize_browser():
+    """Try to maximize the browser window in the sandbox to fill the desktop."""
+    try:
+        await sandbox_post("/v1/browser/page/evaluate", {
+            "expression": "try { window.moveTo(0, 0); window.resizeTo(screen.availWidth, screen.availHeight); 'maximized'; } catch(e) { 'error: ' + e.message; }"
+        })
+    except Exception:
+        pass
+
+
 # ── LLM caller ──────────────────────────────────────────────────────────────
 
 async def call_llm_with_tools(messages: list[dict]) -> dict:
@@ -860,6 +872,7 @@ async def broadcast(msg: dict):
 
 async def run_agent(task: str):
     reset_agent_state()
+    await maximize_browser()
     await broadcast({"type": "system", "text": f"Task: {task}"})
     await broadcast({"type": "plan", "plan": _planner.to_dict()})
     messages = [{"role": "user", "content": task}]
