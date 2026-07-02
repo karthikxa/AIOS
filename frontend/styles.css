@@ -10100,6 +10100,7 @@ main.main-content.computer-split-mode #computerSplitPane {
   position: relative !important;
   overflow: hidden !important;
   min-height: 0 !important;
+  background: #1a1a2e !important;
 }
 
 /* Ensure iframe fills the viewport completely */
@@ -10111,10 +10112,134 @@ main.main-content.computer-split-mode #computerSplitPane {
   min-height: 0 !important;
   min-width: 0 !important;
   overflow: hidden !important;
+  object-fit: contain !important;
 }
 
 /* Hide any scrollbars on the computer split pane */
 #computerSplitPane {
   overflow: hidden !important;
+}
+
+/* Remove video control bar — not needed */
+.split-pane-controls {
+  display: none !important;
+}
+
+/* ── Live Plan Display ──────────────────────────────────────────── */
+.live-plan-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  transition: all 0.2s ease;
+}
+
+.live-plan-item .plan-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.live-plan-item .plan-icon.pending {
+  border: 2px solid #D1D5DB;
+  color: #9CA3AF;
+  background: transparent;
+}
+
+.live-plan-item .plan-icon.active {
+  background: #3B82F6;
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  animation: plan-pulse 1.5s ease-in-out infinite;
+}
+
+.live-plan-item .plan-icon.completed {
+  background: #10B981;
+  color: #fff;
+}
+
+.live-plan-item .plan-icon.failed {
+  background: #EF4444;
+  color: #fff;
+}
+
+.live-plan-item .plan-icon.skipped {
+  border: 2px solid #9CA3AF;
+  color: #9CA3AF;
+  background: transparent;
+  text-decoration: line-through;
+}
+
+.live-plan-item .plan-text {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #111827;
+}
+
+.live-plan-item.pending .plan-text {
+  color: #6B7280;
+}
+
+.live-plan-item.failed .plan-text {
+  color: #DC2626;
+  text-decoration: line-through;
+}
+
+.live-plan-item.skipped .plan-text {
+  color: #9CA3AF;
+  text-decoration: line-through;
+}
+
+@keyframes plan-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+  50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.1); }
+}
+
+/* ── Action Log Panel ───────────────────────────────────────────── */
+.action-log-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  border-radius: 6px;
+  margin-bottom: 2px;
+}
+
+.action-log-entry.success {
+  color: #059669;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.action-log-entry.failure {
+  color: #DC2626;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.action-log-entry .log-action {
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.action-log-entry .log-result {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #6B7280;
+}
+
+.action-log-entry .log-time {
+  color: #9CA3AF;
+  font-size: 11px;
+  flex-shrink: 0;
 }
 

@@ -28,11 +28,32 @@ const actionDescriptions = {
   scroll: 'Scrolling',
   navigate: 'Opening URL',
   evaluate: 'Running JavaScript',
-  shell: 'Running command',
+  shell: 'Running shell command',
   open_tab: 'Opening new tab',
   list_tabs: 'Listing tabs',
   switch_tab: 'Switching tab',
   close_tab: 'Closing tab',
+  run_code: 'Executing code',
+  read_file: 'Reading file',
+  write_file: 'Writing file',
+  list_files: 'Listing files',
+  find_files: 'Finding files',
+  search_files: 'Searching files',
+  install_package: 'Installing package',
+  take_screenshot: 'Capturing screenshot',
+  screenshot_diff: 'Comparing screenshots',
+  resolve_click: 'Resolving click target',
+  annotate_screen: 'Annotating elements',
+  get_page_html: 'Reading page HTML',
+  get_page_text: 'Reading page text',
+  get_page_markdown: 'Reading page markdown',
+  find_text: 'Finding text on page',
+  wait_for: 'Waiting for condition',
+  add_subtask: 'Adding subtask',
+  update_subtask: 'Updating subtask',
+  remove_subtask: 'Removing subtask',
+  reorder_subtasks: 'Reordering subtasks',
+  get_plan: 'Viewing plan',
   done: 'Task complete',
 };
 
@@ -1467,22 +1488,65 @@ const starIndicator = `
     let computerTools = [];
     let computerSystemMsg = '';
     if (effectiveMode === 'computer') {
-      computerSystemMsg = 'You are a helpful AI assistant with optional computer control. For simple greetings, questions, or conversation - just respond with text directly using normal chat. Only use computer tools when the user explicitly asks you to DO something on the computer (open websites, search, click, type, etc). For computer tasks: call get_screen ONCE, execute actions efficiently (3-5 steps max), call done when finished. For chat: just respond naturally without any tools.';
+      computerSystemMsg = `You are a highly capable AI agent with full computer control — browser, terminal, file system, code execution, and desktop.
+
+STRATEGY SELECTION (Critical): Before acting, ask: Is there an API/CLI for this? Is this a file operation? Is this code execution? Only fall back to GUI clicking if neither API, shell, nor code execution applies. This eliminates 50%+ of unnecessary browser automation.
+
+FULL OS ACCESS: You have terminal (shell), file system (read/write/find/search), code execution (Python/JavaScript), browser automation, and package installation. Use the right tool for the job.
+
+SELF-EXTENSION: You can write and run scripts on the fly. Chain tools: shell("curl ...") → write_file(...) → read_file(...). Use primitives to compose new capabilities.
+
+DYNAMIC PLANNING: Use add_subtask/update_subtask to break complex tasks into steps and track progress.
+
+FAILURE MEMORY: When an approach fails, try a different strategy. Don't repeat the same failed approach.
+
+RISKY ACTIONS: For irreversible actions (payments, sends, deletes), describe what you're about to do and wait for confirmation.
+
+For simple greetings or questions — just respond with text. For tasks: plan first, execute efficiently, verify with screenshot_diff, call done when finished.`;
       computerTools = [
-        { type: 'function', function: { name: 'get_screen', description: 'Get the current screen state: URL, title, open tabs, and all interactive elements with their index, tag, text, role, and position', parameters: { type: 'object', properties: {}, required: [] } } },
-        { type: 'function', function: { name: 'click', description: 'Click an element on screen by its index number (e.g. 0, 1, 2)', parameters: { type: 'object', properties: { index: { type: 'number', description: 'The element index from get_screen (the number in square brackets)' } }, required: ['index'] } } },
-        { type: 'function', function: { name: 'type', description: 'Type text into an input field by its index', parameters: { type: 'object', properties: { index: { type: 'number', description: 'The input field index from get_screen' }, text: { type: 'string', description: 'Text to type' } }, required: ['index', 'text'] } } },
-        { type: 'function', function: { name: 'press_key', description: 'Press a keyboard key', parameters: { type: 'object', properties: { key: { type: 'string', description: 'Key name: Enter, Tab, Escape, Backspace, etc.' } }, required: ['key'] } } },
-        { type: 'function', function: { name: 'hotkey', description: 'Press a keyboard shortcut', parameters: { type: 'object', properties: { keys: { type: 'array', items: { type: 'string' }, description: 'Keys to press together, e.g. ["ctrl","c"]' } }, required: ['keys'] } } },
-        { type: 'function', function: { name: 'scroll', description: 'Scroll the page', parameters: { type: 'object', properties: { direction: { type: 'string', enum: ['up', 'down'] }, amount: { type: 'number', description: 'Scroll amount (default 3)' } }, required: ['direction'] } } },
-        { type: 'function', function: { name: 'navigate', description: 'Navigate to a URL in the browser', parameters: { type: 'object', properties: { url: { type: 'string', description: 'Full URL to navigate to (e.g. https://google.com)' } }, required: ['url'] } } },
-        { type: 'function', function: { name: 'evaluate', description: 'Run JavaScript in the browser page', parameters: { type: 'object', properties: { code: { type: 'string', description: 'JavaScript code to evaluate' } }, required: ['code'] } } },
-        { type: 'function', function: { name: 'shell', description: 'Execute a shell command in the sandbox', parameters: { type: 'object', properties: { command: { type: 'string', description: 'Shell command to run' } }, required: ['command'] } } },
-        { type: 'function', function: { name: 'open_tab', description: 'Open a new browser tab and optionally navigate to a URL', parameters: { type: 'object', properties: { url: { type: 'string', description: 'URL to open in the new tab (default: about:blank)' } }, required: [] } } },
-        { type: 'function', function: { name: 'list_tabs', description: 'List all open browser tabs with their index, title, URL, and active status', parameters: { type: 'object', properties: {}, required: [] } } },
-        { type: 'function', function: { name: 'switch_tab', description: 'Switch to a specific tab by its index number', parameters: { type: 'object', properties: { index: { type: 'number', description: 'Tab index number from list_tabs' } }, required: ['index'] } } },
-        { type: 'function', function: { name: 'close_tab', description: 'Close a specific tab by its index number', parameters: { type: 'object', properties: { index: { type: 'number', description: 'Tab index number to close' } }, required: ['index'] } } },
-        { type: 'function', function: { name: 'done', description: 'Mark the task as complete with a summary', parameters: { type: 'object', properties: { summary: { type: 'string', description: 'Detailed summary of what was accomplished and what was found' } }, required: ['summary'] } } },
+        // ── Screen & perception ─────────────────────────────────────
+        { type: 'function', function: { name: 'get_screen', description: 'Get the current screen: URL, title, open tabs, and all interactive elements with index, tag, text, role, and position. Call first and after major changes.', parameters: { type: 'object', properties: {}, required: [] } } },
+        { type: 'function', function: { name: 'take_screenshot', description: 'Capture a screenshot of the current screen.', parameters: { type: 'object', properties: {}, required: [] } } },
+        { type: 'function', function: { name: 'annotate_screen', description: 'Overlay numbered markers on all interactive elements to identify them by number.', parameters: { type: 'object', properties: {}, required: [] } } },
+        { type: 'function', function: { name: 'resolve_click', description: 'Find the best element to click given a natural-language description (e.g. "the search button").', parameters: { type: 'object', properties: { description: { type: 'string', description: 'Description of the element to click' } }, required: ['description'] } } },
+        { type: 'function', function: { name: 'screenshot_diff', description: 'Compare before/after screenshots to check if an action had visible effect.', parameters: { type: 'object', properties: { before: { type: 'string' }, after: { type: 'string' } }, required: [] } } },
+        { type: 'function', function: { name: 'get_page_html', description: 'Get the full HTML of the current page.', parameters: { type: 'object', properties: {}, required: [] } } },
+        { type: 'function', function: { name: 'get_page_text', description: 'Get all visible text from the current page.', parameters: { type: 'object', properties: {}, required: [] } } },
+        { type: 'function', function: { name: 'get_page_markdown', description: 'Get the current page content converted to Markdown.', parameters: { type: 'object', properties: {}, required: [] } } },
+        { type: 'function', function: { name: 'find_text', description: 'Find occurrences of text on the page.', parameters: { type: 'object', properties: { text: { type: 'string' } }, required: ['text'] } } },
+        { type: 'function', function: { name: 'wait_for', description: 'Wait for a condition: selector, load, url, network_idle.', parameters: { type: 'object', properties: { type: { type: 'string', enum: ['selector', 'load', 'url', 'network_idle'] }, value: { type: 'string' }, timeout: { type: 'number' } }, required: ['type'] } } },
+        // ── Browser actions ─────────────────────────────────────────
+        { type: 'function', function: { name: 'click', description: 'Click an element by its index number (from get_screen).', parameters: { type: 'object', properties: { index: { type: 'number', description: 'Element index from get_screen' } }, required: ['index'] } } },
+        { type: 'function', function: { name: 'type', description: 'Type text into an input/textarea by its index.', parameters: { type: 'object', properties: { index: { type: 'number', description: 'Element index from get_screen' }, text: { type: 'string', description: 'Text to type' } }, required: ['index', 'text'] } } },
+        { type: 'function', function: { name: 'press_key', description: 'Press a keyboard key.', parameters: { type: 'object', properties: { key: { type: 'string', description: 'Key name: Enter, Tab, Escape, Backspace, etc.' } }, required: ['key'] } } },
+        { type: 'function', function: { name: 'hotkey', description: 'Press a keyboard shortcut (e.g. ctrl+c, alt+tab).', parameters: { type: 'object', properties: { keys: { type: 'array', items: { type: 'string' }, description: 'Keys to press together' } }, required: ['keys'] } } },
+        { type: 'function', function: { name: 'scroll', description: 'Scroll the page.', parameters: { type: 'object', properties: { direction: { type: 'string', enum: ['up', 'down'] }, amount: { type: 'number' } }, required: ['direction'] } } },
+        { type: 'function', function: { name: 'navigate', description: 'Navigate to a URL in the browser.', parameters: { type: 'object', properties: { url: { type: 'string', description: 'Full URL including https://' } }, required: ['url'] } } },
+        { type: 'function', function: { name: 'evaluate', description: 'Run JavaScript in the browser page.', parameters: { type: 'object', properties: { expression: { type: 'string', description: 'JavaScript expression to evaluate' } }, required: ['expression'] } } },
+        // ── Tab management ─────────────────────────────────────────
+        { type: 'function', function: { name: 'open_tab', description: 'Open a new browser tab and navigate to a URL.', parameters: { type: 'object', properties: { url: { type: 'string' } }, required: [] } } },
+        { type: 'function', function: { name: 'list_tabs', description: 'List all open browser tabs.', parameters: { type: 'object', properties: {}, required: [] } } },
+        { type: 'function', function: { name: 'switch_tab', description: 'Switch to a specific tab by index.', parameters: { type: 'object', properties: { index: { type: 'number' } }, required: ['index'] } } },
+        { type: 'function', function: { name: 'close_tab', description: 'Close a specific tab by index.', parameters: { type: 'object', properties: { index: { type: 'number' } }, required: ['index'] } } },
+        // ── Shell & code execution ─────────────────────────────────
+        { type: 'function', function: { name: 'shell', description: 'Execute a shell command (bash). Use for system operations, installing packages, running scripts.', parameters: { type: 'object', properties: { command: { type: 'string', description: 'Shell command to run' } }, required: ['command'] } } },
+        { type: 'function', function: { name: 'run_code', description: 'Execute code in a sandboxed runtime. Supports Python (Jupyter) or JavaScript (Node.js).', parameters: { type: 'object', properties: { code: { type: 'string', description: 'Code to execute' }, language: { type: 'string', enum: ['python', 'javascript'], description: 'Language (default: python)' } }, required: ['code'] } } },
+        // ── File system ────────────────────────────────────────────
+        { type: 'function', function: { name: 'read_file', description: 'Read the contents of a file in the sandbox.', parameters: { type: 'object', properties: { path: { type: 'string', description: 'Absolute file path' } }, required: ['path'] } } },
+        { type: 'function', function: { name: 'write_file', description: 'Write content to a file (creates or overwrites).', parameters: { type: 'object', properties: { path: { type: 'string', description: 'Absolute file path' }, content: { type: 'string', description: 'File content' } }, required: ['path', 'content'] } } },
+        { type: 'function', function: { name: 'list_files', description: 'List files and directories at a path.', parameters: { type: 'object', properties: { path: { type: 'string', description: 'Directory path (default: /)' } }, required: [] } } },
+        { type: 'function', function: { name: 'find_files', description: 'Find files by name pattern (glob).', parameters: { type: 'object', properties: { pattern: { type: 'string', description: 'Glob pattern (e.g. *.py)' }, path: { type: 'string' } }, required: ['pattern'] } } },
+        { type: 'function', function: { name: 'search_files', description: 'Search for text within files (grep).', parameters: { type: 'object', properties: { query: { type: 'string', description: 'Text or regex to search for' }, path: { type: 'string' } }, required: ['query'] } } },
+        // ── Package installation ───────────────────────────────────
+        { type: 'function', function: { name: 'install_package', description: 'Install a package via pip, npm, or apt. Auto-detects manager.', parameters: { type: 'object', properties: { package: { type: 'string', description: 'Package name' }, manager: { type: 'string', enum: ['auto', 'pip', 'npm', 'apt'] } }, required: ['package'] } } },
+        // ── Dynamic planner ────────────────────────────────────────
+        { type: 'function', function: { name: 'add_subtask', description: 'Add a subtask to break complex tasks into steps.', parameters: { type: 'object', properties: { description: { type: 'string', description: 'Subtask description' } }, required: ['description'] } } },
+        { type: 'function', function: { name: 'update_subtask', description: 'Update a subtask status (active/completed/failed/skipped).', parameters: { type: 'object', properties: { task_id: { type: 'number', description: 'Subtask ID' }, status: { type: 'string', enum: ['active', 'completed', 'failed', 'skipped'] }, result: { type: 'string' } }, required: ['task_id', 'status'] } } },
+        { type: 'function', function: { name: 'remove_subtask', description: 'Remove a subtask from the plan.', parameters: { type: 'object', properties: { task_id: { type: 'number' } }, required: ['task_id'] } } },
+        { type: 'function', function: { name: 'reorder_subtasks', description: 'Reorder subtasks by providing IDs in desired order.', parameters: { type: 'object', properties: { order: { type: 'array', items: { type: 'number' } } }, required: ['order'] } } },
+        { type: 'function', function: { name: 'get_plan', description: 'View the current task plan and subtask statuses.', parameters: { type: 'object', properties: {}, required: [] } } },
+        // ── Done ──────────────────────────────────────────────────
+        { type: 'function', function: { name: 'done', description: 'Mark the task as complete with a summary.', parameters: { type: 'object', properties: { summary: { type: 'string', description: 'Detailed summary of what was accomplished' } }, required: ['summary'] } } },
       ];
     }
     const fullUserMsg = userMsg + fileContext;
@@ -1537,6 +1601,18 @@ const starIndicator = `
         function updateStatus(text, step) {
           if (statusText) statusText.textContent = text;
           if (stepCount) stepCount.textContent = step;
+        }
+
+        function renderLivePlan(plan) {
+          if (!progressBody || !plan || plan.length === 0) return;
+          progressBody.innerHTML = '';
+          progressStepNum = 0;
+          for (const st of plan) {
+            const stateMap = { pending: 'pending', active: 'active', completed: 'done', failed: 'active', skipped: 'done' };
+            const state = stateMap[st.status] || 'pending';
+            const label = st.status === 'failed' ? `[!] ${st.description}` : st.status === 'skipped' ? `[-] ${st.description}` : st.description;
+            addProgressStep(label, state);
+          }
         }
 
         let progressStepNum = 0;
@@ -1614,8 +1690,9 @@ const starIndicator = `
         }
         const ws = new WebSocket(agentUrl);
         let agentStep = 0;
-        const maxSteps = 7;
+        const maxSteps = 15;
         let progressIndex = 0;
+        let currentPlan = [];
 
         // Promise that resolves when the agent sends a screen result
         let resolveScreenResult = null;
@@ -1624,11 +1701,25 @@ const starIndicator = `
           if (msg.type === 'screen' && resolveScreenResult) {
             resolveScreenResult(msg.text);
             resolveScreenResult = null;
+            // Update browser URL from screen result
+            const urlEl = document.getElementById('splitPaneSubHeaderUrl');
+            if (urlEl && msg.text) {
+              const urlMatch = msg.text.match(/URL:\s*(https?:\/\/[^\s]+)/);
+              if (urlMatch) {
+                urlEl.innerHTML = `<a href="${urlMatch[1]}" target="_blank" style="color: #3B82F6; text-decoration: none;">${urlMatch[1]}</a>`;
+              }
+            }
           } else if (msg.type === 'thinking') {
             agentStep++;
             updateStatus(msg.text, `${agentStep} / ${maxSteps}`);
           } else if (msg.type === 'system') {
             updateStatus(msg.text, `${agentStep} / ${maxSteps}`);
+          } else if (msg.type === 'plan' && msg.plan) {
+            // Update live plan display in split pane
+            currentPlan = msg.plan;
+            renderLivePlan(msg.plan);
+          } else if (msg.type === 'action_log') {
+            // Could display action log in UI if desired
           }
         };
 
@@ -1686,7 +1777,7 @@ const starIndicator = `
                   tools: computerTools,
                   tool_choice: 'auto',
                   temperature: 0.1,
-                  max_tokens: 1024,
+                  max_tokens: 2048,
                   stream: false,
                 }),
                 signal: abortController.signal,
@@ -1859,6 +1950,8 @@ const starIndicator = `
           bubble.innerHTML = renderMarkdown(fullContent);
           chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
         }
+        // Update browser URL in split pane sub-header from content
+        updateSplitPaneUrl(fullContent);
       }, abortController.signal, (reasoningDelta) => {
         accumulatedReasoning += reasoningDelta;
       }, (toolUsage) => {
@@ -2146,6 +2239,16 @@ const starIndicator = `
 
   let desktopStreamStarted = false;
   let desktopPollInterval = null;
+
+  function updateSplitPaneUrl(content) {
+    const urlEl = document.getElementById('splitPaneSubHeaderUrl');
+    if (!urlEl) return;
+    // Extract URLs from content
+    const urlMatch = content.match(/https?:\/\/[^\s)"\]>]+/);
+    if (urlMatch) {
+      urlEl.innerHTML = `<a href="${urlMatch[0]}" target="_blank" style="color: #3B82F6; text-decoration: none;">${urlMatch[0]}</a>`;
+    }
+  }
 
   function getVncBaseUrl() {
     // Sandbox has its own VNC on port 8080

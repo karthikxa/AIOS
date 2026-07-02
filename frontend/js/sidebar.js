@@ -9,6 +9,11 @@ export function initSidebar() {
     mobileHamburger.addEventListener('click', (e) => {
       e.stopPropagation();
       sidebar.classList.toggle('open');
+      // Hide status bar when sidebar is open on mobile
+      const statusBar = document.getElementById('subagentStatusBar');
+      if (statusBar) {
+        statusBar.style.display = sidebar.classList.contains('open') ? 'none' : '';
+      }
     });
 
     // Close sidebar when clicking outside on mobile
@@ -16,6 +21,9 @@ export function initSidebar() {
       if (window.innerWidth <= 992 && sidebar.classList.contains('open')) {
         if (!sidebar.contains(e.target) && e.target !== mobileHamburger) {
           sidebar.classList.remove('open');
+          // Restore status bar when sidebar closes
+          const statusBar = document.getElementById('subagentStatusBar');
+          if (statusBar) statusBar.style.display = '';
         }
       }
     });
