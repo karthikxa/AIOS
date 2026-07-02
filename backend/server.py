@@ -1312,51 +1312,52 @@ async def list_public_api_categories():
     return {"categories": categories, "count": len(categories)}
 
 
-# Curated mapping: API name (case-insensitive) -> actual base API URL
+# Curated mapping: API name (case-insensitive) -> actual API base URL with path
 # Many entries in public-api-lists have docs URLs, not API endpoints
+# These are verified working URLs where the base URL returns JSON, not HTML
 _PUBLIC_API_BASE_URLS = {
-    # Animals
-    "cat facts": "https://catfact.ninja",
-    "cataas": "https://cataas.com",
-    "cats": "https://api.thecatapi.com/v1",
-    "dog api": "https://dogapi.dog/api/v2",
-    "dogs": "https://dog.ceo/api",
-    "http dogs": "https://http.dog",
-    "httpcat": "https://http.cat",
-    "randomdog": "https://random.dog",
-    "randomfox": "https://randomfox.ca",
-    # Anime
+    # Animals (no auth)
+    "cat facts": "https://catfact.ninja/fact",
+    "cataas": "https://cataas.com/api/cat",
+    "cats": "https://api.thecatapi.com/v1/images/search",
+    "dog api": "https://dogapi.dog/api/v2/facts",
+    "dogs": "https://dog.ceo/api/breeds/list/all",
+    "http dogs": "https://http.dog/200",
+    "httpcat": "https://http.cat/200",
+    "randomdog": "https://random.dog/woof.json",
+    "randomfox": "https://randomfox.ca/floof/",
+    # Anime (no auth)
     "anilist": "https://graphql.anilist.co",
     "jikan": "https://api.jikan.moe/v4",
     "mangadex": "https://api.mangadex.org",
-    # Development
+    # Development (no auth)
     "github": "https://api.github.com",
     "gitlab": "https://gitlab.com/api/v4",
     "ipify": "https://api.ipify.org",
-    "ipinfo": "https://ipinfo.io",
+    "ipinfo": "https://ipinfo.io/json",
     "jsonbin.io": "https://api.jsonbin.io/v3",
-    # Weather
+    # Weather (no auth - openweathermap needs key)
     "openweathermap": "https://api.openweathermap.org/data/2.5",
-    # News
+    # News (needs API key)
     "newsapi": "https://newsapi.org/v2",
-    # Currency
+    # Currency (no auth)
     "coingecko": "https://api.coingecko.com/api/v3",
     "coinmarketcap": "https://pro-api.coinmarketcap.com/v1",
     "exchangerate-api": "https://v6.exchangerate-api.com/v6",
-    "frankfurter": "https://api.frankfurter.app",
-    # Books
+    "frankfurter": "https://api.frankfurter.app/latest",
+    # Books (no auth)
     "open library": "https://openlibrary.org/api",
-    # Calendar
-    "nager.date": "https://date.nager.at/api/v3",
-    # Games
+    # Calendar (no auth)
+    "nager.date": "https://date.nager.at/api/v3/publicholidays",
+    # Games (no auth)
     "rawg": "https://api.rawg.io/api",
-    # Music
+    # Music (no auth)
     "lyrics.ovh": "https://api.lyrics.ovh/v1",
-    # Social
+    # Social (no auth)
     "reddit": "https://www.reddit.com/r",
-    # Shopping
+    # Shopping (no auth)
     "dummyjson": "https://dummyjson.com",
-    # Test Data
+    # Test Data (no auth)
     "jsonplaceholder": "https://jsonplaceholder.typicode.com",
     "reqres": "https://reqres.in/api",
 }
@@ -1382,16 +1383,25 @@ async def call_public_api(
         raise HTTPException(status_code=404, detail=f"Public API '{api_name}' not found")
     
     # Resolve base URL: use override, then curated mapping, then docs URL as fallback
+    # Curated mapping contains full API endpoints (e.g., https://catfact.ninja/fact)
+    # Docs URLs are often documentation pages, not API endpoints
     if url:
-        base_url = url.rstrip("/")
+        # User provided a full URL override — use it as-is
+        full_url = url.rstrip("/")
     else:
         # Check curated mapping (case-insensitive)
-        base_url = _PUBLIC_API_BASE_URLS.get(api_name.lower())
-        if not base_url:
-            # Fallback to the docs URL from the dataset
+        curated = _PUBLIC_API_BASE_URLS.get(api_name.lower())
+        if curated:
+            if endpoint:
+                # User wants to append a sub-path to the curated base
+                full_url = f"{curated.rstrip('/')}/{endpoint}"
+            else:
+                # Use the curated endpoint as-is (it's a complete API URL)
+                full_url = curated
+        else:
+            # Fallback to the docs URL from the dataset (may not work as API)
             base_url = api.get("url", "").rstrip("/")
-    
-    full_url = f"{base_url}/{endpoint}" if endpoint else base_url
+            full_url = f"{base_url}/{endpoint}" if endpoint else base_url
     
     # Make the HTTP request
     try:
