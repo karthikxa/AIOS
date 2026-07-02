@@ -2914,6 +2914,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       let firstReasoningToken = true;
       let accumulatedReasoning = '';
       let fullContent = '';
+      let streamedToolCalls = [];
 
       const ensureAssistantBubble = () => {
         if (!bubble) {
@@ -3726,6 +3727,8 @@ Here are the current findings:
       computerSplitPane.style.display = 'flex';
       
       // Set header to Computer mode
+      const outerHeader = computerSplitPane.querySelector('.split-pane-outer-header span');
+      if (outerHeader) outerHeader.textContent = 'Computer';
       const splitH2 = document.querySelector('.split-pane-sub-header h2');
       if (splitH2) splitH2.textContent = "Zed's computer";
       const splitUrl = document.getElementById('splitPaneSubHeaderUrl');
