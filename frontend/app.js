@@ -2851,6 +2851,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       let cotContentDiv = null;
       let firstReasoningToken = true;
       let accumulatedReasoning = '';
+      let fullContent = '';
 
       const ensureAssistantBubble = () => {
         if (!bubble) {
