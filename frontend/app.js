@@ -2777,59 +2777,33 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         return;
       }
 
-      let fullContent = '';
-      let accumulatedReasoning = '';
-      let streamedToolCalls = []; // Array to collect { id, name, args, status }
-      
-      let thinkingStartTime = null;
-      let firstReasoningToken = true;
-      let hasEndedThinking = false;
+      let msgDiv = null;
+      let bubble = null;
 
-      let cotSection = null;
-      let cotContentDiv = null;
-      let cotLabelSpan = null;
-      let cotChevronSvg = null;
-      let cotSpinnerSvg = null;
-
-      let toolBlocksMap = {}; // mapping of toolId -> { blockElement, headerTitleSpan, contentContainer, chevronSvg }
-
-      let swarmVisualized = false;
-
-      // Throttle rendering configuration
-      let renderPending = false;
-      let lastRenderTime = 0;
-      const RENDER_THROTTLE_MS = 80;
-
-      function performRender() {
-        renderPending = false;
-        lastRenderTime = Date.now();
-        if (bubble) {
-          let textContainer = bubble.querySelector('.cot-response-text-container');
-          if (!textContainer) {
-            textContainer = document.createElement('div');
-            textContainer.className = 'cot-response-text-container';
-            bubble.appendChild(textContainer);
-          }
-          textContainer.innerHTML = renderMarkdown(fullContent);
-          chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
+      const ensureAssistantBubble = () => {
+        if (bubble) return bubble;
+        
+        const lastMsg = chatMessagesLog.lastElementChild;
+        if (lastMsg && lastMsg.classList.contains('assistant')) {
+          msgDiv = lastMsg;
+          bubble = msgDiv.querySelector('.chat-message-bubble');
         }
-      }
-
-      function requestThrottledRender() {
-        if (renderPending) return;
-        const now = Date.now();
-        const timeSinceLastRender = now - lastRenderTime;
-        if (timeSinceLastRender >= RENDER_THROTTLE_MS) {
-          performRender();
-        } else {
-          renderPending = true;
-          setTimeout(performRender, RENDER_THROTTLE_MS - timeSinceLastRender);
+        
+        if (!bubble) {
+          appendMessage('assistant', '');
+          msgDiv = chatMessagesLog.lastElementChild;
+          bubble = msgDiv.querySelector('.chat-message-bubble');
         }
-      }
-
-      const onTokenCb = (token) => {
+        
+        const indicator = bubble.querySelector('.typing-indicator');
+        if (indicator) indicator.remove();
+        
+       const onTokenCb = (token) => {
         // onToken callback
         
+        // Ensure we have a bubble
+        ensureAssistantBubble();
+
         // 1. Finalize thinking duration if thinking was active
         if (!hasEndedThinking && thinkingStartTime) {
           hasEndedThinking = true;
@@ -2849,9 +2823,10 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             if (statusSpan) {
               statusSpan.textContent = 'Completed';
             }
-            if (cotContentDiv) {
-              cotContentDiv.style.maxHeight = '0px';
-              cotContentDiv.style.padding = '0px 12px 0px 24px';
+            const contentContainer = cotSection.querySelector('.activity-content-container');
+            if (contentContainer) {
+              contentContainer.style.maxHeight = '0px';
+              contentContainer.style.padding = '0px 12px 0px 24px';
             }
             const chevron = cotSection.querySelector('.activity-chevron');
             if (chevron) {
@@ -2860,34 +2835,14 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           }
         }
 
+        // SWARM PROMPT KEYWORD TRIGGER
+        if (isPromptSwarmTrigger && !swarmVisualized) {
+          swarmVisualized = true;
+          triggerSwarmVisualization(promptText, bubble);
+        }
+
         if (!fullContent) {
           window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Writing response' } }));
-          // Reuse existing message div
-          const oldTypingIndicator = chatMessagesLog.querySelector('.typing-indicator');
-          if (oldTypingIndicator) {
-            const oldMsg = oldTypingIndicator.closest('.chat-message');
-            if (oldMsg) {
-              msgDiv = oldMsg;
-              bubble = msgDiv.querySelector('.chat-message-bubble');
-            }
-          }
-          if (!bubble) {
-            appendMessage('assistant', '');
-            msgDiv = chatMessagesLog.lastElementChild;
-            bubble = msgDiv.querySelector('.chat-message-bubble');
-          }
-          
-          // Clear typing indicator inside the bubble
-          const indicator = bubble.querySelector('.typing-indicator');
-          if (indicator) indicator.remove();
-          
-          // Ensure structure
-          let textContainer = bubble.querySelector('.cot-response-text-container');
-          if (!textContainer) {
-            textContainer = document.createElement('div');
-            textContainer.className = 'cot-response-text-container';
-            bubble.appendChild(textContainer);
-          }
         }
 
         fullContent += token;
@@ -2897,38 +2852,23 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
       const onReasoningCb = (reasoningDelta) => {
         // onReasoning callback
+        
+        // Ensure we have a bubble
+        ensureAssistantBubble();
+
+        // SWARM PROMPT KEYWORD TRIGGER
+        if (isPromptSwarmTrigger && !swarmVisualized) {
+          swarmVisualized = true;
+          triggerSwarmVisualization(promptText, bubble);
+        }
+
         if (firstReasoningToken) {
           firstReasoningToken = false;
           thinkingStartTime = Date.now();
           window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Thinking' } }));
 
-          const oldTypingIndicator = chatMessagesLog.querySelector('.typing-indicator');
-          if (oldTypingIndicator) {
-            const oldMsg = oldTypingIndicator.closest('.chat-message');
-            if (oldMsg) {
-              msgDiv = oldMsg;
-              bubble = msgDiv.querySelector('.chat-message-bubble');
-            }
-          }
-          if (!bubble) {
-            appendMessage('assistant', '');
-            msgDiv = chatMessagesLog.lastElementChild;
-            bubble = msgDiv.querySelector('.chat-message-bubble');
-          }
-
-          // Clear typing indicator inside the bubble
-          const indicator = bubble.querySelector('.typing-indicator');
-          if (indicator) indicator.remove();
-
-          // Ensure blocks container exists
-          let blocksContainer = bubble.querySelector('.message-collapsible-blocks');
-          if (!blocksContainer) {
-            blocksContainer = document.createElement('div');
-            blocksContainer.className = 'message-collapsible-blocks';
-            bubble.insertBefore(blocksContainer, bubble.firstChild);
-          }
-
           // Create thinking block
+          let blocksContainer = bubble.querySelector('.message-collapsible-blocks');
           cotSection = createActivityRow({
             type: 'active',
             label: 'Thinking...',
@@ -2939,7 +2879,6 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           blocksContainer.appendChild(cotSection);
 
           cotContentDiv = cotSection.querySelector('.activity-content-inner');
-          cotLabelSpan = cotSection.querySelector('.activity-label-span');
         }
 
         accumulatedReasoning += reasoningDelta;
@@ -2951,31 +2890,9 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
       const onToolUsageCb = (toolUsage) => {
         // onToolUsage callback
-        const oldTypingIndicator = chatMessagesLog.querySelector('.typing-indicator');
-        if (oldTypingIndicator) {
-          const oldMsg = oldTypingIndicator.closest('.chat-message');
-          if (oldMsg) {
-            msgDiv = oldMsg;
-            bubble = msgDiv.querySelector('.chat-message-bubble');
-          }
-        }
-        if (!bubble) {
-          appendMessage('assistant', '');
-          msgDiv = chatMessagesLog.lastElementChild;
-          bubble = msgDiv.querySelector('.chat-message-bubble');
-        }
-
-        // Clear typing indicator inside the bubble
-        const indicator = bubble.querySelector('.typing-indicator');
-        if (indicator) indicator.remove();
-
-        // Ensure blocks container exists
-        let blocksContainer = bubble.querySelector('.message-collapsible-blocks');
-        if (!blocksContainer) {
-          blocksContainer = document.createElement('div');
-          blocksContainer.className = 'message-collapsible-blocks';
-          bubble.insertBefore(blocksContainer, bubble.firstChild);
-        }
+        
+        // Ensure we have a bubble
+        ensureAssistantBubble();
 
         // AGENTIC DECISION TRIGGER FOR SWARM: trigger visualizer when delegate_task tool starts
         if (toolUsage.type === 'tool_start' && toolUsage.name === 'delegate_task') {
@@ -3000,6 +2917,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           }
 
           // Create active activity row
+          let blocksContainer = bubble.querySelector('.message-collapsible-blocks');
           const toolSection = createActivityRow({
             type: 'active',
             label: activeLabel,
@@ -3053,7 +2971,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       if (promptText.toLowerCase().includes("summarize my last gmail") || promptText.toLowerCase().includes("summarize my gmail")) {
         const mockResponse = `Your last Gmail was a security alert from Google sent at 11:01 AM GMT on June 28, 2026. The email warned that you allowed "zodzy" (zedstoreofficial@gmail.com) access to some of your Google Account data, and advised that if you didn't authorize this, someone else may be trying to access your account.
 
-I'll tackle this massive literature review project by creating specialized sub-agents and working in parallel. Let me start by setting up the workflow and creating the necessary agents.`;
+I'll tackle this literature review project by creating specialized sub-agents and working in parallel. Let me start by setting up the workflow and creating the necessary agents.`;
         
         reply = mockResponse;
         
@@ -3100,6 +3018,50 @@ I'll tackle this massive literature review project by creating specialized sub-a
           id: 'mock-active-1',
           args: { url: 'https://example.com/workflow' }
         });
+      } else if (promptText.toLowerCase().includes("rtx 5090") || promptText.toLowerCase().includes("rtx5090")) {
+        const mockResponse = `I've initiated a search across multiple retailers and tech forums to locate the cheapest price for the NVIDIA RTX 5090 Founders Edition and third-party partner cards. 
+
+Here are the current findings:
+1. **NVIDIA Founders Edition** — $1,999 (if you can get it from Best Buy/NVIDIA)
+2. **MSI Ventus 3X OC** — $2,020–$2,070 (best value among third-party)
+3. **Zotac Solid** — $2,050–$2,100 (solid budget option)
+
+📌 **Tips to Get One Cheap**
+- Sign up for stock alerts (HotStock, NowInStock)
+- Check Best Buy, B&H, Newegg at random times
+- Micro Center in-store if you're near one
+- Avoid eBay scalpers (3-5x markup)
+- Wait 2–3 months for supply to stabilize`;
+        
+        reply = mockResponse;
+        
+        // Staggered token stream simulation
+        let words = mockResponse.split(" ");
+        let currentWordIndex = 0;
+        
+        // Initial thinking time simulation before streaming content
+        onReasoningCb("Thinking... searching retailers... comparing prices...\n");
+        await new Promise(r => setTimeout(r, 600));
+
+        // Trigger Swarm Visualization since it's a swarm prompt
+        if (!swarmVisualized) {
+          swarmVisualized = true;
+          triggerSwarmVisualization(promptText, ensureAssistantBubble());
+        }
+
+        await new Promise((resolve) => {
+          const tokenInterval = setInterval(() => {
+            if (currentWordIndex < words.length) {
+              const token = words[currentWordIndex] + " ";
+              onTokenCb(token);
+              currentWordIndex++;
+            } else {
+              clearInterval(tokenInterval);
+              resolve();
+            }
+          }, 30);
+        });
+
       } else {
         reply = await callRealAPI(model, conversationHistory, onTokenCb, abortController.signal, onReasoningCb, onToolUsageCb);
       }
