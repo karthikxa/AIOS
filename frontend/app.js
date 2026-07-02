@@ -561,6 +561,172 @@ const starIndicator = `
     return section;
   }
 
+  function getToolDetailHtml(name, args) {
+    let text = TOOL_LABELS[name] || name;
+    if (args) {
+      if (args.url) {
+        text = args.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
+        if (args.url.includes('onboarding')) text = 'Onboarding Demo';
+      } else if (args.query) {
+        text = args.query;
+      } else if (args.task) {
+        text = args.task;
+      }
+    }
+    if (text.length > 25) text = text.substring(0, 22) + '...';
+
+    return `<span style="background: #F3F4F6; border-radius: 9999px; padding: 3px 8px; display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 500; color: #1F2937; line-height: 1;">
+      <div style="width: 13px; height: 13px; border-radius: 50%; background: #3B82F6; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+        </svg>
+      </div>
+      ${DOMPurify.sanitize(text)}
+    </span>`;
+  }
+
+  function createActivityRow({ type, label, detailHtml, contentHtml, statusText = '', isExpanded = false }) {
+    const rowContainer = document.createElement('div');
+    rowContainer.className = `activity-row-container ${type}-activity`;
+    rowContainer.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 8px;
+      font-family: 'Inter', sans-serif;
+      width: 100%;
+    `;
+
+    const rowHeader = document.createElement('div');
+    rowHeader.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 4px 0;
+      cursor: ${contentHtml ? 'pointer' : 'default'};
+      user-select: none;
+    `;
+
+    // Left part: Icon & Label
+    const left = document.createElement('div');
+    left.style.cssText = 'display: flex; align-items: center; gap: 8px;';
+
+    // Left Icon
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'activity-icon-span';
+    iconSpan.style.cssText = 'display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; flex-shrink: 0; color: #4B5563;';
+    
+    let iconSvg = '';
+    if (type === 'reasoning') {
+      iconSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`;
+    } else if (type === 'tool') {
+      iconSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+    } else if (type === 'active') {
+      iconSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="3" style="animation: subagent-spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-dasharray="4 4" stroke-linecap="round"/></svg>`;
+    }
+    iconSpan.innerHTML = iconSvg;
+    left.appendChild(iconSpan);
+
+    // Label Text
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'activity-label-span';
+    labelSpan.textContent = label;
+    labelSpan.style.cssText = `
+      font-size: 13.5px;
+      font-weight: 500;
+      color: ${type === 'active' ? '#6B7280' : '#4B5563'};
+    `;
+    left.appendChild(labelSpan);
+
+    rowHeader.appendChild(left);
+
+    // Right part: Detail/Status
+    const right = document.createElement('div');
+    right.style.cssText = 'display: flex; align-items: center; gap: 6px;';
+
+    const detailWrapper = document.createElement('div');
+    detailWrapper.className = 'activity-detail-wrapper';
+    if (detailHtml) {
+      detailWrapper.innerHTML = detailHtml;
+    }
+    right.appendChild(detailWrapper);
+
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'activity-status-text';
+    statusSpan.textContent = statusText;
+    statusSpan.style.cssText = `
+      font-size: 12.5px;
+      color: #9CA3AF;
+      font-weight: 400;
+      margin-right: 4px;
+    `;
+    right.appendChild(statusSpan);
+
+    // Small chevron for expandable content
+    if (contentHtml) {
+      const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      chevron.setAttribute('class', 'activity-chevron');
+      chevron.setAttribute('width', '12');
+      chevron.setAttribute('height', '12');
+      chevron.setAttribute('viewBox', '0 0 16 16');
+      chevron.setAttribute('fill', 'none');
+      chevron.setAttribute('stroke', '#9CA3AF');
+      chevron.setAttribute('stroke-width', '2');
+      chevron.setAttribute('stroke-linecap', 'round');
+      chevron.setAttribute('stroke-linejoin', 'round');
+      chevron.style.cssText = `transition: transform 0.2s; transform: ${isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'}; flex-shrink: 0;`;
+      const chevronPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      chevronPath.setAttribute('d', 'M6 3l5 5-5 5');
+      chevron.appendChild(chevronPath);
+      right.appendChild(chevron);
+    }
+
+    rowHeader.appendChild(right);
+    rowContainer.appendChild(rowHeader);
+
+    // Collapsible content block
+    let contentDiv = null;
+    if (contentHtml) {
+      contentDiv = document.createElement('div');
+      contentDiv.className = 'activity-content-container';
+      contentDiv.style.cssText = `
+        transition: max-height 0.2s ease-out, padding 0.2s ease-out;
+        overflow: hidden;
+        max-height: ${isExpanded ? '600px' : '0px'};
+        padding: ${isExpanded ? '6px 12px 6px 24px' : '0px 12px 0px 24px'};
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: #4B5563;
+        border-left: 1.5px dashed #E5E7EB;
+        margin-left: 8px;
+        margin-top: 2px;
+      `;
+
+      const contentInner = document.createElement('div');
+      contentInner.className = 'activity-content-inner';
+      contentInner.innerHTML = contentHtml;
+      contentDiv.appendChild(contentInner);
+      rowContainer.appendChild(contentDiv);
+
+      rowHeader.onclick = () => {
+        const isOpen = contentDiv.style.maxHeight !== '0px';
+        const chevron = rowHeader.querySelector('.activity-chevron');
+        if (isOpen) {
+          contentDiv.style.maxHeight = '0px';
+          contentDiv.style.padding = '0px 12px 0px 24px';
+          if (chevron) chevron.style.transform = 'rotate(0deg)';
+        } else {
+          contentDiv.style.maxHeight = '600px';
+          contentDiv.style.padding = '6px 12px 6px 24px';
+          if (chevron) chevron.style.transform = 'rotate(90deg)';
+        }
+      };
+    }
+
+    return rowContainer;
+  }
+
   function formatToolArgs(name, args) {
     if (!args || Object.keys(args).length === 0) {
       return '<div style="color: #9CA3AF; font-style: italic;">No input arguments</div>';
@@ -668,13 +834,12 @@ const starIndicator = `
 
     // 1. Render collapsed reasoning if present
     if (sender === 'assistant' && reasoning) {
-      const cotBlock = createCollapsibleSection({
+      const cotBlock = createActivityRow({
         type: 'reasoning',
-        title: 'Thought',
-        iconHtml: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`,
+        label: 'Thought',
+        statusText: 'Completed',
         contentHtml: DOMPurify.sanitize(reasoning),
-        defaultOpen: false,
-        isPurpleTheme: true
+        defaultOpen: false
       });
       blocksContainer.appendChild(cotBlock);
     }
@@ -682,17 +847,16 @@ const starIndicator = `
     // 2. Render tool calls if present
     if (sender === 'assistant' && Array.isArray(tool_calls)) {
       tool_calls.forEach(tc => {
-        const toolLabel = TOOL_LABELS[tc.name] || tc.name;
+        const detailHtml = getToolDetailHtml(tc.name, tc.args);
         const stateWord = tc.status === 'complete' ? 'Completed' : tc.status === 'failed' ? 'Failed' : 'Running';
-        const title = `${stateWord}: ${toolLabel}`;
         
-        const toolBlock = createCollapsibleSection({
+        const toolBlock = createActivityRow({
           type: 'tool',
-          title: title,
-          iconHtml: getToolIconHtml(tc.name),
+          label: 'Viewed',
+          detailHtml: detailHtml,
           contentHtml: formatToolArgs(tc.name, tc.args),
-          defaultOpen: false,
-          isPurpleTheme: false
+          statusText: stateWord === 'Completed' ? '' : stateWord,
+          defaultOpen: false
         });
         blocksContainer.appendChild(toolBlock);
       });
@@ -2671,18 +2835,29 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           hasEndedThinking = true;
           const duration = Math.round((Date.now() - thinkingStartTime) / 1000);
           const durationText = duration < 1 ? '<1s' : `${duration}s`;
-          if (cotLabelSpan) cotLabelSpan.textContent = `Thought for ${durationText}`;
-          if (cotSpinnerSvg) {
-            cotSpinnerSvg.style.animation = 'none';
-            cotSpinnerSvg.innerHTML = '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>';
+          if (cotSection) {
+            const iconSpan = cotSection.querySelector('.activity-icon-span');
+            if (iconSpan) {
+              iconSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`;
+            }
+            const labelSpan = cotSection.querySelector('.activity-label-span');
+            if (labelSpan) {
+              labelSpan.textContent = 'Thought';
+              labelSpan.style.color = '#4B5563';
+            }
+            const statusSpan = cotSection.querySelector('.activity-status-text');
+            if (statusSpan) {
+              statusSpan.textContent = 'Completed';
+            }
+            if (cotContentDiv) {
+              cotContentDiv.style.maxHeight = '0px';
+              cotContentDiv.style.padding = '0px 12px 0px 24px';
+            }
+            const chevron = cotSection.querySelector('.activity-chevron');
+            if (chevron) {
+              chevron.style.transform = 'rotate(0deg)';
+            }
           }
-          // Auto-collapse thinking block
-          if (cotContentDiv) {
-            cotContentDiv.style.maxHeight = '0px';
-            cotContentDiv.style.padding = '0px 14px';
-            cotContentDiv.style.borderTop = '1px solid transparent';
-          }
-          if (cotChevronSvg) cotChevronSvg.style.transform = 'rotate(0deg)';
         }
 
         if (!fullContent) {
@@ -2754,24 +2929,17 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           }
 
           // Create thinking block
-          cotSection = createCollapsibleSection({
-            type: 'reasoning',
-            title: 'Thinking...',
-            iconHtml: `
-              <svg class="cot-spinner-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1.2s linear infinite; flex-shrink: 0;">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-dasharray="4 4" stroke-linecap="round"/>
-              </svg>
-            `,
-            contentHtml: '',
-            defaultOpen: true,
-            isPurpleTheme: true
+          cotSection = createActivityRow({
+            type: 'active',
+            label: 'Thinking...',
+            statusText: '',
+            contentHtml: 'Thinking...',
+            defaultOpen: true
           });
           blocksContainer.appendChild(cotSection);
 
-          cotContentDiv = cotSection.querySelector('.cot-content-container');
-          cotLabelSpan = cotSection.querySelector('.cot-header-title');
-          cotChevronSvg = cotSection.querySelector('.cot-chevron');
-          cotSpinnerSvg = cotSection.querySelector('.cot-spinner-icon');
+          cotContentDiv = cotSection.querySelector('.activity-content-inner');
+          cotLabelSpan = cotSection.querySelector('.activity-label-span');
         }
 
         accumulatedReasoning += reasoningDelta;
@@ -2826,23 +2994,27 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           streamedToolCalls.push(toolCall);
 
           const toolLabel = TOOL_LABELS[toolUsage.name] || toolUsage.name;
+          let activeLabel = `Running tool: ${toolLabel}...`;
+          if (toolUsage.name.includes('browser')) {
+            activeLabel = 'Generating project workflow...';
+          }
 
-          // Create tool block
-          const toolSection = createCollapsibleSection({
-            type: 'tool',
-            title: `Running: ${toolLabel}`,
-            iconHtml: getToolIconHtml(toolUsage.name),
+          // Create active activity row
+          const toolSection = createActivityRow({
+            type: 'active',
+            label: activeLabel,
             contentHtml: formatToolArgs(toolUsage.name, toolUsage.args),
-            defaultOpen: true,
-            isPurpleTheme: false
+            defaultOpen: true
           });
           blocksContainer.appendChild(toolSection);
 
           toolBlocksMap[toolUsage.id] = {
             blockElement: toolSection,
-            headerTitleSpan: toolSection.querySelector('.cot-header-title'),
-            contentContainer: toolSection.querySelector('.cot-content-container'),
-            chevronSvg: toolSection.querySelector('.cot-chevron')
+            labelSpan: toolSection.querySelector('.activity-label-span'),
+            contentContainer: toolSection.querySelector('.activity-content-container'),
+            chevronSvg: toolSection.querySelector('.activity-chevron'),
+            iconSpan: toolSection.querySelector('.activity-icon-span'),
+            detailWrapper: toolSection.querySelector('.activity-detail-wrapper')
           };
         } else if (toolUsage.type === 'tool_complete') {
           hideToolIndicator(toolUsage.name);
@@ -2855,14 +3027,24 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           // Update UI block and collapse it
           const mapEntry = toolBlocksMap[toolUsage.id];
           if (mapEntry) {
-            const toolLabel = TOOL_LABELS[toolUsage.name] || toolUsage.name;
-            mapEntry.headerTitleSpan.textContent = `Completed: ${toolLabel}`;
-            
-            // Auto-collapse completed tool call
-            mapEntry.contentContainer.style.maxHeight = '0px';
-            mapEntry.contentContainer.style.padding = '0px 14px';
-            mapEntry.contentContainer.style.borderTop = '1px solid transparent';
-            mapEntry.chevronSvg.style.transform = 'rotate(0deg)';
+            if (mapEntry.iconSpan) {
+              mapEntry.iconSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+            }
+            if (mapEntry.labelSpan) {
+              mapEntry.labelSpan.textContent = 'Viewed';
+              mapEntry.labelSpan.style.color = '#4B5563';
+            }
+            if (mapEntry.detailWrapper) {
+              const detailHtml = getToolDetailHtml(toolUsage.name, tc ? tc.args : null);
+              mapEntry.detailWrapper.innerHTML = detailHtml;
+            }
+            if (mapEntry.contentContainer) {
+              mapEntry.contentContainer.style.maxHeight = '0px';
+              mapEntry.contentContainer.style.padding = '0px 12px 0px 24px';
+            }
+            if (mapEntry.chevronSvg) {
+              mapEntry.chevronSvg.style.transform = 'rotate(0deg)';
+            }
           }
         }
       };
@@ -2883,12 +3065,12 @@ I'll tackle this massive literature review project by creating specialized sub-a
         onReasoningCb("Thinking... verifying access... reading mailbox...\n");
         await new Promise(r => setTimeout(r, 600));
 
-        // AGENTIC MOCK TRIGGER: simulate a delegate_task tool call start
+        // AGENTIC MOCK TRIGGER: simulate a browser_navigate tool call start (Onboarding Demo)
         onToolUsageCb({
           type: 'tool_start',
-          name: 'delegate_task',
-          id: 'mock-delegate-1',
-          args: { task: 'Literature review compilation and parallel paper analysis' }
+          name: 'browser_navigate',
+          id: 'mock-browser-1',
+          args: { url: 'https://example.com/onboarding' }
         });
 
         await new Promise((resolve) => {
@@ -2904,11 +3086,19 @@ I'll tackle this massive literature review project by creating specialized sub-a
           }, 30);
         });
 
-        // Simulate delegate_task tool completion
+        // Simulate browser_navigate tool completion
         onToolUsageCb({
           type: 'tool_complete',
-          name: 'delegate_task',
-          id: 'mock-delegate-1'
+          name: 'browser_navigate',
+          id: 'mock-browser-1'
+        });
+
+        // Emit final active spinner row simulating "Generating project workflow..."
+        onToolUsageCb({
+          type: 'tool_start',
+          name: 'browser_navigate',
+          id: 'mock-active-1',
+          args: { url: 'https://example.com/workflow' }
         });
       } else {
         reply = await callRealAPI(model, conversationHistory, onTokenCb, abortController.signal, onReasoningCb, onToolUsageCb);
@@ -2922,17 +3112,29 @@ I'll tackle this massive literature review project by creating specialized sub-a
         hasEndedThinking = true;
         const duration = Math.round((Date.now() - thinkingStartTime) / 1000);
         const durationText = duration < 1 ? '<1s' : `${duration}s`;
-        if (cotLabelSpan) cotLabelSpan.textContent = `Thought for ${durationText}`;
-        if (cotSpinnerSvg) {
-          cotSpinnerSvg.style.animation = 'none';
-          cotSpinnerSvg.innerHTML = '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>';
+        if (cotSection) {
+          const iconSpan = cotSection.querySelector('.activity-icon-span');
+          if (iconSpan) {
+            iconSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`;
+          }
+          const labelSpan = cotSection.querySelector('.activity-label-span');
+          if (labelSpan) {
+            labelSpan.textContent = 'Thought';
+            labelSpan.style.color = '#4B5563';
+          }
+          const statusSpan = cotSection.querySelector('.activity-status-text');
+          if (statusSpan) {
+            statusSpan.textContent = 'Completed';
+          }
+          if (cotContentDiv) {
+            cotContentDiv.style.maxHeight = '0px';
+            cotContentDiv.style.padding = '0px 12px 0px 24px';
+          }
+          const chevron = cotSection.querySelector('.activity-chevron');
+          if (chevron) {
+            chevron.style.transform = 'rotate(0deg)';
+          }
         }
-        if (cotContentDiv) {
-          cotContentDiv.style.maxHeight = '0px';
-          cotContentDiv.style.padding = '0px 14px';
-          cotContentDiv.style.borderTop = '1px solid transparent';
-        }
-        if (cotChevronSvg) cotChevronSvg.style.transform = 'rotate(0deg)';
       }
 
       // Force final synchronous render
