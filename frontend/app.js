@@ -1689,7 +1689,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         }
         const ws = new WebSocket(agentUrl);
         let agentStep = 0;
-        const maxSteps = 15;
+        const maxSteps = 7;
         let progressIndex = 0;
         let currentPlan = [];
 
