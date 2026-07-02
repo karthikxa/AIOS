@@ -708,6 +708,402 @@ const starIndicator = `
     chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
   }
 
+  function generateSwarmAgents(promptText, count = 250) {
+    const list = [];
+    const isPoetryOrWriter = promptText.toLowerCase().includes('write') || promptText.toLowerCase().includes('poetry') || promptText.toLowerCase().includes('book') || promptText.toLowerCase().includes('gmail');
+    
+    const classicalWriters = [
+      'Writer Li Bai', 'Writer Du Fu', 'Writer Su Shi', 'Writer Li Qingzhao', 
+      'Writer Dream Red Chamber', 'Writer Three Kingdoms', 'Writer Lu Xun', 
+      'Writer Shen Congwen', 'Writer Eileen Chang', 'Writer Mo Yan', 
+      'Writer Yu Hua', 'Writer Wang Xiaobo', 'Writer Qu Yuan', 'Writer Tao Yuanming',
+      'Writer Wang Wei', 'Writer Bai Juyi', 'Writer Xin Qiji', 'Writer Sima Qian',
+      'Writer Cao Xueqin', 'Writer Luo Guanzhong', 'Writer Shi Nai\'an', 'Writer Wu Cheng\'en'
+    ];
+
+    const techAgents = [
+      'PaperAnalyzer', 'SynthesisWriter', 'VisualizationCreator', 'CitationManager',
+      'PDFGenerator', 'HeaderParser', 'DateClassifier', 'EmailFetcher', 'TextSummarizer',
+      'LoggerAgent', 'ValidatorAgent', 'ModelSelector', 'PromptOptimizer', 'SearchProxy',
+      'CodeReviewer', 'MemoryManager', 'TaskScheduler', 'ErrorHandler', 'DatabaseConnector'
+    ];
+
+    for (let i = 1; i <= count; i++) {
+      let name = '';
+      if (isPoetryOrWriter) {
+        name = classicalWriters[(i - 1) % classicalWriters.length];
+        if (i > classicalWriters.length) {
+          name += ` ${Math.ceil(i / classicalWriters.length)}`;
+        }
+      } else {
+        name = techAgents[(i - 1) % techAgents.length];
+        if (i > techAgents.length) {
+          name += ` ${Math.ceil(i / techAgents.length)}`;
+        }
+      }
+
+      list.push({
+        idStr: String(i).padStart(2, '0'),
+        name: name,
+        task: isPoetryOrWriter ? 'Compiling segment and formatting text structure' : 'Extracting section data and computing embeddings',
+        status: 'pending'
+      });
+    }
+    return list;
+  }
+
+  function createSwarmSubagentsList(agents) {
+    const container = document.createElement('div');
+    container.className = 'swarm-subagents-card';
+    container.style.cssText = `
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      background: #FFFFFF;
+      overflow: hidden;
+      margin: 12px 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      position: relative;
+      width: 100%;
+    `;
+
+    const listContainer = document.createElement('div');
+    listContainer.className = 'swarm-subagents-scroll';
+    listContainer.style.cssText = `
+      max-height: 280px;
+      overflow-y: auto;
+    `;
+
+    agents.forEach((agent, index) => {
+      const row = document.createElement('div');
+      row.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 16px;
+        border-bottom: 1px solid #F3F4F6;
+        font-size: 13px;
+        color: #374151;
+      `;
+      if (index === agents.length - 1) {
+        row.style.borderBottom = 'none';
+      }
+
+      const left = document.createElement('div');
+      left.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+
+      // Left icon: Profile outline inside a circle
+      const profileCircle = document.createElement('span');
+      profileCircle.style.cssText = `
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 1px solid #D1D5DB;
+        background: #F9FAFB;
+        color: #6B7280;
+      `;
+      profileCircle.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      `;
+      left.appendChild(profileCircle);
+
+      const label = document.createElement('span');
+      label.textContent = 'Create Subagent';
+      label.style.cssText = 'color: #9CA3AF; font-size: 12px;';
+      left.appendChild(label);
+
+      // Subagent profile/name avatar
+      const agentAvatar = document.createElement('span');
+      agentAvatar.style.cssText = `
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 1.5px solid #111827;
+        background: #FFFFFF;
+        font-weight: bold;
+        font-size: 10px;
+        color: #111827;
+      `;
+      agentAvatar.textContent = agent.name ? agent.name[0].toUpperCase() : 'A';
+      left.appendChild(agentAvatar);
+
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = agent.name;
+      nameSpan.style.cssText = 'font-weight: 500; color: #111827;';
+      left.appendChild(nameSpan);
+
+      row.appendChild(left);
+
+      // Right: Caret
+      const caret = document.createElement('span');
+      caret.style.cssText = 'color: #9CA3AF; font-size: 12px; font-weight: bold; display: flex; align-items: center;';
+      caret.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 3l5 5-5 5"/>
+        </svg>
+      `;
+      row.appendChild(caret);
+
+      listContainer.appendChild(row);
+    });
+
+    // Circular Down Arrow Scroll Button
+    const scrollBtn = document.createElement('button');
+    scrollBtn.style.cssText = `
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #374151;
+      outline: none;
+      transition: background 0.15s;
+      z-index: 10;
+    `;
+    scrollBtn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <polyline points="19 12 12 19 5 12"/>
+      </svg>
+    `;
+    scrollBtn.onclick = (e) => {
+      e.stopPropagation();
+      listContainer.scrollTo({ top: listContainer.scrollHeight, behavior: 'smooth' });
+    };
+
+    container.appendChild(listContainer);
+    container.appendChild(scrollBtn);
+    return container;
+  }
+
+  function createSwarmParallelCards(agents) {
+    const container = document.createElement('div');
+    container.className = 'swarm-parallel-cards-container';
+    container.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 12px 0;
+      width: 100%;
+    `;
+
+    agents.forEach((agent) => {
+      const card = document.createElement('div');
+      card.className = 'swarm-agent-card';
+      card.style.cssText = `
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        background: #FFFFFF;
+        padding: 14px 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        position: relative;
+      `;
+
+      // Header row: Avatar, Name, ID
+      const header = document.createElement('div');
+      header.style.cssText = 'display: flex; align-items: center; justify-content: space-between; width: 100%;';
+
+      const left = document.createElement('div');
+      left.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+
+      const avatarCircle = document.createElement('span');
+      avatarCircle.style.cssText = `
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #F3F4F6;
+        color: #1F2937;
+        font-weight: bold;
+        font-size: 13px;
+        border: 1px solid #E5E7EB;
+      `;
+      avatarCircle.innerHTML = agent.avatarHtml || `<span style="font-size: 11px;">${agent.name[0].toUpperCase()}</span>`;
+      left.appendChild(avatarCircle);
+
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = agent.name;
+      nameSpan.style.cssText = 'font-weight: 600; color: #111827; font-size: 13.5px;';
+      left.appendChild(nameSpan);
+
+      header.appendChild(left);
+
+      const idSpan = document.createElement('span');
+      idSpan.textContent = agent.idStr || '01';
+      idSpan.style.cssText = 'font-weight: 700; color: #111827; font-size: 13px;';
+      header.appendChild(idSpan);
+
+      card.appendChild(header);
+
+      // Bottom Row: Task description & Progress dots
+      const bottom = document.createElement('div');
+      bottom.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 2px;';
+
+      const taskSpan = document.createElement('span');
+      taskSpan.textContent = agent.task;
+      taskSpan.style.cssText = 'font-size: 12.5px; color: #4B5563; line-height: 1.4; flex: 1;';
+      bottom.appendChild(taskSpan);
+
+      const progressContainer = document.createElement('div');
+      progressContainer.className = 'progress-dots-container';
+      progressContainer.style.cssText = 'display: flex; gap: 2px; flex-shrink: 0;';
+
+      const totalDots = 10;
+      for (let i = 0; i < totalDots; i++) {
+        const dot = document.createElement('div');
+        dot.style.cssText = `
+          width: 6px;
+          height: 8px;
+          background: #E5E7EB;
+          border-radius: 1px;
+          transition: background 0.3s;
+        `;
+        progressContainer.appendChild(dot);
+      }
+      bottom.appendChild(progressContainer);
+
+      card.appendChild(bottom);
+      container.appendChild(card);
+
+      // Animate progress dots if active
+      if (agent.status === 'running') {
+        let activeDots = 0;
+        const interval = setInterval(() => {
+          if (activeDots <= totalDots) {
+            const dots = progressContainer.children;
+            for (let i = 0; i < totalDots; i++) {
+              if (i < activeDots) {
+                dots[i].style.background = '#10B981';
+              } else {
+                dots[i].style.background = '#E5E7EB';
+              }
+            }
+            activeDots++;
+          } else {
+            clearInterval(interval);
+          }
+        }, 200 + Math.random() * 200);
+      } else if (agent.status === 'completed') {
+        setTimeout(() => {
+          const dots = progressContainer.children;
+          for (let i = 0; i < totalDots; i++) {
+            dots[i].style.background = '#10B981';
+          }
+        }, 50);
+      }
+    });
+
+    return container;
+  }
+
+  function triggerSwarmVisualization(promptText, bubbleElement) {
+    toggleComputerSplit(true);
+    
+    let blocksContainer = bubbleElement.querySelector('.message-collapsible-blocks');
+    if (!blocksContainer) {
+      blocksContainer = document.createElement('div');
+      blocksContainer.className = 'message-collapsible-blocks';
+      bubbleElement.insertBefore(blocksContainer, bubbleElement.firstChild);
+    }
+    
+    // Generate 250 subagents list
+    const agents = generateSwarmAgents(promptText, 250);
+    const listCard = createSwarmSubagentsList(agents);
+    blocksContainer.appendChild(listCard);
+    
+    // Create parallel cards
+    const activeAgents = [
+      {
+        idStr: '01',
+        name: 'Max',
+        task: promptText.toLowerCase().includes('gmail') ? 'Analyze mail headers and verify access token' : 'Read and analyze the PDF file at /mnt/data/paper1.pdf',
+        avatarHtml: '<span style="font-size: 13px;">👨‍💻</span>',
+        status: 'running'
+      },
+      {
+        idStr: '02',
+        name: 'Lisa',
+        task: promptText.toLowerCase().includes('gmail') ? 'Extracting access log details and timestamp summary' : '提取摘要',
+        avatarHtml: '<span style="font-size: 13px;">👩‍🎨</span>',
+        status: 'running'
+      },
+      {
+        idStr: '03',
+        name: 'Ada',
+        task: promptText.toLowerCase().includes('gmail') ? 'Formatting security notification details for response' : 'Extracting key methodology',
+        avatarHtml: '<span style="font-size: 13px;">👩‍🚀</span>',
+        status: 'running'
+      }
+    ];
+    const parallelCards = createSwarmParallelCards(activeAgents);
+    blocksContainer.appendChild(parallelCards);
+
+    // Update split-pane headers
+    const splitH2 = document.querySelector('.split-pane-sub-header h2');
+    if (splitH2) splitH2.textContent = 'Agent 01';
+    
+    const splitUrl = document.getElementById('splitPaneSubHeaderUrl');
+    if (splitUrl) {
+      splitUrl.innerHTML = '<span style="color: #6B7280; display: inline-flex; align-items: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Agent\'s Window</span>';
+    }
+    
+    const progressHeader = document.getElementById('splitPaneProgressHeader');
+    if (progressHeader) {
+      const title = progressHeader.querySelector('span');
+      if (title) {
+        title.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#10B981;display:inline-block;animation:pulse 1.5s infinite;"></span>Task Progress 4/4 | Generate PDF report with clickable TOC</span>';
+      }
+    }
+
+    const progressBody = document.getElementById('splitPaneProgressBody');
+    if (progressBody) progressBody.innerHTML = '';
+    
+    const logSteps = [
+      { text: 'Check Todo List Analyze Write to File Summarize', details: 'Reading todo list parameters and task goals.' },
+      { text: 'Read Todo', details: 'Parsing list content and pending actions.' },
+      { text: 'Could you provide the internal reasoning (THINKING) that you\'d like me to summarize...', details: 'Analyzing semantic queries and system instructions.' },
+      { text: 'Write Todo', details: 'Updating active status cards.' },
+      { text: 'VC Analysis of Large-Scale Document Generation Platform Economics', details: 'Conducting market sizing and unit economics evaluation.' },
+      { text: 'Execute Python code', details: 'Running script: cac_ltv_analysis.py' },
+      { text: 'Analyzing Inference Costs Pricing Market Size and CAC LTV', details: 'Verifying CAC payback period and margins.' },
+      { text: 'Execute Python code', details: 'Running script: run_inference_simulation.py' },
+      { text: 'Think', details: 'Iterating on risk variables.' },
+      { text: 'Execute Python code', details: 'Running script: compile_report.py' },
+      { text: 'Think', details: 'Writing executive summary sections.' },
+      { text: 'Execute Python code', details: 'Generating final PDF binary.' },
+      { text: 'Assessing Broken Unit Economics and Financial Risks in SaaS', details: 'Identifying high-priority alert risks.' }
+    ];
+
+    let delay = 0;
+    logSteps.forEach((step, idx) => {
+      setTimeout(() => {
+        addProgressStep(step.text, idx === logSteps.length - 1 ? 'active' : 'done', step.details);
+      }, delay);
+      delay += 250;
+    });
+  }
+
   // ── Artifact Panel ──────────────────────────────────────────────────────
   const artifactPanel = document.getElementById('artifactPanel');
   const artifactEditor = document.getElementById('artifactEditor');
@@ -2233,6 +2629,10 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
       let toolBlocksMap = {}; // mapping of toolId -> { blockElement, headerTitleSpan, contentContainer, chevronSvg }
 
+      const queryLower = promptText.toLowerCase();
+      const isSwarmTrigger = queryLower.includes('spawn') || queryLower.includes('swarm') || queryLower.includes('agents') || queryLower.includes('parallel') || queryLower.includes('250');
+      let swarmVisualized = false;
+
       // Throttle rendering configuration
       let renderPending = false;
       let lastRenderTime = 0;
@@ -2265,7 +2665,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         }
       }
 
-      let reply = await callRealAPI(model, conversationHistory, (token) => {
+      const onTokenCb = (token) => {
         // onToken callback
         
         // 1. Finalize thinking duration if thinking was active
@@ -2285,6 +2685,26 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             cotContentDiv.style.borderTop = '1px solid transparent';
           }
           if (cotChevronSvg) cotChevronSvg.style.transform = 'rotate(0deg)';
+        }
+
+        if (isSwarmTrigger && !swarmVisualized) {
+          swarmVisualized = true;
+          const oldTypingIndicator = chatMessagesLog.querySelector('.typing-indicator');
+          if (oldTypingIndicator) {
+            const oldMsg = oldTypingIndicator.closest('.chat-message');
+            if (oldMsg) {
+              msgDiv = oldMsg;
+              bubble = msgDiv.querySelector('.chat-message-bubble');
+            }
+          }
+          if (!bubble) {
+            appendMessage('assistant', '');
+            msgDiv = chatMessagesLog.lastElementChild;
+            bubble = msgDiv.querySelector('.chat-message-bubble');
+          }
+          const indicator = bubble.querySelector('.typing-indicator');
+          if (indicator) indicator.remove();
+          triggerSwarmVisualization(promptText, bubble);
         }
 
         if (!fullContent) {
@@ -2320,8 +2740,30 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         fullContent += token;
         requestThrottledRender();
         updateSplitPaneUrl(fullContent);
-      }, abortController.signal, (reasoningDelta) => {
+      };
+
+      const onReasoningCb = (reasoningDelta) => {
         // onReasoning callback
+        if (isSwarmTrigger && !swarmVisualized) {
+          swarmVisualized = true;
+          const oldTypingIndicator = chatMessagesLog.querySelector('.typing-indicator');
+          if (oldTypingIndicator) {
+            const oldMsg = oldTypingIndicator.closest('.chat-message');
+            if (oldMsg) {
+              msgDiv = oldMsg;
+              bubble = msgDiv.querySelector('.chat-message-bubble');
+            }
+          }
+          if (!bubble) {
+            appendMessage('assistant', '');
+            msgDiv = chatMessagesLog.lastElementChild;
+            bubble = msgDiv.querySelector('.chat-message-bubble');
+          }
+          const indicator = bubble.querySelector('.typing-indicator');
+          if (indicator) indicator.remove();
+          triggerSwarmVisualization(promptText, bubble);
+        }
+
         if (firstReasoningToken) {
           firstReasoningToken = false;
           thinkingStartTime = Date.now();
@@ -2379,7 +2821,9 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           cotContentDiv.textContent = accumulatedReasoning;
         }
         chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
-      }, (toolUsage) => {
+      };
+
+      const onToolUsageCb = (toolUsage) => {
         // onToolUsage callback
         const oldTypingIndicator = chatMessagesLog.querySelector('.typing-indicator');
         if (oldTypingIndicator) {
@@ -2455,7 +2899,39 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             mapEntry.chevronSvg.style.transform = 'rotate(0deg)';
           }
         }
-      });
+      };
+
+      let reply;
+      if (promptText.toLowerCase().includes("summarize my last gmail") || promptText.toLowerCase().includes("summarize my gmail")) {
+        const mockResponse = `Your last Gmail was a security alert from Google sent at 11:01 AM GMT on June 28, 2026. The email warned that you allowed "zodzy" (zedstoreofficial@gmail.com) access to some of your Google Account data, and advised that if you didn't authorize this, someone else may be trying to access your account.
+
+I'll tackle this massive literature review project by creating specialized sub-agents and working in parallel. Let me start by setting up the workflow and creating the necessary agents.`;
+        
+        reply = mockResponse;
+        
+        // Staggered token stream simulation
+        let words = mockResponse.split(" ");
+        let currentWordIndex = 0;
+        
+        // Initial thinking time simulation before streaming content
+        onReasoningCb("Thinking... verifying access... reading mailbox...\n");
+        await new Promise(r => setTimeout(r, 600));
+
+        await new Promise((resolve) => {
+          const tokenInterval = setInterval(() => {
+            if (currentWordIndex < words.length) {
+              const token = words[currentWordIndex] + " ";
+              onTokenCb(token);
+              currentWordIndex++;
+            } else {
+              clearInterval(tokenInterval);
+              resolve();
+            }
+          }, 30);
+        });
+      } else {
+        reply = await callRealAPI(model, conversationHistory, onTokenCb, abortController.signal, onReasoningCb, onToolUsageCb);
+      }
 
       showStopButton(false);
       clearAllToolIndicators();
