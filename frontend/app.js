@@ -1181,7 +1181,7 @@ const starIndicator = `
     return container;
   }
 
-  function triggerSwarmVisualization(promptText, bubbleElement) {
+  async function triggerSwarmVisualization(promptText, bubbleElement) {
     toggleComputerSplit(true);
     
     let blocksContainer = bubbleElement.querySelector('.message-collapsible-blocks');
@@ -1190,82 +1190,134 @@ const starIndicator = `
       blocksContainer.className = 'message-collapsible-blocks';
       bubbleElement.insertBefore(blocksContainer, bubbleElement.firstChild);
     }
-    
-    // Generate 250 subagents list
-    const agents = generateSwarmAgents(promptText, 250);
-    const listCard = createSwarmSubagentsList(agents);
-    blocksContainer.appendChild(listCard);
-    
-    // Create parallel cards
-    const activeAgents = [
-      {
-        idStr: '01',
-        name: 'Max',
-        task: promptText.toLowerCase().includes('gmail') ? 'Analyze mail headers and verify access token' : 'Read and analyze the PDF file at /mnt/data/paper1.pdf',
-        avatarHtml: '<span style="font-size: 13px;">👨‍💻</span>',
-        status: 'running'
-      },
-      {
-        idStr: '02',
-        name: 'Lisa',
-        task: promptText.toLowerCase().includes('gmail') ? 'Extracting access log details and timestamp summary' : '提取摘要',
-        avatarHtml: '<span style="font-size: 13px;">👩‍🎨</span>',
-        status: 'running'
-      },
-      {
-        idStr: '03',
-        name: 'Ada',
-        task: promptText.toLowerCase().includes('gmail') ? 'Formatting security notification details for response' : 'Extracting key methodology',
-        avatarHtml: '<span style="font-size: 13px;">👩‍🚀</span>',
-        status: 'running'
-      }
-    ];
-    const parallelCards = createSwarmParallelCards(activeAgents);
-    blocksContainer.appendChild(parallelCards);
-
-    // Update split-pane headers
-    const splitH2 = document.querySelector('.split-pane-sub-header h2');
-    if (splitH2) splitH2.textContent = 'Agent 01';
-    
-    const splitUrl = document.getElementById('splitPaneSubHeaderUrl');
-    if (splitUrl) {
-      splitUrl.innerHTML = '<span style="color: #6B7280; display: inline-flex; align-items: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Agent\'s Window</span>';
-    }
-    
-    const progressHeader = document.getElementById('splitPaneProgressHeader');
-    if (progressHeader) {
-      const title = progressHeader.querySelector('span');
-      if (title) {
-        title.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#10B981;display:inline-block;animation:pulse 1.5s infinite;"></span>Task Progress 4/4 | Generate PDF report with clickable TOC</span>';
-      }
-    }
 
     const progressBody = document.getElementById('splitPaneProgressBody');
     if (progressBody) progressBody.innerHTML = '';
-    
-    const logSteps = [
-      { text: 'Check Todo List Analyze Write to File Summarize', details: 'Reading todo list parameters and task goals.' },
-      { text: 'Read Todo', details: 'Parsing list content and pending actions.' },
-      { text: 'Could you provide the internal reasoning (THINKING) that you\'d like me to summarize...', details: 'Analyzing semantic queries and system instructions.' },
-      { text: 'Write Todo', details: 'Updating active status cards.' },
-      { text: 'VC Analysis of Large-Scale Document Generation Platform Economics', details: 'Conducting market sizing and unit economics evaluation.' },
-      { text: 'Execute Python code', details: 'Running script: cac_ltv_analysis.py' },
-      { text: 'Analyzing Inference Costs Pricing Market Size and CAC LTV', details: 'Verifying CAC payback period and margins.' },
-      { text: 'Execute Python code', details: 'Running script: run_inference_simulation.py' },
-      { text: 'Think', details: 'Iterating on risk variables.' },
-      { text: 'Execute Python code', details: 'Running script: compile_report.py' },
-      { text: 'Think', details: 'Writing executive summary sections.' },
-      { text: 'Execute Python code', details: 'Generating final PDF binary.' },
-      { text: 'Assessing Broken Unit Economics and Financial Risks in SaaS', details: 'Identifying high-priority alert risks.' }
-    ];
+    const progressHeader = document.getElementById('splitPaneProgressHeader');
+    if (progressHeader) {
+      const title = progressHeader.querySelector('span');
+      if (title) title.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#F59E0B;display:inline-block;animation:pulse 1.5s infinite;"></span>Decomposing task...</span>';
+    }
 
-    let delay = 0;
-    logSteps.forEach((step, idx) => {
-      setTimeout(() => {
-        addProgressStep(step.text, idx === logSteps.length - 1 ? 'active' : 'done', step.details);
-      }, delay);
-      delay += 250;
+    const state = modelsStore.getState();
+    const model = state.models.find(m => m.name === state.activeModel || m.id === state.activeModel);
+    if (!model) { appendMessage('assistant', 'No model connected.'); return; }
+
+    // Step 1: Ask LLM to decompose the task into sub-agent assignments
+    const decomposeResp = await fetch('/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${model.apiKey || ''}` },
+      body: JSON.stringify({
+        model: model.modelId || model.name || 'auto',
+        messages: [
+          { role: 'system', content: `You are a task orchestrator. Given a user task, decompose it into 2-5 sub-agent tasks. Each sub-agent has a role name and a specific task. Return ONLY valid JSON array, no markdown.\n\nFormat: [{"name":"Role Name","task":"specific task description","avatar":"emoji"}]\n\nAvatars: use one of 👨‍💻 👩‍🎨 👩‍🚀 👨‍🔬 👩‍⚖️ 👨‍🏫 👩‍⚕️ 👨‍🎨 👩‍🔧 👨‍✈️\n\nKeep each task focused and actionable. Names should be short (2-3 words like "Researcher", "Writer", "Analyst").` },
+          { role: 'user', content: promptText }
+        ],
+        temperature: 0.3,
+        max_tokens: 1024,
+      }),
     });
+    const decomposeData = await decomposeResp.json();
+    const rawContent = decomposeData.choices?.[0]?.message?.content || '[]';
+    let subAgents;
+    try {
+      const jsonMatch = rawContent.match(/\[[\s\S]*\]/);
+      subAgents = JSON.parse(jsonMatch ? jsonMatch[0] : rawContent);
+    } catch { subAgents = [{ name: 'Researcher', task: promptText, avatar: '👨‍💻' }]; }
+
+    subAgents = subAgents.map((a, i) => ({
+      idStr: String(i + 1).padStart(2, '0'),
+      name: a.name || `Agent ${i + 1}`,
+      task: a.task || 'Working...',
+      avatarHtml: `<span style="font-size: 13px;">${a.avatar || '🤖'}</span>`,
+      status: 'pending',
+      result: ''
+    }));
+
+    // Step 2: Show sub-agents list in chat
+    const listCard = createSwarmSubagentsList(subAgents.map(a => ({ name: a.name, avatar: a.avatarHtml })));
+    blocksContainer.appendChild(listCard);
+
+    // Step 3: Show parallel cards
+    const parallelCards = createSwarmParallelCards(subAgents);
+    blocksContainer.appendChild(parallelCards);
+
+    // Update right panel header
+    const splitH2 = document.querySelector('.split-pane-sub-header h2');
+    if (splitH2) splitH2.textContent = `Swarm: ${subAgents.length} agents`;
+    const splitUrl = document.getElementById('splitPaneSubHeaderUrl');
+    if (splitUrl) splitUrl.innerHTML = `<span style="color:#6B7280;">${subAgents.length} sub-agents active</span>`;
+
+    // Step 4: Execute all sub-agents in parallel
+    if (progressHeader) {
+      const title = progressHeader.querySelector('span');
+      if (title) title.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#3B82F6;display:inline-block;animation:pulse 1.5s infinite;"></span>Running ${subAgents.length} sub-agents...</span>`;
+    }
+
+    const allResults = [];
+    const parallelPromises = subAgents.map((agent, idx) => {
+      return (async () => {
+        const stepIdx = idx;
+        addProgressStep(`${agent.name}: Starting...`, 'active');
+        try {
+          const resp = await fetch('/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${model.apiKey || ''}` },
+            body: JSON.stringify({
+              model: model.modelId || model.name || 'auto',
+              messages: [
+                { role: 'system', content: `You are ${agent.name}. Complete this task concisely and thoroughly:\n\n${agent.task}` },
+                { role: 'user', content: promptText }
+              ],
+              temperature: 0.5,
+              max_tokens: 1024,
+            }),
+          });
+          const data = await resp.json();
+          const result = data.choices?.[0]?.message?.content || 'No response';
+          agent.status = 'done';
+          agent.result = result;
+          allResults[idx] = result;
+          updateProgressStep(stepIdx, `${agent.name}: Done`, 'done');
+          return result;
+        } catch (err) {
+          agent.status = 'failed';
+          agent.result = `Error: ${err.message}`;
+          allResults[idx] = `Error: ${err.message}`;
+          updateProgressStep(stepIdx, `${agent.name}: Failed`, 'done');
+          return null;
+        }
+      })();
+    });
+
+    await Promise.all(parallelPromises);
+
+    // Step 5: Aggregate results with LLM
+    addProgressStep('Synthesizing results...', 'active');
+    const aggResp = await fetch('/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${model.apiKey || ''}` },
+      body: JSON.stringify({
+        model: model.modelId || model.name || 'auto',
+        messages: [
+          { role: 'system', content: 'You are a synthesizer. Combine the sub-agent results into a single comprehensive, well-structured response for the user. Use markdown formatting.' },
+          { role: 'user', content: `Original task: ${promptText}\n\nSub-agent results:\n${subAgents.map((a, i) => `### ${a.name}\n${a.result}`).join('\n\n')}` }
+        ],
+        temperature: 0.3,
+        max_tokens: 2048,
+      }),
+    });
+    const aggData = await aggResp.json();
+    const finalResponse = aggData.choices?.[0]?.message?.content || allResults.join('\n\n');
+    updateProgressStep(progressBody.children.length - 1, 'Results synthesized', 'done');
+
+    if (progressHeader) {
+      const title = progressHeader.querySelector('span');
+      if (title) title.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#10B981;display:inline-block;"></span>Swarm complete: ${subAgents.length} agents</span>`;
+    }
+
+    // Step 6: Show final aggregated response
+    appendMessage('assistant', finalResponse);
   }
 
   // ── Artifact Panel ──────────────────────────────────────────────────────
@@ -2214,6 +2266,10 @@ const starIndicator = `
     // Use the selected mode directly - LLM decides if computer tools are needed
     const effectiveMode = currentMode;
 
+    // Swarm mode variables — swarm triggers in Agent (search) mode
+    let isPromptSwarmTrigger = effectiveMode === 'search';
+    let swarmVisualized = false;
+
     // Show subagent status bar with slide-down pop-up animation in computer mode
     const subagentStatusBar = document.getElementById('subagentStatusBar');
     if (subagentStatusBar) {
@@ -2888,7 +2944,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         // SWARM PROMPT KEYWORD TRIGGER
         if (isPromptSwarmTrigger && !swarmVisualized) {
           swarmVisualized = true;
-          triggerSwarmVisualization(promptText, bubble);
+          (async () => { await triggerSwarmVisualization(promptText, bubble); })();
         }
 
         if (!fullContent) {
@@ -2909,7 +2965,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         // SWARM PROMPT KEYWORD TRIGGER
         if (isPromptSwarmTrigger && !swarmVisualized) {
           swarmVisualized = true;
-          triggerSwarmVisualization(promptText, bubble);
+          (async () => { await triggerSwarmVisualization(promptText, bubble); })();
         }
 
         if (firstReasoningToken) {
@@ -2948,7 +3004,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         if (toolUsage.type === 'tool_start' && toolUsage.name === 'delegate_task') {
           if (!swarmVisualized) {
             swarmVisualized = true;
-            triggerSwarmVisualization(promptText, bubble);
+            (async () => { await triggerSwarmVisualization(promptText, bubble); })();
           }
         }
 
@@ -3096,7 +3152,7 @@ Here are the current findings:
         // Trigger Swarm Visualization since it's a swarm prompt
         if (!swarmVisualized) {
           swarmVisualized = true;
-          triggerSwarmVisualization(promptText, ensureAssistantBubble());
+          (async () => { await triggerSwarmVisualization(promptText, ensureAssistantBubble()); })();
         }
 
         await new Promise((resolve) => {
