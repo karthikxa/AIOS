@@ -36,7 +36,7 @@ if str(_AGENT_DIR) not in sys.path:
 
 import httpx
 import uvicorn
-from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect, Request, Response
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect, Request, Response, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -1365,10 +1365,10 @@ _PUBLIC_API_BASE_URLS = {
 @app.post("/api/public_apis/call/{api_name}")
 async def call_public_api(
     api_name: str,
-    request: Request,
     endpoint: Optional[str] = Query(None, description="API endpoint path (appended to base URL)"),
     method: str = Query("GET", description="HTTP method"),
-    url: Optional[str] = Query(None, description="Full URL override (if docs URL is wrong)")
+    url: Optional[str] = Query(None, description="Full URL override (if docs URL is wrong)"),
+    body: Optional[Dict[str, Any]] = Body(None, description="Request body for POST/PUT/PATCH")
 ):
     """Call a public API by name. Finds the API by name, resolves the base URL, and makes the request.
     
@@ -1392,13 +1392,6 @@ async def call_public_api(
             base_url = api.get("url", "").rstrip("/")
     
     full_url = f"{base_url}/{endpoint}" if endpoint else base_url
-    
-    # Get request body
-    body = None
-    try:
-        body = await request.json()
-    except Exception:
-        pass
     
     # Make the HTTP request
     try:
