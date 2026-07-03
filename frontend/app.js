@@ -1304,7 +1304,7 @@ const starIndicator = `
     // Update right panel header
     const splitH2 = document.querySelector('.split-pane-sub-header h2');
     if (splitH2) splitH2.textContent = 'Agent 01';
-    const splitUrl = document.getElementById('splitPaneSubHeaderUrl');
+    const splitUrl = document.getElementById('splitPaneHeaderUrl');
     if (splitUrl) splitUrl.innerHTML = '<span style="color:#6B7280;display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Agent\'s Window</span>';
 
     // Step 4: Execute all sub-agents in parallel
@@ -2683,7 +2683,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             resolveScreenResult(msg.text);
             resolveScreenResult = null;
             // Update browser URL from screen result
-            const urlEl = document.getElementById('splitPaneSubHeaderUrl');
+            const urlEl = document.getElementById('splitPaneHeaderUrl');
             if (urlEl && msg.text) {
               const urlMatch = msg.text.match(/URL:\s*(https?:\/\/[^\s]+)/);
               if (urlMatch) {
@@ -3632,14 +3632,24 @@ Here are the current findings:
 
   let desktopStreamStarted = false;
   let desktopPollInterval = null;
+  let desktopPollStopped = false;
+
+  // Set default HF Space URL if not configured
+  if (!localStorage.getItem('hf_space_url') && !localStorage.getItem('desktop_agent_url')) {
+    localStorage.setItem('hf_space_url', 'https://bkarthikeyan-desktop-agent.hf.space');
+  }
 
   function updateSplitPaneUrl(content) {
-    const urlEl = document.getElementById('splitPaneSubHeaderUrl');
+    const urlEl = document.getElementById('splitPaneHeaderUrl');
     if (!urlEl) return;
-    // Extract URLs from content
     const urlMatch = content.match(/https?:\/\/[^\s)"\]>]+/);
     if (urlMatch) {
-      urlEl.innerHTML = `<a href="${urlMatch[0]}" target="_blank" style="color: #3B82F6; text-decoration: none;">${urlMatch[0]}</a>`;
+      urlEl.href = urlMatch[0];
+      urlEl.textContent = urlMatch[0];
+      urlEl.style.display = 'inline';
+    } else {
+      urlEl.textContent = '';
+      urlEl.style.display = 'none';
     }
   }
 
@@ -3659,8 +3669,33 @@ Here are the current findings:
     if (desktopStreamStarted || !desktopFrame) return;
     desktopStreamStarted = true;
 
-    // Live VNC streaming through WebSocket proxy - real-time 4K
-    desktopFrame.src = '/vnc_live.html';
+    // Check if using HF Space cloud desktop
+    const hfSpaceUrl = localStorage.getItem('hf_space_url');
+    if (hfSpaceUrl) {
+      // HF Space: screenshot polling inside iframe
+      const baseUrl = hfSpaceUrl.replace(/\/$/, '');
+      desktopFrame.style.display = 'block';
+      desktopFrame.srcdoc = `<!DOCTYPE html>
+<html style="margin:0;padding:0;width:100%;height:100%;background:#000;">
+<body style="margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden;">
+<img id="s" style="width:100%;height:100%;object-fit:cover;display:block;border:none;background:#000;image-rendering:auto;" src="${baseUrl}/screenshot">
+<script>
+var i = document.getElementById('s');
+function poll(){ i.src = '${baseUrl}/screenshot?'+Date.now(); setTimeout(poll, 2000); }
+i.onload = function(){ poll(); };
+<\/script>
+</body></html>`;
+      // Update URL in header
+      const urlEl = document.getElementById('splitPaneHeaderUrl');
+      if (urlEl) { urlEl.textContent = baseUrl; urlEl.href = baseUrl; }
+      desktopFrame.onload = () => {
+        if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
+      };
+    } else {
+      // Live VNC streaming through sandbox screenshot polling
+      const sandboxUrl = getVncBaseUrl();
+      desktopFrame.src = '/vnc_live.html?sandbox=' + encodeURIComponent(sandboxUrl);
+    }
 
     desktopFrame.onload = () => {
       if (desktopConnectingOverlay) {
@@ -3672,7 +3707,12 @@ Here are the current findings:
     const thumbnailFrame = document.getElementById('thumbnailFrame');
     const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
     if (thumbnailFrame) {
-      thumbnailFrame.src = '/vnc_live.html';
+      const hfSpaceUrl2 = localStorage.getItem('hf_space_url');
+      if (hfSpaceUrl2) {
+        thumbnailFrame.src = hfSpaceUrl2.replace(/\/$/, '') + '/screenshot?' + Date.now();
+      } else {
+        thumbnailFrame.src = '/vnc_live.html?sandbox=' + encodeURIComponent(getVncBaseUrl());
+      }
       if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'none';
     }
   }
@@ -3726,18 +3766,13 @@ Here are the current findings:
       mainContent.classList.add('computer-split-mode');
       computerSplitPane.style.display = 'flex';
       
-      // Set header to Computer mode
-      const outerHeader = computerSplitPane.querySelector('.split-pane-outer-header span');
-      if (outerHeader) outerHeader.textContent = 'Computer';
-      const splitH2 = document.querySelector('.split-pane-sub-header h2');
-      if (splitH2) splitH2.textContent = "Zed's computer";
-      const splitUrl = document.getElementById('splitPaneSubHeaderUrl');
-      if (splitUrl) splitUrl.textContent = 'Browser ready';
-      // Show VNC viewport, hide agent content
+      // Show VNC viewport, hide agent content, show LIVE badge
       const viewport = document.getElementById('splitPaneViewport');
       if (viewport) viewport.style.display = 'block';
       const agentContent = document.getElementById('splitPaneAgentContent');
       if (agentContent) agentContent.style.display = 'none';
+      const liveBadge = document.getElementById('splitPaneLiveBadge');
+      if (liveBadge) liveBadge.style.display = 'flex';
       
       // Sync mode capsule UI state
       const modeCapsule = document.getElementById('modeCapsule');
@@ -3756,6 +3791,8 @@ Here are the current findings:
         }
       }
       
+      desktopPollStopped = false;
+      desktopStreamStarted = false;
       startDesktopStream();
     } else {
       mainContent.classList.remove('computer-split-mode');
@@ -3793,21 +3830,15 @@ Here are the current findings:
       mainContent.classList.add('computer-split-mode');
       computerSplitPane.style.display = 'flex';
       
-      // Set header to Agent mode
-      const outerHeader = computerSplitPane.querySelector('.split-pane-outer-header span');
-      if (outerHeader) outerHeader.textContent = 'Agents';
-      const splitH2 = document.querySelector('.split-pane-sub-header h2');
-      if (splitH2) splitH2.textContent = 'Agent 01';
-      const splitUrl = document.getElementById('splitPaneSubHeaderUrl');
-      if (splitUrl) splitUrl.innerHTML = '<span style="color:#6B7280;display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Agent\'s Window</span>';
-      
-      // Hide VNC viewport, show agent content
+      // Hide VNC viewport, show agent content, hide LIVE badge
       const viewport = document.getElementById('splitPaneViewport');
       if (viewport) viewport.style.display = 'none';
       const agentContent = document.getElementById('splitPaneAgentContent');
       if (agentContent) agentContent.style.display = 'block';
+      const liveBadge = document.getElementById('splitPaneLiveBadge');
+      if (liveBadge) liveBadge.style.display = 'none';
       
-      // Show progress, hide agent list (use progress body instead)
+      // Show progress
       const progressEl = document.getElementById('splitPaneProgress');
       if (progressEl) progressEl.style.display = 'flex';
     } else {
@@ -3840,6 +3871,8 @@ Here are the current findings:
       updateSlider(option, true);
       if (mode !== 'computer') {
         toggleComputerSplit(false);
+      } else {
+        toggleComputerSplit(true);
       }
     }
 
@@ -3866,6 +3899,24 @@ Here are the current findings:
     closeSplitPaneBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleComputerSplit(false);
+    });
+  }
+
+  const settingsSplitPaneBtn = document.getElementById('settingsSplitPaneBtn');
+  if (settingsSplitPaneBtn) {
+    settingsSplitPaneBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const current = localStorage.getItem('hf_space_url') || 'https://bkarthikeyan-desktop-agent.hf.space';
+      const url = prompt('Enter HF Space URL (or blank for local sandbox):', current);
+      if (url !== null) {
+        if (url.trim()) {
+          localStorage.setItem('hf_space_url', url.trim());
+        } else {
+          localStorage.removeItem('hf_space_url');
+        }
+        toggleComputerSplit(false);
+        setTimeout(() => toggleComputerSplit(true), 300);
+      }
     });
   }
 
@@ -3928,9 +3979,8 @@ Here are the current findings:
   if (progressHeader && progressBody && progressChevron) {
     progressHeader.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isCollapsed = progressBody.style.maxHeight === '0px';
-      progressBody.style.maxHeight = isCollapsed ? '240px' : '0px';
-      progressBody.style.padding = isCollapsed ? '16px 20px' : '0 20px';
+      const isCollapsed = progressBody.style.display === 'none';
+      progressBody.style.display = isCollapsed ? 'flex' : 'none';
       progressChevron.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(-180deg)';
     });
   }

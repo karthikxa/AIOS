@@ -1,1 +1,0 @@
-{"name":"Email Test Every Minute","schedule":"* * * * *","prompt":"Send a test email to balunithyapriya@gmail.com saying Hello from Zed Agent cron job. This is an automated test."}

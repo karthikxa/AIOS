@@ -9798,11 +9798,9 @@ main.main-content.computer-split-mode #computerSplitPane {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  width: 100% !important;
-  max-width: 823px !important;
-  margin: 16px auto 0 !important;
-  padding: 0 !important;
-  order: 4 !important;
+  background: #3B82F6;
+  cursor: pointer;
+  margin-top: -4px;
 }
 
 .center-container.is-active .feature-cards-row {
@@ -10100,7 +10098,8 @@ main.main-content.computer-split-mode #computerSplitPane {
   position: relative !important;
   overflow: hidden !important;
   min-height: 0 !important;
-  background: #1a1a2e !important;
+  min-width: 0 !important;
+  background: #000 !important;
 }
 
 /* Ensure iframe fills the viewport completely */
@@ -10112,17 +10111,25 @@ main.main-content.computer-split-mode #computerSplitPane {
   min-height: 0 !important;
   min-width: 0 !important;
   overflow: hidden !important;
-  object-fit: contain !important;
+  object-fit: cover !important;
 }
 
-/* Hide any scrollbars on the computer split pane */
+/* Screenshot image fills viewport with no gaps */
+#desktopScreenshotImg {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+  background: #000 !important;
+  border: none !important;
+}
+
 #computerSplitPane {
   overflow: hidden !important;
 }
 
-/* Remove video control bar — not needed */
 .split-pane-controls {
-  display: none !important;
+  display: flex !important;
 }
 
 /* ── Live Plan Display ──────────────────────────────────────────── */
@@ -10269,3 +10276,88 @@ main.main-content.computer-split-mode #computerSplitPane {
 .cot-response-text-container p:last-child {
   margin-bottom: 0px !important;
 }
+
+/* ================================================================
+   COMPUTER PANEL – Progress Step Items Fix
+   Browser button elements don't respect display:flex by default
+   ================================================================ */
+
+.progress-step-block {
+  margin-bottom: 6px !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 8px !important;
+  background: #FAFBFC !important;
+  overflow: hidden !important;
+}
+
+.progress-step-header {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  min-height: 36px !important;
+  border: none !important;
+  background: none !important;
+  padding: 7px 10px !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  gap: 8px !important;
+}
+
+.progress-step-circle {
+  flex-shrink: 0 !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.progress-step-text {
+  font-size: 12.5px !important;
+  line-height: 1.35 !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+}
+
+.progress-step-content {
+  font-size: 12px !important;
+  color: #4B5563 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+/* Keep the VNC viewport at a static minimum, never shrink below this */
+#splitPaneViewport {
+  min-height: 260px !important;
+  flex: 1 !important;
+}
+
+/* VNC img fills frame — no black bars */
+#splitPaneViewport iframe,
+#splitPaneViewport img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border: none !important;
+  display: block !important;
+}
+
+/* Task progress body hard cap */
+#splitPaneProgressBody {
+  max-height: 160px !important;
+  overflow-y: auto !important;
+}
+
+/* Thin scrollbar for progress body */
+#splitPaneProgressBody::-webkit-scrollbar { width: 4px; }
+#splitPaneProgressBody::-webkit-scrollbar-track { background: transparent; }
+#splitPaneProgressBody::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }

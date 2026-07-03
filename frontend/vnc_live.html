@@ -6,19 +6,39 @@
 <title>Live Desktop</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { width: 100%; height: 100%; overflow: hidden; background: #1a1a2e; }
-  #screenImg {
-    width: 100%; height: 100%; object-fit: cover; display: block; background: #1a1a2e;
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #111; }
+
+  #wallpaper {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 30% 70%, rgba(60,120,255,0.55) 0%, transparent 45%),
+      radial-gradient(circle at 70% 30%, rgba(30,60,200,0.6) 0%, transparent 50%),
+      radial-gradient(circle at 50% 100%, rgba(0,150,255,0.35) 0%, transparent 60%),
+      linear-gradient(135deg, #0a1e4d 0%, #1748c9 35%, #3b7cf0 60%, #0d2e7a 100%);
   }
+
+  #screenImg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    background: #111;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  #screenImg.loaded { opacity: 1; }
+
   #status {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     color: #fff; font: 13px -apple-system, sans-serif; z-index: 999;
-    background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 8px;
+    background: rgba(0,0,0,0.35); backdrop-filter: blur(6px);
+    padding: 8px 16px; border-radius: 8px;
     text-align: center;
   }
 </style>
 </head>
 <body>
+<div id="wallpaper"></div>
 <img id="screenImg" src="about:blank" alt="Screen">
 <div id="status">Connecting to desktop...</div>
 <script>
@@ -27,7 +47,7 @@
   const statusEl = document.getElementById('status');
   const params = new URLSearchParams(window.location.search);
   const interval = parseInt(params.get('interval') || '200', 10);
-  const baseUrl = '/sandbox';
+  const baseUrl = params.get('sandbox') || '/sandbox';
   let connected = false;
   let failCount = 0;
 
@@ -37,6 +57,7 @@
       if (!connected) {
         connected = true;
         statusEl.style.display = 'none';
+        img.classList.add('loaded');
       }
       failCount = 0;
       setTimeout(loadScreenshot, interval);
@@ -44,10 +65,11 @@
     img.onerror = function() {
       failCount++;
       if (!connected) {
-        statusEl.innerHTML = 'Connecting to desktop...<br><span style="font-size:11px;color:#888">Attempt ' + failCount + '</span>';
+        statusEl.innerHTML = 'Connecting to desktop...<br><span style="font-size:11px;color:#ccc">Attempt ' + failCount + '</span>';
       } else {
-        statusEl.innerHTML = 'Reconnecting...<br><span style="font-size:11px;color:#888">Attempt ' + failCount + '</span>';
+        statusEl.innerHTML = 'Reconnecting...<br><span style="font-size:11px;color:#ccc">Attempt ' + failCount + '</span>';
         statusEl.style.display = 'block';
+        img.classList.remove('loaded');
         connected = false;
       }
       setTimeout(loadScreenshot, Math.min(interval * 3, 3000));
