@@ -2662,14 +2662,8 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         updateStatus('Agent starting...', '0 / ?');
 
         // Connect to desktop agent WebSocket for executing actions
-        let agentUrl = localStorage.getItem('desktop_agent_url');
-        if (!agentUrl) {
-          const desktopAgentHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? window.location.hostname
-            : '127.0.0.1'; // Fallback to local machine when hosted in cloud
-          agentUrl = `ws://${desktopAgentHost}:8765/ws`;
-        }
-        const ws = new WebSocket(agentUrl);
+        const wsUrl = getAgentWsUrl();
+        const ws = new WebSocket(wsUrl);
         let agentStep = 0;
         const maxSteps = 7;
         let progressIndex = 0;
@@ -3663,6 +3657,21 @@ Here are the current findings:
       } catch (e) {}
     }
     return 'http://localhost:8080';
+  }
+
+  function getAgentWsUrl() {
+    // If HF Space is configured, use its WebSocket endpoint
+    const hfUrl = localStorage.getItem('hf_space_url');
+    if (hfUrl) {
+      const base = hfUrl.replace(/\/$/, '').replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
+      return base + '/ws';
+    }
+    // Otherwise use desktop_agent_url or localhost default
+    let agentUrl = localStorage.getItem('desktop_agent_url');
+    if (agentUrl) return agentUrl;
+    const host = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? window.location.hostname : '127.0.0.1';
+    return `ws://${host}:8765/ws`;
   }
 
   function startDesktopStream() {
