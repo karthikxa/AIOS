@@ -3627,7 +3627,7 @@ Here are the current findings:
   let desktopStreamStarted = false;
   let desktopPollInterval = null;
   let desktopPollStopped = false;
-  const DEFAULT_HF_SPACE_URL = 'https://bkarthikeyan-desktop-agent-live.hf.space';
+  const DEFAULT_HF_SPACE_URL = 'https://bkarthikeyan-desktop-agent-v2.hf.space';
   const LEGACY_HF_SPACE_URLS = new Set([
     'https://bkarthikeyan-desktop-agent.hf.space',
   ]);
