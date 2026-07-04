@@ -3630,7 +3630,7 @@ Here are the current findings:
 
   // Set default HF Space URL if not configured
   if (!localStorage.getItem('hf_space_url') && !localStorage.getItem('desktop_agent_url')) {
-    localStorage.setItem('hf_space_url', 'https://bkarthikeyan-desktop-agent.hf.space');
+    localStorage.setItem('hf_space_url', 'https://bkarthikeyan-desktop-agent-live.hf.space');
   }
 
   function updateSplitPaneUrl(content) {
@@ -3913,7 +3913,7 @@ Here are the current findings:
   if (settingsSplitPaneBtn) {
     settingsSplitPaneBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const current = localStorage.getItem('hf_space_url') || 'https://bkarthikeyan-desktop-agent.hf.space';
+      const current = localStorage.getItem('hf_space_url') || 'https://bkarthikeyan-desktop-agent-live.hf.space';
       const url = prompt('Enter HF Space URL (or blank for local sandbox):', current);
       if (url !== null) {
         if (url.trim()) {
