@@ -16,7 +16,7 @@
 
   iframe,
   img,
-  #screen {
+  video {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -26,13 +26,8 @@
     background: #000;
   }
 
-  img {
-    object-fit: contain;
-  }
-
-  #screen canvas {
-    width: 100% !important;
-    height: 100% !important;
+  img,
+  video {
     object-fit: contain;
   }
 
@@ -83,35 +78,22 @@
     return frame;
   }
 
-  async function startHfLiveViewer() {
+  function startHfLiveViewer() {
     const baseUrl = (params.get('base') || params.get('sandbox') || '').replace(/\/$/, '');
     if (!baseUrl) {
       showStatus('Missing desktop URL');
       return;
     }
 
-    try {
-      const liveUrl = new URL(baseUrl);
-      const wsProtocol = liveUrl.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${wsProtocol}//${liveUrl.host}/websockify`;
-      const screen = document.createElement('div');
-      screen.id = 'screen';
-      document.body.appendChild(screen);
-
-      const { default: RFB } = await import('https://cdn.jsdelivr.net/npm/@novnc/novnc@1.5.0/core/rfb.js');
-      const rfb = new RFB(screen, wsUrl, { credentials: { password: '' } });
-      rfb.scaleViewport = true;
-      rfb.resizeSession = false;
-      rfb.viewOnly = true;
-      rfb.qualityLevel = 6;
-      rfb.compressionLevel = 2;
-      rfb.addEventListener('connect', hideStatusSoon);
-      rfb.addEventListener('disconnect', () => showStatus('Live desktop disconnected'));
-      rfb.addEventListener('credentialsrequired', () => rfb.sendCredentials({ password: '' }));
-    } catch (error) {
-      console.error(error);
-      showStatus('Live desktop WebSocket failed');
-    }
+    const video = document.createElement('video');
+    video.title = 'Live desktop';
+    video.autoplay = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.src = `${baseUrl}/desktop.webm?t=${Date.now()}`;
+    video.onplaying = hideStatusSoon;
+    video.onerror = () => showStatus('Live desktop video failed');
+    document.body.appendChild(video);
   }
 
   function startSandboxFallback() {
