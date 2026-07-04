@@ -3704,13 +3704,15 @@ Here are the current findings:
         }
       });
     } else {
-      // Live VNC streaming through sandbox screenshot polling
+      // Live noVNC stream from sandbox
       const sandboxUrl = getVncBaseUrl();
-      desktopFrame.src = '/vnc_live.html?sandbox=' + encodeURIComponent(sandboxUrl);
+      desktopFrame.src = sandboxUrl + '/vnc/index.html?autoconnect=true&resize=scale&reconnect=1&path=websockify';
       desktopFrame.onload = () => {
         if (desktopConnectingOverlay) {
           desktopConnectingOverlay.style.display = 'none';
         }
+        // Signal ready
+        try { window.dispatchEvent(new CustomEvent('desktop-ready')); } catch(e) {}
       };
     }
 
