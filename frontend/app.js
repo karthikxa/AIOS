@@ -3983,7 +3983,7 @@ i.onload = function(){
       const isExpanded = computerSplitPane.style.width === '100%';
       const centerContainer = document.querySelector('.center-container');
       if (isExpanded) {
-        computerSplitPane.style.width = '40%';
+        computerSplitPane.style.width = '28%';
         if (centerContainer) centerContainer.style.display = 'flex';
       } else {
         computerSplitPane.style.width = '100%';

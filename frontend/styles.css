@@ -9969,12 +9969,14 @@ main.main-content.computer-split-mode .chat-messages-log {
 }
 
 main.main-content.computer-split-mode #computerSplitPane {
-  width: 40% !important;
+  width: 28% !important;
+  min-width: 260px !important;
+  max-width: 360px !important;
   display: flex !important;
   flex-direction: column !important;
   height: 100% !important;
   flex-shrink: 0 !important;
-  background: #FFFFFF !important;
+  background: #000 !important;
   box-sizing: border-box !important;
 }
 
@@ -10111,7 +10113,7 @@ main.main-content.computer-split-mode #computerSplitPane {
   min-height: 0 !important;
   min-width: 0 !important;
   overflow: hidden !important;
-  object-fit: cover !important;
+  background: #000 !important;
 }
 
 /* Screenshot image fills viewport with no gaps */
@@ -10337,18 +10339,26 @@ main.main-content.computer-split-mode #computerSplitPane {
 
 /* Keep the VNC viewport at a static minimum, never shrink below this */
 #splitPaneViewport {
-  min-height: 260px !important;
+  min-height: 100px !important;
   flex: 1 !important;
 }
 
 /* VNC img fills frame — no black bars */
-#splitPaneViewport iframe,
 #splitPaneViewport img {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
   border: none !important;
   display: block !important;
+  background: #000 !important;
+}
+
+#splitPaneViewport iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  display: block !important;
+  background: #000 !important;
 }
 
 /* Task progress body hard cap */
