@@ -2661,53 +2661,47 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
         updateStatus('Agent starting...', '0 / ?');
 
-        // Connect to desktop agent WebSocket for executing actions
-        const wsUrl = getAgentWsUrl();
-        const ws = new WebSocket(wsUrl);
+        // HTTP-based agent connection (replaces broken WebSocket on HF free tier)
+        const hfUrl = localStorage.getItem('hf_space_url') || 'https://bkarthikeyan-browser-agent-stream.hf.space';
         let agentStep = 0;
         const maxSteps = 7;
         let progressIndex = 0;
         let currentPlan = [];
 
-        // Promise that resolves when the agent sends a screen result
-        let resolveScreenResult = null;
-        ws.onmessage = (event) => {
-          const msg = JSON.parse(event.data);
-          if (msg.type === 'screen' && resolveScreenResult) {
-            resolveScreenResult(msg.text);
-            resolveScreenResult = null;
-            // Update browser URL from screen result
-            const urlEl = document.getElementById('splitPaneHeaderUrl');
-            if (urlEl && msg.text) {
-              const urlMatch = msg.text.match(/URL:\s*(https?:\/\/[^\s]+)/);
-              if (urlMatch) {
-                urlEl.innerHTML = `<a href="${urlMatch[1]}" target="_blank" style="color: #3B82F6; text-decoration: none;">${urlMatch[1]}</a>`;
-              }
-            }
-          } else if (msg.type === 'thinking') {
-            agentStep++;
-            updateStatus(msg.text, `${agentStep} / ${maxSteps}`);
-          } else if (msg.type === 'system') {
-            updateStatus(msg.text, `${agentStep} / ${maxSteps}`);
-          } else if (msg.type === 'plan' && msg.plan) {
-            // Update live plan display in split pane
-            currentPlan = msg.plan;
-            renderLivePlan(msg.plan);
-          } else if (msg.type === 'action_log') {
-            // Could display action log in UI if desired
-          }
-        };
-
-        function waitForScreen() {
-          return new Promise((resolve) => { resolveScreenResult = resolve; });
+        async function executeOnAgent(action) {
+          const resp = await fetch(`${hfUrl}/agent/execute`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(action)
+          });
+          if (!resp.ok) throw new Error(`Agent error: ${resp.status}`);
+          return await resp.json();
         }
 
-        // Wait for WebSocket to open
-        await new Promise((resolve, reject) => {
-          ws.onopen = resolve;
-          ws.onerror = () => reject(new Error('Cannot connect to desktop agent'));
-          setTimeout(() => reject(new Error('Agent connection timeout')), 5000);
-        });
+        async function getAgentScreen() {
+          const resp = await fetch(`${hfUrl}/agent/screen`);
+          if (!resp.ok) throw new Error(`Screen error: ${resp.status}`);
+          return await resp.json();
+        }
+
+        // Health check (replaces WebSocket connection wait)
+        const health = await fetch(`${hfUrl}/health`);
+        if (!health.ok) throw new Error('Agent not available');
+
+        // Poll screen for URL updates every 2s (replaces ws.onmessage)
+        const screenPollInterval = setInterval(async () => {
+          try {
+            const screen = await getAgentScreen();
+            const urlEl = document.getElementById('splitPaneHeaderUrl');
+            if (urlEl && screen.url) {
+              urlEl.innerHTML = `<a href="${screen.url}" target="_blank" style="color:#3B82F6;text-decoration:none;">${screen.url}</a>`;
+            }
+            if (screen.title) {
+              agentStep++;
+              updateStatus(screen.title, `${agentStep} / ${maxSteps}`);
+            }
+          } catch (e) {}
+        }, 2000);
 
         // Agentic loop: LLM decides action → execute → feed result back
         const messages = [
@@ -2838,24 +2832,26 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
               updateProgressStep(prevIdx, prevText, 'done');
             }
 
-            // Send action to desktop agent via WebSocket
+            // Send action to desktop agent via HTTP POST
             window.dispatchEvent(new CustomEvent('agent-tool-start', { detail: { name: actionName, id: 'comp-' + step + '-' + toolCall.id, args: args } }));
             toggleComputerSplit(true);
             
             // Send action and wait for result with timeout
             let screenResult;
             try {
-              ws.send(JSON.stringify({ type: 'task', text: `execute:${JSON.stringify({ action: actionName, ...args })}` }));
-              screenResult = await Promise.race([
-                waitForScreen(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Action timeout')), 30000)),
-                new Promise((_, reject) => {
-                  const checkStopped = () => { if (stopped) reject(new Error('Stopped by user')); };
-                  abortController.signal.addEventListener('abort', checkStopped);
-                  // Clean up after 30s
-                  setTimeout(() => abortController.signal.removeEventListener('abort', checkStopped), 30000);
-                })
+              const execResult = await Promise.race([
+                executeOnAgent({ action: actionName, ...args }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Action timeout')), 30000))
               ]);
+              screenResult = execResult.result || 'Action executed.';
+              // Update URL display after each action
+              try {
+                const screen = await getAgentScreen();
+                const urlEl = document.getElementById('splitPaneHeaderUrl');
+                if (urlEl && screen.url) {
+                  urlEl.innerHTML = `<a href="${screen.url}" target="_blank" style="color:#3B82F6;text-decoration:none;">${screen.url}</a>`;
+                }
+              } catch (e) {}
             } catch (err) {
               if (stopped || err.message === 'Stopped by user') {
                 screenResult = 'Stopped by user';
@@ -2882,7 +2878,8 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         // Clean up stop handler
         abortController.signal.removeEventListener('abort', stopHandler);
         
-        ws.close();
+        // Stop screen polling when task is complete
+        if (typeof screenPollInterval !== 'undefined') clearInterval(screenPollInterval);
         
         if (stopped) {
           appendMessage('assistant', 'Task stopped by user.');
