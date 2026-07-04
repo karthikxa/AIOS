@@ -15,7 +15,8 @@
   }
 
   iframe,
-  img {
+  img,
+  #screen {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -26,6 +27,12 @@
   }
 
   img {
+    object-fit: contain;
+  }
+
+  #screen canvas {
+    width: 100% !important;
+    height: 100% !important;
     object-fit: contain;
   }
 
@@ -76,63 +83,35 @@
     return frame;
   }
 
-  function mountStream(url, onError) {
-    const img = document.createElement('img');
-    img.alt = 'Live desktop stream';
-    img.src = url;
-    img.onload = hideStatusSoon;
-    img.onerror = onError;
-    document.body.appendChild(img);
-    setTimeout(hideStatusSoon, 1500);
-    return img;
-  }
-
-  function startHfLiveViewer() {
+  async function startHfLiveViewer() {
     const baseUrl = (params.get('base') || params.get('sandbox') || '').replace(/\/$/, '');
     if (!baseUrl) {
       showStatus('Missing desktop URL');
       return;
     }
 
-    const streamCandidates = [
-      `${baseUrl}/stream.mjpeg`,
-      `${baseUrl}/video_feed`,
-      `${baseUrl}/live.mjpeg`
-    ];
+    try {
+      const liveUrl = new URL(baseUrl);
+      const wsProtocol = liveUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${wsProtocol}//${liveUrl.host}/websockify`;
+      const screen = document.createElement('div');
+      screen.id = 'screen';
+      document.body.appendChild(screen);
 
-    const frameCandidates = [
-      `${baseUrl}/vnc.html?autoconnect=1&resize=scale&path=websockify`,
-      `${baseUrl}/vnc_lite.html?scale=true&path=websockify`,
-      `${baseUrl}/vnc_lite_custom.html?scale=true&path=websockify`,
-      `${baseUrl}/?embed=true`
-    ];
-
-    let streamIndex = 0;
-    let frameIndex = 0;
-    let current = mountStream(streamCandidates[streamIndex], () => {
-      streamIndex++;
-      if (streamIndex < streamCandidates.length) {
-        showStatus('Trying live desktop stream...');
-        current.remove();
-        current = mountStream(streamCandidates[streamIndex], current.onerror);
-        return;
-      }
-      showStatus('Opening live desktop viewer...');
-      current.remove();
-      current = mountFrame(frameCandidates[frameIndex]);
-    });
-
-    window.addEventListener('message', (event) => {
-      if (event.origin === new URL(baseUrl).origin) hideStatusSoon();
-    });
-
-    window.addEventListener('keydown', (event) => {
-      if (event.key !== 'F8') return;
-      frameIndex = (frameIndex + 1) % frameCandidates.length;
-      showStatus('Switching live viewer...');
-      current.remove();
-      current = mountFrame(frameCandidates[frameIndex]);
-    });
+      const { default: RFB } = await import('https://cdn.jsdelivr.net/npm/@novnc/novnc@1.5.0/core/rfb.js');
+      const rfb = new RFB(screen, wsUrl, { credentials: { password: '' } });
+      rfb.scaleViewport = true;
+      rfb.resizeSession = false;
+      rfb.viewOnly = true;
+      rfb.qualityLevel = 6;
+      rfb.compressionLevel = 2;
+      rfb.addEventListener('connect', hideStatusSoon);
+      rfb.addEventListener('disconnect', () => showStatus('Live desktop disconnected'));
+      rfb.addEventListener('credentialsrequired', () => rfb.sendCredentials({ password: '' }));
+    } catch (error) {
+      console.error(error);
+      showStatus('Live desktop WebSocket failed');
+    }
   }
 
   function startSandboxFallback() {

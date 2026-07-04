@@ -10367,8 +10367,12 @@ main.main-content.computer-split-mode #computerSplitPane {
   width: clamp(420px, 36vw, 560px) !important;
   height: 100% !important;
   overflow: hidden !important;
+  right: 0 !important;
+  left: auto !important;
   padding-right: 0 !important;
+  padding-left: 0 !important;
   margin-right: 0 !important;
+  margin-left: 0 !important;
   border-right: 1px solid #E5E7EB !important;
   background: #FFFFFF !important;
   box-shadow: -1px 0 0 rgba(17, 24, 39, 0.03) !important;
@@ -10388,7 +10392,9 @@ main.main-content.computer-split-mode #splitPaneViewport {
   max-height: min(420px, 52vh) !important;
   width: 100% !important;
   padding-right: 0 !important;
+  padding-left: 0 !important;
   margin-right: 0 !important;
+  margin-left: 0 !important;
   box-sizing: border-box !important;
 }
 
@@ -10414,6 +10420,10 @@ main.main-content.computer-split-mode #desktopScreenshotImg {
 main.main-content.computer-split-mode #splitPaneProgress {
   flex: 0 0 auto !important;
   max-height: 220px !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
 }
 
 main.main-content.computer-split-mode #splitPaneProgressBody {
