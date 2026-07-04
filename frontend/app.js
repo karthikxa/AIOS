@@ -3691,26 +3691,37 @@ Here are the current findings:
 <script>
 var i = document.getElementById('s');
 function poll(){ i.src = '${baseUrl}/screenshot?'+Date.now(); setTimeout(poll, 2000); }
-i.onload = function(){ poll(); };
+i.onload = function(){
+  // Signal parent that desktop is ready
+  try { parent.postMessage('desktop-ready', '*'); } catch(e) {}
+  poll();
+};
 <\/script>
 </body></html>`;
       // Update URL in header
       const urlEl = document.getElementById('splitPaneHeaderUrl');
       if (urlEl) { urlEl.textContent = baseUrl; urlEl.href = baseUrl; }
+      // Hide overlay when iframe loads
       desktopFrame.onload = () => {
         if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
       };
+      // Also listen for the postMessage from inside the iframe
+      window.addEventListener('message', function onReady(e) {
+        if (e.data === 'desktop-ready') {
+          if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
+          window.removeEventListener('message', onReady);
+        }
+      });
     } else {
       // Live VNC streaming through sandbox screenshot polling
       const sandboxUrl = getVncBaseUrl();
       desktopFrame.src = '/vnc_live.html?sandbox=' + encodeURIComponent(sandboxUrl);
+      desktopFrame.onload = () => {
+        if (desktopConnectingOverlay) {
+          desktopConnectingOverlay.style.display = 'none';
+        }
+      };
     }
-
-    desktopFrame.onload = () => {
-      if (desktopConnectingOverlay) {
-        desktopConnectingOverlay.style.display = 'none';
-      }
-    };
 
     // Also start the thumbnail VNC stream
     const thumbnailFrame = document.getElementById('thumbnailFrame');
