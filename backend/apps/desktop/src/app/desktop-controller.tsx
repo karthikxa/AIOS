@@ -87,6 +87,8 @@ import { clearSessionTodos, setSessionTodos, todoListActive } from '../store/tod
 import { openUpdatesWindow, startUpdatePoller, stopUpdatePoller } from '../store/updates'
 import { isSecondaryWindow } from '../store/windows'
 
+import { AGENT_PANEL_PANE_ID } from '../store/agent-panel'
+
 import { ChatView } from './chat'
 import { requestComposerFocus, requestComposerInsert } from './chat/composer/focus'
 import { useComposerActions } from './chat/hooks/use-composer-actions'
@@ -104,6 +106,7 @@ import { useKeybinds } from './hooks/use-keybinds'
 import { SIDEBAR_COLLAPSE_MEDIA_QUERY } from './layout-constants'
 import { ModelPickerOverlay } from './model-picker-overlay'
 import { ModelVisibilityOverlay } from './model-visibility-overlay'
+import { AgentPanel } from './chat/agent-panel'
 import { RightSidebarPane } from './right-sidebar'
 import { $terminalTakeover } from './right-sidebar/store'
 import { PersistentTerminal, TerminalSlot } from './right-sidebar/terminal/persistent'
@@ -1132,6 +1135,22 @@ export function DesktopController() {
     </Pane>
   )
 
+  const agentPanelPane = (
+    <Pane
+      defaultOpen={false}
+      disabled={!chatOpen}
+      id={AGENT_PANEL_PANE_ID}
+      key={AGENT_PANEL_PANE_ID}
+      maxWidth="24rem"
+      minWidth="16rem"
+      resizable
+      side={railSide}
+      width="20rem"
+    >
+      <AgentPanel />
+    </Pane>
+  )
+
   return (
     <AppShell
       leftStatusbarItems={leftStatusbarItems}
@@ -1199,13 +1218,14 @@ export function DesktopController() {
       </PaneMain>
       {/*
         Order within a side maps to column order. Default (rail on the right):
-        main | terminal | preview | file-browser. Flipped (rail on the left):
-        mirror to file-browser | preview | terminal | main so terminal stays
+        main | terminal | preview | agent-panel | file-browser. Flipped (rail on the left):
+        mirror to file-browser | agent-panel | preview | terminal | main so terminal stays
         adjacent to the chat.
       */}
       {panesFlipped ? fileBrowserPane : terminalPane}
       {previewPane}
-      {panesFlipped ? terminalPane : fileBrowserPane}
+      {panesFlipped ? terminalPane : agentPanelPane}
+      {panesFlipped ? agentPanelPane : fileBrowserPane}
     </AppShell>
   )
 }

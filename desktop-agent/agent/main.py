@@ -2,7 +2,7 @@ import asyncio, json, os, sys, traceback, time, base64, hashlib
 from pathlib import Path
 from typing import Optional
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 
@@ -195,6 +195,27 @@ async def take_screenshot_base64() -> str:
             return base64.b64encode(r.content).decode()
     except Exception:
         return ""
+
+
+async def screenshot_mjpeg_stream(delay: float = 0.12):
+    """Stream sandbox screenshots as an MJPEG feed for the browser viewer."""
+    boundary = "desktop-frame"
+    async with httpx.AsyncClient(timeout=20) as c:
+        while True:
+            try:
+                r = await c.get(f"{SANDBOX}/v1/browser/screenshot")
+                r.raise_for_status()
+                frame = r.content
+                yield (
+                    f"--{boundary}\r\n"
+                    "Content-Type: image/png\r\n"
+                    f"Content-Length: {len(frame)}\r\n\r\n"
+                ).encode() + frame + b"\r\n"
+                await asyncio.sleep(delay)
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                await asyncio.sleep(1.0)
 
 async def get_screenshot_hash(b64: str) -> str:
     return hashlib.md5(b64.encode()).hexdigest()[:12]
@@ -1017,6 +1038,20 @@ async def agent_execute(request: dict):
         return {"status": "ok", "action": action, "result": result}
     except Exception as e:
         return {"status": "error", "action": action, "result": str(e)}
+
+
+@app.get("/stream.mjpeg")
+@app.get("/video_feed")
+@app.get("/live.mjpeg")
+async def live_desktop_stream():
+    return StreamingResponse(
+        screenshot_mjpeg_stream(),
+        media_type="multipart/x-mixed-replace; boundary=desktop-frame",
+        headers={
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+        },
+    )
 
 
 @app.get("/agent/screen")

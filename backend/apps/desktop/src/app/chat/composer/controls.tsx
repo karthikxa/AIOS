@@ -1,3 +1,5 @@
+import { useStore } from '@nanostores/react'
+
 import { Button } from '@/components/ui/button'
 import { Codicon } from '@/components/ui/codicon'
 import { KbdCombo } from '@/components/ui/kbd'
@@ -7,6 +9,8 @@ import { triggerHaptic } from '@/lib/haptics'
 import { AudioLines, Layers3, Loader2, Square, SteeringWheel } from '@/lib/icons'
 import { formatCombo } from '@/lib/keybinds/combo'
 import { cn } from '@/lib/utils'
+import { $agentPanelOpen, toggleAgentPanel } from '@/store/agent-panel'
+import { $busy } from '@/store/session'
 
 import type { ConversationStatus } from './hooks/use-voice-conversation'
 import { ModelPill } from './model-pill'
@@ -69,6 +73,8 @@ export function ComposerControls({
   const c = t.composer
   const steerCombo = formatCombo('mod+enter')
   const steerLabel = `${c.steer} (${steerCombo})`
+  const agentPanelOpen = useStore($agentPanelOpen)
+  const isBusy = useStore($busy)
 
   const steerTip = (
     <span className="inline-flex items-center gap-1.5">
@@ -85,6 +91,27 @@ export function ComposerControls({
 
   return (
     <div className="ml-auto flex shrink-0 items-center gap-(--composer-control-gap)">
+      <Tip label={agentPanelOpen ? 'Hide agent panel' : 'Show agent panel'}>
+        <Button
+          aria-label={agentPanelOpen ? 'Hide agent panel' : 'Show agent panel'}
+          aria-pressed={agentPanelOpen}
+          className={cn(
+            GHOST_ICON_BTN,
+            'p-0',
+            agentPanelOpen && 'bg-accent text-foreground',
+            isBusy && !agentPanelOpen && 'text-blue-500'
+          )}
+          onClick={() => {
+            triggerHaptic('selection')
+            toggleAgentPanel()
+          }}
+          size="icon"
+          type="button"
+          variant="ghost"
+        >
+          <Codicon name="robot" size="0.875rem" />
+        </Button>
+      </Tip>
       <ModelPill compact={compactModelPill} disabled={disabled} model={state.model} />
       {/* While the agent runs and the user is typing, steer takes over the mic's
           slot rather than crowding the row with an extra button. */}

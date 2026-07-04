@@ -3627,10 +3627,17 @@ Here are the current findings:
   let desktopStreamStarted = false;
   let desktopPollInterval = null;
   let desktopPollStopped = false;
+  const DEFAULT_HF_SPACE_URL = 'https://bkarthikeyan-desktop-agent-live.hf.space';
+  const LEGACY_HF_SPACE_URLS = new Set([
+    'https://bkarthikeyan-desktop-agent.hf.space',
+  ]);
 
   // Set default HF Space URL if not configured
-  if (!localStorage.getItem('hf_space_url') && !localStorage.getItem('desktop_agent_url')) {
-    localStorage.setItem('hf_space_url', 'https://bkarthikeyan-desktop-agent.hf.space');
+  const savedHfSpaceUrl = (localStorage.getItem('hf_space_url') || '').replace(/\/$/, '');
+  if (LEGACY_HF_SPACE_URLS.has(savedHfSpaceUrl)) {
+    localStorage.setItem('hf_space_url', DEFAULT_HF_SPACE_URL);
+  } else if (!localStorage.getItem('hf_space_url') && !localStorage.getItem('desktop_agent_url')) {
+    localStorage.setItem('hf_space_url', DEFAULT_HF_SPACE_URL);
   }
 
   function updateSplitPaneUrl(content) {
@@ -3681,23 +3688,10 @@ Here are the current findings:
     // Check if using HF Space cloud desktop
     const hfSpaceUrl = localStorage.getItem('hf_space_url');
     if (hfSpaceUrl) {
-      // HF Space: screenshot polling inside iframe
+      // HF Space: prefer the live desktop viewer instead of screenshot polling.
       const baseUrl = hfSpaceUrl.replace(/\/$/, '');
       desktopFrame.style.display = 'block';
-      desktopFrame.srcdoc = `<!DOCTYPE html>
-<html style="margin:0;padding:0;width:100%;height:100%;background:#000;">
-<body style="margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden;">
-<img id="s" style="width:100%;height:100%;object-fit:cover;display:block;border:none;background:#000;image-rendering:auto;" src="${baseUrl}/screenshot">
-<script>
-var i = document.getElementById('s');
-function poll(){ i.src = '${baseUrl}/screenshot?'+Date.now(); setTimeout(poll, 2000); }
-i.onload = function(){
-  // Signal parent that desktop is ready
-  try { parent.postMessage('desktop-ready', '*'); } catch(e) {}
-  poll();
-};
-<\/script>
-</body></html>`;
+      desktopFrame.src = '/vnc_live.html?mode=hf&base=' + encodeURIComponent(baseUrl);
       // Update URL in header
       const urlEl = document.getElementById('splitPaneHeaderUrl');
       if (urlEl) { urlEl.textContent = baseUrl; urlEl.href = baseUrl; }
@@ -3729,7 +3723,7 @@ i.onload = function(){
     if (thumbnailFrame) {
       const hfSpaceUrl2 = localStorage.getItem('hf_space_url');
       if (hfSpaceUrl2) {
-        thumbnailFrame.src = hfSpaceUrl2.replace(/\/$/, '') + '/screenshot?' + Date.now();
+        thumbnailFrame.src = '/vnc_live.html?mode=hf&base=' + encodeURIComponent(hfSpaceUrl2.replace(/\/$/, ''));
       } else {
         thumbnailFrame.src = '/vnc_live.html?sandbox=' + encodeURIComponent(getVncBaseUrl());
       }
@@ -3926,7 +3920,7 @@ i.onload = function(){
   if (settingsSplitPaneBtn) {
     settingsSplitPaneBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const current = localStorage.getItem('hf_space_url') || 'https://bkarthikeyan-desktop-agent.hf.space';
+      const current = localStorage.getItem('hf_space_url') || DEFAULT_HF_SPACE_URL;
       const url = prompt('Enter HF Space URL (or blank for local sandbox):', current);
       if (url !== null) {
         if (url.trim()) {
@@ -3983,7 +3977,7 @@ i.onload = function(){
       const isExpanded = computerSplitPane.style.width === '100%';
       const centerContainer = document.querySelector('.center-container');
       if (isExpanded) {
-        computerSplitPane.style.width = '28%';
+        computerSplitPane.style.width = '40%';
         if (centerContainer) centerContainer.style.display = 'flex';
       } else {
         computerSplitPane.style.width = '100%';
