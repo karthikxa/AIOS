@@ -3629,11 +3629,12 @@ Here are the current findings:
     'https://bkarthikeyan-desktop-agent.hf.space',
   ]);
 
-  // Set default HF Space URL if not configured
+  // Set default HF Space URL only on non-localhost (cloud mode)
   const savedHfSpaceUrl = (localStorage.getItem('hf_space_url') || '').replace(/\/$/, '');
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   if (LEGACY_HF_SPACE_URLS.has(savedHfSpaceUrl)) {
     localStorage.setItem('hf_space_url', DEFAULT_HF_SPACE_URL);
-  } else if (!localStorage.getItem('hf_space_url') && !localStorage.getItem('desktop_agent_url')) {
+  } else if (!isLocal && !localStorage.getItem('hf_space_url') && !localStorage.getItem('desktop_agent_url')) {
     localStorage.setItem('hf_space_url', DEFAULT_HF_SPACE_URL);
   }
 
