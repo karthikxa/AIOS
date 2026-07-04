@@ -87,16 +87,41 @@
     }
 
     const video = document.createElement('video');
+    let settled = false;
+    let fallbackTimer = null;
+
+    function markReady() {
+      settled = true;
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+      hideStatusSoon();
+    }
+
+    function mountMjpegFallback() {
+      if (settled) return;
+      settled = true;
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+      showStatus('Opening live desktop...');
+      video.remove();
+      const img = document.createElement('img');
+      img.alt = 'Live desktop';
+      img.src = `${baseUrl}/stream.mjpeg?t=${Date.now()}`;
+      img.onload = hideStatusSoon;
+      img.onerror = () => showStatus('Live desktop unavailable');
+      document.body.appendChild(img);
+      setTimeout(hideStatusSoon, 1400);
+    }
+
     video.title = 'Live desktop';
     video.autoplay = true;
     video.muted = true;
     video.playsInline = true;
     video.src = `${baseUrl}/desktop.webm?t=${Date.now()}`;
-    video.onloadeddata = hideStatusSoon;
-    video.oncanplay = hideStatusSoon;
-    video.onplaying = hideStatusSoon;
-    video.onerror = () => showStatus('Live desktop video failed');
+    video.onloadeddata = markReady;
+    video.oncanplay = markReady;
+    video.onplaying = markReady;
+    video.onerror = mountMjpegFallback;
     document.body.appendChild(video);
+    fallbackTimer = setTimeout(mountMjpegFallback, 3500);
   }
 
   function startSandboxFallback() {
