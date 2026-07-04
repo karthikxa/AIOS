@@ -91,7 +91,7 @@
 
     function connectStream() {
       showStatus('Opening live desktop...');
-      img.src = `${baseUrl}/stream.mjpeg?t=${Date.now()}`;
+      img.src = `${baseUrl}/stream?t=${Date.now()}`;
     }
 
     img.alt = 'Live desktop';
