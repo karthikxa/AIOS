@@ -30,9 +30,11 @@
     if (!baseUrl) { showStatus('Missing desktop URL'); return; }
 
     const img = document.createElement('img');
-    const streamPaths = ['/stream', '/stream.mjpeg', '/screenshot'];
+    // FIX 4: /screenshot polling first — most stable on HF free tier
+    const streamPaths = ['/screenshot', '/stream', '/stream.mjpeg'];
     let pathIndex = 0;
     let pollTimer = null;
+    let usingPolling = false;
 
     function tryStream() {
       const path = streamPaths[pathIndex];
@@ -44,24 +46,27 @@
     img.onload = function() {
       hideStatusSoon();
       retryCount = 0;
-      // If loaded from /screenshot, keep polling it
+      // FIX 4: If loaded from /screenshot, keep polling at 150ms for near-smooth playback
       if (streamPaths[pathIndex] === '/screenshot') {
+        usingPolling = true;
+        if (pollTimer) clearTimeout(pollTimer);
         pollTimer = setTimeout(function poll() {
           img.src = `${baseUrl}/screenshot?t=${Date.now()}`;
-          pollTimer = setTimeout(poll, 200);
-        }, 200);
+          pollTimer = setTimeout(poll, 150);
+        }, 150);
       }
     };
     img.onerror = function() {
       if (pollTimer) clearTimeout(pollTimer);
+      usingPolling = false;
       retryCount++;
       if (retryCount > 3) {
-        // Try next stream path
         pathIndex = (pathIndex + 1) % streamPaths.length;
         retryCount = 0;
       }
       showStatus(`Reconnecting... (${retryCount})`);
-      setTimeout(tryStream, 1200);
+      // FIX 3: 300ms retry instead of 1200ms
+      setTimeout(tryStream, 300);
     };
 
     document.body.appendChild(img);
