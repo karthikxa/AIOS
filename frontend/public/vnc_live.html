@@ -6,46 +6,11 @@
 <title>Live Desktop</title>
 <style>
   * { box-sizing: border-box; }
-  html, body {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    overflow: hidden;
-    background: #000;
-  }
-
-  iframe,
-  img,
-  video {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-    display: block;
-    background: #000;
-  }
-
-  img,
-  video {
-    object-fit: contain;
-  }
-
-  #status {
-    position: absolute;
-    left: 50%;
-    top: 12px;
-    transform: translateX(-50%);
-    z-index: 5;
-    color: #fff;
-    font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: rgba(0, 0, 0, 0.42);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 999px;
-    padding: 6px 10px;
-    text-align: center;
-    pointer-events: none;
-  }
+  html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #000; }
+  img { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; object-fit: contain; background: #000; }
+  #status { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); z-index: 5;
+    color: #fff; font: 12px -apple-system, sans-serif; background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; padding: 6px 10px; pointer-events: none; }
 </style>
 </head>
 <body>
@@ -55,80 +20,70 @@
   const params = new URLSearchParams(window.location.search);
   const mode = params.get('mode') || 'sandbox';
   const statusEl = document.getElementById('status');
+  let retryCount = 0;
 
-  function showStatus(text) {
-    statusEl.textContent = text;
-    statusEl.style.display = 'block';
-  }
-
-  function hideStatusSoon() {
-    setTimeout(() => {
-      statusEl.style.display = 'none';
-    }, 900);
-  }
-
-  function mountFrame(url) {
-    const frame = document.createElement('iframe');
-    frame.title = 'Live desktop';
-    frame.allow = 'fullscreen; clipboard-read; clipboard-write';
-    frame.referrerPolicy = 'no-referrer';
-    frame.src = url;
-    frame.onload = hideStatusSoon;
-    frame.onerror = () => showStatus('Live desktop connection failed');
-    document.body.appendChild(frame);
-    return frame;
-  }
+  function showStatus(text) { statusEl.textContent = text; statusEl.style.display = 'block'; }
+  function hideStatusSoon() { setTimeout(() => { statusEl.style.display = 'none'; }, 800); }
 
   function startHfLiveViewer() {
-    const baseUrl = (params.get('base') || params.get('sandbox') || '').replace(/\/$/, '');
-    if (!baseUrl) {
-      showStatus('Missing desktop URL');
-      return;
-    }
+    let baseUrl = (params.get('base') || '').replace(/\/$/, '');
+    if (!baseUrl) { showStatus('Missing desktop URL'); return; }
 
     const img = document.createElement('img');
-    let reconnectTimer = null;
+    const streamPaths = ['/stream', '/stream.mjpeg', '/screenshot'];
+    let pathIndex = 0;
+    let pollTimer = null;
 
-    function connectStream() {
-      showStatus('Opening live desktop...');
-      img.src = `${baseUrl}/stream.mjpeg?t=${Date.now()}`;
+    function tryStream() {
+      const path = streamPaths[pathIndex];
+      showStatus(`Connecting... (${path})`);
+      img.src = `${baseUrl}${path}?t=${Date.now()}`;
     }
 
     img.alt = 'Live desktop';
-    img.onload = hideStatusSoon;
-    img.onerror = () => {
-      showStatus('Reconnecting live desktop...');
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      reconnectTimer = setTimeout(connectStream, 1200);
+    img.onload = function() {
+      hideStatusSoon();
+      retryCount = 0;
+      // If loaded from /screenshot, keep polling it
+      if (streamPaths[pathIndex] === '/screenshot') {
+        pollTimer = setTimeout(function poll() {
+          img.src = `${baseUrl}/screenshot?t=${Date.now()}`;
+          pollTimer = setTimeout(poll, 200);
+        }, 200);
+      }
     };
+    img.onerror = function() {
+      if (pollTimer) clearTimeout(pollTimer);
+      retryCount++;
+      if (retryCount > 3) {
+        // Try next stream path
+        pathIndex = (pathIndex + 1) % streamPaths.length;
+        retryCount = 0;
+      }
+      showStatus(`Reconnecting... (${retryCount})`);
+      setTimeout(tryStream, 1200);
+    };
+
     document.body.appendChild(img);
-    connectStream();
-    setTimeout(hideStatusSoon, 1800);
+    tryStream();
   }
 
   function startSandboxFallback() {
-    const baseUrl = params.get('sandbox') || '/sandbox';
-    const interval = Math.max(parseInt(params.get('interval') || '200', 10), 80);
+    const baseUrl = (params.get('sandbox') || '/sandbox').replace(/\/$/, '');
     const img = document.createElement('img');
     let connected = false;
-    let failCount = 0;
 
     function loadScreenshot() {
       img.onload = function() {
-        if (!connected) {
-          connected = true;
-          hideStatusSoon();
-        }
-        failCount = 0;
-        setTimeout(loadScreenshot, interval);
+        if (!connected) { connected = true; hideStatusSoon(); }
+        setTimeout(loadScreenshot, 200);
       };
       img.onerror = function() {
-        failCount++;
         connected = false;
-        showStatus(`Reconnecting live desktop... (${failCount})`);
-        setTimeout(loadScreenshot, Math.min(interval * 4, 3000));
+        showStatus('Reconnecting...');
+        setTimeout(loadScreenshot, 2000);
       };
-      img.src = `${baseUrl.replace(/\/$/, '')}/v1/browser/screenshot?t=${Date.now()}`;
+      img.src = `${baseUrl}/v1/browser/screenshot?t=${Date.now()}`;
     }
 
     document.body.appendChild(img);
