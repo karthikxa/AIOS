@@ -1,0 +1,8 @@
+﻿{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@zed/ink": ["src/types/zed-ink.d.ts"]
+    }
+  }
+}

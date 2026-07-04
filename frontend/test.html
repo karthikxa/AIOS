@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html><body>
+<h1>Test</h1>
+<div id="test">waiting...</div>
+<script type="module">
+import { modelsStore } from './js/models-store.js';
+document.getElementById('test').textContent = 'Models loaded: ' + modelsStore.getState().models.length;
+</script>
+</body></html>

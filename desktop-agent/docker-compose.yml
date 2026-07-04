@@ -1,0 +1,27 @@
+services:
+  sandbox:
+    image: ghcr.io/agent-infra/sandbox:latest
+    container_name: aio-sandbox
+    security_opt:
+      - seccomp=unconfined
+    shm_size: "2gb"
+    mem_limit: "8g"
+    cpus: "4"
+    ports:
+      - "8080:8080"
+    environment:
+      DISPLAY_WIDTH: "3840"
+      DISPLAY_HEIGHT: "2160"
+      HOMEPAGE: "about:blank"
+
+  agent:
+    build: ./agent
+    environment:
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_MODEL=${LLM_MODEL:-zed-pro}
+      - LLM_BASE_URL=${LLM_BASE_URL:-http://your-zed-pro-api:11434/v1}
+      - SANDBOX_URL=http://sandbox:8080
+    ports:
+      - "8765:8765"
+    depends_on:
+      - sandbox

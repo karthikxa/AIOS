@@ -1,0 +1,5 @@
+{
+  "title": "Documentation",
+  "root": true,
+  "pages": ["index", "---Learn---", "tutorials", "explanation", "---Do---", "how-to-guides", "reference"]
+}

@@ -1,0 +1,19 @@
+{
+  "buildCommand": "npm install && npm run build",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://backend-server-6ghr.onrender.com/api/:path*"
+    },
+    {
+      "source": "/v1/:path*",
+      "destination": "https://backend-server-6ghr.onrender.com/v1/:path*"
+    },
+    {
+      "source": "/oauth/:path*",
+      "destination": "https://backend-server-6ghr.onrender.com/oauth/:path*"
+    }
+  ]
+}

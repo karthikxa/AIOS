@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>noVNC</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: dimgrey;
+            height: 100%;
+            overflow: hidden;
+        }
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+        #screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+    <script type="module" crossorigin="anonymous">
+        import RFB from './core/rfb.js';
+
+        let rfb;
+        let desktopName;
+
+        function connectedToServer(e) {}
+        function disconnectedFromServer(e) {}
+        function credentialsAreRequired(e) {
+            const password = prompt('Password required:');
+            rfb.sendCredentials({ password: password });
+        }
+        function updateDesktopName(e) {
+            desktopName = e.detail.name;
+        }
+
+        function readQueryVariable(name, defaultValue) {
+            const re = new RegExp('.*[?&]' + name + '=([^&#]*)'),
+                  match = document.location.href.match(re);
+            if (match) {
+                return decodeURIComponent(match[1]);
+            }
+            return defaultValue;
+        }
+
+        const host = readQueryVariable('host', window.location.hostname);
+        let port = readQueryVariable('port', window.location.port);
+        const password = readQueryVariable('password');
+        const path = readQueryVariable('path', 'websockify');
+
+        let url;
+        if (window.location.protocol === 'https:') {
+            url = 'wss';
+        } else {
+            url = 'ws';
+        }
+        url += '://' + host;
+        if(port) {
+            url += ':' + port;
+        }
+        url += '/' + path;
+
+        rfb = new RFB(document.getElementById('screen'), url,
+                      { credentials: { password: password } });
+
+        rfb.addEventListener('connect', connectedToServer);
+        rfb.addEventListener('disconnect', disconnectedFromServer);
+        rfb.addEventListener('credentialsrequired', credentialsAreRequired);
+        rfb.addEventListener('desktopname', updateDesktopName);
+
+        rfb.viewOnly = readQueryVariable('view_only', false);
+        rfb.scaleViewport = readQueryVariable('scale', false);
+    </script>
+</head>
+<body>
+    <div id="screen"></div>
+</body>
+</html>

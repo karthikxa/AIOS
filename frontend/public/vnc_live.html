@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Desktop</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #000;
+  }
+
+  iframe,
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    background: #000;
+  }
+
+  img {
+    object-fit: contain;
+  }
+
+  #status {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    color: #fff;
+    font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: rgba(0, 0, 0, 0.58);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    padding: 9px 14px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div id="status">Connecting to live desktop...</div>
+<script>
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get('mode') || 'sandbox';
+  const statusEl = document.getElementById('status');
+
+  function showStatus(text) {
+    statusEl.textContent = text;
+    statusEl.style.display = 'block';
+  }
+
+  function hideStatusSoon() {
+    setTimeout(() => {
+      statusEl.style.display = 'none';
+    }, 900);
+  }
+
+  function mountFrame(url) {
+    const frame = document.createElement('iframe');
+    frame.title = 'Live desktop';
+    frame.allow = 'fullscreen; clipboard-read; clipboard-write';
+    frame.referrerPolicy = 'no-referrer';
+    frame.src = url;
+    frame.onload = hideStatusSoon;
+    frame.onerror = () => showStatus('Live desktop connection failed');
+    document.body.appendChild(frame);
+    return frame;
+  }
+
+  function mountStream(url, onError) {
+    const img = document.createElement('img');
+    img.alt = 'Live desktop stream';
+    img.src = url;
+    img.onload = hideStatusSoon;
+    img.onerror = onError;
+    document.body.appendChild(img);
+    setTimeout(hideStatusSoon, 1500);
+    return img;
+  }
+
+  function startHfLiveViewer() {
+    const baseUrl = (params.get('base') || params.get('sandbox') || '').replace(/\/$/, '');
+    if (!baseUrl) {
+      showStatus('Missing desktop URL');
+      return;
+    }
+
+    const streamCandidates = [
+      `${baseUrl}/stream.mjpeg`,
+      `${baseUrl}/video_feed`,
+      `${baseUrl}/live.mjpeg`
+    ];
+
+    const frameCandidates = [
+      `${baseUrl}/vnc.html?autoconnect=1&resize=scale&path=websockify`,
+      `${baseUrl}/vnc_lite.html?scale=true&path=websockify`,
+      `${baseUrl}/vnc_lite_custom.html?scale=true&path=websockify`,
+      `${baseUrl}/?embed=true`
+    ];
+
+    let streamIndex = 0;
+    let frameIndex = 0;
+    let current = mountStream(streamCandidates[streamIndex], () => {
+      streamIndex++;
+      if (streamIndex < streamCandidates.length) {
+        showStatus('Trying live desktop stream...');
+        current.remove();
+        current = mountStream(streamCandidates[streamIndex], current.onerror);
+        return;
+      }
+      showStatus('Opening live desktop viewer...');
+      current.remove();
+      current = mountFrame(frameCandidates[frameIndex]);
+    });
+
+    window.addEventListener('message', (event) => {
+      if (event.origin === new URL(baseUrl).origin) hideStatusSoon();
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key !== 'F8') return;
+      frameIndex = (frameIndex + 1) % frameCandidates.length;
+      showStatus('Switching live viewer...');
+      current.remove();
+      current = mountFrame(frameCandidates[frameIndex]);
+    });
+  }
+
+  function startSandboxFallback() {
+    const baseUrl = params.get('sandbox') || '/sandbox';
+    const interval = Math.max(parseInt(params.get('interval') || '200', 10), 80);
+    const img = document.createElement('img');
+    let connected = false;
+    let failCount = 0;
+
+    function loadScreenshot() {
+      img.onload = function() {
+        if (!connected) {
+          connected = true;
+          hideStatusSoon();
+        }
+        failCount = 0;
+        setTimeout(loadScreenshot, interval);
+      };
+      img.onerror = function() {
+        failCount++;
+        connected = false;
+        showStatus(`Reconnecting live desktop... (${failCount})`);
+        setTimeout(loadScreenshot, Math.min(interval * 4, 3000));
+      };
+      img.src = `${baseUrl.replace(/\/$/, '')}/v1/browser/screenshot?t=${Date.now()}`;
+    }
+
+    document.body.appendChild(img);
+    loadScreenshot();
+  }
+
+  if (mode === 'hf') {
+    startHfLiveViewer();
+  } else {
+    startSandboxFallback();
+  }
+})();
+</script>
+</body>
+</html>

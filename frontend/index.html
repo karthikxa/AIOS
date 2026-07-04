@@ -1,0 +1,2201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What can I do for you?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;550;600;700&family=Instrument+Serif:ital@0;1&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Force hide scrollbars on all key scroll containers */
+    main.main-content,
+    .chat-messages-view,
+    .chat-messages-log,
+    .ea-chat-window-log,
+    body,
+    html {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    main.main-content::-webkit-scrollbar,
+    .chat-messages-view::-webkit-scrollbar,
+    .chat-messages-log::-webkit-scrollbar,
+    .ea-chat-window-log::-webkit-scrollbar,
+    body::-webkit-scrollbar,
+    html::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Mobile Hamburger Toggle Menu -->
+    <button class="mobile-hamburger" id="mobileHamburger" aria-label="Toggle Sidebar">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+    </button>
+
+    <!-- Left Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <nav class="sidebar-nav" style="padding-top: 12px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 12px 16px;margin-bottom:8px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="12" fill="#000000"/>
+            <path d="M 7.5,7 H 16.5 V 9.5 L 11.0,14.5 H 16.5 V 17 H 7.5 V 14.5 L 13.0,9.5 H 7.5 Z" fill="#FFFFFF"/>
+          </svg>
+          <span style="font-size:28px;font-weight:700;color:#000;letter-spacing:-0.5px;text-transform:lowercase;">zed</span>
+        </div>
+        <div class="nav-item active" id="navNewTask">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"/></svg>
+          <span>New task</span>
+        </div>
+        <div class="nav-item" id="navAgent">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="1"/></svg>
+          <span>Agent</span>
+        </div>
+        <div class="nav-item" id="navVoice">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span>Voice</span>
+        </div>
+        <div class="nav-item" id="navModel">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          <span>Models</span>
+        </div>
+        <div class="nav-item" id="navPlugins">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Plugins</span>
+        </div>
+        <div class="nav-item" id="navScheduled">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Scheduled</span>
+        </div>
+        <div class="nav-item" id="navLibrary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span>Library</span>
+        </div>
+
+        <!-- Tasks Section -->
+        <div class="tasks-section">
+          <div class="tasks-header" style="font-size: 13px; font-weight: 550; color: #9A9A9A; margin-bottom: 12px; flex-shrink: 0; padding: 0 4px;">
+            <span>Chats</span>
+          </div>
+          <div class="tasks-scroll"></div>
+        </div>
+      </nav>
+
+      <!-- User Profile Footer -->
+      <div class="sidebar-footer" style="padding-top: 16px; border-top: 1px solid var(--border-sidebar); margin-top: auto;">
+        <div class="user-profile" id="userProfile" style="display: flex; align-items: center; width: 100%; gap: 10px;">
+          <div class="user-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: #000000; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">K</div>
+          <div class="user-info" style="flex: 1;">
+            <span class="user-name" style="font-weight: 600; font-size: 14.5px;">User</span>
+          </div>
+          <div class="user-actions" style="display: flex; gap: 12px; color: #6F6F6F;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+      
+      <!-- Top App Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <span class="logo-text-brand"></span>
+        </div>
+
+        <div class="header-right" style="gap: 16px; align-items: center; display: flex;">
+          <button class="header-icon-btn" aria-label="Settings">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+          <div class="user-profile-avatar-pill">K</div>
+        </div>
+      </header>
+
+      <!-- Center Container (Aligns Hero and chat items) -->
+      <div class="center-container is-empty">
+
+        <!-- ================= EMPTY STATE ================= -->
+        <div class="empty-state-view" id="emptyStateView">
+          <h1 class="hero-logo-title">zed</h1>
+          <p class="hero-subtitle">Your Personal AI Assistant</p>
+
+
+        </div>
+
+        <!-- ================= ACTIVE STATE VIEWS ================= -->
+        <div class="active-state-view" id="activeStateView">
+
+
+          <!-- Real Chat Messages View -->
+          <div style="display: flex; flex: 1; min-height: 0; width: 100%; justify-content: center;">
+            <div class="chat-messages-view" id="chatMessagesView" style="display: none;">
+              <div class="chat-messages-log" id="chatMessagesLog">
+                <!-- Dynamically appended messages -->
+              </div>
+            </div>
+            <!-- Artifact Panel -->
+            <div class="artifact-panel" id="artifactPanel" style="display: none; flex-direction: column; width: 0; border-left: 1px solid var(--border, #E5E7EB); background: #FCFCFD; overflow: hidden; transition: width 0.25s ease;">
+              <div class="artifact-header" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border, #E5E7EB); flex-shrink: 0;">
+                <span style="font-size: 13px; font-weight: 600; color: #1F2937;">Artifact</span>
+                <div style="display: flex; gap: 6px;">
+                  <button class="artifact-btn" id="artifactCopyBtn" title="Copy Code" style="background: none; border: 1px solid #E5E7EB; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; color: #374151; display: flex; align-items: center; gap: 4px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Copy
+                  </button>
+                  <button class="artifact-btn" id="artifactDownloadBtn" title="Download" style="background: none; border: 1px solid #E5E7EB; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; color: #374151; display: flex; align-items: center; gap: 4px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download
+                  </button>
+                  <button class="artifact-btn" id="artifactRunBtn" title="Run / Preview" style="background: none; border: 1px solid #E5E7EB; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; color: #374151; display: flex; align-items: center; gap: 4px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    Run
+                  </button>
+                </div>
+              </div>
+              <div class="artifact-body" style="flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 10px; gap: 8px;">
+                <div class="artifact-filename" style="font-size: 11px; color: #6B7280; font-family: monospace; padding: 2px 0;" id="artifactFilename">code.js</div>
+                <textarea class="artifact-editor" id="artifactEditor" spellcheck="false" style="flex: 1; width: 100%; border: 1px solid #333; border-radius: 8px; padding: 12px; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 13px; line-height: 1.5; background: #000; color: #FFF; resize: none; outline: none; tab-size: 2;"></textarea>
+                <div class="artifact-preview" id="artifactPreview" style="display: none; flex: 1; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden; background: white;">
+                  <iframe id="artifactPreviewFrame" style="width: 100%; height: 100%; border: none;"></iframe>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= CHAT INPUT BOX ================= -->
+        <!-- ================= CHAT INPUT BOX ================= -->
+        <div class="chat-container" style="position: relative;">
+
+          <!-- Subagent Desktop Monitor / Status Bar (Normally hidden, separate rounded box) -->
+          <div class="subagent-status-bar" id="subagentStatusBar" style="display: none; align-items: center; justify-content: space-between; padding: 12px 20px; border: 1px solid #E5E7EB; border-radius: 20px; background-color: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 12px; box-sizing: border-box; width: 100%; position: relative;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="subagent-thumbnail" id="subagentThumbnail" style="width: 48px; height: 32px; border-radius: 6px; border: 1px solid rgba(0, 0, 0, 0.12); background: #111; overflow: hidden; cursor: pointer; transition: transform 0.15s ease; position: relative; flex-shrink: 0;" title="Click to view Desktop Screen">
+                <iframe id="thumbnailFrame" src="about:blank" style="width: 640px; height: 480px; border: none; transform: scale(0.075); transform-origin: top left; pointer-events: none; position: absolute; top: 0; left: 0;"></iframe>
+                <div id="thumbnailPlaceholder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="12" rx="2"/><line x1="6" y1="20" x2="18" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/></svg>
+                </div>
+              </div>
+              <div class="subagent-spinner" style="width: 14px; height: 14px; border: 2.2px solid rgba(0, 122, 255, 0.15); border-top-color: #007AFF; border-radius: 50%; animation: subagent-spin 1s linear infinite; flex-shrink: 0;"></div>
+              <span class="subagent-status-text" id="subagentStatusText" style="font-size: 13.5px; color: #374151; font-weight: 500; font-family: 'Inter', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 480px;">Researching best practices for React performance optimization...</span>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 12px; color: #6B7280; font-weight: 500; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 4px; user-select: none;">
+                <span id="subagentStepCount">2 / 4</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #9CA3AF;"><polyline points="6 9 12 15 18 9"/></svg>
+              </span>
+              <button id="closeSubagentStatusBtn" style="background: none; border: none; padding: 4px; cursor: pointer; color: #9CA3AF; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: background-color 0.15s; outline: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="chat-box" id="chatBox">
+
+            <!-- Connect Overlay (Shown when no models are connected) -->
+            <div class="chat-connect-overlay" id="chatConnectOverlay" style="display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px 12px; box-sizing: border-box; text-align: center; width: 100%; min-height: 110px;">
+              <span style="font-size: 14.5px; color: var(--text-secondary); font-weight: 500;">Connect an LLM provider to start chatting</span>
+              <button class="chat-box-connect-btn" id="chatBoxConnectBtn" style="background-color: #000000; color: #FFFFFF; border: none; border-radius: 12px; padding: 10px 20px; font-size: 14.5px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.06); font-family: 'Inter', sans-serif;">Connect Model</button>
+            </div>
+
+            <!-- Tool Usage Indicator Bar -->
+            <div id="toolIndicatorBar" class="tool-indicator-bar" style="display: none;"></div>
+
+            <!-- Top Portion: Center Input Field -->
+            <div class="chat-input-center-wrapper">
+              <textarea class="chat-prompt-input" id="chatPromptInput" placeholder="Message Zed..."></textarea>
+            </div>
+
+            <!-- File Preview Chips -->
+            <div id="filePreviewChips" style="display: none; gap: 6px; flex-wrap: wrap; width: 100%; padding: 8px 4px 8px 4px; border-top: 1px solid rgba(0,0,0,0.04);"></div>
+
+            <!-- Bottom Portion: Toolbar actions row -->
+            <div class="chat-toolbar-row">
+              
+              <!-- Left Items: Plus Attachment & Mode Select Pill -->
+              <div class="chat-left-wrapper">
+                <!-- Attach File -->
+                <div class="attachment-container">
+                  <button class="chat-plus-btn-new" id="attachBtn" aria-label="Attach File">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </button>
+                  <input type="file" id="fileInput" style="display: none;" multiple accept=".txt,.md,.csv,.json,.xml,.html,.css,.js,.py,.ts,.jpg,.jpeg,.png,.gif,.svg,.pdf,.doc,.docx,.xls,.xlsx">
+                  <div class="attachment-dropdown" id="attachDropdown">
+                    <div class="attachment-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                      <span>Add files</span>
+                    </div>
+                    <div class="attachment-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+                      <span>Import code</span>
+                    </div>
+                    <div class="attachment-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                      <span>Saved prompt</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Mode Capsule: Search / Computer toggle -->
+                <div class="mode-capsule" id="modeCapsule">
+                  <div class="mode-slider" id="modeSlider"></div>
+                  <button class="mode-capsule-option active" data-mode="search">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="agent-human-icon">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>Agent</span>
+                  </button>
+                  <button class="mode-capsule-option" data-mode="computer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="4" width="20" height="12" rx="2"/>
+                      <line x1="6" y1="20" x2="18" y2="20"/>
+                      <line x1="12" y1="16" x2="12" y2="20"/>
+                    </svg>
+                    <span>Computer</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right Items: Orchestrator, Microphone, Send button -->
+              <div class="chat-right-wrapper">
+                
+                <!-- Orchestrator Dropdown Trigger -->
+                <div class="model-select-wrapper">
+                  <button class="model-trigger-btn-new" id="modelTriggerBtn">
+                    <span id="activeModelName">Orchestrator</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="chevron-arrow"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+
+                  <!-- Floating Model dropdown list container -->
+                  <div class="model-dropdown-container" id="modelDropdownContainer">
+                    <div class="model-search-bar">
+                      <input type="text" id="modelSearchInput" placeholder="Search models...">
+                    </div>
+                    <div class="model-section-header">Optional</div>
+                    <div class="model-toggle-row">
+                      <span>Auto</span>
+                      <label class="toggle-switch sparkle-style">
+                        <input type="checkbox" id="autoToggle">
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                    <div class="model-toggle-row">
+                      <span>Multiple Models</span>
+                      <label class="toggle-switch sparkle-style">
+                        <input type="checkbox" id="multipleModelsToggle">
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="model-section-header">Models</div>
+                    <div class="model-options-list" id="modelOptionsList"></div>
+                    <div class="divider"></div>
+                    <div class="model-toggle-row">
+                      <div class="temp-chat-label-left">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 2" stroke-linecap="round" stroke-linejoin="round" class="dashed-circle"><circle cx="12" cy="12" r="10"/></svg>
+                        <span>Temporary chat</span>
+                      </div>
+                      <label class="toggle-switch sparkle-style">
+                        <input type="checkbox" id="tempChatToggle">
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                    <div class="secondary-flyout-panel" id="secondaryFlyoutPanel"></div>
+                  </div>
+                </div>
+
+                <!-- Microphone Voice Input button -->
+                <button class="voice-mic-btn" id="voiceInputBtn" aria-label="Voice Input">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="22"/>
+                  </svg>
+                </button>
+
+                <!-- Waves Send button (Black circle button) -->
+                <div class="send-container">
+                  <button class="btn-stop" id="stopGenerationBtn" aria-label="Stop Generation" style="display:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                  </button>
+                  <button class="btn-send-capsule" id="btnSend" aria-label="Send Message" style="border-radius: 50% !important; width: 34px !important; height: 34px !important; background-color: #000 !important; color: #fff !important; display: flex !important; align-items: center !important; justify-content: center !important; border: none !important; cursor: pointer !important; padding: 0 !important;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="12" y1="19" x2="12" y2="5" />
+                      <polyline points="5 12 12 5 19 12" />
+                    </svg>
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Feature Cards below chatbox -->
+        <div class="feature-cards-row" id="featureCardsRow">
+          <div class="feature-card">
+            <div class="feature-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <div class="feature-card-content">
+              <h3>Swarm Agents</h3>
+              <p>Deploy multiple specialized agents working in sync to coordinate complex tasks.</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="12" rx="2"/>
+                <line x1="6" y1="20" x2="18" y2="20"/>
+                <line x1="12" y1="16" x2="12" y2="20"/>
+              </svg>
+            </div>
+            <div class="feature-card-content">
+              <h3>Get work done with Computer <span class="new-badge">NEW</span></h3>
+              <p>Hand off your projects to get polished, reliable deliverables around the clock.</p>
+            </div>
+          </div>
+        </div>
+
+    </div> <!-- Closes center-container -->
+
+    <!-- Right Split Pane (Computer mode) -->
+    <div id="computerSplitPane" class="computer-split-pane" style="display: none; flex-direction: column; border-left: 1px solid #E5E7EB; background: #FFFFFF; height: 100%; box-sizing: border-box; overflow: hidden; width: 40%; flex-shrink: 0; position: relative; min-height: 0;">
+
+      <!-- Row 1: Header — "Computer" + LIVE badge + icons -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid #F3F4F6; flex-shrink: 0; background: #FFFFFF; user-select: none;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span style="font-size: 14px; font-weight: 600; color: #111827; font-family: 'Inter', sans-serif;">Computer</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <!-- LIVE badge -->
+          <div id="splitPaneLiveBadge" style="display: none; align-items: center; gap: 5px; padding: 3px 10px; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 20px;">
+            <div style="width: 6px; height: 6px; border-radius: 50%; background: #10B981; animation: livePulse 2s ease-in-out infinite;"></div>
+            <span style="font-size: 11px; font-weight: 700; color: #059669; font-family: 'Inter', sans-serif; letter-spacing: 0.5px;">LIVE</span>
+          </div>
+          <!-- Expand -->
+          <svg id="splitPaneExpandBtn" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+          <!-- Settings -->
+          <svg id="settingsSplitPaneBtn" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;" title="Set HF Space URL"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <!-- Copy/Split -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;"><rect x="8" y="2" width="14" height="14" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          <!-- Close -->
+          <svg id="closeSplitPaneBtn" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+      </div>
+
+      <!-- Row 2: Sub-header — "Zed's computer" + "is using Browser | URL" -->
+      <div style="padding: 12px 16px; background: #FFFFFF; border-bottom: 1px solid #F3F4F6; flex-shrink: 0;">
+        <div style="font-size: 15px; font-weight: 700; color: #111827; font-family: 'Inter', sans-serif; margin-bottom: 2px;">Zed's computer</div>
+        <div style="font-size: 13px; color: #6B7280; font-family: 'Inter', sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span id="splitPaneBrowserLabel">Zed is using Browser</span>
+          <span style="margin: 0 6px; color: #D1D5DB;">|</span>
+          <a id="splitPaneHeaderUrl" href="#" target="_blank" style="color: #3B82F6; text-decoration: none; font-weight: 500;"></a>
+        </div>
+      </div>
+
+      <!-- Row 3: Viewport (desktop/browser live view) — fixed size, never shrinks -->
+      <div class="split-pane-viewport" id="splitPaneViewport" style="flex: 1 1 0%; min-height: 0; height: 0; position: relative; background: #000; overflow: hidden;">
+        <iframe
+          id="desktopFrame"
+          style="width: 100%; height: 100%; border: none; display: block; object-fit: contain; background: #111;"
+          src="about:blank"
+          allow="fullscreen"
+          scrolling="no">
+        </iframe>
+        <div id="splitPaneViewOnlyOverlay" style="position:absolute;inset:0;z-index:10;cursor:default;display:none;"></div>
+        <div id="desktopConnectingOverlay" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); color: #fff; font-size: 13px; font-family: 'Inter', sans-serif; flex-direction: column; gap: 10px; z-index: 100;">
+          <div style="width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.15); border-top-color: #fff; border-radius: 50%; animation: subagent-spin 1s linear infinite;"></div>
+          <span>Starting virtual desktop...</span>
+        </div>
+      </div>
+
+      <!-- Row 4: Playback controls — ◀◀ ‖ ▶▶ — progress — 🔴 Live -->
+      <div style="display: flex; align-items: center; gap: 12px; padding: 8px 14px; border-top: 1px solid #E5E7EB; flex-shrink: 0; background: #FFFFFF; user-select: none;">
+        <!-- Rewind -->
+        <button style="background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; color: #374151;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg>
+        </button>
+        <!-- Play/Pause -->
+        <button id="splitPanePlayPauseBtn" style="background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; color: #111827;">
+          <svg id="splitPanePauseIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+          <svg id="splitPanePlayIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+        </button>
+        <!-- Fast forward -->
+        <button style="background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; color: #374151;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 19 22 12 13 5 13 19"/><polygon points="2 19 11 12 2 5 2 19"/></svg>
+        </button>
+        <!-- Progress bar -->
+        <div style="flex: 1; height: 3px; background: #E5E7EB; border-radius: 2px; position: relative;">
+          <div id="splitPaneProgressBar" style="height: 100%; background: #3B82F6; border-radius: 2px; width: 100%; position: relative;">
+            <div style="position: absolute; right: -5px; top: -3.5px; width: 10px; height: 10px; border-radius: 50%; background: #3B82F6; box-shadow: 0 0 0 2px #fff, 0 0 0 3px #3B82F6;"></div>
+          </div>
+        </div>
+        <!-- Live indicator -->
+        <div style="display: flex; align-items: center; gap: 5px;">
+          <div style="width: 7px; height: 7px; border-radius: 50%; background: #EF4444; animation: livePulse 2s ease-in-out infinite;"></div>
+          <span style="font-size: 12px; font-weight: 600; color: #374151; font-family: 'Inter', sans-serif;">Live</span>
+        </div>
+      </div>
+
+      <!-- Agent Mode Content (hidden in computer mode) -->
+      <div id="splitPaneAgentContent" style="display: none; flex: 1; overflow-y: auto; background: #FFFFFF; padding: 16px 20px;">
+        <div id="agentSubAgentsList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+      </div>
+
+      <!-- Row 5: Task progress — fixed small height, scrollable inside -->
+      <div id="splitPaneProgress" class="split-pane-progress" style="display: flex; flex-direction: column; background: #FFFFFF; flex-shrink: 0; font-family: 'Inter', sans-serif; border-top: 1px solid #E5E7EB; max-height: 140px; overflow: hidden;">
+        <div id="splitPaneProgressHeader" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; user-select: none; flex-shrink: 0;">
+          <span style="font-size: 14px; font-weight: 600; color: #111827;">Task progress</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span id="splitPaneProgressStepCount" style="font-size: 12px; color: #6B7280; font-weight: 500;"></span>
+            <svg id="splitPaneProgressChevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div id="splitPaneProgressBody" style="padding: 2px 16px 14px 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; min-height: 0;">
+          <!-- Dynamically populated with numbered steps -->
+        </div>
+      </div>
+    </div>
+
+    <style>
+      @keyframes livePulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+    </style>
+
+    <!-- Models Settings Panel View -->
+    <div class="models-page-view" id="modelsPageView" style="display: none;">
+        <!-- Page Header -->
+        <div class="models-header-row">
+          <div class="models-header-left">
+            <h1>Models</h1>
+            <p class="models-subtitle">Connect and manage the AI models your agents can use.</p>
+          </div>
+          <div class="models-header-right">
+            <button class="models-btn-connect-header" id="headerConnectModelBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Connect model</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs Row -->
+        <div class="models-tabs-nav-bar">
+          <button class="models-tab-btn active" data-tab="providers">Providers</button>
+          <button class="models-tab-btn" data-tab="models">Models</button>
+        </div>
+
+        <!-- TAB CONTENT: Providers (active by default) -->
+        <div class="models-tab-content active" id="tabContentProviders">
+          
+          <!-- Connected Providers Grid Section -->
+          <div class="models-section-container">
+            <h2 class="section-title-connected">Connected providers</h2>
+            <div class="providers-grid-3col" id="connectedProvidersGrid">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Model Usage by Agents Section -->
+          <div class="models-usage-section">
+            <div class="models-usage-header">
+              <h2>Model usage by agents <span class="info-icon" title="Check which model each agent is configured to use">ⓘ</span></h2>
+              <div class="models-usage-search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="agentSearchInput" placeholder="Search agents...">
+              </div>
+            </div>
+            
+            <div class="models-usage-table-wrapper">
+              <table class="models-usage-table">
+                <thead>
+                  <tr>
+                    <th>Agent</th>
+                    <th>Connected model</th>
+                    <th>Provider</th>
+                    <th>Model</th>
+                    <th>Status</th>
+                    <th>Last used</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="agentUsageTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Bottom Actions Section -->
+          <div class="models-bottom-actions">
+            <!-- Add custom provider card -->
+            <div class="action-card" id="bottomAddCustomProviderCard">
+              <div class="action-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </div>
+              <div class="action-card-text">
+                <h3>Add custom provider</h3>
+                <p>Connect via API endpoint</p>
+              </div>
+            </div>
+
+            <!-- Bring your own model banner -->
+            <div class="banner-card">
+              <div class="banner-illustration">
+                <svg viewBox="0 0 60 60" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M30 30L12 15M30 30L48 15M30 30L12 45M30 30L48 45" stroke="#E2E8F0" stroke-width="2" />
+                  <circle cx="30" cy="30" r="6" fill="#6B8AFF" />
+                  <circle cx="12" cy="15" r="4" fill="#A78BFA" />
+                  <circle cx="48" cy="15" r="4" fill="#A78BFA" />
+                  <circle cx="12" cy="45" r="4" fill="#A78BFA" />
+                  <circle cx="48" cy="45" r="4" fill="#A78BFA" />
+                </svg>
+              </div>
+              <div class="banner-text">
+                <h3>Bring your own model</h3>
+                <p>Connect any OpenAI-compatible model or custom endpoint.</p>
+              </div>
+              <a href="#" class="banner-link-btn" id="byomLearnHowBtn">
+                <span>Learn how</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TAB CONTENT: Models (hidden by default) -->
+        <div class="models-tab-content" id="tabContentModels" style="display: none;">
+          <div class="models-section-container">
+            <h2 class="section-title-connected">All Models</h2>
+            <div class="models-list-grid" id="allModelsGrid">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+    </div>
+
+      <!-- Connect Page View -->
+      <div class="connect-page-view wizard-layout" id="connectPageView" style="display: none;"></div>
+
+      <!-- Schedules Page View -->
+      <div class="schedules-page-view" id="schedulesPageView" style="display: none;">
+        <!-- Page Header -->
+        <div class="schedules-header-row">
+          <div class="schedules-header-left">
+            <h1 class="schedules-title">Schedules</h1>
+          </div>
+          <div class="schedules-header-right">
+            <button class="schedules-btn-create" id="btnCreateSchedule">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Create schedule</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hero Card -->
+        <div class="schedules-hero-card-premium">
+          <div class="hero-left-panel">
+            <div class="premium-sparkle-decor">
+              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="#A78BFA" style="position: absolute; top: 120px; left: 10px; opacity: 0.7;"><path d="M12,2 C12,8 14,10 20,12 C14,14 12,16 12,22 C12,16 10,14 4,12 C10,10 12,8 12,2 Z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#A78BFA" style="position: absolute; top: 80px; left: 240px; opacity: 0.6;"><path d="M12,2 C12,8 14,10 20,12 C14,14 12,16 12,22 C12,16 10,14 4,12 C10,10 12,8 12,2 Z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="#A78BFA" style="position: absolute; bottom: 80px; left: 220px; opacity: 0.6;"><path d="M12,2 C12,8 14,10 20,12 C14,14 12,16 12,22 C12,16 10,14 4,12 C10,10 12,8 12,2 Z"/></svg>
+            </div>
+            <h1>Workflows,<br>on your schedule</h1>
+            <p>Schedule agents and tasks to run automatically—when you want, how you want.</p>
+            <button class="btn-create-schedule-hero" id="heroBtnCreateSchedule">
+              <span>Create a schedule</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+          
+          <div class="hero-right-visual">
+            <!-- Sparkles -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="#A78BFA" style="position: absolute; top: 60px; right: 20px; opacity: 0.7; z-index: 6;"><path d="M12,2 C12,8 14,10 20,12 C14,14 12,16 12,22 C12,16 10,14 4,12 C10,10 12,8 12,2 Z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="#A78BFA" style="position: absolute; bottom: 80px; right: 10px; opacity: 0.7; z-index: 6;"><path d="M12,2 C12,8 14,10 20,12 C14,14 12,16 12,22 C12,16 10,14 4,12 C10,10 12,8 12,2 Z"/></svg>
+
+            <!-- Weekly Grid Card -->
+            <div class="weekly-grid-card">
+              <div class="grid-header">
+                <div class="grid-header-cell cell-time">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div class="grid-header-cell">Mon</div>
+                <div class="grid-header-cell">Tue</div>
+                <div class="grid-header-cell">Wed</div>
+                <div class="grid-header-cell">Thu</div>
+                <div class="grid-header-cell">Fri</div>
+                <div class="grid-header-cell">Sat</div>
+                <div class="grid-header-cell">Sun</div>
+              </div>
+              <div class="grid-rows-container" id="premiumHeroGridRows">
+                <!-- Injected dynamically by JS -->
+              </div>
+            </div>
+            
+            <!-- Floating Next Run Card -->
+            <div class="floating-next-run-card">
+              <div class="next-run-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="next-run-details">
+                <span class="next-run-label">Next run</span>
+                <span class="next-run-val" id="premiumHeroNextRunText">Today, 09:00 AM</span>
+              </div>
+            </div>
+
+            <!-- Floating Frequency Selector List -->
+            <div class="floating-frequency-selector">
+              <button class="freq-option active" data-freq="daily">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>
+                <span>Daily</span>
+              </button>
+              <button class="freq-option" data-freq="weekly">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Weekly</span>
+              </button>
+              <button class="freq-option" data-freq="monthly">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Monthly</span>
+              </button>
+              <button class="freq-option" data-freq="custom">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Custom</span>
+              </button>
+            </div>
+
+            <!-- Floating bottom calendar icon decor -->
+            <div class="floating-calendar-icon-decor">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>
+            </div>
+            
+            <!-- Connected Dashed SVG lines for visual flow -->
+            <svg class="flow-dashed-lines" viewBox="0 0 500 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M50 250 H 130 V 210" stroke="#A78BFA" stroke-width="1.5" stroke-dasharray="4 4" stroke-linecap="round"/>
+              <path d="M300 120 H 350 V 60 H 380" stroke="#A78BFA" stroke-width="1.5" stroke-dasharray="4 4" stroke-linecap="round"/>
+              <path d="M300 200 H 350 V 230 H 380" stroke="#A78BFA" stroke-width="1.5" stroke-dasharray="4 4" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- KPI Cards Grid -->
+        <div class="schedules-kpi-grid">
+          <div class="kpi-card" id="kpiRunning">
+            <span class="kpi-num" id="kpiNumRunning">0</span>
+            <span class="kpi-label">Running</span>
+            <span class="kpi-desc">agents working now</span>
+          </div>
+          <div class="kpi-card" id="kpiScheduled">
+            <span class="kpi-num" id="kpiNumScheduled">0</span>
+            <span class="kpi-label">Scheduled</span>
+            <span class="kpi-desc">total schedules</span>
+          </div>
+          <div class="kpi-card" id="kpiCompleted">
+            <span class="kpi-num" id="kpiNumCompleted">0</span>
+            <span class="kpi-label">Completed</span>
+            <span class="kpi-desc">runs completed</span>
+          </div>
+          <div class="kpi-card" id="kpiPaused">
+            <span class="kpi-num" id="kpiNumPaused">0</span>
+            <span class="kpi-label">Paused</span>
+            <span class="kpi-desc">schedules paused</span>
+          </div>
+        </div>
+
+        <!-- Schedule Table Wrapper Card -->
+        <div class="schedules-table-container-card">
+          <!-- Table Controls (Tabs & Search) -->
+          <div class="schedules-table-controls">
+            <div class="schedules-tabs">
+              <button class="schedule-tab active" data-status="all">All</button>
+              <button class="schedule-tab" data-status="active">Active</button>
+              <button class="schedule-tab" data-status="paused">Paused</button>
+            </div>
+            <div class="schedules-search-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="scheduleSearchInput" placeholder="Search schedules...">
+            </div>
+          </div>
+
+          <!-- Schedule Grid / Table -->
+          <div class="schedules-table">
+            <div class="schedules-table-header-row">
+              <div class="col-sched">Schedule</div>
+              <div class="col-next">Next run</div>
+              <div class="col-agent">Agent</div>
+              <div class="col-status">Status</div>
+              <div class="col-action"></div>
+            </div>
+            <div class="schedules-table-body" id="schedulesTableBody">
+              <!-- Rendered dynamically via js/schedules-page.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Local Time Notice -->
+        <div class="schedules-bottom-notice">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>All times are in your local time zone.</span>
+        </div>
+      </div>
+
+      <!-- Plugins Page View -->
+      <div class="plugins-page-view" id="pluginsPageView" style="display: none;">
+        <!-- Page Header -->
+        <div class="plugins-header-row">
+          <div class="plugins-header-left">
+            <h1 class="plugins-title">Plugins</h1>
+            <p class="plugins-subtitle">Extend Zed with powerful integrations.</p>
+          </div>
+          <div class="plugins-header-right">
+            <button class="plugins-btn-create" id="btnCreatePlugin">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Add plugin</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Discover Plugins Hero Card -->
+        <div class="plugins-hero-card">
+          <div class="plugins-hero-left">
+            <h2>Discover plugins</h2>
+            <p>Connect Zed with the tools and services you already use.</p>
+            <button class="plugins-hero-btn">
+              <span>Explore all plugins</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+          <div class="plugins-hero-right">
+            <div class="plugins-hero-right-inner">
+              <!-- Grid and floating cards connected by dashed lines -->
+              <div class="floating-grid-backdrop"></div>
+              
+              <div class="floating-card c-slack">
+                <img src="assets/plugins/slack.svg" alt="Slack">
+              </div>
+              <div class="floating-card c-drive">
+                <img src="assets/plugins/google-drive.svg" alt="Google Drive">
+              </div>
+              <div class="floating-card c-notion">
+                <img src="assets/plugins/notion.svg" alt="Notion">
+              </div>
+              <div class="floating-card c-github">
+                <img src="assets/plugins/github.svg" alt="GitHub">
+              </div>
+              <div class="floating-card c-airtable">
+                <img src="assets/plugins/airtable.svg" alt="Airtable">
+              </div>
+              
+              <!-- Connection Lines (SVG) -->
+              <svg class="connection-lines" viewBox="0 0 380 160" width="380" height="160">
+                <!-- Dash paths linking the items -->
+                <path d="M 67,57 L 127,57 L 127,117" stroke="#E8E8E8" stroke-width="1.5" stroke-dasharray="4 4" fill="none" />
+                <path d="M 167,37 L 227,37 L 227,117" stroke="#E8E8E8" stroke-width="1.5" stroke-dasharray="4 4" fill="none" />
+                <path d="M 127,117 L 327,117" stroke="#E8E8E8" stroke-width="1.5" stroke-dasharray="4 4" fill="none" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Installed Plugins -->
+        <div class="plugins-section">
+          <h3 class="plugins-section-title">Installed plugins</h3>
+          <div class="plugins-installed-grid" id="installedPluginsGrid">
+            <div class="plugin-card connected" data-id="notion">
+              <div class="plugin-card-header">
+                <img class="plugin-card-logo" src="assets/plugins/notion.svg" alt="Notion">
+                <button class="plugin-card-dots" aria-label="Plugin options">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                </button>
+              </div>
+              <h4 class="plugin-card-title">Notion</h4>
+              <p class="plugin-card-desc">Sync docs, pages and databases.</p>
+              <div class="plugin-card-footer">
+                <span class="plugin-status connected"><span class="dot-green"></span> Connected</span>
+              </div>
+            </div>
+            
+            <div class="plugin-card connected" data-id="google-drive">
+              <div class="plugin-card-header">
+                <img class="plugin-card-logo" src="assets/plugins/google-drive.svg" alt="Google Drive">
+                <button class="plugin-card-dots" aria-label="Plugin options">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                </button>
+              </div>
+              <h4 class="plugin-card-title">Google Drive</h4>
+              <p class="plugin-card-desc">Search, read and manage your files.</p>
+              <div class="plugin-card-footer">
+                <span class="plugin-status connected"><span class="dot-green"></span> Connected</span>
+              </div>
+            </div>
+
+            <div class="plugin-card connected" data-id="slack">
+              <div class="plugin-card-header">
+                <img class="plugin-card-logo" src="assets/plugins/slack.svg" alt="Slack">
+                <button class="plugin-card-dots" aria-label="Plugin options">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                </button>
+              </div>
+              <h4 class="plugin-card-title">Slack</h4>
+              <p class="plugin-card-desc">Send updates and receive notifications.</p>
+              <div class="plugin-card-footer">
+                <span class="plugin-status connected"><span class="dot-green"></span> Connected</span>
+              </div>
+            </div>
+
+            <div class="plugin-card connected" data-id="github">
+              <div class="plugin-card-header">
+                <img class="plugin-card-logo" src="assets/plugins/github.svg" alt="GitHub">
+                <button class="plugin-card-dots" aria-label="Plugin options">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                </button>
+              </div>
+              <h4 class="plugin-card-title">GitHub</h4>
+              <p class="plugin-card-desc">Access repos, issues and pull requests.</p>
+              <div class="plugin-card-footer">
+                <span class="plugin-status connected"><span class="dot-green"></span> Connected</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Popular Plugins -->
+        <div class="plugins-section">
+          <h3 class="plugins-section-title">Popular plugins</h3>
+          <div class="plugins-popular-grid" id="popularPluginsGrid">
+            <div class="plugin-row-card" data-id="gmail">
+              <img class="plugin-row-logo" src="assets/plugins/gmail.svg" alt="Gmail">
+              <div class="plugin-row-info">
+                <h4>Gmail</h4>
+                <p>Read, send and manage emails.</p>
+              </div>
+              <button class="plugin-btn-install" data-id="gmail">Install</button>
+            </div>
+
+            <div class="plugin-row-card" data-id="facebook">
+              <img class="plugin-row-logo" src="assets/plugins/facebook.svg" alt="Facebook">
+              <div class="plugin-row-info">
+                <h4>Facebook</h4>
+                <p>Connect with your Facebook page.</p>
+              </div>
+              <button class="plugin-btn-install" data-id="facebook">Install</button>
+            </div>
+
+            <div class="plugin-row-card" data-id="trello">
+              <img class="plugin-row-logo" src="assets/plugins/trello.svg" alt="Trello">
+              <div class="plugin-row-info">
+                <h4>Trello</h4>
+                <p>Manage boards, lists and cards.</p>
+              </div>
+              <button class="plugin-btn-install" data-id="trello">Install</button>
+            </div>
+
+            <div class="plugin-row-card" data-id="dropbox">
+              <img class="plugin-row-logo" src="assets/plugins/dropbox.svg" alt="Dropbox">
+              <div class="plugin-row-info">
+                <h4>Dropbox</h4>
+                <p>Store and share your files.</p>
+              </div>
+              <button class="plugin-btn-install" data-id="dropbox">Install</button>
+            </div>
+
+            <div class="plugin-row-card" data-id="airtable">
+              <img class="plugin-row-logo" src="assets/plugins/airtable.svg" alt="Airtable">
+              <div class="plugin-row-info">
+                <h4>Airtable</h4>
+                <p>Organize and sync your data.</p>
+              </div>
+              <button class="plugin-btn-install" data-id="airtable">Install</button>
+            </div>
+
+            <div class="plugin-row-card" data-id="calendar">
+              <img class="plugin-row-logo" src="assets/plugins/calendar.svg" alt="Calendar">
+              <div class="plugin-row-info">
+                <h4>Calendar</h4>
+                <p>Manage events and schedules.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agent Page View -->
+      <div class="agent-page-view" id="agentPageView" style="display: none;">
+        <!-- Page Header -->
+        <div class="agent-header-row">
+          <div class="agent-header-left">
+            <h1 class="agent-title">Agents</h1>
+            <p class="agent-subtitle">Your AI agents, working for you.</p>
+          </div>
+          <div class="agent-header-right">
+            <!-- Search Agents -->
+            <div class="agent-search-wrapper">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="agentListSearchInput" placeholder="Search agents">
+            </div>
+            <!-- View Layout Toggles -->
+            <div class="agent-view-toggles">
+              <button class="toggle-btn active" id="btnViewList" title="List View">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              </button>
+              <button class="toggle-btn" id="btnViewGrid" title="Grid View">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent Hero Card (Interactive HTML Component) -->
+        <div class="agent-hero-banner-card agent-hero-interactive" id="agentHeroInteractive">
+          <!-- Background sparkle decorations -->
+          <div class="hero-sparkles">
+            <svg class="hs-sparkle s1" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2 C12,8 14,10 20,12 C14,14 12,16 12,22 C12,16 10,14 4,12 C10,10 12,8 12,2Z"/></svg>
+            <svg class="hs-sparkle s2" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2 C12,8 14,10 20,12 C14,14 12,16 12,22 C12,16 10,14 4,12 C10,10 12,8 12,2Z"/></svg>
+            <svg class="hs-sparkle s3" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2 C12,8 14,10 20,12 C14,14 12,16 12,22 C12,16 10,14 4,12 C10,10 12,8 12,2Z"/></svg>
+            <svg class="hs-sparkle s4" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2 C12,8 14,10 20,12 C14,14 12,16 12,22 C12,16 10,14 4,12 C10,10 12,8 12,2Z"/></svg>
+            <svg class="hs-sparkle s5" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2 C12,8 14,10 20,12 C14,14 12,16 12,22 C12,16 10,14 4,12 C10,10 12,8 12,2Z"/></svg>
+            <svg class="hs-sparkle s6" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2 C12,8 14,10 20,12 C14,14 12,16 12,22 C12,16 10,14 4,12 C10,10 12,8 12,2Z"/></svg>
+            <svg class="hs-sparkle s7" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2 C12,8 14,10 20,12 C14,14 12,16 12,22 C12,16 10,14 4,12 C10,10 12,8 12,2Z"/></svg>
+          </div>
+
+          <!-- Left text column -->
+          <div class="agent-hero-text">
+            <h2 class="agent-hero-heading">Your workspace,<br>connected</h2>
+            <p class="agent-hero-body">Your agents can access the tools and services you use to get things done.</p>
+            <button class="agent-hero-explore-btn" id="btnExploreIntegrations">
+              <span>Explore integrations</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+
+          <!-- Right interactive illustration area -->
+          <div class="agent-hero-illustration">
+
+            <!-- Connection lines SVG — coordinates match icon CSS positions exactly -->
+            <!-- viewBox 0 0 700 240: illustration is ~700px wide, 240px tall -->
+            <!-- Icon centers (approx):
+                 Slack:  top 8%  left 24%  → (168+38)=206, (19+38)=57
+                 GitHub: top 8%  right 8%  → (700-56-38)=606, 57
+                 Drive:  top 44% left 4%   → (28+38)=66,  (106+38)=144
+                 Notion: top 44% right 4%  → (700-56-38)=606 wait right 4%=700*0.04=28, so 700-28-38=634, 144
+                 Hub at character chest: 350,148
+            -->
+            <svg class="hero-conn-lines" viewBox="0 0 700 240" preserveAspectRatio="none">
+              <!-- Slack (top-left) → head/shoulder -->
+              <path class="hcl-path"
+                d="M 226,55 L 240,55 Q 250,55 250,65 L 250,100 Q 250,110 260,110 L 310,110"
+                stroke="#6B8AFF" stroke-width="1.6" stroke-dasharray="6 4" fill="none" opacity="0.8"/>
+              <!-- GitHub (top-right) → head/shoulder -->
+              <path class="hcl-path hcl-path-r"
+                d="M 474,55 L 460,55 Q 450,55 450,65 L 450,100 Q 450,110 440,110 L 390,110"
+                stroke="#6B8AFF" stroke-width="1.6" stroke-dasharray="6 4" fill="none" opacity="0.8"/>
+              <!-- Drive (middle-left) → laptop/chest -->
+              <path class="hcl-path"
+                d="M 142,146 L 240,146 Q 250,146 250,156 L 250,160 Q 250,170 260,170 L 310,170"
+                stroke="#6B8AFF" stroke-width="1.6" stroke-dasharray="6 4" fill="none" opacity="0.8"/>
+              <!-- Airtable (middle-right) → laptop/chest -->
+              <path class="hcl-path hcl-path-r"
+                d="M 558,146 L 460,146 Q 450,146 450,156 L 450,160 Q 450,170 440,170 L 390,170"
+                stroke="#6B8AFF" stroke-width="1.6" stroke-dasharray="6 4" fill="none" opacity="0.8"/>
+            </svg>
+
+            <!-- Pixel art character (transparent PNG, centered) -->
+            <img class="hero-pixel-char" src="assets/pixel-char.png" alt="Agent pixel character">
+
+            <!-- Floating integration icon cards — all clickable, navigate to Plugins -->
+            <button class="hero-icon-card hic-slack" id="heroIconSlack" aria-label="Slack integration">
+              <img src="assets/plugins/slack.svg" alt="Slack">
+              <span class="hic-tooltip">Slack</span>
+            </button>
+
+            <button class="hero-icon-card hic-github" id="heroIconGithub" aria-label="GitHub integration">
+              <img src="assets/plugins/github.svg" alt="GitHub">
+              <span class="hic-tooltip">GitHub</span>
+            </button>
+
+            <button class="hero-icon-card hic-drive" id="heroIconDrive" aria-label="Google Drive integration">
+              <img src="assets/plugins/google-drive.svg" alt="Google Drive">
+              <span class="hic-tooltip">Drive</span>
+            </button>
+
+            <button class="hero-icon-card hic-airtable" id="heroIconAirtable" aria-label="Airtable integration">
+              <img src="assets/plugins/airtable.svg" alt="Airtable">
+              <span class="hic-tooltip">Airtable</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Controls Row (Filter pills & Create Agent CTA) -->
+        <div class="agents-controls-row">
+          <div class="agents-filter-pills" id="agentsFilterPills">
+            <button class="filter-pill active" data-filter="all">All</button>
+            <button class="filter-pill" data-filter="active">Active</button>
+            <button class="filter-pill" data-filter="inactive">Inactive</button>
+            <button class="filter-pill" data-filter="paused">Paused</button>
+            <button class="filter-pill" data-filter="archived">Archived</button>
+            <button class="filter-pill" data-filter="favorites">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; display: inline-block; vertical-align: middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span>Favorites</span>
+            </button>
+          </div>
+          <button class="btn-create-agent-action" id="btnOpenCreateAgentForm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Create agent</span>
+          </button>
+        </div>
+
+        <!-- Agents List Container -->
+        <div class="agents-list-wrapper" id="agentsListWrapper">
+          <!-- Dynamically populated agents list -->
+        </div>
+
+        <!-- Bottom Page Indicator -->
+        <div class="agents-page-footer" id="agentsPageFooter">
+          <span>Loading agents...</span>
+        </div>
+      </div>
+
+      <!-- Voice Page View -->
+      <div class="voice-page-view" id="voicePageView" style="display: none; flex-direction: column; width: 100%; gap: 24px; box-sizing: border-box;">
+        
+        <!-- Header Row -->
+        <div class="voice-header-row" style="display: flex; justify-content: flex-end; align-items: center; width: 100%; flex-shrink: 0;">
+          <button class="btn-create-voice-agent" id="btnOpenCreateVoiceModal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Create Voice Agent</span>
+          </button>
+        </div>
+
+        <!-- Banner Card -->
+        <div class="voice-banner-card">
+          <div class="voice-banner-left">
+            <h2 class="voice-banner-title">Run conversations that sound human, naturally.</h2>
+            <p class="voice-banner-desc">Create voice agents that can call, qualify, follow up, and support your customers.</p>
+            <button class="btn-voice-explore" id="btnVoiceExplore">
+              <span>Explore integrations</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+          <div class="voice-banner-right">
+            <div class="voice-illustration-box">
+              <img src="assets/voice_agent_illustration.png" alt="Voice Agent Cartoon Illustration" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters Row -->
+        <div class="voice-filters-row" id="voiceFiltersRow">
+          <button class="voice-filter-pill active" data-filter="all">All</button>
+          <button class="voice-filter-pill" data-filter="active">Active</button>
+          <button class="voice-filter-pill" data-filter="inactive">Inactive</button>
+          <button class="voice-filter-pill" data-filter="paused">Paused</button>
+          <button class="voice-filter-pill" data-filter="draft">Draft</button>
+          <button class="voice-filter-pill" data-filter="archived">Archived</button>
+          <button class="voice-filter-pill" data-filter="favorites">Favorites</button>
+        </div>
+
+        <!-- Voice Agents List Cards Wrapper -->
+        <div class="voice-list-wrapper" id="voiceListWrapper">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Upload Data Card Panel -->
+        <div class="voice-upload-panel">
+          <h3 class="voice-upload-title">Upload Data for Your Voice Agent</h3>
+          <p class="voice-upload-desc">Upload a file or paste text that your agent will use during calls.</p>
+          
+          <div class="voice-upload-grid">
+            
+            <!-- File Upload target Card -->
+            <div class="voice-upload-dropzone" id="voiceUploadDropzone">
+              <input type="file" id="voiceFileInput" style="display: none;" accept=".txt,.csv,.pdf">
+              <div class="dropzone-content">
+                <div class="dropzone-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+                <div class="dropzone-text">
+                  <span class="primary">Upload File</span>
+                  <span class="secondary">CSV, TXT, PDF up to 10MB</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- "or" text -->
+            <div class="voice-upload-separator">or</div>
+
+            <!-- Text area Paste Box -->
+            <div class="voice-upload-textarea-box">
+              <textarea id="voiceTextareaInput" placeholder="Paste your text here..." maxlength="5000"></textarea>
+              <div class="char-count-row">
+                <span id="voiceCharCount">0/5000</span>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="voice-upload-footer">
+            <button class="btn-voice-save" id="btnVoiceSaveData">Save Data</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Create Voice Agent Modal -->
+      <div class="voice-modal-overlay" id="createVoiceModalOverlay" style="display: none;">
+        <div class="voice-modal-card">
+          <div class="voice-modal-header">
+            <h3>Create Voice Agent</h3>
+            <button class="btn-close-voice-modal" id="btnCloseVoiceModal">&times;</button>
+          </div>
+          <form id="createVoiceAgentForm" style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="form-group-voice">
+              <label for="vName">Agent Name</label>
+              <input type="text" id="vName" placeholder="e.g. Support Specialist" required>
+            </div>
+            <div class="form-group-voice">
+              <label for="vDesc">Description</label>
+              <textarea id="vDesc" placeholder="e.g. Resolves tickets and billing issues." rows="3" required></textarea>
+            </div>
+            <div class="form-group-voice-row" style="display: flex; gap: 12px;">
+              <div class="form-group-voice" style="flex: 1;">
+                <label for="vPhone">Phone Number</label>
+                <input type="text" id="vPhone" placeholder="e.g. +1 (415) 123-4567" required>
+              </div>
+              <div class="form-group-voice" style="flex: 1;">
+                <label for="vRegion">Region</label>
+                <input type="text" id="vRegion" placeholder="e.g. United States" value="United States" required>
+              </div>
+            </div>
+            <div class="form-group-voice">
+              <label for="vScript">Script Filename</label>
+              <input type="text" id="vScript" placeholder="e.g. Support_Script.txt" required>
+            </div>
+            <div class="form-group-voice">
+              <label for="vStatus">Initial Status</label>
+              <select id="vStatus">
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div class="form-group-voice">
+              <label for="vAvatar">Avatar</label>
+              <select id="vAvatar">
+                <option value="assistant">Assistant Avatar</option>
+                <option value="security">Security Avatar</option>
+                <option value="coder">Coder Avatar</option>
+                <option value="finance">Finance Avatar</option>
+                <option value="social">Social Media Avatar</option>
+                <option value="research">Research Avatar</option>
+              </select>
+            </div>
+            <div class="voice-modal-actions">
+              <button type="button" class="btn-voice-cancel" id="btnCancelVoiceCreate">Cancel</button>
+              <button type="submit" class="btn-voice-submit">Create Agent</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Create New Agent Page View -->
+      <div class="create-agent-page-view" id="createAgentPageView" style="display: none;">
+        <div class="ca-content-wrapper">
+          <!-- Header Section -->
+          <div class="ca-header-row">
+          <div class="ca-header-left">
+            <button class="btn-ca-back" id="caBtnBack">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+              <span>Back to Agents</span>
+            </button>
+            <h1 class="ca-title">Create New Agent</h1>
+            <p class="ca-subtitle">Set up your agent in a few simple steps.</p>
+          </div>
+          <div class="ca-header-right">
+            <button class="btn-ca-draft" id="caBtnDraft">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <span>Save as draft</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Form Cards Container -->
+        <div class="ca-form-container">
+          
+          <!-- Step 1: Basic Details -->
+          <div class="ca-step-section">
+            <div class="ca-step-badge">1</div>
+            <div class="ca-step-content-box">
+              <h3 class="ca-step-title">Basic Details</h3>
+              <div class="ca-form-group">
+                <label>Avatar</label>
+                <div class="ca-input-sub">Choose an avatar for your agent.</div>
+                <div class="ca-avatar-selection-row">
+                  <div class="ca-avatar-preview" id="caAvatarPreviewBox">
+                    <img src="assets/models/assistant_avatar.png" alt="Assistant Agent" />
+                  </div>
+                  <div class="ca-avatar-actions">
+                    <button class="btn-ca-change-avatar" id="caChangeAvatarBtn">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      Change avatar
+                    </button>
+                    <div class="ca-avatar-help">JPG, PNG or GIF. Max size 2MB.</div>
+                  </div>
+                  <!-- Dropdown of available pixel avatars -->
+                  <div class="ca-avatar-dropdown" id="caAvatarDropdown">
+                    <div class="avatar-option" data-avatar="assistant">
+                      <img src="assets/models/assistant_avatar.png" alt="Assistant" />
+                      <span>Assistant</span>
+                    </div>
+                    <div class="avatar-option" data-avatar="coder">
+                      <img src="assets/models/coder_avatar.png" alt="Coder" />
+                      <span>Coder</span>
+                    </div>
+                    <div class="avatar-option" data-avatar="security">
+                      <img src="assets/models/security_avatar.png" alt="Security" />
+                      <span>Security</span>
+                    </div>
+                    <div class="avatar-option" data-avatar="finance">
+                      <img src="assets/models/finance_avatar.png" alt="Finance" />
+                      <span>Finance</span>
+                    </div>
+                    <div class="avatar-option" data-avatar="research">
+                      <img src="assets/models/research_avatar.png" alt="Research" />
+                      <span>Research</span>
+                    </div>
+                    <div class="avatar-option" data-avatar="social">
+                      <img src="assets/models/social_avatar.png" alt="Social Media" />
+                      <span>Social Media</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="ca-form-group">
+                <label for="caNameInput">Agent Name</label>
+                <div class="ca-input-sub">Give your agent a clear and unique name.</div>
+                <input type="text" id="caNameInput" placeholder="e.g. Research Analyst" maxlength="60" />
+              </div>
+              <div class="ca-form-group">
+                <label for="caDescInput">Description</label>
+                <div class="ca-input-sub">Describe what this agent does and how it helps.</div>
+                <div class="ca-textarea-wrapper">
+                  <textarea id="caDescInput" placeholder="Enter description..." maxlength="600"></textarea>
+                  <span class="ca-desc-counter" id="caDescCount">0/600</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Schedule (Optional) -->
+          <div class="ca-step-section">
+            <div class="ca-step-badge">2</div>
+            <div class="ca-step-content-box">
+              <h3 class="ca-step-title">Schedule <span class="ca-optional-label">(Optional)</span></h3>
+              <div class="ca-input-sub" style="margin-bottom: 12px;">When should this agent run?</div>
+              <div class="ca-schedule-cards-grid">
+                <div class="schedule-card selected" data-schedule="manual">
+                  <div class="sched-card-header">
+                    <span class="sched-card-dot"></span>
+                    <span class="sched-card-title">Manual</span>
+                  </div>
+                  <div class="sched-card-desc">Run only when I start it</div>
+                </div>
+                <div class="schedule-card" data-schedule="hourly">
+                  <div class="sched-card-header">
+                    <span class="sched-card-dot"></span>
+                    <span class="sched-card-title">Hourly</span>
+                  </div>
+                  <div class="sched-card-desc">Run every hour</div>
+                </div>
+                <div class="schedule-card" data-schedule="daily">
+                  <div class="sched-card-header">
+                    <span class="sched-card-dot"></span>
+                    <span class="sched-card-title">Daily</span>
+                  </div>
+                  <div class="sched-card-desc">Run every day</div>
+                </div>
+                <div class="schedule-card" data-schedule="weekly">
+                  <div class="sched-card-header">
+                    <span class="sched-card-dot"></span>
+                    <span class="sched-card-title">Weekly</span>
+                  </div>
+                  <div class="sched-card-desc">Run every week</div>
+                </div>
+                <div class="schedule-card" data-schedule="custom">
+                  <div class="sched-card-header">
+                    <span class="sched-card-dot"></span>
+                    <span class="sched-card-title">Custom</span>
+                  </div>
+                  <div class="sched-card-desc">Set custom schedule</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Knowledge Base (Optional) -->
+          <div class="ca-step-section">
+            <div class="ca-step-badge">3</div>
+            <div class="ca-step-content-box">
+              <h3 class="ca-step-title">Knowledge Base <span class="ca-optional-label">(Optional)</span></h3>
+              <div class="ca-input-sub" style="margin-bottom: 12px;">Add knowledge sources to help your agent.</div>
+              
+              <!-- Drag and drop zone -->
+              <div class="ca-upload-drop-zone">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ca-upload-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <div class="ca-upload-text">Drag & drop files here or <span class="browse-link">click to browse</span></div>
+                <div class="ca-upload-subtext">Supports PDF, TXT, MD, CSV and more</div>
+              </div>
+
+              <!-- Integration options -->
+              <div class="ca-integrations-row">
+                <button class="btn-ca-integration">
+                  <img src="assets/plugins/notion.svg" alt="Notion" style="width: 16px; height: 16px; object-fit: contain;" onerror="this.src='https://img.icons8.com/color/48/notion.png'" />
+                  <span>Notion</span>
+                </button>
+                <button class="btn-ca-integration">
+                  <img src="assets/plugins/google-drive.svg" alt="Google Drive" style="width: 16px; height: 16px; object-fit: contain;" onerror="this.src='https://img.icons8.com/color/48/google-drive--v1.png'" />
+                  <span>Google Drive</span>
+                </button>
+                <button class="btn-ca-integration">
+                  <img src="assets/plugins/github.svg" alt="GitHub" style="width: 16px; height: 16px; object-fit: contain;" onerror="this.src='https://img.icons8.com/glyph-neue/64/github.png'" />
+                  <span>GitHub</span>
+                </button>
+                <button class="btn-ca-integration">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                  <span>Add Website URL</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Connected Apps & Plugins and Custom Skills -->
+          <div class="ca-step-section">
+            <div class="ca-step-badge">4</div>
+            <div class="ca-step-content-box" style="display: flex; flex-direction: column; gap: 20px;">
+              
+              <!-- Card 1: Connected Apps & Plugins -->
+              <div style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; box-sizing: border-box;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; width: 100%;">
+                  <div>
+                    <h3 style="font-size: 15px; font-weight: 600; color: #111111; margin: 0; font-family: 'Inter', sans-serif;">Connected Apps & Plugins</h3>
+                    <p style="font-size: 13px; color: #6B7280; margin: 4px 0 0 0; font-family: 'Inter', sans-serif;">Connect apps and plugins the agent can access.</p>
+                  </div>
+                  <button id="caAddPluginBtn" type="button" style="display: flex; align-items: center; gap: 6px; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 550; color: #374151; cursor: pointer; transition: background-color 0.15s; font-family: 'Inter', sans-serif;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Plugin
+                  </button>
+                </div>
+                <div id="caConnectedPluginsList" style="display: flex; flex-direction: column;">
+                  <!-- Dynamically populated -->
+                </div>
+              </div>
+
+              <!-- Card 2: Custom Skills -->
+              <div style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column; box-sizing: border-box;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; width: 100%;">
+                  <div>
+                    <h3 style="font-size: 15px; font-weight: 600; color: #111111; margin: 0; font-family: 'Inter', sans-serif;">Custom Skills</h3>
+                    <p style="font-size: 13px; color: #6B7280; margin: 4px 0 0 0; font-family: 'Inter', sans-serif;">Create custom skills with specific instructions and tools.</p>
+                  </div>
+                  <button id="caCreateSkillBtn" type="button" style="display: flex; align-items: center; gap: 6px; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 550; color: #374151; cursor: pointer; transition: background-color 0.15s; font-family: 'Inter', sans-serif;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Create Skill
+                  </button>
+                </div>
+                <div id="caCustomSkillsList" style="display: flex; flex-direction: column;">
+                  <!-- Dynamically populated -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Step 5: Models -->
+          <div class="ca-step-section">
+            <div class="ca-step-badge">5</div>
+            <div class="ca-step-content-box">
+              <h3 class="ca-step-title">Models</h3>
+              <div class="ca-input-sub" style="margin-bottom: 12px;">Select the model that powers your agent.</div>
+              
+              <div class="ca-models-list">
+                <div class="model-row selected" data-model="GPT-4.1" data-provider="openai">
+                  <div class="model-row-left">
+                    <div class="model-radio-dot active"></div>
+                    <span class="model-name">GPT-4.1</span>
+                    <span class="model-badge-rec">Recommended</span>
+                  </div>
+                  <div class="model-row-right">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+                  </div>
+                </div>
+                
+                <div class="model-row" data-model="Claude 3.7 Sonnet" data-provider="anthropic">
+                  <div class="model-row-left">
+                    <div class="model-radio-dot"></div>
+                    <span class="model-name">Claude 3.7 Sonnet</span>
+                  </div>
+                  <div class="model-row-right">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+                  </div>
+                </div>
+
+                <div class="model-row" data-model="Gemini 2.5 Pro" data-provider="google">
+                  <div class="model-row-left">
+                    <div class="model-radio-dot"></div>
+                    <span class="model-name">Gemini 2.5 Pro</span>
+                  </div>
+                  <div class="model-row-right">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+                  </div>
+                </div>
+
+                <div class="model-row" data-model="Grok 3" data-provider="xai">
+                  <div class="model-row-left">
+                    <div class="model-radio-dot"></div>
+                    <span class="model-name">Grok 3</span>
+                  </div>
+                  <div class="model-row-right">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+                  </div>
+                </div>
+
+                <div class="model-row" data-model="DeepSeek V3" data-provider="deepseek">
+                  <div class="model-row-left">
+                    <div class="model-radio-dot"></div>
+                    <span class="model-name">DeepSeek V3</span>
+                  </div>
+                  <div class="model-row-right">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+                  </div>
+                </div>
+
+                <div class="model-row-custom" id="caBtnAddCustomModel">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <span>Add custom model</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 6: Advanced Settings (Optional) -->
+          <div class="ca-step-section">
+            <div class="ca-step-badge">6</div>
+            <div class="ca-step-content-box">
+              <div class="ca-adv-header" id="caAdvHeader">
+                <div class="ca-adv-title-group">
+                  <h3 class="ca-step-title" style="margin-bottom: 0;">Advanced Settings <span class="ca-optional-label">(Optional)</span></h3>
+                  <div class="ca-input-sub" style="margin-top: 2px;">Fine-tune your agent permissions and behavior.</div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="ca-adv-chevron"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="ca-adv-content" id="caAdvContent">
+                <div class="ca-form-group">
+                  <label for="caMaxTokenInput">Max Output Tokens</label>
+                  <input type="number" id="caMaxTokenInput" value="2048" placeholder="2048" />
+                </div>
+                <div class="ca-form-group">
+                  <label for="caTemperatureInput">Temperature (Creativity)</label>
+                  <input type="range" id="caTemperatureInput" min="0" max="2" step="0.1" value="0.7" style="width: 100%;" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer Buttons -->
+        <div class="ca-footer-row">
+          <button class="btn-ca-cancel">Cancel</button>
+          <button class="btn-ca-submit" id="btnCreateAgentSubmit">Create Agent</button>
+        </div>
+      </div>
+      </div>
+
+      <!-- Edit Agent Page View -->
+      <div class="edit-agent-page-view" id="editAgentPageView" style="display: none;">
+        <div class="ea-content-wrapper">
+          <!-- Header Section -->
+          <div class="ea-header-row">
+            <div class="ea-header-left">
+              <button class="btn-ea-back" id="eaBtnBack">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                <span>Back to Agents</span>
+              </button>
+              <h1 class="ea-title">Edit Agent</h1>
+              <p class="ea-subtitle">Modify your agent's settings and configurations.</p>
+            </div>
+            <div class="ea-header-right">
+              <button class="btn-ea-save" id="btnEditAgentSave">
+                <span>Save changes</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Grid Layout (Left: Identity, Right: Tabs & Panes) -->
+          <div class="ea-main-grid">
+            
+            <!-- Left Panel: Basic Identity -->
+            <div class="ea-left-panel">
+              <div class="ea-panel-card">
+                <h3 class="ea-panel-title">Agent Identity</h3>
+                
+                <!-- Avatar Selector -->
+                <div class="ea-avatar-section">
+                  <div class="ea-avatar-preview" id="eaAvatarPreviewBox">
+                    <img src="assets/models/assistant_avatar.png" alt="Agent Avatar" />
+                  </div>
+                  <div class="ea-avatar-actions">
+                    <button class="btn-ea-change-avatar" id="eaChangeAvatarBtn">
+                      <span>Change avatar</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <!-- Dropdown of available pixel avatars -->
+                    <div class="ea-avatar-dropdown" id="eaAvatarDropdown">
+                      <div class="avatar-option" data-avatar="assistant">
+                        <img src="assets/models/assistant_avatar.png" alt="Assistant" />
+                        <span>Assistant</span>
+                      </div>
+                      <div class="avatar-option" data-avatar="coder">
+                        <img src="assets/models/coder_avatar.png" alt="Coder" />
+                        <span>Coder</span>
+                      </div>
+                      <div class="avatar-option" data-avatar="security">
+                        <img src="assets/models/security_avatar.png" alt="Security" />
+                        <span>Security</span>
+                      </div>
+                      <div class="avatar-option" data-avatar="finance">
+                        <img src="assets/models/finance_avatar.png" alt="Finance" />
+                        <span>Finance</span>
+                      </div>
+                      <div class="avatar-option" data-avatar="research">
+                        <img src="assets/models/research_avatar.png" alt="Research" />
+                        <span>Research</span>
+                      </div>
+                      <div class="avatar-option" data-avatar="social">
+                        <img src="assets/models/social_avatar.png" alt="Social Media" />
+                        <span>Social Media</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Name Input -->
+                <div class="ea-form-group">
+                  <label for="eaNameInput">Agent Name</label>
+                  <input type="text" id="eaNameInput" placeholder="Agent name" maxlength="60" />
+                </div>
+
+                <!-- Status Dropdown -->
+                <div class="ea-form-group">
+                  <label for="eaStatusSelect">Status</label>
+                  <div class="ea-select-wrapper">
+                    <select id="eaStatusSelect">
+                      <option value="active">Active</option>
+                      <option value="paused">Paused</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Description Textarea -->
+                <div class="ea-form-group">
+                  <label for="eaDescInput">Description</label>
+                  <div class="ea-textarea-wrapper">
+                    <textarea id="eaDescInput" placeholder="Describe what this agent does..." maxlength="600"></textarea>
+                    <span class="ea-desc-counter" id="eaDescCount">0/600</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Panel: Tabs Nav & Tab Contents -->
+            <div class="ea-right-panel">
+              <!-- Tabs Navigation Menu -->
+              <div class="ea-tabs-nav" id="eaTabsNav">
+                <button class="ea-tab-btn active" data-tab="overview">Overview</button>
+                <button class="ea-tab-btn" data-tab="activity">Activity</button>
+                <button class="ea-tab-btn" data-tab="skills">Skills & Integrations</button>
+                <button class="ea-tab-btn" data-tab="model">Model</button>
+                <button class="ea-tab-btn" data-tab="chat">Chat</button>
+                <button class="ea-tab-btn" data-tab="desktop">Agent Desktop</button>
+                <button class="ea-tab-btn" data-tab="advanced">Advanced Settings</button>
+              </div>
+
+              <!-- Tab Contents -->
+              <div class="ea-tab-contents">
+                
+                <!-- Overview Pane -->
+                <div class="ea-tab-pane active" id="pane-overview">
+                  <div class="ea-pane-card">
+                    <h3 class="ea-pane-title">Overview Summary</h3>
+                    <div class="ea-overview-grid">
+                      <div class="ea-overview-item">
+                        <span class="label">Name</span>
+                        <span class="value" id="eaOverviewName">-</span>
+                      </div>
+                      <div class="ea-overview-item">
+                        <span class="label">Status</span>
+                        <span class="value" id="eaOverviewStatus">-</span>
+                      </div>
+                      <div class="ea-overview-item">
+                        <span class="label">Model Powering</span>
+                        <span class="value" id="eaOverviewModel">-</span>
+                      </div>
+                      <div class="ea-overview-item">
+                        <span class="label">Schedule</span>
+                        <span class="value" id="eaOverviewSchedule">-</span>
+                      </div>
+                      <div class="ea-overview-item">
+                        <span class="label">Created</span>
+                        <span class="value" id="eaOverviewCreated">-</span>
+                      </div>
+                      <div class="ea-overview-item">
+                        <span class="label">Last Updated</span>
+                        <span class="value" id="eaOverviewLastUpdated">-</span>
+                      </div>
+                    </div>
+                    <div class="ea-overview-desc-box">
+                      <h4 style="font-size: 13px; font-weight: 600; margin: 0 0 6px 0; color: #374151;">Detailed Purpose</h4>
+                      <p id="eaOverviewDesc" style="font-size: 13.5px; line-height: 1.5; color: #4B5563; margin: 0;"></p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Activity Pane -->
+                <div class="ea-tab-pane" id="pane-activity">
+                  
+                  <!-- Activity Overview Header & Datepicker -->
+                  <div class="ea-pane-card" style="margin-bottom: 20px;">
+                    <div class="ea-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%;">
+                      <div>
+                        <h3 class="ea-pane-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #111827; font-family: 'Inter', sans-serif;">Activity Overview</h3>
+                        <p style="font-size: 12.5px; color: #6B7280; margin: 0; font-family: 'Inter', sans-serif;">Track your agent's performance and key metrics.</p>
+                      </div>
+                      
+                      <!-- Datepicker select simulation -->
+                      <div class="ea-select-wrapper" style="width: auto; min-width: 190px; position: relative;">
+                        <div class="ea-custom-select-icon" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #6B7280; display: flex; align-items: center; pointer-events: none; z-index: 10;">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        </div>
+                        <select class="ea-custom-select" style="width: 100%; border: 1px solid #E5E7EB; border-radius: 8px; padding: 8px 12px 8px 30px; font-size: 12.5px; font-weight: 600; color: #374151; background: #FFFFFF; cursor: pointer; appearance: none; outline: none; box-sizing: border-box;">
+                          <option value="current">May 14 - May 20, 2025</option>
+                          <option value="last-week">May 7 - May 13, 2025</option>
+                          <option value="last-30">Last 30 days</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Metrics cards row -->
+                    <div class="ea-metric-cards-row" id="eaMetricCards" style="display: flex; gap: 12px; margin-bottom: 24px; width: 100%; box-sizing: border-box; flex-wrap: wrap;">
+                      <!-- Rendered dynamically -->
+                    </div>
+
+                    <!-- Chart Container -->
+                    <div class="ea-chart-container" id="eaChartContainer" style="width: 100%; height: 200px; position: relative; margin-top: 10px; box-sizing: border-box;">
+                      <!-- Rendered dynamically via SVG -->
+                    </div>
+                  </div>
+
+                  <!-- Recent Activity Table Card -->
+                  <div class="ea-pane-card">
+                    <div class="ea-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; width: 100%;">
+                      <div>
+                        <h3 class="ea-pane-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #111827; font-family: 'Inter', sans-serif;">Recent Activity</h3>
+                        <p style="font-size: 12.5px; color: #6B7280; margin: 0; font-family: 'Inter', sans-serif;">A list of the latest actions and events performed by this agent.</p>
+                      </div>
+                      
+                      <!-- Filter select simulation -->
+                      <div class="ea-select-wrapper" style="width: auto; min-width: 140px; position: relative;">
+                        <div class="ea-custom-select-icon" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #6B7280; display: flex; align-items: center; pointer-events: none; z-index: 10;">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                        </div>
+                        <select class="ea-custom-select" style="width: 100%; border: 1px solid #E5E7EB; border-radius: 8px; padding: 8px 12px 8px 30px; font-size: 12.5px; font-weight: 600; color: #374151; background: #FFFFFF; cursor: pointer; appearance: none; outline: none; box-sizing: border-box;">
+                          <option value="all">All Activities</option>
+                          <option value="scans">Scans</option>
+                          <option value="errors">Errors</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Table container -->
+                    <div class="ea-activity-table-container" style="overflow-x: auto; width: 100%; border: 1px solid #E5E7EB; border-radius: 8px; background: #FFFFFF; box-sizing: border-box;">
+                      <table class="ea-activity-table" style="width: 100%; border-collapse: collapse; text-align: left; font-family: 'Inter', sans-serif;">
+                        <thead>
+                          <tr style="border-bottom: 1px solid #E5E7EB; background: #FAFBFC;">
+                            <th style="padding: 10px 16px; font-size: 11.5px; font-weight: 600; color: #6B7280; text-transform: uppercase;">Activity</th>
+                            <th style="padding: 10px 16px; font-size: 11.5px; font-weight: 600; color: #6B7280; text-transform: uppercase;">Type</th>
+                            <th style="padding: 10px 16px; font-size: 11.5px; font-weight: 600; color: #6B7280; text-transform: uppercase;">Status</th>
+                            <th style="padding: 10px 16px; font-size: 11.5px; font-weight: 600; color: #6B7280; text-transform: uppercase;">Details</th>
+                            <th style="padding: 10px 16px; font-size: 11.5px; font-weight: 600; color: #6B7280; text-transform: uppercase;">Time</th>
+                            <th style="padding: 10px 16px; width: 30px;"></th>
+                          </tr>
+                        </thead>
+                        <tbody id="eaActivityTableBody">
+                          <!-- Rendered dynamically -->
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <!-- Footer View All link -->
+                    <div style="display: flex; justify-content: center; margin-top: 16px;">
+                      <a href="#" class="ea-activity-view-all" style="font-size: 13px; font-weight: 600; color: #2563EB; text-decoration: none; display: flex; align-items: center; gap: 4px; transition: color 0.15s;">
+                        <span>View all activity</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Skills & Integrations Pane -->
+                <div class="ea-tab-pane" id="pane-skills">
+                  <!-- Connected Apps & Plugins Card -->
+                  <div class="ea-pane-card" style="margin-bottom: 20px;">
+                    <div class="ea-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; width: 100%;">
+                      <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <div class="ea-header-icon-box" style="margin-top: 2px;">
+                          <!-- Link / Chain SVG Icon -->
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 class="ea-pane-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #111827;">Connected Apps & Plugins</h3>
+                          <p style="font-size: 12.5px; color: #6B7280; margin: 0;">Connect apps and plugins the agent can access.</p>
+                        </div>
+                      </div>
+                      <button id="eaAddPluginBtn" type="button" class="btn-ea-panel-action" style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; border-radius: 8px; border: 1px solid #E5E7EB; background: #FFFFFF; color: #374151; cursor: pointer; transition: background 0.15s;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add Plugin
+                      </button>
+                    </div>
+                    <div class="ea-list-box" id="eaConnectedPluginsList">
+                      <!-- Populated dynamically -->
+                    </div>
+                  </div>
+
+                  <!-- Custom Skills Card -->
+                  <div class="ea-pane-card">
+                    <div class="ea-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; width: 100%;">
+                      <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <div class="ea-header-icon-box" style="margin-top: 2px;">
+                          <!-- Star SVG Icon -->
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 class="ea-pane-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #111827;">Custom Skills</h3>
+                          <p style="font-size: 12.5px; color: #6B7280; margin: 0;">Create custom skills with specific instructions and tools.</p>
+                        </div>
+                      </div>
+                      <button id="eaCreateSkillBtn" type="button" class="btn-ea-panel-action" style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; border-radius: 8px; border: 1px solid #E5E7EB; background: #FFFFFF; color: #374151; cursor: pointer; transition: background 0.15s;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Create Skill
+                      </button>
+                    </div>
+                    <div class="ea-list-box" id="eaCustomSkillsList">
+                      <!-- Populated dynamically -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Model Pane -->
+                <div class="ea-tab-pane" id="pane-model">
+                  <div class="ea-pane-card">
+                    <div class="ea-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; width: 100%;">
+                      <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <div class="ea-header-icon-box" style="margin-top: 2px;">
+                          <!-- Cube SVG Icon -->
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 class="ea-pane-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #111827;">Model</h3>
+                          <p style="font-size: 12.5px; color: #6B7280; margin: 0;">Choose the model this agent will use.</p>
+                        </div>
+                      </div>
+                      <button id="eaBtnAddModel" type="button" class="btn-ea-panel-action" style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; border-radius: 8px; border: 1px solid #E5E7EB; background: #FFFFFF; color: #374151; cursor: pointer; transition: background 0.15s;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add Model
+                      </button>
+                    </div>
+
+                    <!-- Layout: Primary Model, Fallback Model, Model Settings -->
+                    <div class="ea-model-settings-row" style="display: flex; gap: 16px; align-items: flex-start; width: 100%;">
+                      
+                      <!-- Primary Model Column -->
+                      <div class="ea-model-col" style="display: flex; flex-direction: column; gap: 8px; flex: 1; position: relative;">
+                        <label class="ea-col-label" style="font-size: 12.5px; font-weight: 600; color: #374151;">Primary Model</label>
+                        <div class="ea-custom-select-box" id="eaPrimaryModelTrigger" style="display: flex; align-items: center; justify-content: space-between; border: 1px solid #E5E7EB; border-radius: 8px; padding: 8px 12px; background: #FFFFFF; cursor: pointer; min-height: 40px; box-sizing: border-box;">
+                          <div class="ea-select-val-group" id="eaPrimaryModelVal" style="display: flex; align-items: center; gap: 8px; overflow: hidden; width: 100%;">
+                            <!-- Z Logo or Model Logo -->
+                            <img src="assets/models/zed-pro.svg" alt="Zed Pro" style="width: 18px; height: 18px; object-fit: contain; border-radius: 4px; flex-shrink: 0;" />
+                            <span class="ea-select-text" style="font-size: 13.5px; font-weight: 550; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Zed Pro</span>
+                            <span class="ea-select-status-badge" style="font-size: 11px; font-weight: 550; color: #047857; background: #ECFDF5; padding: 2px 6px; border-radius: 6px; flex-shrink: 0;">Active</span>
+                          </div>
+                          <svg class="ea-select-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        
+                        <!-- Primary Model Dropdown Menu -->
+                        <div class="ea-model-dropdown-options" id="eaPrimaryModelDropdown" style="position: absolute; top: 72px; left: 0; right: 0; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: none; flex-direction: column; z-index: 1000; padding: 4px; box-sizing: border-box;">
+                          <!-- Connected models populated dynamically -->
+                        </div>
+                      </div>
+
+                      <!-- Fallback Model Column -->
+                      <div class="ea-model-col" style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
+                        <label class="ea-col-label" style="font-size: 12.5px; font-weight: 600; color: #374151;">Fallback Model (Optional)</label>
+                        <div class="ea-select-wrapper" style="position: relative; width: 100%;">
+                          <select class="ea-custom-select" id="eaFallbackModelSelect" style="width: 100%; border: 1px solid #E5E7EB; border-radius: 8px; padding: 10px 12px; font-size: 13.5px; font-weight: 550; color: #374151; background: #FFFFFF; outline: none; box-sizing: border-box; cursor: pointer; min-height: 40px;">
+                            <option value="">Select a model</option>
+                            <option value="GPT-4.1">GPT-4.1</option>
+                            <option value="Claude 3.7 Sonnet">Claude 3.7 Sonnet</option>
+                            <option value="Gemini 2.5 Pro">Gemini 2.5 Pro</option>
+                            <option value="Grok 3">Grok 3</option>
+                            <option value="DeepSeek V3">DeepSeek V3</option>
+                          </select>
+                        </div>
+                        <div class="ea-col-subtext" style="font-size: 11.5px; color: #6B7280; margin-top: 4px;">Used if the primary model is unavailable.</div>
+                      </div>
+
+                      <!-- Model Settings Column -->
+                      <div class="ea-model-col" style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
+                        <label class="ea-col-label" style="font-size: 12.5px; font-weight: 600; color: #374151;">Model Settings</label>
+                        <div class="ea-settings-select-group" style="display: flex; gap: 8px; width: 100%;">
+                          <div class="ea-select-wrapper" style="position: relative; flex: 1.2;">
+                            <select class="ea-custom-select" id="eaModelSettingsType" style="width: 100%; border: 1px solid #E5E7EB; border-radius: 8px; padding: 10px 12px; font-size: 13.5px; font-weight: 550; color: #374151; background: #FFFFFF; outline: none; box-sizing: border-box; cursor: pointer; min-height: 40px;">
+                              <option value="temperature">Temperature</option>
+                              <option value="top_p">Top P</option>
+                              <option value="max_tokens">Max Tokens</option>
+                            </select>
+                          </div>
+                          <div class="ea-select-wrapper" style="position: relative; flex: 1;">
+                            <select class="ea-custom-select" id="eaModelSettingsVal" style="width: 100%; border: 1px solid #E5E7EB; border-radius: 8px; padding: 10px 12px; font-size: 13.5px; font-weight: 550; color: #374151; background: #FFFFFF; outline: none; box-sizing: border-box; cursor: pointer; min-height: 40px;">
+                              <option value="0.7">0.7</option>
+                              <option value="0.0">0.0</option>
+                              <option value="0.3">0.3</option>
+                              <option value="0.5">0.5</option>
+                              <option value="1.0">1.0</option>
+                              <option value="1.2">1.2</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Chat Pane -->
+                <div class="ea-tab-pane" id="pane-chat">
+                  <div class="ea-pane-card ea-chat-pane-card">
+                    <div class="ea-card-header" style="margin-bottom: 20px; width: 100%;">
+                      <h3 class="ea-pane-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 750; color: #111827;">Chat with Your Agent</h3>
+                      <p class="ea-pane-subtitle" style="font-size: 12.5px; color: #6B7280; margin: 0;">Start a conversation with your agent to get answers and insights.</p>
+                    </div>
+
+                    <!-- Chat Window Wrapper -->
+                    <div class="ea-chat-window-wrapper">
+                      <!-- Chat Log -->
+                      <div class="ea-chat-window-log" id="eaChatLog">
+                        
+                        <!-- Message 1 (User) -->
+                        <div class="ea-chat-msg-item user">
+                          <div class="ea-chat-bubble">
+                            Show me the latest security threats detected today.
+                          </div>
+                          <span class="ea-chat-timestamp">10:30 AM</span>
+                        </div>
+
+                        <!-- Message 2 (Agent) -->
+                        <div class="ea-chat-msg-item agent">
+                          <div class="ea-chat-avatar" id="eaChatAgentAvatar1">
+                            <img src="assets/models/security_avatar.png" alt="Agent Avatar" />
+                          </div>
+                          <div class="ea-chat-bubble-group">
+                            <div class="ea-chat-bubble">
+                              Here are the latest security threats detected today:
+                              <ul>
+                                <li>Malware detected in /usr/bin/oldapp</li>
+                                <li>3 failed login attempts detected from IP 203.0.113.45</li>
+                                <li>Suspicious file quarantined: malware.exe</li>
+                              </ul>
+                            </div>
+                            <span class="ea-chat-timestamp">10:30 AM</span>
+                          </div>
+                        </div>
+
+                        <!-- Message 3 (User) -->
+                        <div class="ea-chat-msg-item user">
+                          <div class="ea-chat-bubble">
+                            What actions have you taken?
+                          </div>
+                          <span class="ea-chat-timestamp">10:31 AM</span>
+                        </div>
+
+                        <!-- Message 4 (Agent) -->
+                        <div class="ea-chat-msg-item agent">
+                          <div class="ea-chat-avatar" id="eaChatAgentAvatar2">
+                            <img src="assets/models/security_avatar.png" alt="Agent Avatar" />
+                          </div>
+                          <div class="ea-chat-bubble-group">
+                            <div class="ea-chat-bubble">
+                              I have quarantined the malicious file, blocked the suspicious IP, and notified the admin. All actions are logged.
+                            </div>
+                            <span class="ea-chat-timestamp">10:31 AM</span>
+                          </div>
+                        </div>
+
+                      </div>
+
+                      <!-- Input Box Toolbar -->
+                      <div class="ea-chat-input-toolbar">
+                        <input type="text" id="eaChatInput" placeholder="Type your message..." />
+                        <button type="button" id="btnEaChatSend" aria-label="Send Message">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Desktop Integration Pane -->
+                <div class="ea-tab-pane" id="pane-desktop">
+                  <div class="ea-pane-card ea-desktop-pane-card">
+                    <div class="ea-card-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; width: 100%;">
+                      <div>
+                        <h3 class="ea-pane-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 750; color: #111827;">Agent Virtual Desktop</h3>
+                        <p class="ea-pane-subtitle" style="font-size: 12.5px; color: #6B7280; margin: 0;">View what your agent is doing in its virtual environment in real time.</p>
+                      </div>
+                      <button id="eaDesktopRefresh" class="btn-ea-panel-action" style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 12.5px; font-weight: 600; border-radius: 8px; border: 1px solid #E5E7EB; background: #FFFFFF; color: #374151; cursor: pointer; transition: background 0.15s;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                        Refresh
+                      </button>
+                    </div>
+
+                    <!-- Virtual Desktop Container -->
+                    <div class="ea-desktop-vm-container">
+                      
+                      <!-- Desktop Top GNOME Panel -->
+                      <div class="ea-desktop-top-bar">
+                        <div class="ea-desktop-top-left">
+                          <span class="active">Activities</span>
+                          <span>Terminal</span>
+                        </div>
+                        <div class="ea-desktop-top-middle" id="eaDesktopTime">
+                          May 20 10:31 AM
+                        </div>
+                        <div class="ea-desktop-top-right">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5c0-4.42 3.58-8 8-8s8 3.58 8 8M7.83 15.33a5.5 5.5 0 0 1 10.34 0M10.66 18a3 3 0 0 1 4.68 0"/><circle cx="12" cy="20" r="1"/></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="12" rx="2" ry="2"/><path d="M22 11v2"/><path d="M6 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </div>
+                      </div>
+
+                      <!-- VM Desktop Main Area -->
+                      <div class="ea-desktop-main-area">
+                        <!-- Left Side GNOME Dock -->
+                        <div class="ea-desktop-dock">
+                          <div class="ea-dock-item"><img src="assets/models/security_avatar.png" style="filter: hue-rotate(180deg); width: 22px; height: 22px;" alt="Firefox" /></div>
+                          <div class="ea-dock-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A0A0FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                          </div>
+                          <div class="ea-dock-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                          </div>
+                          <div class="ea-dock-item active">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                            <span class="active-dot"></span>
+                          </div>
+                          <div class="ea-dock-item" style="margin-top: auto;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                          </div>
+                          <div class="ea-dock-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/><circle cx="19" cy="5" r="1"/><circle cx="5" cy="5" r="1"/><circle cx="19" cy="19" r="1"/><circle cx="5" cy="19" r="1"/></svg>
+                          </div>
+                        </div>
+
+                        <!-- GNOME Terminal Window -->
+                        <div class="ea-desktop-terminal">
+                          <div class="ea-terminal-header">
+                            <div class="ea-terminal-controls">
+                              <span class="ctrl-dot red"></span>
+                              <span class="ctrl-dot yellow"></span>
+                              <span class="ctrl-dot green"></span>
+                            </div>
+                            <span class="ea-terminal-title" id="eaTerminalTitle">root@security-agent:~</span>
+                            <div class="ea-terminal-actions">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="12" x2="20" y2="12"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+                            </div>
+                          </div>
+                          <div class="ea-terminal-body" id="eaTerminalBody">
+                            <div class="terminal-line"><span class="terminal-prompt">root@security-agent:~#</span> scan --all</div>
+                            <div class="terminal-line">Scanning system...</div>
+                            <div class="terminal-line">Checking for vulnerabilities...</div>
+                            <div class="terminal-line success">[r] System packages are up to date</div>
+                            <div class="terminal-line success">[r] No weak passwords found</div>
+                            <div class="terminal-line success">[r] Firewall is active</div>
+                            <div class="terminal-line warning">[!] 3 suspicious files detected</div>
+                            <div class="terminal-line indent">/usr/bin/oldapp (malware signature detected)</div>
+                            <div class="terminal-line">Quarantining file...</div>
+                            <div class="terminal-line success">File quarantined successfully</div>
+                            <div class="terminal-line">Generating report...</div>
+                            <div class="terminal-line info">Report saved to /var/log/security/report-2025-05-20.log</div>
+                            <div class="terminal-line">Scan completed</div>
+                            <div class="terminal-line active-line"><span class="terminal-prompt">root@security-agent:~#</span><span class="ea-terminal-cursor"></span></div>
+                          </div>
+                        </div>
+
+                      </div>
+
+                      <!-- Desktop Bottom Panel / Control Bar -->
+                      <div class="ea-desktop-bottom-bar">
+                        <div class="ea-desktop-status">
+                          <span class="status-dot-blink"></span>
+                          <span style="font-size: 12.5px; font-weight: 600; color: #4B5563;">Connected</span>
+                        </div>
+                        <div class="ea-desktop-controls">
+                          <span class="ea-desktop-resolution" id="eaResolutionDisplay">1024 x 768</span>
+                          
+                          <button class="ea-control-icon-btn" title="Keyboard Layout">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><line x1="7" y1="15" x2="7" y2="15"/><line x1="10" y1="15" x2="14" y2="15"/><line x1="17" y1="15" x2="17" y2="15"/><line x1="9" y1="3" x2="15" y2="3"/><line x1="12" y1="3" x2="12" y2="11"/></svg>
+                          </button>
+                          <button class="ea-control-icon-btn" title="Clipboard">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                          </button>
+                          <button class="ea-control-icon-btn" title="Fullscreen / Zoom">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                          </button>
+                          <button class="ea-control-icon-btn" title="Settings">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                          </button>
+                          <button class="ea-control-icon-btn" title="Expand panel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                          </button>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Advanced Settings Pane -->
+                <div class="ea-tab-pane" id="pane-advanced">
+                  <div class="ea-pane-card">
+                    <div class="ea-card-header" style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 20px; width: 100%;">
+                      <div class="ea-header-icon-box" style="margin-top: 2px;">
+                        <!-- Sliders / Tuning SVG Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 class="ea-pane-title" style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #111827;">Advanced Settings</h3>
+                        <p style="font-size: 12.5px; color: #6B7280; margin: 0;">Fine-tune how the agent behaves.</p>
+                      </div>
+                    </div>
+
+                    <!-- Single Inline Row for all advanced parameters -->
+                    <div class="ea-adv-settings-inline-row" style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap; width: 100%; margin-top: 16px;">
+                      
+                      <!-- Max Steps -->
+                      <div class="ea-adv-inline-item" style="display: flex; align-items: center; gap: 10px;">
+                        <span class="ea-adv-inline-label" style="font-size: 13px; font-weight: 600; color: #374151; white-space: nowrap;">Max steps per task</span>
+                        <input type="number" class="ea-adv-inline-input" id="eaMaxStepsInput" value="25" style="width: 60px; text-align: center; padding: 8px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 13.5px; font-weight: 550; color: #111827; background: #FFFFFF; outline: none; transition: border-color 0.15s; box-sizing: border-box;" />
+                      </div>
+
+                      <!-- Max Tools -->
+                      <div class="ea-adv-inline-item" style="display: flex; align-items: center; gap: 10px;">
+                        <span class="ea-adv-inline-label" style="font-size: 13px; font-weight: 600; color: #374151; white-space: nowrap;">Max tools per run</span>
+                        <input type="number" class="ea-adv-inline-input" id="eaMaxToolsInput" value="10" style="width: 60px; text-align: center; padding: 8px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 13.5px; font-weight: 550; color: #111827; background: #FFFFFF; outline: none; transition: border-color 0.15s; box-sizing: border-box;" />
+                      </div>
+
+                      <!-- Memory -->
+                      <div class="ea-adv-inline-item" style="display: flex; align-items: center; gap: 10px;">
+                        <span class="ea-adv-inline-label" style="font-size: 13px; font-weight: 600; color: #374151; white-space: nowrap;">Memory</span>
+                        <div class="ea-select-wrapper" style="position: relative; min-width: 120px;">
+                          <select class="ea-custom-select" id="eaMemorySelect" style="width: 100%; border: 1px solid #E5E7EB; border-radius: 8px; padding: 8px 12px; font-size: 13.5px; font-weight: 550; color: #374151; background: #FFFFFF; outline: none; box-sizing: border-box; cursor: pointer; min-height: 38px;">
+                            <option value="enabled">Enabled</option>
+                            <option value="disabled">Disabled</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <!-- Response Style -->
+                      <div class="ea-adv-inline-item" style="display: flex; align-items: center; gap: 10px;">
+                        <span class="ea-adv-inline-label" style="font-size: 13px; font-weight: 600; color: #374151; white-space: nowrap;">Response style</span>
+                        <div class="ea-select-wrapper" style="position: relative; min-width: 120px;">
+                          <select class="ea-custom-select" id="eaResponseStyleSelect" style="width: 100%; border: 1px solid #E5E7EB; border-radius: 8px; padding: 8px 12px; font-size: 13.5px; font-weight: 550; color: #374151; background: #FFFFFF; outline: none; box-sizing: border-box; cursor: pointer; min-height: 38px;">
+                            <option value="balanced">Balanced</option>
+                            <option value="creative">Creative</option>
+                            <option value="precise">Precise</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <!-- Error Handling -->
+                      <div class="ea-adv-inline-item" style="display: flex; align-items: center; gap: 10px;">
+                        <span class="ea-adv-inline-label" style="font-size: 13px; font-weight: 600; color: #374151; white-space: nowrap;">Error handling</span>
+                        <div class="ea-select-wrapper" style="position: relative; min-width: 150px;">
+                          <select class="ea-custom-select" id="eaErrorHandlingSelect" style="width: 100%; border: 1px solid #E5E7EB; border-radius: 8px; padding: 8px 12px; font-size: 13.5px; font-weight: 550; color: #374151; background: #FFFFFF; outline: none; box-sizing: border-box; cursor: pointer; min-height: 38px;">
+                            <option value="retry">Retry on failure</option>
+                            <option value="ignore">Ignore and continue</option>
+                            <option value="halt">Stop execution</option>
+                          </select>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Import map for bare module specifiers -->
+  <script type="importmap">
+  {
+    "imports": {
+      "dompurify": "./dompurify.es.mjs"
+    }
+  }
+  </script>
+
+  <!-- Scripts -->
+  <script src="app.js" type="module"></script>
+</body>
+</html>
+

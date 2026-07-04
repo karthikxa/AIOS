@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+coverage/
+*.db
+*.log
+.env.local
+.env.*.local
+
+# BEADS / metaswarm runtime
+.beads/beads.db
+.beads/daemon.lock
+.beads/daemon.pid
+.beads/daemon.log
+.beads/temp/
+.beads/context/
+.beads/plans/
+.metaswarm/logs/
+.metaswarm/prompts/
+.metaswarm/specs/
+.metaswarm/handoffs/
+.metaswarm/deploy/
+
+# Secrets & local state — never commit these
+.env
+.env.*
+!.env.example
+*.key
+**/api_key
+.freellmpool/
+freellmpool-state/
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Local codegraph index (not part of the project)
+.codegraph/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+.beads-credential-key

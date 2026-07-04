@@ -1,0 +1,29 @@
+network:
+  protocol: http
+  interface: 0.0.0.0
+  websocket_port: auto
+  use_ipv4: true
+  use_ipv6: true
+  ssl:
+    require_ssl: false
+  udp:
+    public_ip: 127.0.0.1
+
+server:
+  http:
+    headers:
+      - Cross-Origin-Embedder-Policy=require-corp
+      - Cross-Origin-Opener-Policy=same-origin
+    httpd_directory: /usr/share/kasmvnc/www
+  advanced:
+    x_font_path: auto
+    kasm_password_file: ${HOME}/.kasmpasswd
+    x_authority_file: auto
+
+user_session:
+  new_session_disconnects_existing_exclusive_session: false
+  concurrent_connections_prompt: false
+  idle_timeout: never
+
+command_line:
+  prompt: false

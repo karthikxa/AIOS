@@ -1,0 +1,8 @@
+name: google
+version: 1.0.0
+description: "Dashboard Google OAuth plugin — connects Gmail, Drive, Calendar and other Google services to the dashboard. Activates when GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are configured in the server's .env file. Provides OAuth 2.0 routes for multi-user token management and gates Google API tools behind connected state."
+author: NousResearch
+kind: backend
+requires_env:
+  - GOOGLE_CLIENT_ID
+  - GOOGLE_CLIENT_SECRET
