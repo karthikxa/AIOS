@@ -3627,10 +3627,17 @@ Here are the current findings:
   let desktopStreamStarted = false;
   let desktopPollInterval = null;
   let desktopPollStopped = false;
+  const DEFAULT_HF_SPACE_URL = 'https://bkarthikeyan-desktop-agent-live.hf.space';
+  const LEGACY_HF_SPACE_URLS = new Set([
+    'https://bkarthikeyan-desktop-agent.hf.space',
+  ]);
 
   // Set default HF Space URL if not configured
-  if (!localStorage.getItem('hf_space_url') && !localStorage.getItem('desktop_agent_url')) {
-    localStorage.setItem('hf_space_url', 'https://bkarthikeyan-desktop-agent-live.hf.space');
+  const savedHfSpaceUrl = (localStorage.getItem('hf_space_url') || '').replace(/\/$/, '');
+  if (LEGACY_HF_SPACE_URLS.has(savedHfSpaceUrl)) {
+    localStorage.setItem('hf_space_url', DEFAULT_HF_SPACE_URL);
+  } else if (!localStorage.getItem('hf_space_url') && !localStorage.getItem('desktop_agent_url')) {
+    localStorage.setItem('hf_space_url', DEFAULT_HF_SPACE_URL);
   }
 
   function updateSplitPaneUrl(content) {
@@ -3913,7 +3920,7 @@ Here are the current findings:
   if (settingsSplitPaneBtn) {
     settingsSplitPaneBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const current = localStorage.getItem('hf_space_url') || 'https://bkarthikeyan-desktop-agent-live.hf.space';
+      const current = localStorage.getItem('hf_space_url') || DEFAULT_HF_SPACE_URL;
       const url = prompt('Enter HF Space URL (or blank for local sandbox):', current);
       if (url !== null) {
         if (url.trim()) {
