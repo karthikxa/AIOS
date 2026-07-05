@@ -2661,32 +2661,118 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
         updateStatus('Agent starting...', '0 / ?');
 
-        // HTTP-based agent connection (replaces broken WebSocket on HF free tier)
-        const hfUrl = localStorage.getItem('hf_space_url') || 'https://bkarthikeyan-browser-agent-stream.hf.space';
+        // ── HF Space endpoint ───────────────────────────────────────────
+        const hfUrl = (localStorage.getItem('hf_space_url') || 'https://bkarthikeyan-browser-agent-stream.hf.space').replace(/\/$/, '');
         let agentStep = 0;
-        const maxSteps = 7;
+        const maxSteps = 15;
         let progressIndex = 0;
-        let currentPlan = [];
+        let agentWs = null;
+        let usingWs = false;
+        const wsQueue = [];
+
+        // Try WebSocket first (real-time push, <5ms latency on HF)
+        const wsProto = hfUrl.startsWith('https://') ? 'wss://' : 'ws://';
+        const wsBase = hfUrl.replace(/^https?:\/\//, '');
+        try {
+          agentWs = new WebSocket(wsProto + wsBase + '/ws/agent');
+          await new Promise((resolve, reject) => {
+            const t = setTimeout(() => reject(new Error('WS timeout')), 3000);
+            agentWs.onopen  = () => { clearTimeout(t); usingWs = true; resolve(); };
+            agentWs.onerror = () => { clearTimeout(t); reject(new Error('WS error')); };
+          });
+        } catch (e) {
+          console.log('[agent] WS fallback to HTTP:', e.message);
+          agentWs = null; usingWs = false;
+        }
+
+        // Wire WS events → live UI updates
+        // WS carries: action status text, done/error events ONLY.
+        // NO screenshot data — Selkies stream handles all visuals at 30fps.
+        if (agentWs) {
+          agentWs.onmessage = (ev) => {
+            try {
+              const m = JSON.parse(ev.data);
+              if (m.type === 'action') {
+                const desc = actionDescriptions[m.action] || m.action;
+                updateStatus('\u26a1 ' + desc, (m.step || agentStep) + ' / ' + maxSteps);
+                addProgressStep(desc, 'active');
+              } else if (m.type === 'result') {
+                updateStatus('\u2713 ' + m.action + ' [' + (m.action_ms || 0) + 'ms]', (m.step || agentStep) + ' / ' + maxSteps);
+                if (m.result && m.result.startsWith('URL:')) {
+                  const urlLine = m.result.split('\n')[0].replace('URL: ', '').trim();
+                  const urlEl = document.getElementById('splitPaneHeaderUrl');
+                  if (urlEl && urlLine !== 'unknown') urlEl.innerHTML = '<a href="' + urlLine + '" target="_blank" style="color:#3B82F6;text-decoration:none;">' + urlLine + '</a>';
+                }
+              } else if (m.type === 'token') {
+                // Stream LLM thinking tokens into typing indicator
+                const placeholder = document.querySelector('.typing-placeholder');
+                if (placeholder) placeholder.textContent += m.text;
+              } else if (m.type === 'done') {
+                appendMessage('assistant', m.summary || 'Task complete.');
+                updateStatus('\u2705 Done [' + (m.total_ms || 0) + 'ms, ' + (m.steps || maxSteps) + ' steps]', '\u2713');
+                addProgressStep('Task complete', 'done');
+                wsQueue.push({ done: true });
+              } else if (m.type === 'error') {
+                appendMessage('assistant', '\u274c ' + m.text);
+                wsQueue.push({ error: m.text });
+              } else if (m.type === 'agent_end') {
+                wsQueue.push({ done: true });
+              }
+            } catch (e) { console.error('[agent-ws]', e); }
+          };
+          agentWs.onerror = agentWs.onclose = () => { usingWs = false; };
+        }
 
         async function executeOnAgent(action) {
           const resp = await fetch(`${hfUrl}/agent/execute`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(action)
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(action), signal: abortController.signal,
           });
-          if (!resp.ok) throw new Error(`Agent error: ${resp.status}`);
-          return await resp.json();
+          if (!resp.ok) throw new Error(`Agent HTTP ${resp.status}`);
+          return resp.json();
         }
 
         async function getAgentScreen() {
-          const resp = await fetch(`${hfUrl}/agent/screen`);
-          if (!resp.ok) throw new Error(`Screen error: ${resp.status}`);
-          return await resp.json();
+          const resp = await fetch(`${hfUrl}/agent/screen`, { signal: abortController.signal });
+          if (!resp.ok) throw new Error(`Screen ${resp.status}`);
+          return resp.json();
         }
 
-        // Health check (replaces WebSocket connection wait)
-        const health = await fetch(`${hfUrl}/health`);
-        if (!health.ok) throw new Error('Agent not available');
+        // Health check
+        const health = await fetch(`${hfUrl}/health`, { signal: abortController.signal });
+        if (!health.ok) throw new Error('HF Space not available');
+        updateStatus('Connected \u2713', '0 / ?');
+
+        // ── WebSocket fast path: send task, watch stream, wait for done ──
+        if (usingWs && agentWs) {
+          toggleComputerSplit(true);
+
+          // Load the Selkies WebRTC stream into the split-pane iframe.
+          // The stream shows EVERYTHING live at 30fps — no polling needed.
+          const desktopFrame = document.getElementById('desktopFrame');
+          if (desktopFrame) {
+            desktopFrame.src = hfUrl + '/stream/';
+            desktopFrame.style.display = 'block';
+            // Hide the connecting overlay
+            const overlay = document.getElementById('desktopConnectingOverlay');
+            if (overlay) overlay.style.display = 'none';
+          }
+
+          // Send task — agent runs fully server-side, stream shows progress
+          agentWs.send(JSON.stringify({ type: 'message', text: promptText }));
+
+          // Wait for done/error event (WS only carries status text, not frames)
+          await new Promise((resolve) => {
+            const check = setInterval(() => {
+              if (wsQueue.length > 0 || stopped || abortController.signal.aborted) {
+                clearInterval(check); resolve();
+              }
+            }, 100);
+            setTimeout(() => { clearInterval(check); resolve(); }, 300000); // 5min max
+          });
+          try { agentWs.close(); } catch (e) {}
+          return;
+        }
 
         // Poll screen for URL updates every 2s (replaces ws.onmessage)
         const screenPollInterval = setInterval(async () => {
@@ -3638,6 +3724,15 @@ Here are the current findings:
     localStorage.setItem('hf_space_url', DEFAULT_HF_SPACE_URL);
   }
 
+  // On localhost: set/update noVNC URL (versioned so it auto-updates when URL changes)
+  const KASM_URL_VERSION = '3';
+  const CORRECT_KASM_URL = 'http://localhost:6902/vnc.html?autoconnect=true&password=headless&resize=scale&reconnect=true';
+  if (isLocal && localStorage.getItem('kasm_url_version') !== KASM_URL_VERSION) {
+    localStorage.setItem('kasm_url', CORRECT_KASM_URL);
+    localStorage.setItem('kasm_url_version', KASM_URL_VERSION);
+  }
+
+
   function updateSplitPaneUrl(content) {
     const urlEl = document.getElementById('splitPaneHeaderUrl');
     if (!urlEl) return;
@@ -3683,27 +3778,41 @@ Here are the current findings:
     if (desktopStreamStarted || !desktopFrame) return;
     desktopStreamStarted = true;
 
-    // Check if using HF Space cloud desktop
+    // ── Priority 1: Kasm / noVNC URL (local desktop) ───────────────────
+    const kasmUrl = localStorage.getItem('kasm_url');
+    if (kasmUrl) {
+      desktopFrame.style.display = 'block';
+      desktopFrame.src = kasmUrl;
+      const urlEl = document.getElementById('splitPaneHeaderUrl');
+      if (urlEl) { urlEl.textContent = kasmUrl; urlEl.href = kasmUrl; urlEl.style.display = 'inline'; }
+      const browserLabel = document.getElementById('splitPaneBrowserLabel');
+      if (browserLabel) browserLabel.textContent = 'Zed is using Desktop';
+      const msgEl = document.getElementById('desktopConnectingMsg');
+      if (msgEl) msgEl.textContent = 'Connecting to desktop at ' + new URL(kasmUrl).host + '…';
+      desktopFrame.onload = () => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; };
+      // noVNC is cross-origin so onload may not fire — hide overlay after 4s
+      setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 4000);
+      return;
+    }
+
+    // ── Priority 2: HF Space cloud desktop ─────────────────────────────
     const hfSpaceUrl = localStorage.getItem('hf_space_url');
     if (hfSpaceUrl) {
-      // HF Space: prefer the live desktop viewer instead of screenshot polling.
+      // HF Space: load Selkies WebRTC stream directly — NOT screenshot polling.
       const baseUrl = hfSpaceUrl.replace(/\/$/, '');
       desktopFrame.style.display = 'block';
-      desktopFrame.src = '/vnc_live.html?mode=hf&base=' + encodeURIComponent(baseUrl);
+      desktopFrame.src = baseUrl + '/stream/';
       // Update URL in header
       const urlEl = document.getElementById('splitPaneHeaderUrl');
-      if (urlEl) { urlEl.textContent = baseUrl; urlEl.href = baseUrl; }
-      // Hide overlay when iframe loads
+      if (urlEl) {
+        urlEl.innerHTML = `<a href="${baseUrl}" target="_blank" style="color:#3B82F6;text-decoration:none;">${baseUrl}</a>`;
+      }
+      // Hide connecting overlay once iframe content loads
       desktopFrame.onload = () => {
         if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
       };
-      // Also listen for the postMessage from inside the iframe
-      window.addEventListener('message', function onReady(e) {
-        if (e.data === 'desktop-ready') {
-          if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
-          window.removeEventListener('message', onReady);
-        }
-      });
+      // Selkies /stream/ is cross-origin — onload may not fire, hide after 5s fallback
+      setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 5000);
     } else {
       // Live noVNC stream from sandbox
       const sandboxUrl = getVncBaseUrl();
@@ -3717,15 +3826,16 @@ Here are the current findings:
       };
     }
 
-    // Also start the thumbnail VNC stream
+    // Also load the stream into the thumbnail VNC frame
     const thumbnailFrame = document.getElementById('thumbnailFrame');
     const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
     if (thumbnailFrame) {
       const hfSpaceUrl2 = localStorage.getItem('hf_space_url');
       if (hfSpaceUrl2) {
-        thumbnailFrame.src = '/vnc_live.html?mode=hf&base=' + encodeURIComponent(hfSpaceUrl2.replace(/\/$/, ''));
+        // Load Selkies /stream/ directly — no screenshot polling
+        thumbnailFrame.src = hfSpaceUrl2.replace(/\/$/, '') + '/stream/';
       } else {
-        thumbnailFrame.src = '/vnc_live.html?sandbox=' + encodeURIComponent(getVncBaseUrl());
+        thumbnailFrame.src = getVncBaseUrl() + '/vnc/index.html?autoconnect=true&resize=scale&reconnect=1&path=websockify';
       }
       if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'none';
     }
@@ -3920,19 +4030,34 @@ Here are the current findings:
   if (settingsSplitPaneBtn) {
     settingsSplitPaneBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const current = localStorage.getItem('hf_space_url') || DEFAULT_HF_SPACE_URL;
-      const url = prompt('Enter HF Space URL (or blank for local sandbox):', current);
+      const currentKasm = localStorage.getItem('kasm_url') || 'http://localhost:6902/vnc.html?autoconnect=true&password=headless&resize=scale&reconnect=true';
+      const url = prompt(
+        'Desktop URL\n\n• Local Kasm:  https://localhost:6901\n• HF Space:   https://your-space.hf.space\n\nLeave blank to reset to default Kasm URL.',
+        currentKasm
+      );
       if (url !== null) {
-        if (url.trim()) {
-          localStorage.setItem('hf_space_url', url.trim());
+        const trimmed = url.trim();
+        if (trimmed) {
+          if (trimmed.includes('localhost') || trimmed.includes('127.0.0.1')) {
+            localStorage.setItem('kasm_url', trimmed);
+            localStorage.removeItem('hf_space_url');
+          } else if (trimmed.includes('.hf.space')) {
+            localStorage.setItem('hf_space_url', trimmed);
+            localStorage.removeItem('kasm_url');
+          } else {
+            localStorage.setItem('kasm_url', trimmed);
+          }
         } else {
+          localStorage.setItem('kasm_url', 'http://localhost:6902/vnc.html?autoconnect=true&password=headless&resize=scale&reconnect=true');
           localStorage.removeItem('hf_space_url');
         }
+        desktopStreamStarted = false;
         toggleComputerSplit(false);
         setTimeout(() => toggleComputerSplit(true), 300);
       }
     });
   }
+
 
   if (closeSubagentStatusBtn && subagentStatusBar) {
     closeSubagentStatusBtn.addEventListener('click', (e) => {
