@@ -1,0 +1,14 @@
+listening-port=3478
+fingerprint
+lt-cred-mech
+use-auth-secret
+static-auth-secret=${TURN_SECRET}
+realm=turn.stream
+total-quota=200
+bps-capacity=0
+min-port=49152
+max-port=65535
+no-tls
+no-dtls
+verbose
+log-file=/tmp/coturn.log
