@@ -867,8 +867,8 @@ const starIndicator = `
     if (sender === 'assistant' && reasoning) {
       const cotBlock = createActivityRow({
         type: 'reasoning',
-        label: 'Thought',
-        statusText: 'Completed',
+        label: 'Thinking Process',
+        statusText: '',
         contentHtml: DOMPurify.sanitize(reasoning),
         defaultOpen: false
       });
@@ -3092,12 +3092,12 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             }
             const labelSpan = cotSection.querySelector('.activity-label-span');
             if (labelSpan) {
-              labelSpan.textContent = 'Thought';
+              labelSpan.textContent = `Thought for ${durationText}`;
               labelSpan.style.color = '#4B5563';
             }
             const statusSpan = cotSection.querySelector('.activity-status-text');
             if (statusSpan) {
-              statusSpan.textContent = 'Completed';
+              statusSpan.textContent = '';
             }
             const contentContainer = cotSection.querySelector('.activity-content-container');
             if (contentContainer) {
@@ -3357,12 +3357,12 @@ Here are the current findings:
           }
           const labelSpan = cotSection.querySelector('.activity-label-span');
           if (labelSpan) {
-            labelSpan.textContent = 'Thought';
+            labelSpan.textContent = `Thought for ${durationText}`;
             labelSpan.style.color = '#4B5563';
           }
           const statusSpan = cotSection.querySelector('.activity-status-text');
           if (statusSpan) {
-            statusSpan.textContent = 'Completed';
+            statusSpan.textContent = '';
           }
           const contentContainer = cotSection.querySelector('.activity-content-container');
           if (contentContainer) {
