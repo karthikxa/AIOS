@@ -1201,22 +1201,35 @@ const starIndicator = `
     return container;
   }
 
+  function streamText(element, text, speedMs = 12) {
+    return new Promise((resolve) => {
+      const words = text.split(' ');
+      let i = 0;
+      element.textContent = '';
+      const interval = setInterval(() => {
+        if (i < words.length) {
+          element.textContent += (i === 0 ? '' : ' ') + words[i];
+          i++;
+          const chatLog = document.getElementById('chatMessagesLog');
+          if (chatLog) chatLog.scrollTop = chatLog.scrollHeight;
+        } else {
+          clearInterval(interval);
+          resolve();
+        }
+      }, speedMs);
+    });
+  }
+
   async function triggerSwarmVisualization(promptText, bubbleElement) {
-    // Open the dedicated Agent right panel
+    if (!bubbleElement) return;
+
+    // Reset Viewed Agent Index
+    viewedAgentIdx = 0;
+
+    // Show right panel split pane, set to Agent mode view
     toggleAgentSplit(true);
 
-    let blocksContainer = bubbleElement.querySelector('.message-collapsible-blocks');
-    if (!blocksContainer) {
-      blocksContainer = document.createElement('div');
-      blocksContainer.className = 'message-collapsible-blocks';
-      bubbleElement.insertBefore(blocksContainer, bubbleElement.firstChild);
-    }
-
-    const state = modelsStore.getState();
-    const model = state.models.find(m => m.name === state.activeModel || m.id === state.activeModel);
-    if (!model) { appendMessage('assistant', 'No model connected.'); return; }
-
-    // Populate agent panel header
+    // Update split panel task description
     const agentPaneTitle = document.getElementById('agentPaneTitle');
     if (agentPaneTitle) agentPaneTitle.textContent = 'Agent 01';
     const agentPaneTaskText = document.getElementById('agentPaneTaskText');
@@ -1230,7 +1243,6 @@ const starIndicator = `
     // Show agent panel footer
     const agentPaneFooter = document.getElementById('agentPaneFooter');
     const agentPaneFooterText = document.getElementById('agentPaneFooterText');
-    const agentPaneFooterCount = document.getElementById('agentPaneFooterCount');
     if (agentPaneFooter) agentPaneFooter.style.display = 'flex';
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'Decomposing task...';
 
@@ -1287,70 +1299,97 @@ const starIndicator = `
     // Initialize global agents array
     currentSwarmAgents = subAgents;
     viewedAgentIdx = 0; // Default to first agent
-
     const totalAgents = subAgents.length;
 
     // Update agent panel progress count
     if (agentPaneProgressCount) agentPaneProgressCount.textContent = `0/${totalAgents}`;
     if (agentPaneFooterText) agentPaneFooterText.textContent = `Creating subagents... 0/${totalAgents} completed`;
-    // Removed separate count update
 
-    // Step 2: Show dynamic subagent rows in the CHAT BUBBLE
-    const listCard = createSwarmSubagentsList(subAgents.map(a => ({ idx: a.idx, name: a.name, avatar: a.avatarHtml })));
+    let blocksContainer = bubbleElement.querySelector('.message-collapsible-blocks');
+    if (!blocksContainer) {
+      blocksContainer = document.createElement('div');
+      blocksContainer.className = 'message-collapsible-blocks';
+      blocksContainer.style.cssText = 'width: 100%;';
+      bubbleElement.insertBefore(blocksContainer, bubbleElement.firstChild);
+    }
+
+    // Prepare text container
+    let textContainer = bubbleElement.querySelector('.cot-response-text-container');
+    if (!textContainer) {
+      textContainer = document.createElement('div');
+      textContainer.className = 'cot-response-text-container';
+      bubbleElement.appendChild(textContainer);
+    }
+    textContainer.innerHTML = ''; // clear initial empty content
+
+    // --- Stream Response 1 ---
+    const p1 = document.createElement('p');
+    p1.style.cssText = "margin-bottom: 12px; font-size: 13.5px; color: #374151; line-height: 1.5;";
+    textContainer.appendChild(p1);
+    const cleanPrompt = promptText.length > 50 ? promptText.slice(0, 50) + '...' : promptText;
+    await streamText(p1, `Task decomposed successfully. Now creating ${totalAgents} specialized sub-agents to analyze: "${cleanPrompt}".`);
+
+    // --- Create and append the subagents list card container ---
+    const listCard = createSwarmSubagentsCardContainer();
     blocksContainer.appendChild(listCard);
 
-    // Step 3: Populate the AGENT RIGHT PANEL with mirrored rows wrapped in a card
+    // Initialize right panel card
     const agentPaneRows = document.getElementById('agentPaneSubagentRows');
+    let rightPanelCard;
     if (agentPaneRows) {
       agentPaneRows.innerHTML = '';
       agentPaneRows.style.padding = '16px';
-
-      const card = document.createElement('div');
-      card.style.cssText = `
+      rightPanelCard = document.createElement('div');
+      rightPanelCard.style.cssText = `
         border: 1px solid #E5E7EB;
         border-radius: 8px;
         background: #FFFFFF;
         overflow: hidden;
         box-shadow: 0 1px 2px rgba(0,0,0,0.03);
       `;
+      agentPaneRows.appendChild(rightPanelCard);
+    }
 
-      subAgents.forEach((agent, i) => {
+    // --- Generate subagents one by one with delay/animation ---
+    for (let i = 0; i < totalAgents; i++) {
+      const agent = subAgents[i];
+      // Add row to Chat Bubble card
+      addCreationRow(listCard, agent, totalAgents);
+
+      // Add row to Right Panel card
+      if (rightPanelCard) {
         const row = document.createElement('div');
         row.id = `agent-pane-row-${agent.idx}`;
         row.style.cssText = `
           display: flex; align-items: center; gap: 10px;
           padding: 12px 16px;
-          border-bottom: ${i === subAgents.length - 1 ? 'none' : '1px solid #F3F4F6'};
+          border-bottom: 1px solid #F3F4F6;
           font-family: 'Inter', sans-serif;
-          transition: background 0.2s;
+          transition: background 0.2s, opacity 0.3s ease, transform 0.3s ease;
           cursor: pointer;
+          opacity: 0;
+          transform: translateY(5px);
         `;
         row.addEventListener('mouseenter', () => { row.style.background = '#F9FAFB'; });
         row.addEventListener('mouseleave', () => { row.style.background = 'transparent'; });
-        row.addEventListener('click', () => {
-          showAgentDetails(agent.idx);
-        });
+        row.addEventListener('click', () => { showAgentDetails(agent.idx); });
 
-        // Circle icon (like image: hollow circle = pending/running)
         const circleIcon = document.createElement('span');
         circleIcon.id = `agent-pane-icon-${agent.idx}`;
         circleIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
         circleIcon.style.cssText = 'flex-shrink: 0; display: flex; align-items: center;';
         row.appendChild(circleIcon);
 
-        // "Create Subagent" label
         const label = document.createElement('span');
         label.textContent = 'Create Subagent';
         label.style.cssText = 'font-size: 12px; color: #9CA3AF; flex-shrink: 0;';
         row.appendChild(label);
 
-        // Separator
         const sep = document.createElement('span');
         sep.textContent = '|';
         sep.style.cssText = 'color: #E5E7EB; font-size: 12px; flex-shrink: 0;';
         row.appendChild(sep);
 
-        // Spinner + name
         const statusWrap = document.createElement('span');
         statusWrap.id = `agent-pane-status-${agent.idx}`;
         statusWrap.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; min-width: 0; flex: 1;';
@@ -1361,20 +1400,60 @@ const starIndicator = `
           <span style="font-size: 13px; color: #374151; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${agent.name}</span>
         `;
         row.appendChild(statusWrap);
-        card.appendChild(row);
-      });
-      agentPaneRows.appendChild(card);
+        rightPanelCard.appendChild(row);
+
+        row.offsetHeight;
+        row.style.opacity = '1';
+        row.style.transform = 'translateY(0)';
+        
+        const rRows = rightPanelCard.children;
+        for (let k = 0; k < rRows.length; k++) {
+          rRows[k].style.borderBottom = k === rRows.length - 1 ? 'none' : '1px solid #F3F4F6';
+        }
+      }
+
+      // Wait to simulate creation activity
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // Mark this subagent row as created/checkmark
+      // Update Chat row status
+      const spinner = document.getElementById(`swarm-row-spinner-${agent.idx}`);
+      if (spinner) {
+        const parent = spinner.parentNode;
+        spinner.remove();
+        const check = document.createElement('span');
+        check.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>`;
+        check.style.cssText = 'display: inline-flex; align-items: center; flex-shrink:0; margin-right:4px;';
+        parent.insertBefore(check, parent.firstChild);
+      }
+
+      // Update Pane row status
+      const paneIcon = document.getElementById(`agent-pane-icon-${agent.idx}`);
+      if (paneIcon) {
+        paneIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><circle cx="12" cy="12" r="10" fill="#E6F4EA"/><path d="M9 12l2 2 4-4"/></svg>`;
+      }
+      const paneStatus = document.getElementById(`agent-pane-status-${agent.idx}`);
+      if (paneStatus) {
+        paneStatus.innerHTML = `<span style="font-size: 13px; color: #374151; font-weight: 500;">${agent.name}</span>`;
+      }
     }
 
-    // Show launching message
-    const launchMsg = document.createElement('div');
-    launchMsg.style.cssText = 'font-size: 13px; color: #374151; margin-top: 16px; margin-bottom: 12px; font-weight: 500;';
-    launchMsg.textContent = `Now launching both research tracks in parallel — these are independent and will run simultaneously.`;
-    
-    // Create the active Agent Swarm card
-    const swarmCard = createSwarmActiveCard(subAgents);
-    blocksContainer.appendChild(launchMsg);
+    // --- Stream Response 2 ---
+    const p2 = document.createElement('p');
+    p2.style.cssText = "margin-top: 16px; margin-bottom: 12px; font-size: 13.5px; color: #374151; line-height: 1.5;";
+    textContainer.appendChild(p2);
+    await streamText(p2, `Now launching both research tracks in parallel — these are independent and will run simultaneously.`);
+
+    // --- Create and append empty Active Swarm card ---
+    const swarmCard = createSwarmActiveCardContainer(totalAgents);
     blocksContainer.appendChild(swarmCard);
+
+    // --- Stagger-stream the active swarm rows one by one ---
+    for (let i = 0; i < totalAgents; i++) {
+      const agent = subAgents[i];
+      addActiveSwarmRow(swarmCard, agent, totalAgents);
+      await new Promise(resolve => setTimeout(resolve, 350));
+    }
 
     // Start log simulation intervals
     subAgents.forEach((agent) => {
@@ -1435,23 +1514,10 @@ const starIndicator = `
             updateTerminalDisplay(agent.idx);
           }
 
-          // Update CHAT BUBBLE row: spinner → green checkmark
-          updateSwarmListRow(agent.idx, true);
-
-          // Update AGENT PANEL row: circle → green checkmark, spinner → checkmark
-          const paneIcon = document.getElementById(`agent-pane-icon-${agent.idx}`);
-          if (paneIcon) paneIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
-          const paneStatus = document.getElementById(`agent-pane-status-${agent.idx}`);
-          if (paneStatus) {
-            const nameEl = paneStatus.querySelector('span');
-            const agentName = nameEl ? nameEl.textContent : agent.name;
-            paneStatus.innerHTML = `<span style="font-size: 13px; color: #374151; font-weight: 500;">${agentName}</span>`;
-          }
-
           // Update progress counts
           completedCount++;
           if (agentPaneProgressCount) agentPaneProgressCount.textContent = `${completedCount}/${totalAgents}`;
-          if (agentPaneFooterText) agentPaneFooterText.textContent = `Creating subagents... ${completedCount}/${totalAgents} completed`;
+          if (agentPaneFooterText) agentPaneFooterText.textContent = `Executing subagents... ${completedCount}/${totalAgents} completed`;
           return result;
         } catch (err) {
           agent.status = 'failed';
@@ -1468,14 +1534,9 @@ const starIndicator = `
             updateTerminalDisplay(agent.idx);
           }
 
-          // Update both rows to error state
-          updateSwarmListRow(agent.idx, false);
-          const paneIcon = document.getElementById(`agent-pane-icon-${agent.idx}`);
-          if (paneIcon) paneIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
-          
           completedCount++;
           if (agentPaneProgressCount) agentPaneProgressCount.textContent = `${completedCount}/${totalAgents}`;
-          if (agentPaneFooterText) agentPaneFooterText.textContent = `Creating subagents... ${completedCount}/${totalAgents} completed`;
+          if (agentPaneFooterText) agentPaneFooterText.textContent = `Executing subagents... ${completedCount}/${totalAgents} completed`;
           return null;
         }
       })();
@@ -1483,7 +1544,7 @@ const starIndicator = `
 
     await Promise.all(parallelPromises);
 
-    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)
+    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'Synthesizing results...';
     let finalResponse = '';
     try {
@@ -2490,6 +2551,238 @@ const starIndicator = `
         ${dotsHtml}
       </div>
     `;
+  }
+
+  function createSwarmSubagentsCardContainer() {
+    const container = document.createElement('div');
+    container.className = 'swarm-subagents-card';
+    container.style.cssText = `
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      background: #FFFFFF;
+      overflow: hidden;
+      margin: 12px 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      position: relative;
+      width: 100%;
+    `;
+    const listContainer = document.createElement('div');
+    listContainer.className = 'swarm-subagents-scroll';
+    listContainer.style.cssText = `
+      max-height: 280px;
+      overflow-y: auto;
+    `;
+    container.appendChild(listContainer);
+    return container;
+  }
+
+  function addCreationRow(listCard, agent, totalAgents) {
+    const listContainer = listCard.querySelector('.swarm-subagents-scroll');
+    if (!listContainer) return;
+
+    const row = document.createElement('div');
+    row.id = `swarm-list-row-${agent.idx}`;
+    row.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid #F3F4F6;
+      font-size: 13px;
+      color: #374151;
+      transition: background 0.2s, opacity 0.3s ease, transform 0.3s ease;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(5px);
+    `;
+    row.addEventListener('mouseenter', () => { row.style.background = '#F9FAFB'; });
+    row.addEventListener('mouseleave', () => { row.style.background = 'transparent'; });
+    row.addEventListener('click', () => { showAgentDetails(agent.idx); });
+
+    const left = document.createElement('div');
+    left.style.cssText = 'display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;';
+
+    const profileCircle = document.createElement('span');
+    profileCircle.style.cssText = `
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid #D1D5DB;
+      background: #F9FAFB;
+      color: #6B7280;
+      flex-shrink: 0;
+    `;
+    profileCircle.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    `;
+    left.appendChild(profileCircle);
+
+    const label = document.createElement('span');
+    label.textContent = 'Create Subagent';
+    label.style.cssText = 'color: #9CA3AF; font-size: 12px; flex-shrink: 0;';
+    left.appendChild(label);
+
+    const sep = document.createElement('span');
+    sep.textContent = '|';
+    sep.style.cssText = 'color: #D1D5DB; font-size: 12px; flex-shrink: 0;';
+    left.appendChild(sep);
+
+    const statusWrap = document.createElement('span');
+    statusWrap.id = `swarm-row-status-${agent.idx}`;
+    statusWrap.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; min-width: 0;';
+    statusWrap.innerHTML = `
+      <svg id="swarm-row-spinner-${agent.idx}" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2.5" stroke-linecap="round" style="animation: subagent-spin 1s linear infinite; flex-shrink: 0;">
+        <circle cx="12" cy="12" r="10" stroke-dasharray="4 4"/>
+      </svg>
+      <span style="font-size: 13px; color: #374151; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${agent.name}</span>
+    `;
+    left.appendChild(statusWrap);
+    row.appendChild(left);
+
+    const right = document.createElement('span');
+    right.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>`;
+    right.style.cssText = 'flex-shrink: 0; display: flex; align-items: center; margin-left: 6px;';
+    row.appendChild(right);
+
+    listContainer.appendChild(row);
+
+    row.offsetHeight;
+    row.style.opacity = '1';
+    row.style.transform = 'translateY(0)';
+
+    const rows = listContainer.children;
+    for (let i = 0; i < rows.length; i++) {
+      rows[i].style.borderBottom = i === rows.length - 1 ? 'none' : '1px solid #F3F4F6';
+    }
+  }
+
+  function createSwarmActiveCardContainer(totalAgents) {
+    const card = document.createElement('div');
+    card.id = 'swarmActiveCard';
+    card.style.cssText = `
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      background: #FFFFFF;
+      overflow: hidden;
+      margin: 12px 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+    `;
+
+    const header = document.createElement('div');
+    header.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid #F3F4F6;
+      background: #FAFAFA;
+      user-select: none;
+    `;
+    header.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+        <circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/>
+      </svg>
+      <span style="font-size: 12.5px; font-weight: 600; color: #111827;">Agent Swarm</span>
+      <span style="font-size: 11.5px; color: #6B7280; font-weight: 500;">${totalAgents} Tasks</span>
+    `;
+    card.appendChild(header);
+
+    const body = document.createElement('div');
+    body.className = 'swarm-active-body';
+    card.appendChild(body);
+
+    return card;
+  }
+
+  function addActiveSwarmRow(swarmCard, agent, totalAgents) {
+    const body = swarmCard.querySelector('.swarm-active-body');
+    if (!body) return;
+
+    const row = document.createElement('div');
+    row.id = `swarm-active-row-${agent.idx}`;
+    row.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid #F3F4F6;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.3s ease, transform 0.3s ease;
+      opacity: 0;
+      transform: translateY(5px);
+    `;
+    row.addEventListener('mouseenter', () => {
+      if (viewedAgentIdx !== agent.idx) row.style.background = '#F9FAFB';
+    });
+    row.addEventListener('mouseleave', () => {
+      if (viewedAgentIdx !== agent.idx) row.style.background = 'transparent';
+    });
+    row.addEventListener('click', () => {
+      showAgentDetails(agent.idx);
+    });
+
+    const leftCol = document.createElement('div');
+    leftCol.style.cssText = 'display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;';
+
+    const avatar = document.createElement('div');
+    avatar.style.cssText = `
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.5px solid #D1D5DB;
+      background: #F3F4F6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #4B5563;
+      font-size: 11px;
+    `;
+    avatar.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    leftCol.appendChild(avatar);
+
+    const labelWrap = document.createElement('div');
+    labelWrap.style.cssText = 'display: flex; flex-direction: column; min-width: 0;';
+    labelWrap.innerHTML = `
+      <span style="font-size: 12.5px; font-weight: 600; color: #111827; line-height: 1.2;">${agent.name}</span>
+      <span style="font-size: 11.5px; color: #6B7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px;">└ ${agent.task}</span>
+    `;
+    leftCol.appendChild(labelWrap);
+    row.appendChild(leftCol);
+
+    const rightCol = document.createElement('div');
+    rightCol.style.cssText = 'display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0;';
+
+    const viewLabel = document.createElement('span');
+    viewLabel.id = `swarm-viewing-label-${agent.idx}`;
+    viewLabel.style.cssText = 'font-size: 11.5px; font-weight: 500; color: #6B7280;';
+    viewLabel.innerHTML = agent.idx === viewedAgentIdx ? `<span style="font-weight:700; color:#3B82F6;">Viewing</span> ${agent.idStr}` : agent.idStr;
+    rightCol.appendChild(viewLabel);
+
+    const dotsDiv = document.createElement('div');
+    dotsDiv.id = `swarm-row-dots-${agent.idx}`;
+    dotsDiv.innerHTML = getProgressDotsHtml(agent.dotsCount, agent.status);
+    rightCol.appendChild(dotsDiv);
+
+    row.appendChild(rightCol);
+    body.appendChild(row);
+
+    row.offsetHeight;
+    row.style.opacity = '1';
+    row.style.transform = 'translateY(0)';
+
+    const rows = body.children;
+    for (let i = 0; i < rows.length; i++) {
+      rows[i].style.borderBottom = i === rows.length - 1 ? 'none' : '1px solid #F3F4F6';
+    }
   }
 
   function createSwarmActiveCard(agents) {
