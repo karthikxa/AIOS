@@ -488,6 +488,7 @@
     </div>
 
     <!-- ===== Agent Mode Right Split Panel ===== -->
+    <!-- ===== Agent Mode Right Split Panel ===== -->
     <div id="agentSplitPane" style="display: none; flex-direction: column; border-left: 1px solid #E5E7EB; background: #FFFFFF; height: 100%; box-sizing: border-box; overflow: hidden; width: 38%; flex-shrink: 0; position: relative; min-height: 0; font-family: 'Inter', sans-serif;">
 
       <!-- Row 1: Header — "Agent 01" + "Agent's Window" link + close -->
@@ -504,34 +505,67 @@
         </div>
       </div>
 
-      <!-- Row 2: Task Progress header -->
-      <div id="agentPaneTaskProgressRow" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #F3F4F6; flex-shrink: 0; background: #FAFAFA;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <div id="agentPaneStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; flex-shrink: 0; animation: livePulse 2s ease-in-out infinite;"></div>
-          <span id="agentPaneProgressLabel" style="font-size: 13px; font-weight: 600; color: #111827;">Task Progress</span>
-          <span id="agentPaneProgressCount" style="font-size: 12px; color: #6B7280; font-weight: 400;">0/0</span>
+      <!-- Container 1: Overview (Default View) -->
+      <div id="agentPaneOverview" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
+        <!-- Row 2: Task Progress header -->
+        <div id="agentPaneTaskProgressRow" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #F3F4F6; flex-shrink: 0; background: #FAFAFA;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div id="agentPaneStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; flex-shrink: 0; animation: livePulse 2s ease-in-out infinite;"></div>
+            <span id="agentPaneProgressLabel" style="font-size: 13px; font-weight: 600; color: #111827;">Task Progress</span>
+            <span id="agentPaneProgressCount" style="font-size: 12px; color: #6B7280; font-weight: 400;">0/0</span>
+          </div>
+          <div id="agentPaneTaskLink" style="display: flex; align-items: center; gap: 4px; cursor: pointer; max-width: 60%; overflow: hidden;">
+            <span id="agentPaneTaskText" style="font-size: 12px; color: #6B7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
         </div>
-        <div id="agentPaneTaskLink" style="display: flex; align-items: center; gap: 4px; cursor: pointer; max-width: 60%; overflow: hidden;">
-          <span id="agentPaneTaskText" style="font-size: 12px; color: #6B7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><polyline points="9 18 15 12 9 6"/></svg>
+
+        <!-- Row 3: Subagent rows (dynamically populated) -->
+        <div id="agentPaneSubagentRows" style="flex: 1; overflow-y: auto; background: #FFFFFF; padding: 0;">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Row 4: Footer status bar -->
+        <div id="agentPaneFooter" style="display: none; align-items: center; gap: 8px; padding: 12px 16px; border-top: 1px solid #F3F4F6; flex-shrink: 0; background: #FAFAFA; user-select: none;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+            <rect x="3" y="11" width="18" height="10" rx="2"/>
+            <circle cx="12" cy="5" r="2"/>
+            <path d="M12 7v4"/>
+            <line x1="8" y1="16" x2="8" y2="16"/>
+            <line x1="16" y1="16" x2="16" y2="16"/>
+          </svg>
+          <span id="agentPaneFooterText" style="font-size: 12.5px; color: #4B5563; font-weight: 500;">Creating subagents...</span>
         </div>
       </div>
 
-      <!-- Row 3: Subagent rows (dynamically populated) -->
-      <div id="agentPaneSubagentRows" style="flex: 1; overflow-y: auto; background: #FFFFFF; padding: 0;">
-        <!-- Populated by JS: [person icon] Create Subagent | [spinner] Name -->
-      </div>
+      <!-- Container 2: Agent Details View (Shown on sub-agent click) -->
+      <div id="agentPaneDetailsView" style="display: none; flex-direction: column; flex: 1; min-height: 0; background: #FFFFFF;">
+        <!-- Back navigation row -->
+        <div id="agentPaneBackBtn" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid #F3F4F6; background: #FAFAFA; flex-shrink: 0; cursor: pointer; user-select: none;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          <span style="font-size: 13px; font-weight: 600; color: #4B5563;">Back to Swarm</span>
+        </div>
 
-      <!-- Row 4: Footer status bar -->
-      <div id="agentPaneFooter" style="display: none; align-items: center; gap: 8px; padding: 12px 16px; border-top: 1px solid #F3F4F6; flex-shrink: 0; background: #FAFAFA; user-select: none;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
-          <rect x="3" y="11" width="18" height="10" rx="2"/>
-          <circle cx="12" cy="5" r="2"/>
-          <path d="M12 7v4"/>
-          <line x1="8" y1="16" x2="8" y2="16"/>
-          <line x1="16" y1="16" x2="16" y2="16"/>
-        </svg>
-        <span id="agentPaneFooterText" style="font-size: 12.5px; color: #4B5563; font-weight: 500;">Creating subagents...</span>
+        <!-- Agent Profile & Task Header -->
+        <div style="padding: 16px; border-bottom: 1px solid #F3F4F6; flex-shrink: 0; background: #FFFFFF;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <div id="agentDetailAvatar" style="width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #D1D5DB; background: #F3F4F6; display: flex; align-items: center; justify-content: center; color: #4B5563; font-size: 16px;">
+              🤖
+            </div>
+            <div>
+              <div id="agentDetailName" style="font-size: 15px; font-weight: 700; color: #111827;">Agent</div>
+              <div id="agentDetailRole" style="font-size: 12px; color: #6B7280;">Sub-agent</div>
+            </div>
+          </div>
+          <div id="agentDetailTask" style="font-size: 12.5px; color: #4B5563; line-height: 1.4; background: #F9FAFB; padding: 10px 12px; border-radius: 6px; border: 1px solid #E5E7EB; word-break: break-word;">
+            Task description...
+          </div>
+        </div>
+
+        <!-- Terminal Console Logs / Output content -->
+        <div id="agentDetailTerminal" style="flex: 1; overflow-y: auto; padding: 16px; background: #0F172A; color: #F8FAFC; font-family: 'Courier New', Courier, monospace; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; word-break: break-all;">
+          <!-- Console output -->
+        </div>
       </div>
 
     </div>
