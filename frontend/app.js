@@ -1223,7 +1223,7 @@ const starIndicator = `
   async function triggerSwarmVisualization(promptText, bubbleElement, model) {
     if (!bubbleElement) return;
 
-    // Reset Viewed Agent Index
+    // Reset Viewed Agent Index (Force Vercel Webhook rebuild 2)
     viewedAgentIdx = 0;
 
     // Show right panel split pane, set to Agent mode view
