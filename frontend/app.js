@@ -1214,22 +1214,16 @@ const starIndicator = `
     if (agentPaneFooter) agentPaneFooter.style.display = 'flex';
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'Decomposing task...';
 
-    // Step 1: Ask LLM to decompose the task into sub-agent assignments
-    const decomposeResp = await fetch('/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${model.apiKey || ''}` },
-      body: JSON.stringify({
-        model: model.modelId || model.name || 'auto',
-        messages: [
-          { role: 'system', content: `You are a task orchestrator. Given a user task, decompose it into 2-5 sub-agent tasks. Return ONLY a valid JSON array. No reasoning, no explanation, no markdown. Just the JSON.\n\nFormat: [{"name":"Role Name","task":"specific task description","avatar":"emoji"}]\n\nAvatars: 👨‍💻 👩‍🎨 👩‍🚀 👨‍🔬 👩‍⚖️ 👨‍🏫 👩‍⚕️ 👨‍🎨 👩‍🔧 👨‍✈️\n\nNames: Researcher, Writer, Analyst, Coder, Designer, etc.` },
-          { role: 'user', content: promptText }
-        ],
-        temperature: 0.3,
-        max_tokens: 4096,
-      }),
-    });
-    const decomposeData = await decomposeResp.json();
-    const rawContent = decomposeData.choices?.[0]?.message?.content || '[]';
+    // Step 1: Ask LLM to decompose the task into sub-agent assignments using callRealAPI
+    let rawContent = '[]';
+    try {
+      rawContent = await callRealAPI(model, [
+        { role: 'system', content: `You are a task orchestrator. Given a user task, decompose it into 2-5 sub-agent tasks. Return ONLY a valid JSON array. No reasoning, no explanation, no markdown. Just the JSON.\n\nFormat: [{"name":"Role Name","task":"specific task description","avatar":"emoji"}]\n\nAvatars: 👨‍💻 👩‍🎨 👩‍🚀 👨‍🔬 👩‍⚖️ 👨‍🏫 👩‍⚕️ 👨‍🎨 👩‍🔧 👨‍✈️\n\nNames: Researcher, Writer, Analyst, Coder, Designer, etc.` },
+        { role: 'user', content: promptText }
+      ], null, null, null, null);
+    } catch (err) {
+      console.error('Task decomposition error:', err);
+    }
     let subAgents;
     try {
       const jsonMatch = rawContent.match(/\[[\s\S]*?\]/);
@@ -1324,27 +1318,16 @@ const starIndicator = `
       agentPaneRows.appendChild(card);
     }
 
-    // Step 4: Execute all sub-agents in parallel
+    // Step 4: Execute all sub-agents in parallel using callRealAPI
     let completedCount = 0;
     const allResults = [];
     const parallelPromises = subAgents.map((agent, idx) => {
       return (async () => {
         try {
-          const resp = await fetch('/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${model.apiKey || ''}` },
-            body: JSON.stringify({
-              model: model.modelId || model.name || 'auto',
-              messages: [
-                { role: 'system', content: `You are ${agent.name}. Complete this task concisely and thoroughly:\n\n${agent.task}` },
-                { role: 'user', content: promptText }
-              ],
-              temperature: 0.5,
-              max_tokens: 4096,
-            }),
-          });
-          const data = await resp.json();
-          const result = data.choices?.[0]?.message?.content || 'No response';
+          const result = await callRealAPI(model, [
+            { role: 'system', content: `You are ${agent.name}. Complete this task concisely and thoroughly:\n\n${agent.task}` },
+            { role: 'user', content: promptText }
+          ], null, null, null, null) || 'No response';
           agent.status = 'done';
           agent.result = result;
           allResults[idx] = result;
@@ -1387,23 +1370,18 @@ const starIndicator = `
 
     await Promise.all(parallelPromises);
 
-    // Step 5: Aggregate results with LLM
+    // Step 5: Aggregate results with LLM using callRealAPI
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'Synthesizing results...';
-    const aggResp = await fetch('/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${model.apiKey || ''}` },
-      body: JSON.stringify({
-        model: model.modelId || model.name || 'auto',
-        messages: [
-          { role: 'system', content: 'You are a synthesizer. Combine the sub-agent results into a single comprehensive, well-structured response for the user. Use markdown formatting.' },
-          { role: 'user', content: `Original task: ${promptText}\n\nSub-agent results:\n${subAgents.map((a) => `### ${a.name}\n${a.result}`).join('\n\n')}` }
-        ],
-        temperature: 0.3,
-        max_tokens: 2048,
-      }),
-    });
-    const aggData = await aggResp.json();
-    const finalResponse = aggData.choices?.[0]?.message?.content || allResults.join('\n\n');
+    let finalResponse = '';
+    try {
+      finalResponse = await callRealAPI(model, [
+        { role: 'system', content: 'You are a synthesizer. Combine the sub-agent results into a single comprehensive, well-structured response for the user. Use markdown formatting.' },
+        { role: 'user', content: `Original task: ${promptText}\n\nSub-agent results:\n${subAgents.map((a) => `### ${a.name}\n${a.result}`).join('\n\n')}` }
+      ], null, null, null, null);
+    } catch (err) {
+      console.error('Aggregation error:', err);
+      finalResponse = allResults.join('\n\n');
+    }
 
     // Update panel to show "complete" state
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'All subagents complete';
