@@ -878,6 +878,9 @@ const starIndicator = `
     // 2. Render tool calls if present
     if (sender === 'assistant' && Array.isArray(tool_calls)) {
       tool_calls.forEach(tc => {
+        if (tc.name === 'swarm_router' || tc.name === 'delegate_task') {
+          return; // Skip rendering internal swarm tools
+        }
         const detailHtml = getToolDetailHtml(tc.name, tc.args);
         const stateWord = tc.status === 'complete' ? 'Completed' : tc.status === 'failed' ? 'Failed' : 'Running';
         
@@ -1053,7 +1056,7 @@ const starIndicator = `
          <span style="font-size: 13px; color: #374151; font-weight: 500;">${agentName}</span>`
       : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
          <span style="font-size: 13px; color: #374151; font-weight: 500;">${agentName}</span>`;
-    if (row && success) row.style.background = '#F0FDF4';
+    // Row background color remains the same
   }
 
   function createSwarmParallelCards(agents) {
@@ -1345,7 +1348,7 @@ const starIndicator = `
             paneStatus.innerHTML = `<span style="font-size: 13px; color: #374151; font-weight: 500;">${agentName}</span>`;
           }
           const paneRow = document.getElementById(`agent-pane-row-${agent.idx}`);
-          if (paneRow) paneRow.style.background = '#F0FDF4';
+          // Pane row background remains the same
 
           // Update progress counts
           completedCount++;
@@ -1399,8 +1402,30 @@ const starIndicator = `
       }
     }, 2000);
 
-    // Step 6: Show final aggregated response
-    appendMessage('assistant', finalResponse);
+    // Step 6: Show final aggregated response inside the same assistant bubble
+    let textContainer = bubbleElement.querySelector('.cot-response-text-container');
+    if (!textContainer) {
+      textContainer = document.createElement('div');
+      textContainer.className = 'cot-response-text-container';
+      bubbleElement.appendChild(textContainer);
+    }
+    const finalHtml = renderMarkdown(finalResponse);
+    const existingText = textContainer.innerHTML.trim();
+    if (existingText) {
+      textContainer.innerHTML = `<div style="margin-bottom: 12px;">${existingText}</div><div style="margin-top: 16px; border-top: 1px solid #F3F4F6; padding-top: 16px;">${finalHtml}</div>`;
+    } else {
+      textContainer.innerHTML = finalHtml;
+    }
+    wireCodeBlockActions(textContainer);
+    
+    // Save to task history
+    const active = tasksStore.tasks.find(t => t.id === tasksStore.activeId);
+    if (active) {
+      active.messages.push({ role: 'assistant', content: finalResponse });
+      tasksStore.notify();
+    }
+    
+    chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
   }
 
   // ── Artifact Panel ──────────────────────────────────────────────────────
@@ -3074,7 +3099,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         if (!hasEndedThinking && thinkingStartTime) {
           hasEndedThinking = true;
           const duration = Math.round((Date.now() - thinkingStartTime) / 1000);
-          const durationText = duration < 1 ? '<1s' : `${duration}s`;
+          const durationText = duration <= 1 ? '1s' : `${duration}s`;
           if (cotSection) {
             const iconSpan = cotSection.querySelector('.activity-icon-span');
             if (iconSpan) {
@@ -3169,6 +3194,9 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         }
 
         if (toolUsage.type === 'tool_start') {
+          if (toolUsage.name === 'swarm_router' || toolUsage.name === 'delegate_task') {
+            return; // Skip rendering internal swarm tools
+          }
           showToolIndicator(toolUsage.name);
           window.dispatchEvent(new CustomEvent('agent-tool-start', { detail: { name: toolUsage.name, id: toolUsage.id, args: toolUsage.args || {} } }));
 
@@ -3201,6 +3229,9 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             detailWrapper: toolSection.querySelector('.activity-detail-wrapper')
           };
         } else if (toolUsage.type === 'tool_complete') {
+          if (toolUsage.name === 'swarm_router' || toolUsage.name === 'delegate_task') {
+            return; // Skip rendering internal swarm tools
+          }
           hideToolIndicator(toolUsage.name);
           window.dispatchEvent(new CustomEvent('agent-tool-complete', { detail: { name: toolUsage.name, id: toolUsage.id } }));
 
@@ -3339,7 +3370,7 @@ Here are the current findings:
       if (!hasEndedThinking && thinkingStartTime) {
         hasEndedThinking = true;
         const duration = Math.round((Date.now() - thinkingStartTime) / 1000);
-        const durationText = duration < 1 ? '<1s' : `${duration}s`;
+        const durationText = duration <= 1 ? '1s' : `${duration}s`;
         if (cotSection) {
           const iconSpan = cotSection.querySelector('.activity-icon-span');
           if (iconSpan) {
