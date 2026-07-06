@@ -3181,6 +3181,12 @@ const starIndicator = `
     if (overview) overview.style.display = 'none';
     if (details) details.style.display = 'flex';
     
+    // Hide the legacy back button and the agent profile/task header
+    const backBtn = document.getElementById('agentPaneBackBtn');
+    if (backBtn) backBtn.style.display = 'none';
+    const detailHeader = document.getElementById('agentDetailHeader');
+    if (detailHeader) detailHeader.style.display = 'none';
+    
     const agent = currentSwarmAgents[idx];
     if (!agent) return;
     
@@ -3208,6 +3214,18 @@ const starIndicator = `
     
     const agent = currentSwarmAgents[idx];
     if (!agent) return;
+
+    // Render Clean bold Agent Title at top of activity logs
+    const heading = document.createElement('div');
+    heading.textContent = `Agent ${agent.idStr}`;
+    heading.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #111827;
+      padding: 20px 16px 12px 16px;
+    `;
+    terminal.appendChild(heading);
     
     agent.activities.forEach((act) => {
       terminal.appendChild(createActivityRowHtml(act));
@@ -3228,6 +3246,43 @@ const starIndicator = `
       };
       terminal.appendChild(createActivityRowHtml(failAct));
     }
+
+    // Append Clean Back to latest button at the bottom of the log container
+    const backLatestBtn = document.createElement('div');
+    backLatestBtn.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 24px auto;
+      padding: 8px 16px;
+      border: 1px solid #D1D5DB;
+      border-radius: 8px;
+      background: #FFFFFF;
+      color: #374151;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      width: fit-content;
+      transition: background 0.15s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      user-select: none;
+    `;
+    backLatestBtn.innerHTML = `
+      <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="margin-right: 2px;"><path d="M8 5v14l11-7z"/></svg>
+      <span>Back to latest</span>
+    `;
+    backLatestBtn.addEventListener('mouseenter', () => { backLatestBtn.style.background = '#F9FAFB'; });
+    backLatestBtn.addEventListener('mouseleave', () => { backLatestBtn.style.background = '#FFFFFF'; });
+    backLatestBtn.addEventListener('click', () => {
+      // Close detail view, go back to overview tab
+      const overview = document.getElementById('agentPaneOverview');
+      const details = document.getElementById('agentPaneDetailsView');
+      if (overview) overview.style.display = 'flex';
+      if (details) details.style.display = 'none';
+    });
+    terminal.appendChild(backLatestBtn);
     
     terminal.scrollTop = terminal.scrollHeight;
     
