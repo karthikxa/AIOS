@@ -1279,10 +1279,10 @@ const starIndicator = `
       status: 'pending',
       result: '',
       dotsCount: 2,
-      logs: [
-        `[INFO] Initializing sandboxed execution context...`,
-        `[INFO] Spawning sub-agent process '${HUMAN_NAMES[i % HUMAN_NAMES.length]}' [PID ${Math.floor(Math.random() * 9000 + 1000)}]...`,
-        `[INFO] Allocating container nodes and loading tool suite...`
+      activities: [
+        { type: 'think', label: 'Initializing sandboxed execution context' },
+        { type: 'terminal', label: `Spawning sub-agent process '${HUMAN_NAMES[i % HUMAN_NAMES.length]}' [PID ${Math.floor(Math.random() * 9000 + 1000)}]` },
+        { type: 'think', label: 'Allocating container nodes and loading tool suite' }
       ]
     }));
 
@@ -1455,17 +1455,16 @@ const starIndicator = `
       await new Promise(resolve => setTimeout(resolve, 350));
     }
 
-    // Start log simulation intervals
+    // Start activity simulation intervals
     subAgents.forEach((agent) => {
       agent.status = 'running';
       
-      const simulatedActions = [
-        `[INFO] Establishing SSL handshake with context repositories...`,
-        `[ACTION] Querying knowledge base for task: "${agent.task.slice(0, 35)}..."`,
-        `[INFO] Retrieved relevant document chunks (score > 0.85).`,
-        `[ACTION] Running synthesis compiler pass 1...`,
-        `[INFO] Constructing draft response components...`,
-        `[ACTION] Formulating final markdown result...`,
+      const simulatedActivities = [
+        { type: 'think', label: 'Establishing SSL handshake with context repositories' },
+        { type: 'search', label: `Querying database for: "${agent.task.slice(0, 30)}..."`, count: '15 results' },
+        { type: 'browse', label: 'Browsing documentation at https://api.openai.com/docs' },
+        { type: 'think', label: 'Running synthesis compiler pass 1' },
+        { type: 'write', label: 'Constructing draft response components' }
       ];
       
       let actionIdx = 0;
@@ -1477,8 +1476,8 @@ const starIndicator = `
             if (dotsContainer) dotsContainer.innerHTML = getProgressDotsHtml(agent.dotsCount, 'running');
           }
           
-          if (actionIdx < simulatedActions.length) {
-            agent.logs.push(simulatedActions[actionIdx]);
+          if (actionIdx < simulatedActivities.length) {
+            agent.activities.push(simulatedActivities[actionIdx]);
             actionIdx++;
             if (viewedAgentIdx === agent.idx) {
               updateTerminalDisplay(agent.idx);
@@ -2785,6 +2784,183 @@ const starIndicator = `
     }
   }
 
+  function createActivityRowHtml(activity) {
+    let iconHtml = '';
+    if (activity.type === 'think') {
+      iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round"><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>`;
+    } else if (activity.type === 'search') {
+      iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+    } else if (activity.type === 'terminal') {
+      iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`;
+    } else if (activity.type === 'browse') {
+      iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`;
+    } else if (activity.type === 'write') {
+      iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"/></svg>`;
+    } else if (activity.type === 'success') {
+      iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><circle cx="12" cy="12" r="10" fill="#E6F4EA"/><path d="M9 12l2 2 4-4"/></svg>`;
+    } else if (activity.type === 'failed') {
+      iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+    }
+
+    const row = document.createElement('div');
+    row.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid #F3F4F6;
+      font-size: 13px;
+      color: #374151;
+      cursor: ${activity.type === 'success' || activity.type === 'failed' ? 'pointer' : 'default'};
+      transition: background 0.15s;
+    `;
+    if (activity.type === 'success' || activity.type === 'failed') {
+      row.addEventListener('mouseenter', () => { row.style.background = '#F9FAFB'; });
+      row.addEventListener('mouseleave', () => { row.style.background = 'transparent'; });
+    }
+
+    const left = document.createElement('div');
+    left.style.cssText = 'display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;';
+
+    const iconSpan = document.createElement('span');
+    iconSpan.style.cssText = 'display: inline-flex; align-items: center; flex-shrink: 0;';
+    iconSpan.innerHTML = iconHtml;
+    left.appendChild(iconSpan);
+
+    const text = document.createElement('span');
+    text.textContent = activity.label;
+    text.style.cssText = 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; color: #374151;';
+    left.appendChild(text);
+
+    row.appendChild(left);
+
+    const right = document.createElement('div');
+    right.style.cssText = 'display: flex; align-items: center; gap: 6px; flex-shrink: 0;';
+
+    if (activity.count) {
+      const countSpan = document.createElement('span');
+      countSpan.textContent = activity.count;
+      countSpan.style.cssText = 'font-size: 11px; color: #9CA3AF; font-weight: 500; margin-right: 6px;';
+      right.appendChild(countSpan);
+    }
+
+    const chevron = document.createElement('span');
+    chevron.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>`;
+    chevron.style.cssText = 'display: flex; align-items: center; transition: transform 0.2s;';
+    right.appendChild(chevron);
+
+    row.appendChild(right);
+
+    if (activity.type === 'success' || activity.type === 'failed') {
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display: flex; flex-direction: column; width: 100%; border-bottom: 1px solid #F3F4F6;';
+      row.style.borderBottom = 'none';
+      wrapper.appendChild(row);
+
+      const content = document.createElement('div');
+      content.style.cssText = `
+        max-height: 0px;
+        overflow: hidden;
+        transition: max-height 0.25s ease-out, padding 0.25s ease-out;
+        background: #FAFAFA;
+        font-family: 'Inter', sans-serif;
+        font-size: 12.5px;
+        color: #4B5563;
+        line-height: 1.5;
+        padding: 0 16px;
+      `;
+      const inner = document.createElement('div');
+      inner.style.padding = '12px 0';
+      inner.innerHTML = activity.contentHtml || '';
+      content.appendChild(inner);
+      wrapper.appendChild(content);
+
+      let isOpen = false;
+      row.addEventListener('click', () => {
+        isOpen = !isOpen;
+        if (isOpen) {
+          content.style.maxHeight = '500px';
+          content.style.padding = '0 16px 12px 16px';
+          chevron.style.transform = 'rotate(90deg)';
+        } else {
+          content.style.maxHeight = '0px';
+          content.style.padding = '0 16px';
+          chevron.style.transform = 'rotate(0deg)';
+        }
+      });
+
+      return wrapper;
+    }
+
+    return row;
+  }
+
+  function renderAgentDetailsSwitcher(container) {
+    let switcher = container.querySelector('.agent-details-switcher');
+    if (!switcher) {
+      switcher = document.createElement('div');
+      switcher.className = 'agent-details-switcher';
+      switcher.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 32px;
+        padding: 12px 16px;
+        border-top: 1px solid #E5E7EB;
+        background: #FAFAFA;
+        flex-shrink: 0;
+      `;
+      container.appendChild(switcher);
+    }
+    switcher.innerHTML = '';
+
+    currentSwarmAgents.forEach((agent) => {
+      const btn = document.createElement('div');
+      btn.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        opacity: ${agent.idx === viewedAgentIdx ? '1' : '0.6'};
+        transition: opacity 0.2s;
+        min-width: 60px;
+      `;
+      btn.addEventListener('click', () => {
+        showAgentDetails(agent.idx);
+      });
+
+      const circle = document.createElement('div');
+      circle.style.cssText = `
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid ${agent.idx === viewedAgentIdx ? '#3B82F6' : '#D1D5DB'};
+        background: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: ${agent.idx === viewedAgentIdx ? '#3B82F6' : '#4B5563'};
+        box-shadow: ${agent.idx === viewedAgentIdx ? '0 0 0 2px rgba(59, 130, 246, 0.15)' : 'none'};
+      `;
+      circle.innerHTML = agent.idStr;
+
+      const label = document.createElement('span');
+      label.textContent = agent.status === 'done' ? 'Synthesized' : (agent.status === 'running' ? 'Extracting' : 'Pending');
+      label.style.cssText = `
+        font-size: 11px;
+        font-weight: 600;
+        color: ${agent.idx === viewedAgentIdx ? '#3B82F6' : '#6B7280'};
+        margin-top: 4px;
+      `;
+
+      btn.appendChild(circle);
+      btn.appendChild(label);
+      switcher.appendChild(btn);
+    });
+  }
+
   function createSwarmActiveCard(agents) {
     const card = document.createElement('div');
     card.id = 'swarmActiveCard';
@@ -2921,19 +3097,38 @@ const starIndicator = `
   function updateTerminalDisplay(idx) {
     const terminal = document.getElementById('agentDetailTerminal');
     if (!terminal) return;
+    terminal.innerHTML = '';
+    terminal.style.padding = '0'; // align rows to edges
     
     const agent = currentSwarmAgents[idx];
     if (!agent) return;
     
-    let logsText = agent.logs.join('\n');
+    agent.activities.forEach((act) => {
+      terminal.appendChild(createActivityRowHtml(act));
+    });
+    
     if (agent.status === 'done' && agent.result) {
-      logsText += `\n\n[SUCCESS] Task complete. Output returned.\n\n========== FINAL OUTPUT ==========\n${agent.result}`;
+      const successAct = {
+        type: 'success',
+        label: 'SUCCESS  Task complete. Output returned.',
+        contentHtml: `<div style="font-family: monospace; font-size:12.5px; white-space:pre-wrap; background:#FFFFFF; border: 1px solid #E5E7EB; padding:10px; border-radius:6px; max-height: 300px; overflow-y:auto;">\${agent.result}</div>`
+      };
+      terminal.appendChild(createActivityRowHtml(successAct));
     } else if (agent.status === 'failed' && agent.result) {
-      logsText += `\n\n[ERROR] Task failed: ${agent.result}`;
+      const failAct = {
+        type: 'failed',
+        label: 'ERROR  Task execution failed.',
+        contentHtml: `<div style="color:#EF4444; font-family: monospace; font-size:12.5px; white-space:pre-wrap; background:#FEE2E2; border: 1px solid #FCA5A5; padding:10px; border-radius:6px;">\${agent.result}</div>`
+      };
+      terminal.appendChild(createActivityRowHtml(failAct));
     }
     
-    terminal.textContent = logsText;
     terminal.scrollTop = terminal.scrollHeight;
+    
+    const detailsView = document.getElementById('agentPaneDetailsView');
+    if (detailsView) {
+      renderAgentDetailsSwitcher(detailsView);
+    }
   }
 
   function updateSwarmCardViewingLabels() {
