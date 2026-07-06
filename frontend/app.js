@@ -586,7 +586,7 @@ const starIndicator = `
     </span>`;
   }
 
-  function createActivityRow({ type, label, detailHtml, contentHtml, statusText = '', isExpanded = false }) {
+  function createActivityRow({ type, label, detailHtml, contentHtml, statusText = '', isExpanded = false, iconSvg = '' }) {
     const rowContainer = document.createElement('div');
     rowContainer.className = `activity-row-container ${type}-activity`;
     rowContainer.style.cssText = `
@@ -617,15 +617,17 @@ const starIndicator = `
     iconSpan.className = 'activity-icon-span';
     iconSpan.style.cssText = 'display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; flex-shrink: 0; color: #4B5563;';
     
-    let iconSvg = '';
-    if (type === 'reasoning') {
-      iconSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`;
-    } else if (type === 'tool') {
-      iconSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-    } else if (type === 'active') {
-      iconSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="3" style="animation: subagent-spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-dasharray="4 4" stroke-linecap="round"/></svg>`;
+    let resolvedIconSvg = iconSvg;
+    if (!resolvedIconSvg) {
+      if (type === 'reasoning') {
+        resolvedIconSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`;
+      } else if (type === 'tool') {
+        resolvedIconSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+      } else if (type === 'active') {
+        resolvedIconSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="3" style="animation: subagent-spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-dasharray="4 4" stroke-linecap="round"/></svg>`;
+      }
     }
-    iconSpan.innerHTML = iconSvg;
+    iconSpan.innerHTML = resolvedIconSvg;
     left.appendChild(iconSpan);
 
     // Label Text
@@ -781,6 +783,9 @@ const starIndicator = `
         </svg>
       `;
     }
+    if (nameLower.includes('memory')) {
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>`;
+    }
     if (nameLower.includes('search')) {
       return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
     }
@@ -795,6 +800,38 @@ const starIndicator = `
     }
     // Default fallback icon
     return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`;
+  }
+
+  function getToolLabelName(name) {
+    const nameLower = (name || '').toLowerCase();
+    if (nameLower.includes('gmail') || nameLower.includes('email')) {
+      return 'Gmail';
+    }
+    if (nameLower === 'web_search') {
+      return 'Searching';
+    }
+    if (nameLower === 'browser' || nameLower === 'navigate' || nameLower === 'get_screen' || nameLower === 'click' || nameLower === 'type') {
+      return 'Viewed';
+    }
+    if (nameLower === 'terminal' || nameLower === 'shell' || nameLower === 'code_execution') {
+      return 'Terminal';
+    }
+    if (nameLower === 'open_tab') {
+      return 'Opening tab';
+    }
+    if (nameLower === 'list_tabs') {
+      return 'Listing tabs';
+    }
+    if (nameLower === 'switch_tab') {
+      return 'Switching tab';
+    }
+    if (nameLower === 'close_tab') {
+      return 'Closing tab';
+    }
+    if (nameLower === 'memory') {
+      return 'Memory';
+    }
+    return name.charAt(0).toUpperCase() + name.slice(1);
   }
 
   function appendMessage(sender, text, avatarUrlOrText = '', reasoning = '', tool_calls = []) {
@@ -846,7 +883,8 @@ const starIndicator = `
         
         const toolBlock = createActivityRow({
           type: 'tool',
-          label: 'Viewed',
+          label: getToolLabelName(tc.name),
+          iconSvg: getToolIconHtml(tc.name),
           detailHtml: detailHtml,
           contentHtml: formatToolArgs(tc.name, tc.args),
           statusText: stateWord === 'Completed' ? '' : stateWord,
