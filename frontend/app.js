@@ -2958,60 +2958,111 @@ const starIndicator = `
       switcher.style.cssText = `
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 32px;
+        gap: 12px;
         padding: 12px 16px;
         border-top: 1px solid #E5E7EB;
         background: #FAFAFA;
         flex-shrink: 0;
+        overflow-x: auto;
+        width: 100%;
+        box-sizing: border-box;
       `;
       container.appendChild(switcher);
     }
     switcher.innerHTML = '';
 
     currentSwarmAgents.forEach((agent) => {
+      const isActive = agent.idx === viewedAgentIdx;
       const btn = document.createElement('div');
       btn.style.cssText = `
         display: flex;
         flex-direction: column;
-        align-items: center;
+        justify-content: space-between;
+        min-width: 100px;
+        max-width: 120px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid ${isActive ? '#3B82F6' : '#E5E7EB'};
+        background: #FFFFFF;
+        box-shadow: ${isActive ? '0 1px 2px rgba(59, 130, 246, 0.05), 0 0 0 2px rgba(59, 130, 246, 0.1)' : '0 1px 2px rgba(0,0,0,0.02)'};
         cursor: pointer;
-        opacity: ${agent.idx === viewedAgentIdx ? '1' : '0.6'};
-        transition: opacity 0.2s;
-        min-width: 60px;
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+        user-select: none;
       `;
       btn.addEventListener('click', () => {
         showAgentDetails(agent.idx);
       });
 
-      const circle = document.createElement('div');
-      circle.style.cssText = `
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        border: 2px solid ${agent.idx === viewedAgentIdx ? '#3B82F6' : '#D1D5DB'};
-        background: #FFFFFF;
+      // Top Row: Circular Avatar and Number
+      const topRow = document.createElement('div');
+      topRow.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        margin-bottom: 6px;
+      `;
+
+      const avatarCircle = document.createElement('div');
+      avatarCircle.style.cssText = `
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 11px;
-        font-weight: 700;
-        color: ${agent.idx === viewedAgentIdx ? '#3B82F6' : '#4B5563'};
-        box-shadow: ${agent.idx === viewedAgentIdx ? '0 0 0 2px rgba(59, 130, 246, 0.15)' : 'none'};
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 1px solid ${isActive ? '#3B82F6' : '#D1D5DB'};
+        background: #F9FAFB;
+        flex-shrink: 0;
       `;
-      circle.innerHTML = agent.idStr;
+      avatarCircle.innerHTML = agent.avatarHtml || '🕵️';
+      topRow.appendChild(avatarCircle);
 
-      const label = document.createElement('span');
-      label.textContent = agent.status === 'done' ? 'Synthesized' : (agent.status === 'running' ? 'Extracting' : 'Pending');
-      label.style.cssText = `
+      const numLabel = document.createElement('span');
+      numLabel.textContent = agent.idStr;
+      numLabel.style.cssText = `
+        font-size: 12px;
+        font-weight: 700;
+        color: ${isActive ? '#3B82F6' : '#374151'};
+      `;
+      topRow.appendChild(numLabel);
+      btn.appendChild(topRow);
+
+      // Bottom Row: Dynamic Status label
+      let statusLabelText = 'Pending';
+      if (agent.status === 'done') {
+        statusLabelText = 'Complete';
+      } else if (agent.status === 'failed') {
+        statusLabelText = 'Failed';
+      } else if (agent.status === 'running') {
+        if (agent.activities && agent.activities.length > 0) {
+          const lastAct = agent.activities[agent.activities.length - 1];
+          if (lastAct.type === 'think') statusLabelText = 'Thinking';
+          else if (lastAct.type === 'search') statusLabelText = 'Searching';
+          else if (lastAct.type === 'browse') statusLabelText = 'Browsing';
+          else if (lastAct.type === 'terminal') statusLabelText = 'Executing';
+          else if (lastAct.type === 'write') statusLabelText = 'Writing';
+          else statusLabelText = 'Advancing';
+        } else {
+          statusLabelText = 'Advancing';
+        }
+      }
+
+      const statusLabel = document.createElement('span');
+      statusLabel.textContent = statusLabelText;
+      statusLabel.style.cssText = `
         font-size: 11px;
         font-weight: 600;
-        color: ${agent.idx === viewedAgentIdx ? '#3B82F6' : '#6B7280'};
-        margin-top: 4px;
+        color: ${isActive ? '#2563EB' : '#6B7280'};
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: left;
+        width: 100%;
       `;
+      btn.appendChild(statusLabel);
 
-      btn.appendChild(circle);
-      btn.appendChild(label);
       switcher.appendChild(btn);
     });
   }
