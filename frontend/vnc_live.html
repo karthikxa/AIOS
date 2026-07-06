@@ -7,7 +7,8 @@
 <style>
   * { box-sizing: border-box; }
   html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #000; }
-  img { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; object-fit: contain; background: #000; }
+  iframe, img, canvas { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: #000; }
+  img, canvas { object-fit: contain; }
   #status { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); z-index: 5;
     color: #fff; font: 12px -apple-system, sans-serif; background: rgba(0,0,0,0.6);
     border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; padding: 6px 10px; pointer-events: none; }
@@ -20,85 +21,77 @@
   const params = new URLSearchParams(window.location.search);
   const mode = params.get('mode') || 'sandbox';
   const statusEl = document.getElementById('status');
-  let retryCount = 0;
 
   function showStatus(text) { statusEl.textContent = text; statusEl.style.display = 'block'; }
-  function hideStatusSoon() { setTimeout(() => { statusEl.style.display = 'none'; }, 800); }
-
-  function startHfLiveViewer() {
-    let baseUrl = (params.get('base') || '').replace(/\/$/, '');
-    if (!baseUrl) { showStatus('Missing desktop URL'); return; }
-
-    const img = document.createElement('img');
-    // FIX 4: /screenshot polling first — most stable on HF free tier
-    const streamPaths = ['/screenshot', '/stream', '/stream.mjpeg'];
-    let pathIndex = 0;
-    let pollTimer = null;
-    let usingPolling = false;
-
-    function tryStream() {
-      const path = streamPaths[pathIndex];
-      showStatus(`Connecting... (${path})`);
-      img.src = `${baseUrl}${path}?t=${Date.now()}`;
-    }
-
-    img.alt = 'Live desktop';
-    img.onload = function() {
-      hideStatusSoon();
-      retryCount = 0;
-      // FIX 4: If loaded from /screenshot, keep polling at 150ms for near-smooth playback
-      if (streamPaths[pathIndex] === '/screenshot') {
-        usingPolling = true;
-        if (pollTimer) clearTimeout(pollTimer);
-        pollTimer = setTimeout(function poll() {
-          img.src = `${baseUrl}/screenshot?t=${Date.now()}`;
-          pollTimer = setTimeout(poll, 150);
-        }, 150);
-      }
-    };
-    img.onerror = function() {
-      if (pollTimer) clearTimeout(pollTimer);
-      usingPolling = false;
-      retryCount++;
-      if (retryCount > 3) {
-        pathIndex = (pathIndex + 1) % streamPaths.length;
-        retryCount = 0;
-      }
-      showStatus(`Reconnecting... (${retryCount})`);
-      // FIX 3: 300ms retry instead of 1200ms
-      setTimeout(tryStream, 300);
-    };
-
-    document.body.appendChild(img);
-    tryStream();
-  }
-
-  function startSandboxFallback() {
-    const baseUrl = (params.get('sandbox') || '/sandbox').replace(/\/$/, '');
-    const img = document.createElement('img');
-    let connected = false;
-
-    function loadScreenshot() {
-      img.onload = function() {
-        if (!connected) { connected = true; hideStatusSoon(); }
-        setTimeout(loadScreenshot, 200);
-      };
-      img.onerror = function() {
-        connected = false;
-        showStatus('Reconnecting...');
-        setTimeout(loadScreenshot, 2000);
-      };
-      img.src = `${baseUrl}/v1/browser/screenshot?t=${Date.now()}`;
-    }
-
-    document.body.appendChild(img);
-    loadScreenshot();
-  }
+  function hideStatusSoon() { setTimeout(() => { statusEl.style.display = 'none'; }, 1500); }
 
   if (mode === 'hf') {
-    startHfLiveViewer();
+    // HF Space: CDP screenshot polling with canvas (no WebSocket)
+    const baseUrl = (params.get('base') || '').replace(/\/$/, '');
+    if (!baseUrl) { showStatus('Missing URL'); return; }
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    let fetching = false;
+
+    document.body.appendChild(canvas);
+
+    async function fetchFrame() {
+      if (fetching) return;
+      fetching = true;
+      try {
+        const resp = await fetch(`${baseUrl}/screenshot?t=${Date.now()}`, { cache: 'no-store' });
+        if (!resp.ok) throw new Error('bad');
+        const blob = await resp.blob();
+        const bmp = await createImageBitmap(blob);
+        if (canvas.width !== bmp.width) canvas.width = bmp.width;
+        if (canvas.height !== bmp.height) canvas.height = bmp.height;
+        ctx.drawImage(bmp, 0, 0);
+        bmp.close();
+        hideStatusSoon();
+      } catch (e) {}
+      finally { fetching = false; }
+    }
+
+    function loop() { fetchFrame().finally(() => requestAnimationFrame(loop)); }
+    loop();
+
   } else {
-    startSandboxFallback();
+    // Local: noVNC live stream via iframe (real-time, 30+ fps)
+    const sandboxUrl = params.get('sandbox') || '/sandbox';
+
+    // Try noVNC live viewer first
+    const iframe = document.createElement('iframe');
+    iframe.allow = 'fullscreen; clipboard-read; clipboard-write';
+    iframe.referrerPolicy = 'no-referrer';
+
+    // noVNC path on the sandbox
+    iframe.src = `${sandboxUrl}/vnc.html?autoconnect=1&resize=scale&reconnect=true&reconnect_delay=1000`;
+
+    iframe.onload = () => {
+      hideStatusSoon();
+      showStatus('Live desktop connected');
+      setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+    };
+    iframe.onerror = () => {
+      // Fallback to screenshot polling
+      showStatus('Falling back to screenshots...');
+      const img = document.createElement('img');
+      img.alt = 'Live desktop';
+      img.onload = hideStatusSoon;
+      img.onerror = () => { showStatus('Reconnecting...'); setTimeout(loadScreenshot, 2000); };
+      document.body.appendChild(iframe);
+      iframe.remove();
+      document.body.appendChild(img);
+
+      function loadScreenshot() {
+        img.src = `${sandboxUrl}/v1/browser/screenshot?t=${Date.now()}`;
+      }
+      loadScreenshot();
+      setInterval(loadScreenshot, 200);
+    };
+
+    document.body.appendChild(iframe);
   }
 })();
 </script>

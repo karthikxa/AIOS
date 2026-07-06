@@ -9785,6 +9785,95 @@ main.main-content.computer-split-mode #computerSplitPane {
   box-sizing: border-box !important;
 }
 
+/* ── Agent Split Mode: right panel for Agent mode ── */
+main.main-content.agent-split-mode {
+  display: flex !important;
+  flex-direction: row !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background-color: #FFFFFF !important;
+}
+
+main.main-content.agent-split-mode .app-header {
+  display: none !important;
+}
+
+main.main-content.agent-split-mode .center-container {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  width: 62% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  flex: none !important;
+  border-right: 1px solid #E5E7EB !important;
+  background: #FFFFFF !important;
+  overflow: hidden !important;
+}
+
+main.main-content.agent-split-mode #agentSplitPane {
+  width: 38% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  flex-shrink: 0 !important;
+  background: #FFFFFF !important;
+  box-sizing: border-box !important;
+}
+
+main.main-content.agent-split-mode .chat-container {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+}
+
+main.main-content.agent-split-mode .active-state-view {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  padding-top: 0 !important;
+}
+
+main.main-content.agent-split-mode .chat-messages-view {
+  max-width: 100% !important;
+  width: 100% !important;
+  flex: 1 !important;
+  display: flex !important;
+  min-height: 0 !important;
+  justify-content: stretch !important;
+  padding: 0 !important;
+}
+
+main.main-content.agent-split-mode .chat-messages-log {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  width: 100% !important;
+  padding: 5px 24px 0 24px !important;
+}
+
+@media (max-width: 768px) {
+  main.main-content.agent-split-mode {
+    flex-direction: column !important;
+  }
+  main.main-content.agent-split-mode .center-container {
+    width: 100% !important;
+    height: 50% !important;
+    border-right: none !important;
+    border-bottom: 1px solid #E5E7EB !important;
+  }
+  main.main-content.agent-split-mode #agentSplitPane {
+    width: 100% !important;
+    height: 50% !important;
+  }
+}
+
 /* Custom styles for seek bar input range track & thumb */
 .split-pane-slider::-webkit-slider-runnable-track {
   background: #E5E7EB;

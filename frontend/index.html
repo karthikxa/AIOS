@@ -417,17 +417,26 @@
       <div class="split-pane-viewport" id="splitPaneViewport" style="flex: 1 1 0%; min-height: 0; height: 0; position: relative; background: #000; overflow: hidden;">
         <iframe
           id="desktopFrame"
-          style="width: 100%; height: 100%; border: none; display: block; object-fit: contain; background: #111;"
+          style="width: 100%; height: 100%; border: none; display: block; background: #111;"
           src="about:blank"
-          allow="fullscreen"
-          scrolling="no">
+          allow="clipboard-read; clipboard-write; fullscreen"
+          referrerpolicy="no-referrer">
         </iframe>
-        <div id="splitPaneViewOnlyOverlay" style="position:absolute;inset:0;z-index:10;cursor:default;display:none;"></div>
+        <!-- View-only overlay: always on — blocks ALL mouse/keyboard from reaching iframe.
+             Only Zed Pro LLM can control the desktop via the agent API. -->
+        <div id="splitPaneViewOnlyOverlay" style="position:absolute;inset:0;z-index:20;cursor:default;display:block;user-select:none;">
+          <!-- View-only badge top-right -->
+          <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:3px 8px;display:flex;align-items:center;gap:5px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21" stroke="#EF4444"/></svg>
+            <span style="font-size:10px;font-weight:600;color:#9CA3AF;font-family:'Inter',sans-serif;letter-spacing:0.5px;">VIEW ONLY</span>
+          </div>
+        </div>
         <div id="desktopConnectingOverlay" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); color: #fff; font-size: 13px; font-family: 'Inter', sans-serif; flex-direction: column; gap: 10px; z-index: 100;">
           <div style="width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.15); border-top-color: #fff; border-radius: 50%; animation: subagent-spin 1s linear infinite;"></div>
-          <span>Starting virtual desktop...</span>
+          <span id="desktopConnectingMsg">Connecting to desktop...</span>
         </div>
       </div>
+
 
       <!-- Row 4: Playback controls — ◀◀ ‖ ▶▶ — progress — 🔴 Live -->
       <div style="display: flex; align-items: center; gap: 12px; padding: 8px 14px; border-top: 1px solid #E5E7EB; flex-shrink: 0; background: #FFFFFF; user-select: none;">
@@ -463,7 +472,7 @@
       </div>
 
       <!-- Row 5: Task progress — fixed small height, scrollable inside -->
-      <div id="splitPaneProgress" class="split-pane-progress" style="display: flex; flex-direction: column; background: #FFFFFF; flex-shrink: 0; font-family: 'Inter', sans-serif; border-top: 1px solid #E5E7EB; max-height: 140px; overflow: hidden;">
+      <div id="splitPaneProgress" class="split-pane-progress" style="display: flex; flex-direction: column; background: #FFFFFF; flex-shrink: 0; font-family: 'Inter', sans-serif; border-top: 1px solid #E5E7EB; max-height: 220px; overflow: hidden;">
         <div id="splitPaneProgressHeader" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; user-select: none; flex-shrink: 0;">
           <span style="font-size: 14px; font-weight: 600; color: #111827;">Task progress</span>
           <div style="display: flex; align-items: center; gap: 8px;">
@@ -471,10 +480,55 @@
             <svg id="splitPaneProgressChevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
         </div>
-        <div id="splitPaneProgressBody" style="padding: 2px 16px 14px 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; min-height: 0;">
+        <div id="splitPaneProgressBody" style="padding: 0 16px 14px 16px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; min-height: 0;">
           <!-- Dynamically populated with numbered steps -->
         </div>
       </div>
+
+    </div>
+
+    <!-- ===== Agent Mode Right Split Panel ===== -->
+    <div id="agentSplitPane" style="display: none; flex-direction: column; border-left: 1px solid #E5E7EB; background: #FFFFFF; height: 100%; box-sizing: border-box; overflow: hidden; width: 38%; flex-shrink: 0; position: relative; min-height: 0; font-family: 'Inter', sans-serif;">
+
+      <!-- Row 1: Header — "Agent 01" + "Agent's Window" link + close -->
+      <div id="agentPaneHeader" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #F3F4F6; flex-shrink: 0; background: #FFFFFF; user-select: none;">
+        <span id="agentPaneTitle" style="font-size: 15px; font-weight: 700; color: #111827;">Agent 01</span>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <!-- Agent's Window link -->
+          <a id="agentPaneWindowLink" href="#" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #6B7280; text-decoration: none; font-weight: 500; transition: color 0.15s;" onmouseenter="this.style.color='#111827'" onmouseleave="this.style.color='#6B7280'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Agent's Window
+          </a>
+          <!-- Close -->
+          <svg id="closeAgentPaneBtn" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;" onmouseenter="this.style.stroke='#374151'" onmouseleave="this.style.stroke='#9CA3AF'"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+      </div>
+
+      <!-- Row 2: Task Progress header -->
+      <div id="agentPaneTaskProgressRow" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #F3F4F6; flex-shrink: 0; background: #FAFAFA;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div id="agentPaneStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; flex-shrink: 0; animation: livePulse 2s ease-in-out infinite;"></div>
+          <span id="agentPaneProgressLabel" style="font-size: 13px; font-weight: 600; color: #111827;">Task Progress</span>
+          <span id="agentPaneProgressCount" style="font-size: 12px; color: #6B7280; font-weight: 400;">0/0</span>
+        </div>
+        <div id="agentPaneTaskLink" style="display: flex; align-items: center; gap: 4px; cursor: pointer; max-width: 60%; overflow: hidden;">
+          <span id="agentPaneTaskText" style="font-size: 12px; color: #6B7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+
+      <!-- Row 3: Subagent rows (dynamically populated) -->
+      <div id="agentPaneSubagentRows" style="flex: 1; overflow-y: auto; background: #FFFFFF; padding: 0;">
+        <!-- Populated by JS: [person icon] Create Subagent | [spinner] Name -->
+      </div>
+
+      <!-- Row 4: Footer status bar -->
+      <div id="agentPaneFooter" style="display: none; align-items: center; gap: 10px; padding: 10px 16px; border-top: 1px solid #F3F4F6; flex-shrink: 0; background: #FAFAFA;">
+        <div style="width: 16px; height: 16px; border: 2px solid rgba(59,130,246,0.2); border-top-color: #3B82F6; border-radius: 50%; animation: subagent-spin 1s linear infinite; flex-shrink: 0;"></div>
+        <span id="agentPaneFooterText" style="font-size: 12.5px; color: #374151; font-weight: 500;">Creating subagents...</span>
+        <span id="agentPaneFooterCount" style="font-size: 12px; color: #6B7280; margin-left: auto; font-weight: 400;">0/0 completed</span>
+      </div>
+
     </div>
 
     <style>

@@ -916,6 +916,8 @@ const starIndicator = `
     return list;
   }
 
+  // Dynamic subagent list: each row shows [person icon] Create Subagent | [spinner] Name
+  // Rows are keyed by agent index and can be updated to checkmark when done
   function createSwarmSubagentsList(agents) {
     const container = document.createElement('div');
     container.className = 'swarm-subagents-card';
@@ -939,23 +941,22 @@ const starIndicator = `
 
     agents.forEach((agent, index) => {
       const row = document.createElement('div');
+      row.id = `swarm-list-row-${agent.idx}`;
       row.style.cssText = `
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 10px 16px;
-        border-bottom: 1px solid #F3F4F6;
+        border-bottom: ${index === agents.length - 1 ? 'none' : '1px solid #F3F4F6'};
         font-size: 13px;
         color: #374151;
+        transition: background 0.2s;
       `;
-      if (index === agents.length - 1) {
-        row.style.borderBottom = 'none';
-      }
 
       const left = document.createElement('div');
-      left.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+      left.style.cssText = 'display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;';
 
-      // Left icon: Profile outline inside a circle
+      // Left icon: Profile outline inside a circle ("Create Subagent" icon)
       const profileCircle = document.createElement('span');
       profileCircle.style.cssText = `
         display: inline-flex;
@@ -967,6 +968,7 @@ const starIndicator = `
         border: 1px solid #D1D5DB;
         background: #F9FAFB;
         color: #6B7280;
+        flex-shrink: 0;
       `;
       profileCircle.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -976,84 +978,50 @@ const starIndicator = `
       `;
       left.appendChild(profileCircle);
 
+      // "Create Subagent" label
       const label = document.createElement('span');
       label.textContent = 'Create Subagent';
-      label.style.cssText = 'color: #9CA3AF; font-size: 12px;';
+      label.style.cssText = 'color: #9CA3AF; font-size: 12px; flex-shrink: 0;';
       left.appendChild(label);
 
-      // Subagent profile/name avatar
-      const agentAvatar = document.createElement('span');
-      agentAvatar.style.cssText = `
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        border: 1.5px solid #111827;
-        background: #FFFFFF;
-        font-weight: bold;
-        font-size: 10px;
-        color: #111827;
-      `;
-      agentAvatar.textContent = agent.name ? agent.name[0].toUpperCase() : 'A';
-      left.appendChild(agentAvatar);
+      // Separator
+      const sep = document.createElement('span');
+      sep.textContent = '|';
+      sep.style.cssText = 'color: #D1D5DB; font-size: 12px; flex-shrink: 0;';
+      left.appendChild(sep);
 
-      const nameSpan = document.createElement('span');
-      nameSpan.textContent = agent.name;
-      nameSpan.style.cssText = 'font-weight: 500; color: #111827;';
-      left.appendChild(nameSpan);
+      // Right side: spinner + agent name (will be updated when done)
+      const statusWrap = document.createElement('span');
+      statusWrap.id = `swarm-row-status-${agent.idx}`;
+      statusWrap.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; min-width: 0;';
+      statusWrap.innerHTML = `
+        <svg id="swarm-row-spinner-${agent.idx}" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2.5" stroke-linecap="round" style="animation: subagent-spin 1s linear infinite; flex-shrink: 0;">
+          <circle cx="12" cy="12" r="10" stroke-dasharray="4 4"/>
+        </svg>
+        <span style="font-size: 13px; color: #374151; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${agent.name}</span>
+      `;
+      left.appendChild(statusWrap);
 
       row.appendChild(left);
-
-      // Right: Caret
-      const caret = document.createElement('span');
-      caret.style.cssText = 'color: #9CA3AF; font-size: 12px; font-weight: bold; display: flex; align-items: center;';
-      caret.innerHTML = `
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 3l5 5-5 5"/>
-        </svg>
-      `;
-      row.appendChild(caret);
-
       listContainer.appendChild(row);
     });
 
-    // Circular Down Arrow Scroll Button
-    const scrollBtn = document.createElement('button');
-    scrollBtn.style.cssText = `
-      position: absolute;
-      bottom: 12px;
-      right: 12px;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #FFFFFF;
-      border: 1px solid #E5E7EB;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: #374151;
-      outline: none;
-      transition: background 0.15s;
-      z-index: 10;
-    `;
-    scrollBtn.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <polyline points="19 12 12 19 5 12"/>
-      </svg>
-    `;
-    scrollBtn.onclick = (e) => {
-      e.stopPropagation();
-      listContainer.scrollTo({ top: listContainer.scrollHeight, behavior: 'smooth' });
-    };
-
     container.appendChild(listContainer);
-    container.appendChild(scrollBtn);
     return container;
+  }
+
+  // Update a swarm list row to show checkmark (done) or error state
+  function updateSwarmListRow(agentIdx, success = true) {
+    const statusWrap = document.getElementById(`swarm-row-status-${agentIdx}`);
+    if (!statusWrap) return;
+    const row = document.getElementById(`swarm-list-row-${agentIdx}`);
+    const agentName = statusWrap.querySelector('span') ? statusWrap.querySelector('span').textContent : '';
+    statusWrap.innerHTML = success
+      ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+         <span style="font-size: 13px; color: #374151; font-weight: 500;">${agentName}</span>`
+      : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+         <span style="font-size: 13px; color: #374151; font-weight: 500;">${agentName}</span>`;
+    if (row && success) row.style.background = '#F0FDF4';
   }
 
   function createSwarmParallelCards(agents) {
@@ -1182,8 +1150,9 @@ const starIndicator = `
   }
 
   async function triggerSwarmVisualization(promptText, bubbleElement) {
+    // Open the dedicated Agent right panel
     toggleAgentSplit(true);
-    
+
     let blocksContainer = bubbleElement.querySelector('.message-collapsible-blocks');
     if (!blocksContainer) {
       blocksContainer = document.createElement('div');
@@ -1191,17 +1160,27 @@ const starIndicator = `
       bubbleElement.insertBefore(blocksContainer, bubbleElement.firstChild);
     }
 
-    const progressBody = document.getElementById('splitPaneProgressBody');
-    if (progressBody) progressBody.innerHTML = '';
-    const progressHeader = document.getElementById('splitPaneProgressHeader');
-    if (progressHeader) {
-      const title = progressHeader.querySelector('span');
-      if (title) title.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#F59E0B;display:inline-block;animation:pulse 1.5s infinite;"></span>Decomposing task...</span>';
-    }
-
     const state = modelsStore.getState();
     const model = state.models.find(m => m.name === state.activeModel || m.id === state.activeModel);
     if (!model) { appendMessage('assistant', 'No model connected.'); return; }
+
+    // Populate agent panel header
+    const agentPaneTitle = document.getElementById('agentPaneTitle');
+    if (agentPaneTitle) agentPaneTitle.textContent = 'Agent 01';
+    const agentPaneTaskText = document.getElementById('agentPaneTaskText');
+    if (agentPaneTaskText) {
+      const short = promptText.length > 40 ? promptText.slice(0, 40) + '...' : promptText;
+      agentPaneTaskText.textContent = short;
+    }
+    const agentPaneProgressCount = document.getElementById('agentPaneProgressCount');
+    if (agentPaneProgressCount) agentPaneProgressCount.textContent = '0/0';
+
+    // Show agent panel footer
+    const agentPaneFooter = document.getElementById('agentPaneFooter');
+    const agentPaneFooterText = document.getElementById('agentPaneFooterText');
+    const agentPaneFooterCount = document.getElementById('agentPaneFooterCount');
+    if (agentPaneFooter) agentPaneFooter.style.display = 'flex';
+    if (agentPaneFooterText) agentPaneFooterText.textContent = 'Decomposing task...';
 
     // Step 1: Ask LLM to decompose the task into sub-agent assignments
     const decomposeResp = await fetch('/v1/chat/completions', {
@@ -1221,20 +1200,18 @@ const starIndicator = `
     const rawContent = decomposeData.choices?.[0]?.message?.content || '[]';
     let subAgents;
     try {
-      // Try to extract JSON array from response (handles reasoning model output)
       const jsonMatch = rawContent.match(/\[[\s\S]*?\]/);
       if (jsonMatch) {
         subAgents = JSON.parse(jsonMatch[0]);
       } else {
-        // Try parsing the whole content as JSON
         subAgents = JSON.parse(rawContent);
       }
-    } catch { 
-      // Fallback: create a single agent with the full task
-      subAgents = [{ name: 'Agent', task: promptText, avatar: '🤖' }]; 
+    } catch {
+      subAgents = [{ name: 'Agent', task: promptText, avatar: '🤖' }];
     }
 
     subAgents = subAgents.map((a, i) => ({
+      idx: i,
       idStr: String(i + 1).padStart(2, '0'),
       name: a.name || `Agent ${i + 1}`,
       task: a.task || 'Working...',
@@ -1243,81 +1220,71 @@ const starIndicator = `
       result: ''
     }));
 
-    // Step 2: Show sub-agents list in chat
-    const listCard = createSwarmSubagentsList(subAgents.map(a => ({ name: a.name, avatar: a.avatarHtml })));
+    const totalAgents = subAgents.length;
+
+    // Update agent panel progress count
+    if (agentPaneProgressCount) agentPaneProgressCount.textContent = `0/${totalAgents}`;
+    if (agentPaneFooterText) agentPaneFooterText.textContent = 'Creating subagents...';
+    if (agentPaneFooterCount) agentPaneFooterCount.textContent = `0/${totalAgents} completed`;
+
+    // Step 2: Show dynamic subagent rows in the CHAT BUBBLE
+    const listCard = createSwarmSubagentsList(subAgents.map(a => ({ idx: a.idx, name: a.name, avatar: a.avatarHtml })));
     blocksContainer.appendChild(listCard);
 
-    // Step 3: Show parallel cards in chat
-    const parallelCards = createSwarmParallelCards(subAgents);
-    blocksContainer.appendChild(parallelCards);
-
-    // Step 3b: Populate right panel with step-based progress (matching the screenshot design)
-    if (progressBody) {
-      progressBody.innerHTML = '';
-      progressBody.style.maxHeight = 'none';
-      progressBody.style.padding = '0';
-      progressBody.style.gap = '0';
-
-      // Add each sub-agent as an expandable step row
-      subAgents.forEach((agent, idx) => {
-        const stepRow = document.createElement('div');
-        stepRow.id = `agent-step-${idx}`;
-        stepRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #F3F4F6;cursor:pointer;transition:background 0.15s;';
-        stepRow.onmouseenter = () => stepRow.style.background = '#F9FAFB';
-        stepRow.onmouseleave = () => stepRow.style.background = 'transparent';
-
-        // Left: icon + task text
-        const left = document.createElement('div');
-        left.style.cssText = 'display:flex;align-items:center;gap:10px;flex:1;min-width:0;';
-
-        // Icon based on task type
-        const taskLower = agent.task.toLowerCase();
-        let iconSvg = '';
-        if (taskLower.includes('read') || taskLower.includes('fetch') || taskLower.includes('analyze')) {
-          iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
-        } else if (taskLower.includes('write') || taskLower.includes('create') || taskLower.includes('format')) {
-          iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
-        } else if (taskLower.includes('execute') || taskLower.includes('run') || taskLower.includes('code')) {
-          iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
-        } else if (taskLower.includes('think') || taskLower.includes('reason') || taskLower.includes('plan')) {
-          iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
-        } else {
-          iconSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>';
-        }
-
-        left.innerHTML = `
-          <span style="flex-shrink:0;">${iconSvg}</span>
-          <span style="font-size:13px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${agent.task}</span>
+    // Step 3: Populate the AGENT RIGHT PANEL with mirrored rows
+    const agentPaneRows = document.getElementById('agentPaneSubagentRows');
+    if (agentPaneRows) {
+      agentPaneRows.innerHTML = '';
+      subAgents.forEach((agent, i) => {
+        const row = document.createElement('div');
+        row.id = `agent-pane-row-${agent.idx}`;
+        row.style.cssText = `
+          display: flex; align-items: center; gap: 10px;
+          padding: 12px 16px;
+          border-bottom: ${i === subAgents.length - 1 ? 'none' : '1px solid #F3F4F6'};
+          font-family: 'Inter', sans-serif;
+          transition: background 0.2s;
         `;
 
-        // Right: chevron
-        const chevron = document.createElement('div');
-        chevron.style.cssText = 'flex-shrink:0;color:#9CA3AF;';
-        chevron.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+        // Circle icon (like image: hollow circle = pending/running)
+        const circleIcon = document.createElement('span');
+        circleIcon.id = `agent-pane-icon-${agent.idx}`;
+        circleIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>`;
+        circleIcon.style.cssText = 'flex-shrink: 0; display: flex; align-items: center;';
+        row.appendChild(circleIcon);
 
-        stepRow.appendChild(left);
-        stepRow.appendChild(chevron);
-        progressBody.appendChild(stepRow);
+        // "Create Subagent" label
+        const label = document.createElement('span');
+        label.textContent = 'Create Subagent';
+        label.style.cssText = 'font-size: 12px; color: #9CA3AF; flex-shrink: 0;';
+        row.appendChild(label);
+
+        // Separator
+        const sep = document.createElement('span');
+        sep.textContent = '|';
+        sep.style.cssText = 'color: #E5E7EB; font-size: 12px; flex-shrink: 0;';
+        row.appendChild(sep);
+
+        // Spinner + name
+        const statusWrap = document.createElement('span');
+        statusWrap.id = `agent-pane-status-${agent.idx}`;
+        statusWrap.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; min-width: 0; flex: 1;';
+        statusWrap.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2.5" stroke-linecap="round" style="animation: subagent-spin 1s linear infinite; flex-shrink: 0;">
+            <circle cx="12" cy="12" r="10" stroke-dasharray="4 4"/>
+          </svg>
+          <span style="font-size: 13px; color: #374151; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${agent.name}</span>
+        `;
+        row.appendChild(statusWrap);
+        agentPaneRows.appendChild(row);
       });
     }
 
-    // Update right panel header
-    const splitH2 = document.querySelector('.split-pane-sub-header h2');
-    if (splitH2) splitH2.textContent = 'Agent 01';
-    const splitUrl = document.getElementById('splitPaneHeaderUrl');
-    if (splitUrl) splitUrl.innerHTML = '<span style="color:#6B7280;display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Agent\'s Window</span>';
-
     // Step 4: Execute all sub-agents in parallel
-    if (progressHeader) {
-      const title = progressHeader.querySelector('span');
-      if (title) title.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#3B82F6;display:inline-block;animation:pulse 1.5s infinite;"></span>Running ${subAgents.length} sub-agents...</span>`;
-    }
-
+    let completedCount = 0;
     const allResults = [];
     const parallelPromises = subAgents.map((agent, idx) => {
       return (async () => {
-        const stepIdx = idx;
-        addProgressStep(`${agent.name}: Starting...`, 'active');
         try {
           const resp = await fetch('/v1/chat/completions', {
             method: 'POST',
@@ -1337,25 +1304,38 @@ const starIndicator = `
           agent.status = 'done';
           agent.result = result;
           allResults[idx] = result;
-          updateProgressStep(stepIdx, `${agent.name}: Done`, 'done');
-          // Update right panel step row with green check
-          const stepRow = document.getElementById(`agent-step-${idx}`);
-          if (stepRow) {
-            const left = stepRow.querySelector('div');
-            if (left) {
-              const iconSpan = left.querySelector('span');
-              if (iconSpan) {
-                iconSpan.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
-              }
-            }
-            stepRow.style.background = '#F0FDF4';
+
+          // Update CHAT BUBBLE row: spinner → green checkmark
+          updateSwarmListRow(agent.idx, true);
+
+          // Update AGENT PANEL row: circle → green checkmark, spinner → checkmark
+          const paneIcon = document.getElementById(`agent-pane-icon-${agent.idx}`);
+          if (paneIcon) paneIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+          const paneStatus = document.getElementById(`agent-pane-status-${agent.idx}`);
+          if (paneStatus) {
+            const nameEl = paneStatus.querySelector('span');
+            const agentName = nameEl ? nameEl.textContent : agent.name;
+            paneStatus.innerHTML = `<span style="font-size: 13px; color: #374151; font-weight: 500;">${agentName}</span>`;
           }
+          const paneRow = document.getElementById(`agent-pane-row-${agent.idx}`);
+          if (paneRow) paneRow.style.background = '#F0FDF4';
+
+          // Update progress counts
+          completedCount++;
+          if (agentPaneProgressCount) agentPaneProgressCount.textContent = `${completedCount}/${totalAgents}`;
+          if (agentPaneFooterCount) agentPaneFooterCount.textContent = `${completedCount}/${totalAgents} completed`;
           return result;
         } catch (err) {
           agent.status = 'failed';
           agent.result = `Error: ${err.message}`;
           allResults[idx] = `Error: ${err.message}`;
-          updateProgressStep(stepIdx, `${agent.name}: Failed`, 'done');
+          // Update both rows to error state
+          updateSwarmListRow(agent.idx, false);
+          const paneIcon = document.getElementById(`agent-pane-icon-${agent.idx}`);
+          if (paneIcon) paneIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+          completedCount++;
+          if (agentPaneProgressCount) agentPaneProgressCount.textContent = `${completedCount}/${totalAgents}`;
+          if (agentPaneFooterCount) agentPaneFooterCount.textContent = `${completedCount}/${totalAgents} completed`;
           return null;
         }
       })();
@@ -1364,7 +1344,7 @@ const starIndicator = `
     await Promise.all(parallelPromises);
 
     // Step 5: Aggregate results with LLM
-    addProgressStep('Synthesizing results...', 'active');
+    if (agentPaneFooterText) agentPaneFooterText.textContent = 'Synthesizing results...';
     const aggResp = await fetch('/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${model.apiKey || ''}` },
@@ -1372,7 +1352,7 @@ const starIndicator = `
         model: model.modelId || model.name || 'auto',
         messages: [
           { role: 'system', content: 'You are a synthesizer. Combine the sub-agent results into a single comprehensive, well-structured response for the user. Use markdown formatting.' },
-          { role: 'user', content: `Original task: ${promptText}\n\nSub-agent results:\n${subAgents.map((a, i) => `### ${a.name}\n${a.result}`).join('\n\n')}` }
+          { role: 'user', content: `Original task: ${promptText}\n\nSub-agent results:\n${subAgents.map((a) => `### ${a.name}\n${a.result}`).join('\n\n')}` }
         ],
         temperature: 0.3,
         max_tokens: 2048,
@@ -1380,12 +1360,22 @@ const starIndicator = `
     });
     const aggData = await aggResp.json();
     const finalResponse = aggData.choices?.[0]?.message?.content || allResults.join('\n\n');
-    updateProgressStep(progressBody.children.length - 1, 'Results synthesized', 'done');
 
-    if (progressHeader) {
-      const title = progressHeader.querySelector('span');
-      if (title) title.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:#10B981;display:inline-block;"></span>Swarm complete: ${subAgents.length} agents</span>`;
+    // Update panel to show "complete" state
+    if (agentPaneFooterText) agentPaneFooterText.textContent = 'All subagents complete';
+    const agentPaneStatusDot = document.getElementById('agentPaneStatusDot');
+    if (agentPaneStatusDot) {
+      agentPaneStatusDot.style.animation = 'none';
+      agentPaneStatusDot.style.background = '#10B981';
     }
+    // Fade out footer after 2s
+    setTimeout(() => {
+      if (agentPaneFooter) {
+        agentPaneFooter.style.transition = 'opacity 0.4s ease';
+        agentPaneFooter.style.opacity = '0';
+        setTimeout(() => { agentPaneFooter.style.display = 'none'; agentPaneFooter.style.opacity = '1'; }, 450);
+      }
+    }, 2000);
 
     // Step 6: Show final aggregated response
     appendMessage('assistant', finalResponse);
@@ -3889,6 +3879,11 @@ Here are the current findings:
     if (shouldShow) {
       mainContent.classList.add('computer-split-mode');
       computerSplitPane.style.display = 'flex';
+
+      // Close agent panel if open — they are mutually exclusive
+      const agentSplitPane = document.getElementById('agentSplitPane');
+      if (agentSplitPane) agentSplitPane.style.display = 'none';
+      mainContent.classList.remove('agent-split-mode');
       
       // Show VNC viewport, hide agent content, show LIVE badge
       const viewport = document.getElementById('splitPaneViewport');
@@ -3944,32 +3939,23 @@ Here are the current findings:
 
   function toggleAgentSplit(show) {
     const mainContent = document.getElementById('mainContent');
-    const computerSplitPane = document.getElementById('computerSplitPane');
-    if (!mainContent || !computerSplitPane) return;
-    
-    const isOpen = mainContent.classList.contains('computer-split-mode');
+    const agentSplitPane = document.getElementById('agentSplitPane');
+    if (!mainContent || !agentSplitPane) return;
+
+    const isOpen = mainContent.classList.contains('agent-split-mode');
     const shouldShow = show !== undefined ? show : !isOpen;
-    
+
+    // Always ensure computer split is hidden in agent mode
+    const computerSplitPane = document.getElementById('computerSplitPane');
+
     if (shouldShow) {
-      mainContent.classList.add('computer-split-mode');
-      computerSplitPane.style.display = 'flex';
-      
-      // Hide VNC viewport, show agent content, hide LIVE badge
-      const viewport = document.getElementById('splitPaneViewport');
-      if (viewport) viewport.style.display = 'none';
-      const agentContent = document.getElementById('splitPaneAgentContent');
-      if (agentContent) agentContent.style.display = 'block';
-      const liveBadge = document.getElementById('splitPaneLiveBadge');
-      if (liveBadge) liveBadge.style.display = 'none';
-      
-      // Show progress
-      const progressEl = document.getElementById('splitPaneProgress');
-      if (progressEl) progressEl.style.display = 'flex';
-    } else {
+      mainContent.classList.add('agent-split-mode');
+      agentSplitPane.style.display = 'flex';
+      if (computerSplitPane) computerSplitPane.style.display = 'none';
       mainContent.classList.remove('computer-split-mode');
-      computerSplitPane.style.display = 'none';
-      const agentContent = document.getElementById('splitPaneAgentContent');
-      if (agentContent) agentContent.style.display = 'none';
+    } else {
+      mainContent.classList.remove('agent-split-mode');
+      agentSplitPane.style.display = 'none';
     }
   }
 
@@ -4023,6 +4009,14 @@ Here are the current findings:
     closeSplitPaneBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleComputerSplit(false);
+    });
+  }
+
+  const closeAgentPaneBtn = document.getElementById('closeAgentPaneBtn');
+  if (closeAgentPaneBtn) {
+    closeAgentPaneBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleAgentSplit(false);
     });
   }
 
