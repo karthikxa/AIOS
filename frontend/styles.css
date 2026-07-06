@@ -10366,6 +10366,17 @@ main.main-content.computer-split-mode #computerSplitPane {
   margin-bottom: 0px !important;
 }
 
+/* Reset white-space to normal to avoid literal HTML newlines being rendered as line breaks */
+.message-collapsible-blocks,
+.chat-typing-status-container {
+  white-space: normal !important;
+}
+
+/* Ensure the tool indicator bar in the chat input box stays hidden as requested */
+.tool-indicator-bar {
+  display: none !important;
+}
+
 /* ================================================================
    COMPUTER PANEL – Progress Step Items Fix
    Browser button elements don't respect display:flex by default

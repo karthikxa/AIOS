@@ -820,15 +820,9 @@ const starIndicator = `
     }
 
     const isAssistantFinal = sender === 'assistant' && !text.includes('thinking-line') && !text.includes('activity-phase');
-    const content = isAssistantFinal ? renderMarkdown(text) : text;
+    const content = isAssistantFinal ? renderMarkdown((text || '').trim()) : text;
     
-    msgDiv.innerHTML = `
-      ${headerHtml}
-      <div class="chat-message-bubble">
-        <div class="message-collapsible-blocks"></div>
-        <div class="cot-response-text-container">${content}</div>
-      </div>
-    `;
+    msgDiv.innerHTML = `${headerHtml}<div class="chat-message-bubble"><div class="message-collapsible-blocks"></div><div class="cot-response-text-container">${content}</div></div>`;
 
     const blocksContainer = msgDiv.querySelector('.message-collapsible-blocks');
 
@@ -1669,16 +1663,8 @@ const starIndicator = `
     skill: 'Using skill...',
   };
   function showToolIndicator(toolName) {
-    if (_activeToolIndicators[toolName]) return;
-    const bar = document.getElementById('toolIndicatorBar');
-    if (!bar) return;
-    const el = document.createElement('div');
-    el.className = 'tool-indicator-item';
-    el.dataset.tool = toolName;
-    el.innerHTML = `<span class="tool-spinner"></span><span>${TOOL_LABELS[toolName] || toolName}</span>`;
-    bar.appendChild(el);
-    bar.style.display = 'flex';
-    _activeToolIndicators[toolName] = el;
+    // Disabled to remove streaming status indicators inside the chat input box
+    return;
   }
   function hideToolIndicator(toolName) {
     const el = _activeToolIndicators[toolName];
