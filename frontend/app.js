@@ -4810,24 +4810,26 @@ Here are the current findings:
       return;
     }
 
-    // ── Priority 2: HF Space cloud desktop ─────────────────────────────
+    // ── Priority 2: HF Space cloud desktop (noVNC via WebSocket) ───────
     const hfSpaceUrl = localStorage.getItem('hf_space_url');
     if (hfSpaceUrl) {
-      // HF Space: load Selkies WebRTC stream directly — NOT screenshot polling.
+      // noVNC: WebSocket-based VNC stream — works in any browser/iframe
+      // Cross-origin WebSockets are NOT blocked by browsers (unlike cookies/WebRTC TURN)
       const baseUrl = hfSpaceUrl.replace(/\/$/, '');
       desktopFrame.style.display = 'block';
-      desktopFrame.src = baseUrl + '/stream/';
+      // Load noVNC HTML5 client with autoconnect params
+      desktopFrame.src = baseUrl + '/stream/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=2000&quality=6&compression=2&view_only=false&show_dot=true';
       // Update URL in header
       const urlEl = document.getElementById('splitPaneHeaderUrl');
       if (urlEl) {
         urlEl.innerHTML = `<a href="${baseUrl}" target="_blank" style="color:#3B82F6;text-decoration:none;">${baseUrl}</a>`;
       }
-      // Hide connecting overlay once iframe content loads
+      // Hide connecting overlay once iframe loads (noVNC connects via WebSocket)
       desktopFrame.onload = () => {
         if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
       };
-      // Selkies /stream/ is cross-origin — onload may not fire, hide after 5s fallback
-      setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 5000);
+      // Fallback: hide overlay after 10s (noVNC may take a few seconds to handshake)
+      setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 10000);
     } else {
       // Live noVNC stream from sandbox
       const sandboxUrl = getVncBaseUrl();
