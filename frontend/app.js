@@ -1573,7 +1573,7 @@ const starIndicator = `
     }, 2000);
 
     // Step 6: Show final aggregated response inside the same assistant bubble
-    let textContainer = bubbleElement.querySelector('.cot-response-text-container');
+    textContainer = bubbleElement.querySelector('.cot-response-text-container');
     if (!textContainer) {
       textContainer = document.createElement('div');
       textContainer.className = 'cot-response-text-container';
