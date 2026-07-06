@@ -1265,7 +1265,15 @@ const starIndicator = `
         subAgents = JSON.parse(rawContent);
       }
     } catch {
-      subAgents = [{ name: 'Agent', task: promptText, avatar: '🤖' }];
+      subAgents = [];
+    }
+
+    // Safety Fallback: Guarantee we always have a clean list of subagents
+    if (!Array.isArray(subAgents) || subAgents.length === 0) {
+      subAgents = [
+        { name: 'Competitor Landscape Researcher', task: `Search and compile competitive landscape data for: ${promptText}`, avatar: '🕵️' },
+        { name: 'Customer Persona Researcher', task: `Define target customer profiles and requirements for: ${promptText}`, avatar: '👥' }
+      ];
     }
 
     const HUMAN_NAMES = ['Summer', 'Allen', 'Logan', 'Aria', 'Carter', 'Brooke'];
@@ -1320,14 +1328,13 @@ const starIndicator = `
       textContainer.className = 'cot-response-text-container';
       bubbleElement.appendChild(textContainer);
     }
-    textContainer.innerHTML = ''; // clear initial empty content
+    textContainer.innerHTML = '';
 
     // --- Stream Response 1 ---
     const p1 = document.createElement('p');
     p1.style.cssText = "margin-bottom: 12px; font-size: 13.5px; color: #374151; line-height: 1.5;";
     textContainer.appendChild(p1);
-    const cleanPrompt = promptText.length > 50 ? promptText.slice(0, 50) + '...' : promptText;
-    await streamText(p1, `Task decomposed successfully. Now creating ${totalAgents} specialized sub-agents to analyze: "${cleanPrompt}".`);
+    await streamText(p1, `I'll research the prompt and analyze the best strategies. Let me start by creating specialized sub-agents to investigate aspects in parallel.`);
 
     // --- Create and append the subagents list card container ---
     const listCard = createSwarmSubagentsCardContainer();
@@ -1397,7 +1404,7 @@ const starIndicator = `
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2.5" stroke-linecap="round" style="animation: subagent-spin 1s linear infinite; flex-shrink: 0;">
             <circle cx="12" cy="12" r="10" stroke-dasharray="4 4"/>
           </svg>
-          <span style="font-size: 13px; color: #374151; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${agent.name}</span>
+          <span style="font-size: 13px; color: #374151; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${agent.role}</span>
         `;
         row.appendChild(statusWrap);
         rightPanelCard.appendChild(row);
@@ -1434,26 +1441,17 @@ const starIndicator = `
       }
       const paneStatus = document.getElementById(`agent-pane-status-${agent.idx}`);
       if (paneStatus) {
-        paneStatus.innerHTML = `<span style="font-size: 13px; color: #374151; font-weight: 500;">${agent.name}</span>`;
+        paneStatus.innerHTML = `<span style="font-size: 13px; color: #374151; font-weight: 500;">${agent.role}</span>`;
       }
+
+      if (agentPaneFooterText) agentPaneFooterText.textContent = `Creating subagents... ${i + 1}/${totalAgents} completed`;
     }
 
     // --- Stream Response 2 ---
     const p2 = document.createElement('p');
     p2.style.cssText = "margin-top: 16px; margin-bottom: 12px; font-size: 13.5px; color: #374151; line-height: 1.5;";
     textContainer.appendChild(p2);
-    await streamText(p2, `Now launching both research tracks in parallel — these are independent and will run simultaneously.`);
-
-    // --- Create and append empty Active Swarm card ---
-    const swarmCard = createSwarmActiveCardContainer(totalAgents);
-    blocksContainer.appendChild(swarmCard);
-
-    // --- Stagger-stream the active swarm rows one by one ---
-    for (let i = 0; i < totalAgents; i++) {
-      const agent = subAgents[i];
-      addActiveSwarmRow(swarmCard, agent, totalAgents);
-      await new Promise(resolve => setTimeout(resolve, 350));
-    }
+    await streamText(p2, `I've created the specialized sub-agents. They are now gathering and analyzing information in parallel.`);
 
     // Start activity simulation intervals
     subAgents.forEach((agent) => {
@@ -1472,8 +1470,6 @@ const starIndicator = `
         if (agent.status === 'running') {
           if (agent.dotsCount < 9) {
             agent.dotsCount++;
-            const dotsContainer = document.getElementById(`swarm-row-dots-${agent.idx}`);
-            if (dotsContainer) dotsContainer.innerHTML = getProgressDotsHtml(agent.dotsCount, 'running');
           }
           
           if (actionIdx < simulatedActivities.length) {
@@ -1495,7 +1491,7 @@ const starIndicator = `
       return (async () => {
         try {
           const result = await callRealAPI(model, [
-            { role: 'system', content: `You are ${agent.name}. Complete this task concisely and thoroughly:\n\n${agent.task}` },
+            { role: 'system', content: `You are ${agent.role}. Complete this task concisely and thoroughly:\n\n${agent.task}` },
             { role: 'user', content: promptText }
           ], null, null, null, null) || 'No response';
           
@@ -1505,9 +1501,6 @@ const starIndicator = `
           allResults[idx] = result;
 
           clearInterval(agentLogIntervals[idx]);
-          
-          const dotsContainer = document.getElementById(`swarm-row-dots-${agent.idx}`);
-          if (dotsContainer) dotsContainer.innerHTML = getProgressDotsHtml(10, 'done');
           
           if (viewedAgentIdx === agent.idx) {
             updateTerminalDisplay(agent.idx);
@@ -1526,9 +1519,6 @@ const starIndicator = `
           
           clearInterval(agentLogIntervals[idx]);
           
-          const dotsContainer = document.getElementById(`swarm-row-dots-${agent.idx}`);
-          if (dotsContainer) dotsContainer.innerHTML = getProgressDotsHtml(10, 'failed');
-          
           if (viewedAgentIdx === agent.idx) {
             updateTerminalDisplay(agent.idx);
           }
@@ -1543,7 +1533,7 @@ const starIndicator = `
 
     await Promise.all(parallelPromises);
 
-    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)
+    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'Synthesizing results...';
     let finalResponse = '';
     try {
