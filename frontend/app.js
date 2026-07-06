@@ -1234,13 +1234,13 @@ const starIndicator = `
     if (agentPaneFooter) agentPaneFooter.style.display = 'flex';
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'Decomposing task...';
 
-    // Step 1: Ask LLM to decompose the task into sub-agent assignments using callRealAPI
+    // Step 1: Ask LLM to decompose the task into sub-agent assignments using callRealAPI (skip agent loop for speed)
     let rawContent = '[]';
     try {
       rawContent = await callRealAPI(model, [
         { role: 'system', content: `You are a task orchestrator. Given a user task, decompose it into 2-5 sub-agent tasks. Return ONLY a valid JSON array. No reasoning, no explanation, no markdown. Just the JSON.\n\nFormat: [{"name":"Role Name","task":"specific task description","avatar":"emoji"}]\n\nAvatars: 👨‍💻 👩‍🎨 👩‍🚀 👨‍🔬 👩‍⚖️ 👨‍🏫 👩‍⚕️ 👨‍🎨 👩‍🔧 👨‍✈️\n\nNames: Researcher, Writer, Analyst, Coder, Designer, etc.` },
         { role: 'user', content: promptText }
-      ], null, null, null, null);
+      ], null, null, null, null, true);
     } catch (err) {
       console.error('Task decomposition error:', err);
     }
@@ -1483,14 +1483,14 @@ const starIndicator = `
 
     await Promise.all(parallelPromises);
 
-    // Step 5: Aggregate results with LLM using callRealAPI
+    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'Synthesizing results...';
     let finalResponse = '';
     try {
       finalResponse = await callRealAPI(model, [
         { role: 'system', content: 'You are a synthesizer. Combine the sub-agent results into a single comprehensive, well-structured response for the user. Use markdown formatting.' },
         { role: 'user', content: `Original task: ${promptText}\n\nSub-agent results:\n${subAgents.map((a) => `### ${a.name}\n${a.result}`).join('\n\n')}` }
-      ], null, null, null, null);
+      ], null, null, null, null, true);
     } catch (err) {
       console.error('Aggregation error:', err);
       finalResponse = allResults.join('\n\n');
@@ -1839,7 +1839,7 @@ const starIndicator = `
     Object.keys(_activeToolIndicators).forEach(hideToolIndicator);
   }
 
-  async function callRealAPI(model, messages, onToken, signal, onReasoning, onToolUsage) {
+  async function callRealAPI(model, messages, onToken, signal, onReasoning, onToolUsage, skipAgent = false) {
     const settings = model.settings || {};
     const apiKey = settings.apiKey || '';
     const rawBaseUrl = settings.baseUrl || '';
@@ -1851,7 +1851,7 @@ const starIndicator = `
     const apiMessages = [...messages];
 
     // ── Zed Pro: route through backend AIAgent with full tools + dashboard awareness ──
-    if (isZedPro) {
+    if (isZedPro && !skipAgent) {
       const useStream = !!onToken;
       const dashboardState = {
         activeModel: modelsStore.getState().activeModel,
@@ -3674,6 +3674,15 @@ Here are the current findings:
         });
 
       } else {
+        if (effectiveMode === 'search') {
+          // Agent Mode: trigger triggerSwarmVisualization directly and return early
+          window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Orchestrating swarm' } }));
+          ensureAssistantBubble();
+          await triggerSwarmVisualization(promptText, bubble);
+          showStopButton(false);
+          clearAllToolIndicators();
+          return;
+        }
         reply = await callRealAPI(model, conversationHistory, onTokenCb, abortController.signal, onReasoningCb, onToolUsageCb);
       }
 
