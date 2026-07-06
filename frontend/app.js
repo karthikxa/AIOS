@@ -1256,17 +1256,28 @@ const starIndicator = `
 
     // Update agent panel progress count
     if (agentPaneProgressCount) agentPaneProgressCount.textContent = `0/${totalAgents}`;
-    if (agentPaneFooterText) agentPaneFooterText.textContent = 'Creating subagents...';
-    if (agentPaneFooterCount) agentPaneFooterCount.textContent = `0/${totalAgents} completed`;
+    if (agentPaneFooterText) agentPaneFooterText.textContent = `Creating subagents... 0/${totalAgents} completed`;
+    // Removed separate count update
 
     // Step 2: Show dynamic subagent rows in the CHAT BUBBLE
     const listCard = createSwarmSubagentsList(subAgents.map(a => ({ idx: a.idx, name: a.name, avatar: a.avatarHtml })));
     blocksContainer.appendChild(listCard);
 
-    // Step 3: Populate the AGENT RIGHT PANEL with mirrored rows
+    // Step 3: Populate the AGENT RIGHT PANEL with mirrored rows wrapped in a card
     const agentPaneRows = document.getElementById('agentPaneSubagentRows');
     if (agentPaneRows) {
       agentPaneRows.innerHTML = '';
+      agentPaneRows.style.padding = '16px';
+
+      const card = document.createElement('div');
+      card.style.cssText = `
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        background: #FFFFFF;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      `;
+
       subAgents.forEach((agent, i) => {
         const row = document.createElement('div');
         row.id = `agent-pane-row-${agent.idx}`;
@@ -1308,8 +1319,9 @@ const starIndicator = `
           <span style="font-size: 13px; color: #374151; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${agent.name}</span>
         `;
         row.appendChild(statusWrap);
-        agentPaneRows.appendChild(row);
+        card.appendChild(row);
       });
+      agentPaneRows.appendChild(card);
     }
 
     // Step 4: Execute all sub-agents in parallel
@@ -1355,7 +1367,7 @@ const starIndicator = `
           // Update progress counts
           completedCount++;
           if (agentPaneProgressCount) agentPaneProgressCount.textContent = `${completedCount}/${totalAgents}`;
-          if (agentPaneFooterCount) agentPaneFooterCount.textContent = `${completedCount}/${totalAgents} completed`;
+          if (agentPaneFooterText) agentPaneFooterText.textContent = `Creating subagents... ${completedCount}/${totalAgents} completed`;
           return result;
         } catch (err) {
           agent.status = 'failed';
@@ -1367,7 +1379,7 @@ const starIndicator = `
           if (paneIcon) paneIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
           completedCount++;
           if (agentPaneProgressCount) agentPaneProgressCount.textContent = `${completedCount}/${totalAgents}`;
-          if (agentPaneFooterCount) agentPaneFooterCount.textContent = `${completedCount}/${totalAgents} completed`;
+          if (agentPaneFooterText) agentPaneFooterText.textContent = `Creating subagents... ${completedCount}/${totalAgents} completed`;
           return null;
         }
       })();
