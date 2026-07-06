@@ -1223,7 +1223,7 @@ const starIndicator = `
   async function triggerSwarmVisualization(promptText, bubbleElement, model) {
     if (!bubbleElement) return;
 
-    // Reset Viewed Agent Index (Force Vercel Webhook rebuild 2)
+    // Reset Viewed Agent Index
     viewedAgentIdx = 0;
 
     // Show right panel split pane, set to Agent mode view
@@ -1254,10 +1254,64 @@ const starIndicator = `
       bubbleElement.insertBefore(blocksContainer, bubbleElement.firstChild);
     }
 
-    // Step 1: Create simulated/animated thinking thoughts block
-    const thinkingStartTime = Date.now();
+    // Step 1: Call LLM to decompose the task and generate dynamic texts
     window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Thinking' } }));
 
+    let rawContent = '{}';
+    try {
+      rawContent = await callRealAPI(model, [
+        { role: 'system', content: `You are a task orchestrator. Given a user task, decompose it and plan parallel sub-agent execution.
+Return ONLY a valid JSON object. No explanation, no markdown. Just the JSON.
+
+JSON Structure:
+{
+  "thoughts": "Your detailed reasoning/thought process (2-3 sentences) analyzing the prompt and describing how you will tackle it.",
+  "introText": "A friendly introductory paragraph (1-2 sentences) explaining to the user what you are going to do and that you are creating sub-agents.",
+  "transitionText": "A transition paragraph (1-2 sentences) explaining that the sub-agents have been created and what they are now doing in parallel.",
+  "subagents": [
+    {
+      "name": "Role Name (e.g. Competitor Landscape Researcher, Pricing Analyst)",
+      "task": "Specific task description for this sub-agent.",
+      "avatar": "Emoji avatar"
+    }
+  ]
+}` },
+        { role: 'user', content: promptText }
+      ], null, null, null, null, true);
+    } catch (err) {
+      console.error('Task decomposition error:', err);
+    }
+
+    // Parse sub-agents and text details
+    let parsedData = {};
+    try {
+      const jsonMatch = rawContent.match(/\{[\s\S]*?\}/);
+      if (jsonMatch) {
+        parsedData = JSON.parse(jsonMatch[0]);
+      } else {
+        parsedData = JSON.parse(rawContent);
+      }
+    } catch (err) {
+      console.error('JSON parsing failed:', err);
+    }
+
+    // Create dynamic fallbacks using promptText so it is never static or hardcoded
+    const cleanPrompt = promptText.length > 40 ? promptText.slice(0, 40) + '...' : promptText;
+    const thoughtsText = parsedData.thoughts || `Decomposing analysis task: "${promptText}". Planning parallel research tracks to query target indices, verify details, and compile comprehensive comparison structures.`;
+    const introText = parsedData.introText || `I'll analyze the request for "${cleanPrompt}" by creating specialized sub-agents to investigate different aspects in parallel. Let me start by spawning the sub-agents and assigning their research tasks.`;
+    const transitionText = parsedData.transitionText || `I've successfully created the specialized sub-agents. They are now actively gathering and analyzing information in parallel.`;
+    let subAgents = parsedData.subagents || parsedData.subAgents;
+
+    // Safety Fallback: Guarantee we always have a clean list of subagents
+    if (!Array.isArray(subAgents) || subAgents.length === 0) {
+      subAgents = [
+        { name: 'Competitor Landscape Researcher', task: `Search and compile competitive landscape data for: ${promptText}`, avatar: '🕵️' },
+        { name: 'Customer Persona Researcher', task: `Define target customer profiles and requirements for: ${promptText}`, avatar: '👥' }
+      ];
+    }
+
+    // Step 2: Create and stream thoughts block
+    const thinkingStartTime = Date.now();
     const cotSection = createActivityRow({
       type: 'active',
       label: 'Thinking...',
@@ -1270,39 +1324,14 @@ const starIndicator = `
     const cotContentDiv = cotSection.querySelector('.activity-content-inner');
     const labelSpan = cotSection.querySelector('.activity-label-span');
 
-    const thoughtsText = `Analyzing task: "${promptText}"\n` +
-      `- Determining primary focus areas for parallel track execution\n` +
-      `- Mapping target directories and required CLI/API tools\n` +
-      `- Planning sub-agent decomposition: defining specific task assignments and domains\n` +
-      `- Resolving optimal sub-agent persona names and task scopes...`;
-
-    // Trigger thoughts streaming and API call in parallel for zero latency feel
-    const thoughtsPromise = (async () => {
-      if (cotContentDiv) {
-        cotContentDiv.textContent = '';
-        const thoughtWords = thoughtsText.split(' ');
-        for (let w = 0; w < thoughtWords.length; w++) {
-          cotContentDiv.textContent += (w === 0 ? '' : ' ') + thoughtWords[w];
-          await new Promise(r => setTimeout(r, 15));
-        }
+    if (cotContentDiv) {
+      cotContentDiv.textContent = '';
+      const thoughtWords = thoughtsText.split(' ');
+      for (let w = 0; w < thoughtWords.length; w++) {
+        cotContentDiv.textContent += (w === 0 ? '' : ' ') + thoughtWords[w];
+        await new Promise(r => setTimeout(r, 15));
       }
-    })();
-
-    // Decompose task api call
-    let rawContent = '[]';
-    const apiPromise = (async () => {
-      try {
-        rawContent = await callRealAPI(model, [
-          { role: 'system', content: `You are a task orchestrator. Given a user task, decompose it into 2-5 sub-agent tasks. Return ONLY a valid JSON array. No reasoning, no explanation, no markdown. Just the JSON.\n\nFormat: [{"name":"Role Name","task":"specific task description","avatar":"emoji"}]\n\nAvatars: 👨‍💻 👩‍🎨 👩‍🚀 👨‍🔬 👩‍⚖️ 👨‍🏫 👩‍⚕️ 👨‍🎨 👩‍🔧 👨‍✈️\n\nNames: Researcher, Writer, Analyst, Coder, Designer, etc.` },
-          { role: 'user', content: promptText }
-        ], null, null, null, null, true);
-      } catch (err) {
-        console.error('Task decomposition error:', err);
-      }
-    })();
-
-    // Wait for both thoughts to finish streaming and API call to resolve
-    await Promise.all([thoughtsPromise, apiPromise]);
+    }
 
     // Collapse/finalize thinking block
     const duration = Math.round((Date.now() - thinkingStartTime) / 1000);
@@ -1327,27 +1356,7 @@ const starIndicator = `
 
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'Decomposing task...';
 
-    // Parse sub-agents
-    let subAgents;
-    try {
-      const jsonMatch = rawContent.match(/\[[\s\S]*?\]/);
-      if (jsonMatch) {
-        subAgents = JSON.parse(jsonMatch[0]);
-      } else {
-        subAgents = JSON.parse(rawContent);
-      }
-    } catch {
-      subAgents = [];
-    }
-
-    // Safety Fallback: Guarantee we always have a clean list of subagents
-    if (!Array.isArray(subAgents) || subAgents.length === 0) {
-      subAgents = [
-        { name: 'Competitor Landscape Researcher', task: `Search and compile competitive landscape data for: ${promptText}`, avatar: '🕵️' },
-        { name: 'Customer Persona Researcher', task: `Define target customer profiles and requirements for: ${promptText}`, avatar: '👥' }
-      ];
-    }
-
+    // Map subagents to Swarm object structure
     const HUMAN_NAMES = ['Summer', 'Allen', 'Logan', 'Aria', 'Carter', 'Brooke'];
     subAgents = subAgents.map((a, i) => ({
       idx: i,
@@ -1394,12 +1403,11 @@ const starIndicator = `
     }
     textContainer.innerHTML = '';
 
-    // --- Stream Response 1 ---
+    // --- Stream Response 1 (Dynamic Intro Text) ---
     const p1 = document.createElement('p');
     p1.style.cssText = "margin-bottom: 12px; font-size: 13.5px; color: #374151; line-height: 1.5;";
     textContainer.appendChild(p1);
-    const cleanPrompt = promptText.length > 40 ? promptText.slice(0, 40) + '...' : promptText;
-    await streamText(p1, `I'll research best practices for "${cleanPrompt}" by creating specialized agents to investigate different aspects in parallel. Let me start by creating the sub-agents and assigning their research tasks.`);
+    await streamText(p1, introText);
 
     // --- Create and append the subagents list card container ---
     const listCard = createSwarmSubagentsCardContainer();
@@ -1512,11 +1520,11 @@ const starIndicator = `
       if (agentPaneFooterText) agentPaneFooterText.textContent = `Creating subagents... ${i + 1}/${totalAgents} completed`;
     }
 
-    // --- Stream Response 2 ---
+    // --- Stream Response 2 (Dynamic Transition Text) ---
     const p2 = document.createElement('p');
     p2.style.cssText = "margin-top: 16px; margin-bottom: 12px; font-size: 13.5px; color: #374151; line-height: 1.5;";
     textContainer.appendChild(p2);
-    await streamText(p2, `I've created the specialized sub-agents. They are now gathering and analyzing information in parallel.`);
+    await streamText(p2, transitionText);
 
     // Start activity simulation intervals
     subAgents.forEach((agent) => {
@@ -1598,7 +1606,7 @@ const starIndicator = `
 
     await Promise.all(parallelPromises);
 
-    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)
+    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'Synthesizing results...';
     let finalResponse = '';
     try {
