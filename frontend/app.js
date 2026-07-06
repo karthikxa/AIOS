@@ -1220,10 +1220,10 @@ const starIndicator = `
     });
   }
 
-  async function triggerSwarmVisualization(promptText, bubbleElement) {
+  async function triggerSwarmVisualization(promptText, bubbleElement, model) {
     if (!bubbleElement) return;
 
-    // Reset Viewed Agent Index (Vercel Trigger Comment)
+    // Reset Viewed Agent Index
     viewedAgentIdx = 0;
 
     // Show right panel split pane, set to Agent mode view
@@ -1244,18 +1244,90 @@ const starIndicator = `
     const agentPaneFooter = document.getElementById('agentPaneFooter');
     const agentPaneFooterText = document.getElementById('agentPaneFooterText');
     if (agentPaneFooter) agentPaneFooter.style.display = 'flex';
+    if (agentPaneFooterText) agentPaneFooterText.textContent = 'Thinking...';
+
+    let blocksContainer = bubbleElement.querySelector('.message-collapsible-blocks');
+    if (!blocksContainer) {
+      blocksContainer = document.createElement('div');
+      blocksContainer.className = 'message-collapsible-blocks';
+      blocksContainer.style.cssText = 'width: 100%;';
+      bubbleElement.insertBefore(blocksContainer, bubbleElement.firstChild);
+    }
+
+    // Step 1: Create simulated/animated thinking thoughts block
+    const thinkingStartTime = Date.now();
+    window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Thinking' } }));
+
+    const cotSection = createActivityRow({
+      type: 'active',
+      label: 'Thinking...',
+      statusText: '',
+      contentHtml: 'Analyzing task structure and determining optimal agent allocation...',
+      isExpanded: true
+    });
+    blocksContainer.appendChild(cotSection);
+
+    const cotContentDiv = cotSection.querySelector('.activity-content-inner');
+    const labelSpan = cotSection.querySelector('.activity-label-span');
+
+    const thoughtsText = `Analyzing task: "${promptText}"\n` +
+      `- Determining primary focus areas for parallel track execution\n` +
+      `- Mapping target directories and required CLI/API tools\n` +
+      `- Planning sub-agent decomposition: defining specific task assignments and domains\n` +
+      `- Resolving optimal sub-agent persona names and task scopes...`;
+
+    // Trigger thoughts streaming and API call in parallel for zero latency feel
+    const thoughtsPromise = (async () => {
+      if (cotContentDiv) {
+        cotContentDiv.textContent = '';
+        const thoughtWords = thoughtsText.split(' ');
+        for (let w = 0; w < thoughtWords.length; w++) {
+          cotContentDiv.textContent += (w === 0 ? '' : ' ') + thoughtWords[w];
+          await new Promise(r => setTimeout(r, 15));
+        }
+      }
+    })();
+
+    // Decompose task api call
+    let rawContent = '[]';
+    const apiPromise = (async () => {
+      try {
+        rawContent = await callRealAPI(model, [
+          { role: 'system', content: `You are a task orchestrator. Given a user task, decompose it into 2-5 sub-agent tasks. Return ONLY a valid JSON array. No reasoning, no explanation, no markdown. Just the JSON.\n\nFormat: [{"name":"Role Name","task":"specific task description","avatar":"emoji"}]\n\nAvatars: 👨‍💻 👩‍🎨 👩‍🚀 👨‍🔬 👩‍⚖️ 👨‍🏫 👩‍⚕️ 👨‍🎨 👩‍🔧 👨‍✈️\n\nNames: Researcher, Writer, Analyst, Coder, Designer, etc.` },
+          { role: 'user', content: promptText }
+        ], null, null, null, null, true);
+      } catch (err) {
+        console.error('Task decomposition error:', err);
+      }
+    })();
+
+    // Wait for both thoughts to finish streaming and API call to resolve
+    await Promise.all([thoughtsPromise, apiPromise]);
+
+    // Collapse/finalize thinking block
+    const duration = Math.round((Date.now() - thinkingStartTime) / 1000);
+    const durationText = duration <= 1 ? '1s' : `${duration}s`;
+    if (labelSpan) {
+      labelSpan.textContent = `Thought for ${durationText}`;
+      labelSpan.style.color = '#4B5563';
+    }
+    const iconSpan = cotSection.querySelector('.activity-icon-span');
+    if (iconSpan) {
+      iconSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`;
+    }
+    const chevron = cotSection.querySelector('.activity-chevron');
+    if (chevron) {
+      chevron.style.transform = 'rotate(0deg)';
+    }
+    const contentContainer = cotSection.querySelector('.activity-content-container');
+    if (contentContainer) {
+      contentContainer.style.maxHeight = '0px';
+      contentContainer.style.padding = '0px 12px 0px 24px';
+    }
+
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'Decomposing task...';
 
-    // Step 1: Ask LLM to decompose the task into sub-agent assignments using callRealAPI (skip agent loop for speed)
-    let rawContent = '[]';
-    try {
-      rawContent = await callRealAPI(model, [
-        { role: 'system', content: `You are a task orchestrator. Given a user task, decompose it into 2-5 sub-agent tasks. Return ONLY a valid JSON array. No reasoning, no explanation, no markdown. Just the JSON.\n\nFormat: [{"name":"Role Name","task":"specific task description","avatar":"emoji"}]\n\nAvatars: 👨‍💻 👩‍🎨 👩‍🚀 👨‍🔬 👩‍⚖️ 👨‍🏫 👩‍⚕️ 👨‍🎨 👩‍🔧 👨‍✈️\n\nNames: Researcher, Writer, Analyst, Coder, Designer, etc.` },
-        { role: 'user', content: promptText }
-      ], null, null, null, null, true);
-    } catch (err) {
-      console.error('Task decomposition error:', err);
-    }
+    // Parse sub-agents
     let subAgents;
     try {
       const jsonMatch = rawContent.match(/\[[\s\S]*?\]/);
@@ -1313,14 +1385,6 @@ const starIndicator = `
     if (agentPaneProgressCount) agentPaneProgressCount.textContent = `0/${totalAgents}`;
     if (agentPaneFooterText) agentPaneFooterText.textContent = `Creating subagents... 0/${totalAgents} completed`;
 
-    let blocksContainer = bubbleElement.querySelector('.message-collapsible-blocks');
-    if (!blocksContainer) {
-      blocksContainer = document.createElement('div');
-      blocksContainer.className = 'message-collapsible-blocks';
-      blocksContainer.style.cssText = 'width: 100%;';
-      bubbleElement.insertBefore(blocksContainer, bubbleElement.firstChild);
-    }
-
     // Prepare text container
     let textContainer = bubbleElement.querySelector('.cot-response-text-container');
     if (!textContainer) {
@@ -1334,7 +1398,8 @@ const starIndicator = `
     const p1 = document.createElement('p');
     p1.style.cssText = "margin-bottom: 12px; font-size: 13.5px; color: #374151; line-height: 1.5;";
     textContainer.appendChild(p1);
-    await streamText(p1, `I'll research the prompt and analyze the best strategies. Let me start by creating specialized sub-agents to investigate aspects in parallel.`);
+    const cleanPrompt = promptText.length > 40 ? promptText.slice(0, 40) + '...' : promptText;
+    await streamText(p1, `I'll research best practices for "${cleanPrompt}" by creating specialized agents to investigate different aspects in parallel. Let me start by creating the sub-agents and assigning their research tasks.`);
 
     // --- Create and append the subagents list card container ---
     const listCard = createSwarmSubagentsCardContainer();
@@ -1435,11 +1500,11 @@ const starIndicator = `
       }
 
       // Update Pane row status
-      const paneIcon = document.getElementById(`agent-pane-icon-${agent.idx}`);
+      const paneIcon = document.getElementById('agent-pane-icon-' + agent.idx);
       if (paneIcon) {
         paneIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><circle cx="12" cy="12" r="10" fill="#E6F4EA"/><path d="M9 12l2 2 4-4"/></svg>`;
       }
-      const paneStatus = document.getElementById(`agent-pane-status-${agent.idx}`);
+      const paneStatus = document.getElementById('agent-pane-status-' + agent.idx);
       if (paneStatus) {
         paneStatus.innerHTML = `<span style="font-size: 13px; color: #374151; font-weight: 500;">${agent.role}</span>`;
       }
@@ -1493,7 +1558,7 @@ const starIndicator = `
           const result = await callRealAPI(model, [
             { role: 'system', content: `You are ${agent.role}. Complete this task concisely and thoroughly:\n\n${agent.task}` },
             { role: 'user', content: promptText }
-          ], null, null, null, null) || 'No response';
+          ], null, null, null, null, false) || 'No response';
           
           agent.status = 'done';
           agent.dotsCount = 10;
@@ -1533,7 +1598,7 @@ const starIndicator = `
 
     await Promise.all(parallelPromises);
 
-    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)
+    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'Synthesizing results...';
     let finalResponse = '';
     try {
@@ -3921,7 +3986,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         // SWARM PROMPT KEYWORD TRIGGER
         if (isPromptSwarmTrigger && !swarmVisualized) {
           swarmVisualized = true;
-          (async () => { await triggerSwarmVisualization(promptText, bubble); })();
+          (async () => { await triggerSwarmVisualization(promptText, bubble, model); })();
         }
 
         if (!fullContent) {
@@ -3942,7 +4007,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         // SWARM PROMPT KEYWORD TRIGGER
         if (isPromptSwarmTrigger && !swarmVisualized) {
           swarmVisualized = true;
-          (async () => { await triggerSwarmVisualization(promptText, bubble); })();
+          (async () => { await triggerSwarmVisualization(promptText, bubble, model); })();
         }
 
         if (firstReasoningToken) {
@@ -3981,7 +4046,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         if (toolUsage.type === 'tool_start' && toolUsage.name === 'delegate_task') {
           if (!swarmVisualized) {
             swarmVisualized = true;
-            (async () => { await triggerSwarmVisualization(promptText, bubble); })();
+            (async () => { await triggerSwarmVisualization(promptText, bubble, model); })();
           }
         }
 
@@ -4135,7 +4200,7 @@ Here are the current findings:
         // Trigger Swarm Visualization since it's a swarm prompt
         if (!swarmVisualized) {
           swarmVisualized = true;
-          (async () => { await triggerSwarmVisualization(promptText, ensureAssistantBubble()); })();
+          (async () => { await triggerSwarmVisualization(promptText, ensureAssistantBubble(), model); })();
         }
 
         await new Promise((resolve) => {
@@ -4156,7 +4221,7 @@ Here are the current findings:
           // Agent Mode: trigger triggerSwarmVisualization directly and return early
           window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Orchestrating swarm' } }));
           ensureAssistantBubble();
-          await triggerSwarmVisualization(promptText, bubble);
+          await triggerSwarmVisualization(promptText, bubble, model);
           showStopButton(false);
           clearAllToolIndicators();
           return;
