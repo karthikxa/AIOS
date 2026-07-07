@@ -4748,6 +4748,81 @@ Here are the current findings:
     e.target.value = '';
   });
 
+  // ── Paste image from clipboard ────────────────────────────────────────
+  chatPromptInput?.addEventListener('paste', async (e) => {
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    let hasImage = false;
+    
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        hasImage = true;
+        const file = item.getAsFile();
+        if (!file) continue;
+        
+        const fileName = file.name || `pasted-image-${Date.now()}.png`;
+        const renamedFile = new File([file], fileName, { type: file.type });
+        
+        const maxSizeBytes = 5 * 1024 * 1024; // 5MB limit
+        if (renamedFile.size > maxSizeBytes) {
+          alert(`Pasted file "${renamedFile.name}" exceeds the 5MB size limit.`);
+          continue;
+        }
+        
+        const chip = document.createElement('div');
+        chip.className = 'file-chip';
+        
+        const mediaWrapper = document.createElement('div');
+        mediaWrapper.className = 'file-chip-thumb-wrapper';
+        
+        const img = document.createElement('img');
+        img.className = 'file-chip-thumb';
+        img.src = URL.createObjectURL(renamedFile);
+        mediaWrapper.appendChild(img);
+        chip.appendChild(mediaWrapper);
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'file-chip-content';
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'file-chip-name';
+        nameSpan.textContent = renamedFile.name;
+        contentDiv.appendChild(nameSpan);
+        
+        const metaSpan = document.createElement('span');
+        metaSpan.className = 'file-chip-meta';
+        const sizeStr = (renamedFile.size / 1024).toFixed(0) + ' KB';
+        const extension = renamedFile.name.split('.').pop().toUpperCase();
+        metaSpan.textContent = `${extension} · ${sizeStr}`;
+        contentDiv.appendChild(metaSpan);
+        
+        chip.appendChild(contentDiv);
+        
+        const removeBtn = document.createElement('span');
+        removeBtn.className = 'file-chip-remove';
+        removeBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+        removeBtn.addEventListener('click', () => {
+          chip.remove();
+          window._attachedFiles = window._attachedFiles.filter(f => f.name !== renamedFile.name);
+        });
+        chip.appendChild(removeBtn);
+        
+        filePreviewChips.appendChild(chip);
+        
+        const content = '[Image: ' + renamedFile.name + ']';
+        window._attachedFiles.push({
+          name: renamedFile.name,
+          type: renamedFile.type,
+          size: renamedFile.size,
+          content: content
+        });
+      }
+    }
+    
+    if (hasImage) {
+      e.preventDefault();
+    }
+  });
+
   // ── Drag & Drop file upload ───────────────────────────────────────────
   const chatInputArea = document.querySelector('.chat-container');
   if (chatInputArea) {
