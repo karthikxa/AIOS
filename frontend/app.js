@@ -403,10 +403,13 @@ const starIndicator = `
         </button>
       `;
     } else {
-      // Assistant messages: copy + thumbsup + thumbsdown
+      // Assistant messages: copy + regenerate + thumbsup + thumbsdown
       actionsDiv.innerHTML = `
         <button class="msg-action-btn" title="Copy" data-action="copy">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+        <button class="msg-action-btn" title="Regenerate" data-action="regenerate">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
         </button>
         <button class="msg-action-btn" title="Good response" data-action="thumbsup">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
@@ -432,6 +435,18 @@ const starIndicator = `
           chatPromptInput.style.height = 'auto';
           chatPromptInput.style.height = chatPromptInput.scrollHeight + 'px';
           chatPromptInput.focus();
+        } else if (action === 'regenerate') {
+          // Find preceding user message
+          let prevMsg = msgDiv.previousElementSibling;
+          while (prevMsg && !prevMsg.classList.contains('user')) {
+            prevMsg = prevMsg.previousElementSibling;
+          }
+          if (prevMsg) {
+            const promptText = prevMsg.querySelector('.chat-message-bubble')?.textContent || '';
+            if (promptText) {
+              regenerateMessageBranch(msgDiv, promptText);
+            }
+          }
         } else if (action === 'thumbsup') {
           btn.classList.toggle('liked');
           actionsDiv.querySelectorAll('[data-action="thumbsdown"]').forEach(b => b.classList.remove('disliked'));
@@ -839,6 +854,11 @@ const starIndicator = `
     
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${sender}`;
+
+    if (sender === 'assistant') {
+      msgDiv.dataset.branches = JSON.stringify([{ text: text, reasoning: reasoning, tool_calls: tool_calls }]);
+      msgDiv.dataset.currentBranch = "0";
+    }
 
     let headerHtml = '';
     if (sender === 'assistant') {
@@ -5636,3 +5656,398 @@ Here are the current findings:
   });
 
 });
+
+
+  // ── Floating Selection Toolbar (Quote) and Branch Picker Helpers ───────
+  const quoteToolbar = document.createElement('div');
+  quoteToolbar.id = 'selectionQuoteToolbar';
+  quoteToolbar.style.cssText = `
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    user-select: none;
+  `;
+  quoteToolbar.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2v4zm13 0c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2v4z"/></svg>
+    <span style="font-size: 12.5px; font-weight: 500; color: #374151;">Quote</span>
+  `;
+  document.body.appendChild(quoteToolbar);
+
+  let selectedText = '';
+  document.addEventListener('selectionchange', () => {
+    const selection = window.getSelection();
+    const text = selection.toString().trim();
+    
+    if (!text) {
+      quoteToolbar.style.display = 'none';
+      return;
+    }
+    
+    let anchorNode = selection.anchorNode;
+    if (anchorNode && anchorNode.nodeType === Node.TEXT_NODE) {
+      anchorNode = anchorNode.parentNode;
+    }
+    const isInsideBubble = anchorNode && (anchorNode.closest('.chat-message-bubble') || anchorNode.closest('.cot-response-text-container'));
+    if (!isInsideBubble) {
+      quoteToolbar.style.display = 'none';
+      return;
+    }
+    
+    selectedText = text;
+    
+    try {
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        quoteToolbar.style.display = 'flex';
+        const left = rect.left + rect.width / 2 - quoteToolbar.offsetWidth / 2;
+        const top = rect.top - quoteToolbar.offsetHeight - 8;
+        quoteToolbar.style.left = `${Math.max(10, left)}px`;
+        quoteToolbar.style.top = `${Math.max(10, top + window.scrollY)}px`;
+      }
+    } catch (e) {
+      quoteToolbar.style.display = 'none';
+    }
+  });
+
+  quoteToolbar.addEventListener('click', () => {
+    if (selectedText && chatPromptInput) {
+      const currentVal = chatPromptInput.value.trim();
+      const quoteBlock = `> ${selectedText}\n\n`;
+      chatPromptInput.value = currentVal ? `${currentVal}\n\n${quoteBlock}` : quoteBlock;
+      chatPromptInput.focus();
+      chatPromptInput.style.height = 'auto';
+      chatPromptInput.style.height = chatPromptInput.scrollHeight + 'px';
+      
+      window.getSelection().removeAllRanges();
+      quoteToolbar.style.display = 'none';
+    }
+  });
+
+  function renderBranchContent(msgDiv, branchIndex) {
+    const branches = JSON.parse(msgDiv.dataset.branches || '[]');
+    const branch = branches[branchIndex];
+    if (!branch) return;
+    
+    msgDiv.dataset.currentBranch = branchIndex.toString();
+    
+    const isAssistantFinal = msgDiv.classList.contains('assistant') && !branch.text.includes('thinking-line') && !branch.text.includes('activity-phase');
+    const content = isAssistantFinal ? renderMarkdown((branch.text || '').trim()) : branch.text;
+    
+    const bubble = msgDiv.querySelector('.chat-message-bubble');
+    if (bubble) {
+      bubble.innerHTML = `<div class="message-collapsible-blocks"></div><div class="cot-response-text-container">${content}</div>`;
+      
+      const blocksContainer = bubble.querySelector('.message-collapsible-blocks');
+      
+      if (branch.reasoning && blocksContainer) {
+        const cotBlock = createActivityRow({
+          type: 'reasoning',
+          label: 'Thinking Process',
+          statusText: '',
+          contentHtml: DOMPurify.sanitize(branch.reasoning),
+          defaultOpen: false
+        });
+        blocksContainer.appendChild(cotBlock);
+      }
+      
+      if (Array.isArray(branch.tool_calls) && blocksContainer) {
+        branch.tool_calls.forEach(tc => {
+          if (tc.name === 'swarm_router' || tc.name === 'delegate_task') return;
+          const detailHtml = getToolDetailHtml(tc.name, tc.args);
+          const stateWord = tc.status === 'complete' ? 'Completed' : tc.status === 'failed' ? 'Failed' : 'Running';
+          const toolBlock = createActivityRow({
+            type: 'tool',
+            label: `Call tool: ${tc.name}`,
+            statusText: stateWord,
+            detailHtml: detailHtml,
+            contentHtml: tc.result ? `<pre style="margin:0;font-family:monospace;white-space:pre-wrap;">${DOMPurify.sanitize(tc.result)}</pre>` : null,
+            defaultOpen: false
+          });
+          blocksContainer.appendChild(toolBlock);
+        });
+      }
+    }
+    
+    const picker = msgDiv.querySelector('.branch-picker-root');
+    if (picker) {
+      picker.querySelector('.branch-picker-current').textContent = (branchIndex + 1).toString();
+      picker.querySelector('.branch-picker-total').textContent = branches.length.toString();
+      
+      const prevBtn = picker.querySelector('.branch-picker-prev');
+      const nextBtn = picker.querySelector('.branch-picker-next');
+      if (prevBtn) {
+        prevBtn.disabled = (branchIndex === 0);
+        prevBtn.style.opacity = (branchIndex === 0) ? '0.3' : '1';
+      }
+      if (nextBtn) {
+        nextBtn.disabled = (branchIndex === branches.length - 1);
+        nextBtn.style.opacity = (branchIndex === branches.length - 1) ? '0.3' : '1';
+      }
+    }
+  }
+
+  function renderBranchPicker(msgDiv) {
+    let picker = msgDiv.querySelector('.branch-picker-root');
+    const branches = JSON.parse(msgDiv.dataset.branches || '[]');
+    if (branches.length <= 1) {
+      if (picker) picker.remove();
+      return;
+    }
+    
+    if (!picker) {
+      picker = document.createElement('div');
+      picker.className = 'branch-picker-root';
+      picker.style.cssText = `
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 6px;
+        margin-left: 50px;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #6B7280;
+        user-select: none;
+      `;
+      picker.innerHTML = `
+        <button class="branch-picker-prev" style="display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.06); background: #FFFFFF; cursor: pointer; transition: all 0.2s; color: #4B5563;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span style="font-weight: 500; padding: 0 4px;"><span class="branch-picker-current">1</span> / <span class="branch-picker-total">2</span></span>
+        <button class="branch-picker-next" style="display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.06); background: #FFFFFF; cursor: pointer; transition: all 0.2s; color: #4B5563;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      `;
+      
+      picker.querySelector('.branch-picker-prev').onclick = (e) => {
+        e.preventDefault();
+        const curr = parseInt(msgDiv.dataset.currentBranch || '0', 10);
+        if (curr > 0) {
+          renderBranchContent(msgDiv, curr - 1);
+        }
+      };
+      
+      picker.querySelector('.branch-picker-next').onclick = (e) => {
+        e.preventDefault();
+        const curr = parseInt(msgDiv.dataset.currentBranch || '0', 10);
+        const total = JSON.parse(msgDiv.dataset.branches || '[]').length;
+        if (curr < total - 1) {
+          renderBranchContent(msgDiv, curr + 1);
+        }
+      };
+      
+      msgDiv.appendChild(picker);
+    }
+    
+    const curr = parseInt(msgDiv.dataset.currentBranch || '0', 10);
+    renderBranchContent(msgDiv, curr);
+  }
+
+  async function regenerateMessageBranch(msgDiv, promptText) {
+    let branches = JSON.parse(msgDiv.dataset.branches || '[]');
+    const newBranch = { text: 'Thinking...', reasoning: '', tool_calls: [] };
+    branches.push(newBranch);
+    msgDiv.dataset.branches = JSON.stringify(branches);
+    const newBranchIndex = branches.length - 1;
+    msgDiv.dataset.currentBranch = newBranchIndex.toString();
+    
+    renderBranchPicker(msgDiv);
+    
+    const bubble = msgDiv.querySelector('.chat-message-bubble');
+    const blocksContainer = bubble.querySelector('.message-collapsible-blocks');
+    const textContainer = bubble.querySelector('.cot-response-text-container');
+    
+    if (blocksContainer) blocksContainer.innerHTML = '';
+    if (textContainer) textContainer.innerHTML = 'Thinking...';
+    
+    const state = modelsStore.getState();
+    const activeModelName = state.activeModel;
+    let model = state.models.find(m => m.name === activeModelName || m.id === activeModelName);
+    if (!model) return;
+    
+    const msgDivs = Array.from(chatMessagesLog.querySelectorAll('.chat-message'));
+    const targetDOMIndex = msgDivs.indexOf(msgDiv);
+    const history = conversationHistory.slice(0, targetDOMIndex);
+    
+    history.push({ role: 'user', content: promptText });
+    
+    if (window._currentAbortController) {
+      window._currentAbortController.abort();
+    }
+    const abortController = new AbortController();
+    window._currentAbortController = abortController;
+    showStopButton(true);
+    
+    let fullContent = '';
+    let currentReasoning = '';
+    let currentTools = [];
+    let hasEndedThinking = false;
+    let thinkingStartTime = Date.now();
+    let cotSection = null;
+    
+    function ensureThinkingSection() {
+      if (!cotSection && blocksContainer) {
+        cotSection = createActivityRow({
+          type: 'active',
+          label: 'Thinking...',
+          statusText: '',
+          contentHtml: 'Thinking...',
+          defaultOpen: true
+        });
+        blocksContainer.appendChild(cotSection);
+      }
+    }
+    
+    const onReasoningCb = (token) => {
+      currentReasoning += token;
+      ensureThinkingSection();
+      if (cotSection) {
+        const contentInner = cotSection.querySelector('.activity-content-inner');
+        if (contentInner) {
+          contentInner.innerHTML = DOMPurify.sanitize(currentReasoning);
+        }
+      }
+      branches[newBranchIndex].reasoning = currentReasoning;
+      msgDiv.dataset.branches = JSON.stringify(branches);
+    };
+    
+    const onTokenCb = (token) => {
+      if (!hasEndedThinking && thinkingStartTime) {
+        hasEndedThinking = true;
+        const duration = Math.round((Date.now() - thinkingStartTime) / 1000);
+        const durationText = duration <= 1 ? '1s' : `${duration}s`;
+        if (cotSection) {
+          const iconSpan = cotSection.querySelector('.activity-icon-span');
+          if (iconSpan) {
+            iconSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`;
+          }
+          const labelSpan = cotSection.querySelector('.activity-label-span');
+          if (labelSpan) {
+            labelSpan.textContent = `Thought for ${durationText}`;
+            labelSpan.style.color = '#4B5563';
+          }
+          const contentContainer = cotSection.querySelector('.activity-content-container');
+          if (contentContainer) {
+            contentContainer.style.maxHeight = '0px';
+            contentContainer.style.padding = '0px 12px 0px 24px';
+          }
+          const chevron = cotSection.querySelector('.activity-chevron');
+          if (chevron) {
+            chevron.style.transform = 'rotate(0deg)';
+          }
+        }
+      }
+      
+      fullContent += token;
+      if (textContainer) {
+        textContainer.innerHTML = renderMarkdown(fullContent.trimStart());
+      }
+      branches[newBranchIndex].text = fullContent;
+      msgDiv.dataset.branches = JSON.stringify(branches);
+    };
+    
+    const onToolUsageCb = (toolCall) => {
+      if (toolCall.name === 'swarm_router' || toolCall.name === 'delegate_task') return;
+      
+      let existing = currentTools.find(t => t.id === toolCall.id);
+      if (!existing) {
+        existing = { id: toolCall.id, name: toolCall.name, args: toolCall.args, status: 'running' };
+        currentTools.push(existing);
+        
+        const detailHtml = getToolDetailHtml(toolCall.name, toolCall.args);
+        const toolBlock = createActivityRow({
+          type: 'tool',
+          label: `Call tool: ${toolCall.name}`,
+          statusText: 'Running',
+          detailHtml: detailHtml,
+          contentHtml: null,
+          defaultOpen: false
+        });
+        toolBlock.id = `tool-step-${toolCall.id}`;
+        blocksContainer.appendChild(toolBlock);
+      } else {
+        if (toolCall.status) existing.status = toolCall.status;
+        if (toolCall.result) existing.result = toolCall.result;
+        
+        const domBlock = document.getElementById(`tool-step-${toolCall.id}`);
+        if (domBlock) {
+          const statusText = domBlock.querySelector('.activity-status-text');
+          if (statusText) {
+            statusText.textContent = toolCall.status === 'complete' ? 'Completed' : toolCall.status === 'failed' ? 'Failed' : 'Running';
+          }
+          if (toolCall.result) {
+            const contentContainer = domBlock.querySelector('.activity-content-container');
+            if (contentContainer) {
+              const contentInner = contentContainer.querySelector('.activity-content-inner');
+              if (contentInner) {
+                contentInner.innerHTML = `<pre style="margin:0;font-family:monospace;white-space:pre-wrap;">\${DOMPurify.sanitize(toolCall.result)}</pre>`;
+              }
+            }
+          }
+        }
+      }
+      branches[newBranchIndex].tool_calls = currentTools;
+      msgDiv.dataset.branches = JSON.stringify(branches);
+    };
+    
+    try {
+      const reply = await callRealAPI(model, history, onTokenCb, abortController.signal, onReasoningCb, onToolUsageCb);
+      
+      if (!hasEndedThinking && thinkingStartTime) {
+        hasEndedThinking = true;
+        const duration = Math.round((Date.now() - thinkingStartTime) / 1000);
+        const durationText = duration <= 1 ? '1s' : `${duration}s`;
+        if (cotSection) {
+          const iconSpan = cotSection.querySelector('.activity-icon-span');
+          if (iconSpan) {
+            iconSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`;
+          }
+          const labelSpan = cotSection.querySelector('.activity-label-span');
+          if (labelSpan) {
+            labelSpan.textContent = `Thought for ${durationText}`;
+            labelSpan.style.color = '#4B5563';
+          }
+          const contentContainer = cotSection.querySelector('.activity-content-container');
+          if (contentContainer) {
+            contentContainer.style.maxHeight = '0px';
+            contentContainer.style.padding = '0px 12px 0px 24px';
+          }
+          const chevron = cotSection.querySelector('.activity-chevron');
+          if (chevron) {
+            chevron.style.transform = 'rotate(0deg)';
+          }
+        }
+      }
+      
+      branches[newBranchIndex].text = reply;
+      msgDiv.dataset.branches = JSON.stringify(branches);
+      
+      conversationHistory[targetDOMIndex] = {
+        role: 'assistant',
+        content: reply,
+        reasoning: currentReasoning,
+        tool_calls: currentTools
+      };
+      
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        console.error(e);
+        if (textContainer) {
+          textContainer.innerHTML += `<div style="color:#EF4444;margin-top:8px;font-weight:500;">✕ Connection error: ${e.message}</div>`;
+        }
+      }
+    } finally {
+      showStopButton(false);
+      clearAllToolIndicators();
+      renderBranchContent(msgDiv, newBranchIndex);
+    }
+  }
