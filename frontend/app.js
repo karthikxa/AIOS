@@ -72,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   initAgentComputer();
-  initSuggestionPills();
 
   let activeDropdown = null;
   function closeActiveDropdown() {
@@ -5529,101 +5528,4 @@ Here are the current findings:
     clearActiveSteps();
   });
 
-  // ── Initialize Suggestion Groups (assistant-ui style) ─────────────────────
-  function initSuggestionPills() {
-    const groupsRow = document.getElementById('suggestionGroupsRow');
-    const optionsRow = document.getElementById('suggestionOptionsRow');
-    if (!groupsRow || !optionsRow) return;
-
-    const SUGGESTION_GROUPS = [
-      {
-        label: "Weather",
-        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M15.9 16A5.5 5.5 0 1 1 10.5 11h.5a5.5 5.5 0 1 1 10.5-2.5v.5Z"/></svg>`,
-        options: [
-          { label: "in San Francisco", prompt: "What's the weather in San Francisco?" },
-          { label: "in Singapore", prompt: "What's the weather in Singapore?" },
-          { label: "in Tokyo", prompt: "What's the weather in Tokyo?" },
-          { label: "in London", prompt: "What's the weather in London?" }
-        ]
-      },
-      {
-        label: "Code",
-        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
-        options: [
-          { label: "explain React hooks", prompt: "Explain React hooks like useState and useEffect" },
-          { label: "write a debounce function", prompt: "Write a debounce function in TypeScript" },
-          { label: "review a useEffect cleanup", prompt: "Show me the right way to clean up a subscription in useEffect" }
-        ]
-      },
-      {
-        label: "Write",
-        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`,
-        options: [
-          { label: "a birthday card message", prompt: "Help me write a birthday card message for a friend" },
-          { label: "a product announcement", prompt: "Draft a short product announcement for a new dark mode" },
-          { label: "release notes", prompt: "Write release notes for a bugfix release of a React component library" }
-        ]
-      },
-      {
-        label: "Analyze",
-        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>`,
-        options: [
-          { label: "React vs Vue vs Svelte", prompt: "Compare React, Vue, and Svelte in a table" },
-          { label: "GDP of US, China, Japan", prompt: "Compare the GDP of the United States, China, and Japan in a table" },
-          { label: "pros and cons of SSR", prompt: "What are the pros and cons of server-side rendering?" }
-        ]
-      },
-      {
-        label: "Brainstorm",
-        icon: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`,
-        options: [
-          { label: "side project ideas", prompt: "Brainstorm five side project ideas for a React developer" },
-          { label: "names for a dev tool", prompt: "Brainstorm names for a developer tools startup" },
-          { label: "talk topics", prompt: "Brainstorm talk topics for a React meetup" }
-        ]
-      }
-    ];
-
-    groupsRow.innerHTML = '';
-    optionsRow.innerHTML = '';
-    optionsRow.style.display = 'none';
-
-    SUGGESTION_GROUPS.forEach((group) => {
-      const btn = document.createElement('button');
-      btn.className = 'suggestion-group-btn';
-      btn.innerHTML = `${group.icon} <span>${group.label}</span>`;
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        const wasActive = btn.classList.contains('active');
-        groupsRow.querySelectorAll('.suggestion-group-btn').forEach(b => b.classList.remove('active'));
-        
-        if (wasActive) {
-          optionsRow.style.display = 'none';
-          optionsRow.innerHTML = '';
-        } else {
-          btn.classList.add('active');
-          optionsRow.innerHTML = '';
-          optionsRow.style.display = 'flex';
-          
-          group.options.forEach((opt) => {
-            const optBtn = document.createElement('button');
-            optBtn.className = 'suggestion-option-btn';
-            optBtn.textContent = opt.label;
-            optBtn.addEventListener('click', (e2) => {
-              e2.preventDefault();
-              if (chatPromptInput) {
-                chatPromptInput.value = opt.prompt;
-                chatPromptInput.focus();
-                // Automatically send
-                handleChatSubmission(opt.prompt);
-              }
-            });
-            optionsRow.appendChild(optBtn);
-          });
-        }
-      });
-      groupsRow.appendChild(btn);
-    });
-  }
 });
