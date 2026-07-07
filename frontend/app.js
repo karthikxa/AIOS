@@ -4675,27 +4675,47 @@ Here are the current findings:
   attachBtn?.addEventListener('click', () => fileInput?.click());
 
   fileInput?.addEventListener('change', async (e) => {
+    const maxSizeBytes = 5 * 1024 * 1024; // 5MB limit
     const files = Array.from(e.target.files);
     for (const file of files) {
+      if (file.size > maxSizeBytes) {
+        alert(`File "${file.name}" exceeds the 5MB size limit.`);
+        continue;
+      }
+
       const chip = document.createElement('div');
       chip.className = 'file-chip';
 
+      const mediaWrapper = document.createElement('div');
+      mediaWrapper.className = 'file-chip-thumb-wrapper';
+      
       if (file.type.startsWith('image/')) {
         const img = document.createElement('img');
         img.className = 'file-chip-thumb';
         img.src = URL.createObjectURL(file);
-        chip.appendChild(img);
+        mediaWrapper.appendChild(img);
       } else {
-        const icon = document.createElement('span');
-        icon.textContent = '📄';
-        icon.style.fontSize = '14px';
-        chip.appendChild(icon);
+        // Render FileCodeIcon SVG
+        mediaWrapper.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="file-chip-icon"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m10 13-2 2 2 2"/><path d="m14 17 2-2-2-2"/></svg>`;
       }
+      chip.appendChild(mediaWrapper);
+
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'file-chip-content';
 
       const nameSpan = document.createElement('span');
       nameSpan.className = 'file-chip-name';
       nameSpan.textContent = file.name;
-      chip.appendChild(nameSpan);
+      contentDiv.appendChild(nameSpan);
+
+      const metaSpan = document.createElement('span');
+      metaSpan.className = 'file-chip-meta';
+      const sizeStr = (file.size / 1024).toFixed(0) + ' KB';
+      const extension = file.name.split('.').pop().toUpperCase();
+      metaSpan.textContent = `${extension} · ${sizeStr}`;
+      contentDiv.appendChild(metaSpan);
+
+      chip.appendChild(contentDiv);
 
       const removeBtn = document.createElement('span');
       removeBtn.className = 'file-chip-remove';
