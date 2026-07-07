@@ -3056,7 +3056,7 @@ JSON Structure:
         background: #F9FAFB;
         flex-shrink: 0;
       `;
-      avatarCircle.innerHTML = agent.avatarHtml || '🕵️';
+      avatarCircle.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="${isActive ? '#3B82F6' : '#4B5563'}" stroke-width="2.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
       topRow.appendChild(avatarCircle);
 
       const numLabel = document.createElement('span');

@@ -505,20 +505,21 @@
         </div>
       </div>
 
+      <!-- Row 2: Task Progress header (Shared - visible in both overview and details views) -->
+      <div id="agentPaneTaskProgressRow" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #F3F4F6; flex-shrink: 0; background: #FAFAFA;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div id="agentPaneStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; flex-shrink: 0; animation: livePulse 2s ease-in-out infinite;"></div>
+          <span id="agentPaneProgressLabel" style="font-size: 13px; font-weight: 600; color: #111827;">Task Progress</span>
+          <span id="agentPaneProgressCount" style="font-size: 12px; color: #6B7280; font-weight: 400;">0/0</span>
+        </div>
+        <div id="agentPaneTaskLink" style="display: flex; align-items: center; gap: 4px; cursor: pointer; max-width: 60%; overflow: hidden;">
+          <span id="agentPaneTaskText" style="font-size: 12px; color: #6B7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+
       <!-- Container 1: Overview (Default View) -->
       <div id="agentPaneOverview" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
-        <!-- Row 2: Task Progress header -->
-        <div id="agentPaneTaskProgressRow" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #F3F4F6; flex-shrink: 0; background: #FAFAFA;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <div id="agentPaneStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #10B981; flex-shrink: 0; animation: livePulse 2s ease-in-out infinite;"></div>
-            <span id="agentPaneProgressLabel" style="font-size: 13px; font-weight: 600; color: #111827;">Task Progress</span>
-            <span id="agentPaneProgressCount" style="font-size: 12px; color: #6B7280; font-weight: 400;">0/0</span>
-          </div>
-          <div id="agentPaneTaskLink" style="display: flex; align-items: center; gap: 4px; cursor: pointer; max-width: 60%; overflow: hidden;">
-            <span id="agentPaneTaskText" style="font-size: 12px; color: #6B7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-        </div>
 
         <!-- Row 3: Subagent rows (dynamically populated) -->
         <div id="agentPaneSubagentRows" style="flex: 1; overflow-y: auto; background: #FFFFFF; padding: 0;">
