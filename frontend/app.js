@@ -1526,55 +1526,82 @@ JSON Structure:
     textContainer.appendChild(p2);
     await streamText(p2, transitionText);
 
-    // Start activity simulation intervals
-    subAgents.forEach((agent) => {
-      agent.status = 'running';
-      
-      const simulatedActivities = [
-        { type: 'think', label: 'Establishing SSL handshake with context repositories' },
-        { type: 'search', label: `Querying database for: "${agent.task.slice(0, 30)}..."`, count: '15 results' },
-        { type: 'browse', label: 'Browsing documentation at https://api.openai.com/docs' },
-        { type: 'think', label: 'Running synthesis compiler pass 1' },
-        { type: 'write', label: 'Constructing draft response components' }
-      ];
-      
-      let actionIdx = 0;
-      const interval = setInterval(() => {
-        if (agent.status === 'running') {
-          if (agent.dotsCount < 9) {
-            agent.dotsCount++;
-          }
-          
-          if (actionIdx < simulatedActivities.length) {
-            agent.activities.push(simulatedActivities[actionIdx]);
-            actionIdx++;
-            if (viewedAgentIdx === agent.idx) {
-              updateTerminalDisplay(agent.idx);
-            }
-          }
-        }
-      }, Math.random() * 800 + 1200);
-      agentLogIntervals.push(interval);
-    });
-
-    // Step 4: Execute all sub-agents in parallel using callRealAPI
+    // Step 4: Execute all sub-agents in parallel using callRealAPI (streaming real CoT, tokens, and tool calls)
     let completedCount = 0;
     const allResults = [];
     const parallelPromises = subAgents.map((agent, idx) => {
+      agent.status = 'running';
+      agent.activities = [
+        { type: 'think', label: `Initializing sub-agent execution context for role: ${agent.role}...` },
+        { type: 'terminal', label: `Spawning sub-agent process '${agent.name}'` }
+      ];
+      
+      if (viewedAgentIdx === agent.idx) {
+        updateTerminalDisplay(agent.idx);
+      }
+
+      let activeThinkActivity = null;
+      let activeWriteActivity = null;
+
+      const onSubagentToken = (token) => {
+        if (!activeWriteActivity) {
+          if (activeThinkActivity) {
+            activeThinkActivity.isFinalized = true;
+          }
+          activeWriteActivity = { type: 'write', label: 'Compiling response components: ' };
+          agent.activities.push(activeWriteActivity);
+        }
+        activeWriteActivity.label += token;
+        
+        if (viewedAgentIdx === agent.idx) {
+          updateTerminalDisplay(agent.idx);
+        }
+      };
+
+      const onSubagentReasoning = (reasoningDelta) => {
+        if (!activeThinkActivity || activeThinkActivity.isFinalized) {
+          activeThinkActivity = { type: 'think', label: '' };
+          agent.activities.push(activeThinkActivity);
+        }
+        activeThinkActivity.label += reasoningDelta;
+        
+        if (viewedAgentIdx === agent.idx) {
+          updateTerminalDisplay(agent.idx);
+        }
+      };
+
+      const onSubagentToolUsage = (toolUsage) => {
+        if (toolUsage.type === 'tool_start') {
+          const toolLabel = TOOL_LABELS[toolUsage.name] || toolUsage.name;
+          const argsStr = toolUsage.args ? JSON.stringify(toolUsage.args) : '';
+          agent.activities.push({
+            type: 'terminal',
+            label: `Executing tool ${toolUsage.name} ${argsStr ? `(${argsStr.slice(0, 100)}${argsStr.length > 100 ? '...' : ''})` : ''}`
+          });
+          
+          if (viewedAgentIdx === agent.idx) {
+            updateTerminalDisplay(agent.idx);
+          }
+        }
+      };
+
       return (async () => {
         try {
           const result = await callRealAPI(model, [
             { role: 'system', content: `You are ${agent.role}. Complete this task concisely and thoroughly:\n\n${agent.task}` },
             { role: 'user', content: promptText }
-          ], null, null, null, null, false) || 'No response';
+          ], onSubagentToken, null, onSubagentReasoning, onSubagentToolUsage, false) || 'No response';
           
           agent.status = 'done';
           agent.dotsCount = 10;
           agent.result = result;
           allResults[idx] = result;
 
-          clearInterval(agentLogIntervals[idx]);
-          
+          agent.activities.push({
+            type: 'success',
+            label: `SUCCESS: Task complete. Output returned.`
+          });
+
           if (viewedAgentIdx === agent.idx) {
             updateTerminalDisplay(agent.idx);
           }
@@ -1590,8 +1617,11 @@ JSON Structure:
           agent.result = `Error: ${err.message}`;
           allResults[idx] = `Error: ${err.message}`;
           
-          clearInterval(agentLogIntervals[idx]);
-          
+          agent.activities.push({
+            type: 'failed',
+            label: `ERROR: Task execution failed. ${err.message}`
+          });
+
           if (viewedAgentIdx === agent.idx) {
             updateTerminalDisplay(agent.idx);
           }
@@ -2892,7 +2922,7 @@ JSON Structure:
 
     const text = document.createElement('span');
     text.textContent = activity.label;
-    text.style.cssText = 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; color: #374151;';
+    text.style.cssText = 'white-space: pre-wrap; word-break: break-word; font-weight: 500; color: #374151; line-height: 1.4;';
     left.appendChild(text);
 
     row.appendChild(left);
@@ -2907,10 +2937,12 @@ JSON Structure:
       right.appendChild(countSpan);
     }
 
-    const chevron = document.createElement('span');
-    chevron.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>`;
-    chevron.style.cssText = 'display: flex; align-items: center; transition: transform 0.2s;';
-    right.appendChild(chevron);
+    if (activity.type === 'success' || activity.type === 'failed') {
+      const chevron = document.createElement('span');
+      chevron.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>`;
+      chevron.style.cssText = 'display: flex; align-items: center; transition: transform 0.2s;';
+      right.appendChild(chevron);
+    }
 
     row.appendChild(right);
 
