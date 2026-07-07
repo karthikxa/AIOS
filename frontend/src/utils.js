@@ -61,6 +61,27 @@ export function renderMarkdown(text) {
   html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
   // Inline citations [source]
   html = html.replace(/\[source\]\((\d+)\)/g, '<a href="#" class="citation-marker" title="Source $1">$1</a>');
+
+  // Parse markdown links [Title](url) to premium assistant-ui style Sources badges
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, title, url) => {
+    let domain = '';
+    try {
+      domain = new URL(url).hostname;
+    } catch(e) {
+      domain = url;
+    }
+    const cleanDomain = domain.replace(/^www\./, '');
+    const firstLetter = cleanDomain.charAt(0);
+    const faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain=${cleanDomain}`;
+    
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="source-badge-root" title="${title} (${cleanDomain})">
+      <span class="source-badge-icon-wrapper">
+        <img src="${faviconUrl}" class="source-badge-icon" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+        <span class="source-badge-icon-fallback" style="display:none;">${firstLetter}</span>
+      </span>
+      <span class="source-badge-title">${title}</span>
+    </a>`;
+  });
   // Bullet lists (* or -)
   html = html.replace(/^[\s]*[-*]\s+(.+)$/gm, '<span style="color:#6B7280;margin-right:6px;">•</span>$1');
   // Numbered lists
@@ -74,7 +95,7 @@ export function renderMarkdown(text) {
   html = html.replace(/(<pre[\s\S]*?<\/pre>)/g, (match) => '%%PRE_BLOCK%%' + btoa(unescape(encodeURIComponent(match))) + '%%/PRE_BLOCK%%');
   html = html.replace(/\n/g, '<br>');
   html = html.replace(/%%PRE_BLOCK%%([A-Za-z0-9+/=]+)%%\/PRE_BLOCK%%/g, (_, encoded) => decodeURIComponent(escape(atob(encoded))));
-  return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['div', 'span', 'pre', 'code', 'textarea', 'br', 'strong', 'em', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'a', 'button', 'hr', 'ul', 'li', 'ol', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'text'], ALLOWED_ATTR: ['style', 'class', 'id', 'href', 'target', 'rel', 'src', 'alt', 'title', 'data-lang', 'data-code', 'width', 'height', 'viewbox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'xmlns', 'd', 'cx', 'cy', 'r', 'x1', 'x2', 'y1', 'y2', 'font-family', 'font-weight', 'font-size', 'dominant-baseline', 'text-anchor'] });
+  return DOMPurify.sanitize(html, { ALLOWED_TAGS: ['div', 'span', 'pre', 'code', 'textarea', 'br', 'strong', 'em', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'a', 'button', 'hr', 'ul', 'li', 'ol', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'text', 'img'], ALLOWED_ATTR: ['style', 'class', 'id', 'href', 'target', 'rel', 'src', 'alt', 'title', 'data-lang', 'data-code', 'width', 'height', 'viewbox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'xmlns', 'd', 'cx', 'cy', 'r', 'x1', 'x2', 'y1', 'y2', 'font-family', 'font-weight', 'font-size', 'dominant-baseline', 'text-anchor', 'onerror'] });
 }
 
 export function extractCodeBlocks(text) {
