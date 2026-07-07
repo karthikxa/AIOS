@@ -10653,7 +10653,7 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
 
 /* assistant-ui Premium Attachment Component Styles */
 #filePreviewChips {
-  display: flex !important;
+  display: none;
   gap: 10px !important;
   flex-wrap: wrap !important;
   width: 100% !important;

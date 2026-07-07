@@ -3446,7 +3446,11 @@ JSON Structure:
     if (window._attachedFiles && window._attachedFiles.length > 0) {
       fileContext = '\n\n[Attached files:\n' + window._attachedFiles.map(f => `- ${f.name} (${f.type}, ${f.size} bytes)`).join('\n') + '\n\nFile contents below:\n' + window._attachedFiles.map(f => f.content).filter(Boolean).join('\n---\n') + '\n]';
       window._attachedFiles = [];
-      document.getElementById('filePreviewChips').innerHTML = '';
+      const previewContainer = document.getElementById('filePreviewChips');
+      if (previewContainer) {
+        previewContainer.innerHTML = '';
+        previewContainer.style.display = 'none';
+      }
     }
 
     // ── Computer mode: inject computer tools as LLM tool definitions ──
@@ -4723,9 +4727,13 @@ Here are the current findings:
       removeBtn.addEventListener('click', () => {
         chip.remove();
         window._attachedFiles = window._attachedFiles.filter(f => f.name !== file.name);
+        if (window._attachedFiles.length === 0) {
+          filePreviewChips.style.display = 'none';
+        }
       });
       chip.appendChild(removeBtn);
 
+      filePreviewChips.style.display = 'flex';
       filePreviewChips.appendChild(chip);
 
       // Read content
@@ -4803,9 +4811,13 @@ Here are the current findings:
         removeBtn.addEventListener('click', () => {
           chip.remove();
           window._attachedFiles = window._attachedFiles.filter(f => f.name !== renamedFile.name);
+          if (window._attachedFiles.length === 0) {
+            filePreviewChips.style.display = 'none';
+          }
         });
         chip.appendChild(removeBtn);
         
+        filePreviewChips.style.display = 'flex';
         filePreviewChips.appendChild(chip);
         
         const content = '[Image: ' + renamedFile.name + ']';
