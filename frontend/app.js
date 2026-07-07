@@ -3369,8 +3369,27 @@ JSON Structure:
     // Use the selected mode directly - LLM decides if computer tools are needed
     const effectiveMode = currentMode;
 
-    // Swarm mode variables — will be dynamically determined if search mode is active
-    let isPromptSwarmTrigger = false;
+    // Instant local routing check to separate simple greetings from complex search/research tasks
+    function checkShouldTriggerSwarm(prompt) {
+      const lower = prompt.toLowerCase().trim();
+      const greetings = [
+        'hi', 'hello', 'hey', 'yo', 'good morning', 'good afternoon', 'good evening',
+        'greetings', 'sup', 'howdy', 'test', 'testing', 'hi there', 'hello there',
+        'thanks', 'thank you', 'thank you!', 'awesome', 'great', 'ok', 'okay', 'yes', 'no'
+      ];
+      if (greetings.includes(lower)) {
+        return false;
+      }
+      if (lower.length < 15) {
+        const actionVerbs = ['search', 'find', 'get', 'show', 'run', 'make', 'do', 'build', 'write', 'check', 'news', 'price', 'cost'];
+        const hasVerb = actionVerbs.some(v => lower.includes(v));
+        if (!hasVerb) return false;
+      }
+      return true;
+    }
+
+    // Swarm mode variables
+    let isPromptSwarmTrigger = effectiveMode === 'search' && checkShouldTriggerSwarm(promptText);
     let swarmVisualized = false;
 
     // Show subagent status bar with slide-down pop-up animation in computer mode
@@ -3520,40 +3539,6 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
     abortController = new AbortController();
     showStopButton(true);
     window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Planning' } }));
-
-    // Dynamic classification of prompt if we are in search mode
-    if (effectiveMode === 'search') {
-      window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Analyzing task' } }));
-      try {
-        const classification = await callRealAPI(model, [
-          { role: 'system', content: `You are a task routing classifier. Analyze the user request.
-Determine if this task is a complex task requiring parallel research tracks, multi-agent delegation, or comprehensive web crawling/comparison (e.g. comparing prices across multiple sites, compiling reports, summarizing news from multiple sources).
-
-Otherwise, if it is a simple query, conversational greeting/chit-chat (like "hi", "hello", "how are you"), simple definition, or direct question that can be answered immediately by a single assistant without parallel division of labor, return false.
-
-Return ONLY a valid JSON object matching this structure:
-{
-  "needsSwarm": true
-}` },
-          { role: 'user', content: promptText }
-        ], null, null, null, null, true);
-        
-        let parsed = {};
-        try {
-          const match = classification.match(/\{[\s\S]*?\}/);
-          parsed = JSON.parse(match ? match[0] : classification);
-        } catch (e) {
-          console.error("Classification parse error:", e);
-        }
-        isPromptSwarmTrigger = !!parsed.needsSwarm;
-      } catch (err) {
-        console.error("Classification API error:", err);
-        // Fallback: default to false for short conversational messages
-        const lower = promptText.toLowerCase().trim();
-        const isShort = lower.length < 15 || ['hi', 'hello', 'hey', 'yo', 'help'].includes(lower);
-        isPromptSwarmTrigger = !isShort;
-      }
-    }
 
     try {
       // ── Computer mode: agentic loop — LLM + tools + desktop agent ──────
