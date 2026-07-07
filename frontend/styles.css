@@ -10614,3 +10614,48 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* assistant-ui Reasoning Accordion Styles */
+.activity-row-container {
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-radius: 12px !important;
+  background-color: #FAFBFC !important;
+  overflow: hidden !important;
+  margin-bottom: 12px !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.activity-row-container:hover {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  background-color: #F8F9FA !important;
+}
+
+/* Header element styling */
+.activity-row-container > div:first-child {
+  padding: 10px 14px !important;
+  background-color: #FFFFFF !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Content block inside reasoning */
+.activity-content-container {
+  border-left: none !important;
+  margin-left: 0 !important;
+  background: #FCFCFD !important;
+}
+
+.activity-content-inner {
+  padding: 12px 14px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  color: #4B5563 !important;
+  line-height: 1.6 !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+/* Active spinner styling for reasoning */
+.activity-row-container.active-activity {
+  border-color: rgba(59, 130, 246, 0.15) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.03) !important;
+}
