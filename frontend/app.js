@@ -1,6 +1,7 @@
 import { initSidebar } from './js/sidebar.js';
 import { initModelSelector } from './js/model-selector.js';
 import { initChatBox } from './js/chatbox.js';
+import './src/main-react.jsx';
 import { initAgentComputer } from './js/agent-computer.js';
 import { initRouter } from './js/router.js';
 import { initModelsPage } from './js/models-page.js';
