@@ -2,7 +2,7 @@
   "buildCommand": "npm install --prefix frontend && npm run build --prefix frontend",
   "outputDirectory": "frontend/dist",
   "installCommand": "npm install --prefix frontend",
-  "cleanUrls": true,
+  "cleanUrls": false,
   "rewrites": [
     {
       "source": "/api/:path*",
@@ -17,7 +17,7 @@
       "destination": "https://backend-server-6ghr.onrender.com/oauth/:path*"
     },
     {
-      "source": "/((?!assets/|api/|v1/|oauth/).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
