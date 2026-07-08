@@ -1,11 +1,7 @@
-"use client";
-
 import {
   AssistantRuntimeProvider,
   ComposerPrimitive,
   useLocalRuntime,
-  unstable_useMentionAdapter,
-  unstable_useSlashCommandAdapter,
   type Unstable_SlashCommand,
 } from "@assistant-ui/react";
 import {
@@ -15,25 +11,46 @@ import {
   SlashIcon,
   WrenchIcon,
 } from "lucide-react";
+import { unstable_useMentionAdapter } from "./use-mention-adapter";
+import { unstable_useSlashCommandAdapter } from "./use-slash-command-adapter";
+import { ComposerTriggerPopover } from "./composer-trigger-popover";
 
 const SLASH_COMMANDS: readonly Unstable_SlashCommand[] = [
   {
     id: "summarize",
     description: "Summarize the conversation",
     icon: "FileText",
-    execute: () => {},
+    execute: () => {
+      window.dispatchEvent(
+        new CustomEvent("react-composer-send", {
+          detail: { text: "Summarize the conversation" },
+        })
+      );
+    },
   },
   {
     id: "translate",
     description: "Translate to another language",
     icon: "Languages",
-    execute: () => {},
+    execute: () => {
+      window.dispatchEvent(
+        new CustomEvent("react-composer-send", {
+          detail: { text: "Translate: " },
+        })
+      );
+    },
   },
   {
     id: "search",
     description: "Search the web",
     icon: "Globe",
-    execute: () => {},
+    execute: () => {
+      window.dispatchEvent(
+        new CustomEvent("react-composer-send", {
+          detail: { text: "Search the web for: " },
+        })
+      );
+    },
   },
 ];
 
@@ -63,12 +80,12 @@ function ComposerUI() {
       <ComposerPrimitive.Input placeholder="Type @ to mention, / for commands..." />
       <ComposerPrimitive.Send />
 
-      <ComposerPrimitive.Unstable_TriggerPopover
+      <ComposerTriggerPopover
         char="@"
         {...mention}
         fallbackIcon={WrenchIcon}
       />
-      <ComposerPrimitive.Unstable_TriggerPopover
+      <ComposerTriggerPopover
         char="/"
         {...slash}
         iconMap={{
