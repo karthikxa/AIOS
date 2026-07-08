@@ -14,6 +14,7 @@ import {
   FileTextIcon,
   GlobeIcon,
   LanguagesIcon,
+  SearchIcon,
   SlashIcon,
   WrenchIcon,
 } from "lucide-react";
@@ -36,7 +37,7 @@ const SLASH_COMMANDS: readonly Unstable_SlashCommand[] = [
   {
     id: "search",
     description: "Search the web",
-    icon: "Globe",
+    icon: "Search",
     execute: () => {},
   },
 ];
@@ -44,7 +45,7 @@ const SLASH_COMMANDS: readonly Unstable_SlashCommand[] = [
 const slashIcons = {
   FileText: FileTextIcon,
   Languages: LanguagesIcon,
-  Globe: GlobeIcon,
+  Search: SearchIcon,
 };
 
 const noopAdapter = { async *stream() {} };
