@@ -76,7 +76,15 @@ function ComposerUI() {
   };
 
   return (
-    <ComposerPrimitive.Root onSubmit={handleSubmit}>
+    <ComposerPrimitive.Root
+      onSubmit={handleSubmit}
+      style={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "stretch",
+      }}
+    >
       <ComposerPrimitive.Input
         style={{
           width: "100%",
