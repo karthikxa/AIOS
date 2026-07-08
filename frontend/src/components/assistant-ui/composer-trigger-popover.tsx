@@ -186,6 +186,42 @@ const Items: FC<ItemsProps> = ({
   );
 };
 
+const PopoverContent: FC<{
+  iconMap: Record<string, IconComponent> | undefined;
+  fallbackIcon: IconComponent;
+  backLabel: string;
+  emptyCategoriesLabel: string;
+  emptyItemsLabel: string;
+  loadingLabel: string;
+}> = ({
+  iconMap,
+  fallbackIcon,
+  backLabel,
+  emptyCategoriesLabel,
+  emptyItemsLabel,
+  loadingLabel,
+}) => {
+  const context = unstable_useTriggerPopoverScopeContext();
+  if (!context.open) return null;
+
+  return (
+    <>
+      <Categories
+        iconMap={iconMap}
+        fallbackIcon={fallbackIcon}
+        emptyLabel={emptyCategoriesLabel}
+      />
+      <Items
+        iconMap={iconMap}
+        fallbackIcon={fallbackIcon}
+        backLabel={backLabel}
+        emptyLabel={emptyItemsLabel}
+        loadingLabel={loadingLabel}
+      />
+    </>
+  );
+};
+
 const ComposerTriggerPopoverImpl: FC<ComposerTriggerPopoverProps> = ({
   iconMap,
   fallbackIcon = SparklesIcon,
@@ -231,16 +267,12 @@ const ComposerTriggerPopoverImpl: FC<ComposerTriggerPopoverProps> = ({
           removeOnExecute={action.removeOnExecute}
         />
       ) : null}
-      <Categories
-        iconMap={iconMap}
-        fallbackIcon={fallbackIcon}
-        emptyLabel={emptyCategoriesLabel}
-      />
-      <Items
+      <PopoverContent
         iconMap={iconMap}
         fallbackIcon={fallbackIcon}
         backLabel={backLabel}
-        emptyLabel={emptyItemsLabel}
+        emptyCategoriesLabel={emptyCategoriesLabel}
+        emptyItemsLabel={emptyItemsLabel}
         loadingLabel={loadingLabel}
       />
     </ComposerPrimitive.Unstable_TriggerPopover>
