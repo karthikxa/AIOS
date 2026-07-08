@@ -99,10 +99,10 @@ const Categories: FC<CategoriesProps> = ({
             <ComposerPrimitive.Unstable_TriggerPopoverCategoryItem
               key={cat.id}
               categoryId={cat.id}
-              className="hover:bg-zinc-100 dark:hover:bg-zinc-800 focus:bg-zinc-100 dark:focus:bg-zinc-800 data-[highlighted]:bg-zinc-100 dark:data-[highlighted]:bg-zinc-800 flex cursor-pointer items-center justify-between gap-2 px-3 py-2 text-sm transition-colors outline-none border-none bg-transparent w-full text-left"
+              className="hover:bg-zinc-100 dark:hover:bg-zinc-900 focus:bg-zinc-100 dark:focus:bg-zinc-900 data-[highlighted]:bg-zinc-100 dark:data-[highlighted]:bg-zinc-900 flex cursor-pointer items-center justify-between gap-2 px-4 py-2.5 text-sm transition-colors outline-none border-none bg-transparent w-full text-left"
             >
-              <span className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200">
-                <Icon className="text-zinc-400 size-4" />
+              <span className="flex items-center gap-2.5 text-zinc-800 dark:text-zinc-200">
+                <Icon className="text-zinc-500 size-4" />
                 {cat.label}
               </span>
               <ChevronRightIcon className="text-zinc-400 size-4" />
@@ -110,7 +110,7 @@ const Categories: FC<CategoriesProps> = ({
           );
         })}
         {categories.length === 0 && (
-          <div className="text-zinc-400 px-3 py-2 text-sm">
+          <div className="text-zinc-400 px-4 py-2 text-sm">
             {emptyLabel}
           </div>
         )}
@@ -140,14 +140,13 @@ const Items: FC<ItemsProps> = ({
       {(items) => (
         <div
           data-slot="composer-trigger-popover-items"
-          className="flex flex-col"
+          className="flex flex-col w-full"
         >
-          <ComposerPrimitive.Unstable_TriggerPopoverBack className="text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex cursor-pointer items-center gap-1.5 border-b px-3 py-2 text-xs tracking-wide uppercase transition-colors border-zinc-100 dark:border-zinc-800">
-            <ChevronLeftIcon className="size-3.5" />
-            {backLabel}
+          <ComposerPrimitive.Unstable_TriggerPopoverBack className="text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 dark:text-zinc-500 dark:hover:bg-zinc-900 flex cursor-pointer items-center gap-1 border-b px-4 py-2.5 text-[11px] font-medium tracking-wider uppercase transition-colors border-zinc-100 dark:border-zinc-800 bg-transparent border-none text-left">
+            &lt; {backLabel.toUpperCase()}
           </ComposerPrimitive.Unstable_TriggerPopoverBack>
 
-          <div className="py-1">
+          <div className="py-0.5">
             {items.map((item, index) => {
               const iconKey =
                 typeof item.metadata?.icon === "string"
@@ -159,22 +158,24 @@ const Items: FC<ItemsProps> = ({
                   key={item.id}
                   item={item}
                   index={index}
-                  className="hover:bg-zinc-100 dark:hover:bg-zinc-800 focus:bg-zinc-100 dark:focus:bg-zinc-800 data-[highlighted]:bg-zinc-100 dark:data-[highlighted]:bg-zinc-800 flex w-full cursor-pointer flex-col items-start gap-0.5 px-3 py-2 text-start transition-colors outline-none border-none bg-transparent"
+                  className="hover:bg-zinc-100/80 focus:bg-zinc-100/80 data-[highlighted]:bg-zinc-100/80 dark:hover:bg-zinc-900 dark:focus:bg-zinc-900 dark:data-[highlighted]:bg-zinc-900 flex w-full cursor-pointer flex-col items-start px-4 py-2.5 text-start transition-colors outline-none border-none bg-transparent rounded-none"
                 >
-                  <span className="flex items-center gap-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                    <Icon className="text-zinc-500 size-3.5" />
-                    {item.label}
-                  </span>
-                  {item.description && (
-                    <span className="text-zinc-400 ms-5.5 text-xs leading-tight">
-                      {item.description}
+                  <div className="flex items-center gap-2.5 w-full">
+                    <Icon className="text-zinc-800 dark:text-zinc-200 size-4 shrink-0" />
+                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                      {item.label}
                     </span>
+                  </div>
+                  {item.description && (
+                    <div className="text-zinc-500 dark:text-zinc-400 pl-[26px] text-xs font-normal mt-0.5 leading-normal">
+                      {item.description}
+                    </div>
                   )}
                 </ComposerPrimitive.Unstable_TriggerPopoverItem>
               );
             })}
             {items.length === 0 && (
-              <div className="text-zinc-400 px-3 py-2 text-sm">
+              <div className="text-zinc-400 px-4 py-2.5 text-sm">
                 {isLoading ? loadingLabel : emptyLabel}
               </div>
             )}
@@ -213,7 +214,7 @@ const ComposerTriggerPopoverImpl: FC<ComposerTriggerPopoverProps> = ({
     <ComposerPrimitive.Unstable_TriggerPopover
       data-slot="composer-trigger-popover"
       className={cn(
-        "aui-composer-trigger-popover bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 absolute start-0 bottom-full z-50 mb-2 w-64 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-lg",
+        "aui-composer-trigger-popover bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 absolute start-0 bottom-full z-50 mb-2 w-72 overflow-hidden rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-md py-0 px-0",
         className,
       )}
       {...props}

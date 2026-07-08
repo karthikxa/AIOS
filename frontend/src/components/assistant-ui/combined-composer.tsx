@@ -77,7 +77,10 @@ function ComposerUI() {
 
   return (
     <ComposerPrimitive.Root onSubmit={handleSubmit}>
-      <ComposerPrimitive.Input placeholder="Type @ to mention, / for commands..." />
+      <ComposerPrimitive.Input
+        className="w-full bg-transparent border-0 border-none outline-none resize-none p-0 m-0 text-[15.5px] leading-relaxed text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400/80 focus:ring-0 focus:outline-none focus:border-none focus-visible:ring-0 focus-visible:outline-none shadow-none"
+        placeholder="Type @ to mention, / for commands..."
+      />
       <ComposerPrimitive.Send />
 
       <ComposerTriggerPopover
