@@ -9115,32 +9115,8 @@ input:checked + .toggle-slider:before {
   position: relative !important;
 }
 
-/* Hide vanilla textarea when React CombinedComposer is active */
-.chat-input-center-wrapper.react-composer-active .chat-prompt-input {
-  display: none !important;
-}
-
-/* Hide vanilla toolbar row when React CombinedComposer is active */
-.chat-box.react-composer-active .chat-toolbar-row {
-  display: none !important;
-}
-
-.chat-input-center-wrapper.react-composer-active #composer-trigger-popover-root {
+.chat-input-center-wrapper #composer-trigger-popover-root {
   width: 100%;
-}
-
-.chat-input-center-wrapper.react-composer-active #composer-trigger-popover-root textarea {
-  min-height: 40px !important;
-  height: auto !important;
-  font-size: 14px !important;
-  line-height: 1.5 !important;
-  padding: 16px 20px 12px !important;
-}
-
-.chat-input-center-wrapper.react-composer-active #composer-trigger-popover-root textarea::placeholder {
-  color: #8E8E93 !important;
-  font-size: 14px !important;
-  font-weight: 400 !important;
 }
 
 .chat-box .chat-prompt-input {
