@@ -10787,7 +10787,7 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
   bottom: 100% !important;
   z-index: 50 !important;
   margin-bottom: 8px !important;
-  width: 288px !important;
+  width: 288px !important; /* Matches the wide popover user wants */
   overflow: hidden !important;
   border-radius: 12px !important;
   border: 1px solid #e4e4e7 !important;
@@ -10797,27 +10797,37 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
   box-sizing: border-box !important;
 }
 
-.popover-categories-list,
-.popover-items-list {
+/* Flex containers */
+.aui-composer-trigger-popover .flex.flex-col {
   display: flex !important;
   flex-direction: column !important;
   width: 100% !important;
   box-sizing: border-box !important;
 }
 
-.popover-categories-list {
-  padding: 4px 0 !important;
+.aui-composer-trigger-popover .flex.flex-col.py-1 {
+  display: flex !important;
+  flex-direction: column !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
-.popover-items-wrapper {
-  padding: 2px 0 !important;
+.aui-composer-trigger-popover .py-1 {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 /* Back button */
-.popover-back-button {
+.aui-composer-trigger-popover .text-muted-foreground.hover\:bg-accent.flex.cursor-pointer {
   display: flex !important;
   align-items: center !important;
-  gap: 4px !important;
+  gap: 6px !important;
   border-bottom: 1px solid #e4e4e7 !important;
   padding: 10px 16px !important;
   font-size: 11px !important;
@@ -10837,13 +10847,18 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
   transition: background-color 0.15s !important;
 }
 
-.popover-back-button:hover {
+.aui-composer-trigger-popover .text-muted-foreground.hover\:bg-accent.flex.cursor-pointer:hover {
   background-color: #f4f4f5 !important;
 }
 
-/* Items & Category Items */
-.popover-category-item,
-.popover-item {
+.aui-composer-trigger-popover .text-muted-foreground.hover\:bg-accent.flex.cursor-pointer svg {
+  width: 14px !important;
+  height: 14px !important;
+  color: #71717a !important;
+}
+
+/* Categories items and standard items */
+.aui-composer-trigger-popover [role="option"] {
   display: flex !important;
   width: 100% !important;
   cursor: pointer !important;
@@ -10854,7 +10869,8 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
   transition: background-color 0.15s !important;
 }
 
-.popover-category-item {
+/* Category item layout */
+.aui-composer-trigger-popover [data-slot="composer-trigger-popover-categories"] [role="option"] {
   flex-direction: row !important;
   align-items: center !important;
   justify-content: space-between !important;
@@ -10862,69 +10878,65 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
   padding: 10px 16px !important;
 }
 
-.popover-item {
+.aui-composer-trigger-popover [data-slot="composer-trigger-popover-categories"] [role="option"] .flex.items-center.gap-2 {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-size: 14px !important;
+  color: #27272a !important;
+}
+
+/* Standard items layout */
+.aui-composer-trigger-popover [data-slot="composer-trigger-popover-items"] [role="option"] {
   flex-direction: column !important;
   align-items: flex-start !important;
+  gap: 4px !important;
   padding: 10px 16px !important;
 }
 
-/* Highlighted state */
-.popover-category-item[data-highlighted],
-.popover-category-item:hover,
-.popover-item[data-highlighted],
-.popover-item:hover {
+/* Hover highlights */
+.aui-composer-trigger-popover [role="option"][data-highlighted],
+.aui-composer-trigger-popover [role="option"]:hover {
   background-color: #f4f4f5 !important;
 }
 
-/* Item labels & icons */
-.popover-category-item-label {
+/* Item title / labels */
+.aui-composer-trigger-popover [role="option"] .flex.items-center.gap-2.text-sm.font-medium {
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
-  font-size: 14px !important;
-  color: #27272a !important;
-}
-
-.popover-category-icon,
-.popover-category-chevron {
-  color: #a1a1aa !important;
-  width: 16px !important;
-  height: 16px !important;
-  flex-shrink: 0 !important;
-}
-
-.popover-item-title-row {
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  width: 100% !important;
-}
-
-.popover-item-label {
   font-size: 14px !important;
   font-weight: 600 !important;
   color: #09090b !important;
+  width: 100% !important;
 }
 
-.popover-item-icon {
+/* Icons styling */
+.aui-composer-trigger-popover [role="option"] svg {
   color: #27272a !important;
   width: 16px !important;
   height: 16px !important;
   flex-shrink: 0 !important;
 }
 
-/* Description */
-.popover-item-description {
+.aui-composer-trigger-popover [data-slot="composer-trigger-popover-categories"] [role="option"] svg {
+  color: #a1a1aa !important;
+}
+
+/* Description styling */
+.aui-composer-trigger-popover [role="option"] .text-muted-foreground.ms-5\.5.text-xs.leading-tight {
   color: #71717a !important;
   padding-left: 26px !important;
   font-size: 12px !important;
   font-weight: 400 !important;
   margin-top: 2px !important;
   line-height: 1.4 !important;
+  display: block !important;
+  text-align: left !important;
 }
 
-/* Empty Label */
-.popover-empty-label {
+/* Empty or Loading labels */
+.aui-composer-trigger-popover .text-muted-foreground.px-3.py-2.text-sm {
   color: #a1a1aa !important;
   padding: 10px 16px !important;
   font-size: 14px !important;
