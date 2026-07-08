@@ -6,9 +6,10 @@ import {
   unstable_defaultDirectiveFormatter,
   unstable_useTriggerPopoverScopeContext,
   type Unstable_DirectiveFormatter,
-  type Unstable_TriggerPopoverItem,
+  type Unstable_TriggerItem,
 } from "@assistant-ui/react";
 import { ChevronLeftIcon, ChevronRightIcon, SparklesIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type IconComponent = FC<{ className?: string }>;
 
@@ -16,14 +17,14 @@ type DirectiveBehaviorProps = {
   /** Formatter used to serialize the selected item into composer text. */
   formatter?: Unstable_DirectiveFormatter | undefined;
   /** Called after the directive text has been inserted into the composer. */
-  onInserted?: ((item: Unstable_TriggerPopoverItem) => void) | undefined;
+  onInserted?: ((item: Unstable_TriggerItem) => void) | undefined;
 };
 
 type ActionBehaviorProps = {
   /** Formatter used to serialize the audit-trail chip (when `removeOnExecute` is false). */
   formatter?: Unstable_DirectiveFormatter | undefined;
   /** Invoked with the selected item at the moment of selection. */
-  onExecute: (item: Unstable_TriggerPopoverItem) => void;
+  onExecute: (item: Unstable_TriggerItem) => void;
   /** If `true`, strip the trigger text from the composer after executing. @default false */
   removeOnExecute?: boolean | undefined;
 };
@@ -87,7 +88,7 @@ const Categories: FC<CategoriesProps> = ({
     {(categories) => (
       <div
         data-slot="composer-trigger-popover-categories"
-        className="popover-categories-list"
+        className="flex flex-col py-1"
       >
         {categories.map((cat) => {
           const Icon = resolveIcon(cat.id, iconMap, fallbackIcon);
@@ -95,18 +96,18 @@ const Categories: FC<CategoriesProps> = ({
             <ComposerPrimitive.Unstable_TriggerPopoverCategoryItem
               key={cat.id}
               categoryId={cat.id}
-              className="popover-category-item"
+              className="hover:bg-accent focus:bg-accent data-[highlighted]:bg-accent flex cursor-pointer items-center justify-between gap-2 px-3 py-2 text-sm transition-colors outline-none"
             >
-              <span className="popover-category-item-label">
-                <Icon className="popover-category-icon" />
+              <span className="flex items-center gap-2">
+                <Icon className="text-muted-foreground size-4" />
                 {cat.label}
               </span>
-              <ChevronRightIcon className="popover-category-chevron" />
+              <ChevronRightIcon className="text-muted-foreground size-4" />
             </ComposerPrimitive.Unstable_TriggerPopoverCategoryItem>
           );
         })}
         {categories.length === 0 && (
-          <div className="popover-empty-label">
+          <div className="text-muted-foreground px-3 py-2 text-sm">
             {emptyLabel}
           </div>
         )}
@@ -136,13 +137,14 @@ const Items: FC<ItemsProps> = ({
       {(items) => (
         <div
           data-slot="composer-trigger-popover-items"
-          className="popover-items-list"
+          className="flex flex-col"
         >
-          <ComposerPrimitive.Unstable_TriggerPopoverBack className="popover-back-button">
-            &lt; {backLabel.toUpperCase()}
+          <ComposerPrimitive.Unstable_TriggerPopoverBack className="text-muted-foreground hover:bg-accent flex cursor-pointer items-center gap-1.5 border-b px-3 py-2 text-xs tracking-wide uppercase transition-colors">
+            <ChevronLeftIcon className="size-3.5" />
+            {backLabel}
           </ComposerPrimitive.Unstable_TriggerPopoverBack>
 
-          <div className="popover-items-wrapper">
+          <div className="py-1">
             {items.map((item, index) => {
               const iconKey =
                 typeof item.metadata?.icon === "string"
@@ -154,24 +156,22 @@ const Items: FC<ItemsProps> = ({
                   key={item.id}
                   item={item}
                   index={index}
-                  className="popover-item"
+                  className="hover:bg-accent focus:bg-accent data-[highlighted]:bg-accent flex w-full cursor-pointer flex-col items-start gap-0.5 px-3 py-2 text-start transition-colors outline-none"
                 >
-                  <div className="popover-item-title-row">
-                    <Icon className="popover-item-icon" />
-                    <span className="popover-item-label">
-                      {item.label}
-                    </span>
-                  </div>
+                  <span className="flex items-center gap-2 text-sm font-medium">
+                    <Icon className="text-primary size-3.5" />
+                    {item.label}
+                  </span>
                   {item.description && (
-                    <div className="popover-item-description">
+                    <span className="text-muted-foreground ms-5.5 text-xs leading-tight">
                       {item.description}
-                    </div>
+                    </span>
                   )}
                 </ComposerPrimitive.Unstable_TriggerPopoverItem>
               );
             })}
             {items.length === 0 && (
-              <div className="popover-empty-label">
+              <div className="text-muted-foreground px-3 py-2 text-sm">
                 {isLoading ? loadingLabel : emptyLabel}
               </div>
             )}
@@ -182,42 +182,10 @@ const Items: FC<ItemsProps> = ({
   );
 };
 
-const PopoverContent: FC<{
-  iconMap: Record<string, IconComponent> | undefined;
-  fallbackIcon: IconComponent;
-  backLabel: string;
-  emptyCategoriesLabel: string;
-  emptyItemsLabel: string;
-  loadingLabel: string;
-}> = ({
-  iconMap,
-  fallbackIcon,
-  backLabel,
-  emptyCategoriesLabel,
-  emptyItemsLabel,
-  loadingLabel,
-}) => {
-  const context = unstable_useTriggerPopoverScopeContext();
-  if (!context.open) return null;
-
-  return (
-    <>
-      <Categories
-        iconMap={iconMap}
-        fallbackIcon={fallbackIcon}
-        emptyLabel={emptyCategoriesLabel}
-      />
-      <Items
-        iconMap={iconMap}
-        fallbackIcon={fallbackIcon}
-        backLabel={backLabel}
-        emptyLabel={emptyItemsLabel}
-        loadingLabel={loadingLabel}
-      />
-    </>
-  );
-};
-
+/**
+ * Pre-built popover UI for a trigger-driven picker (mentions, slash commands, etc).
+ * Pass exactly one of `directive` (inserts a chip) or `action` (fires a handler).
+ */
 const ComposerTriggerPopoverImpl: FC<ComposerTriggerPopoverProps> = ({
   iconMap,
   fallbackIcon = SparklesIcon,
@@ -245,7 +213,10 @@ const ComposerTriggerPopoverImpl: FC<ComposerTriggerPopoverProps> = ({
   return (
     <ComposerPrimitive.Unstable_TriggerPopover
       data-slot="composer-trigger-popover"
-      className="aui-composer-trigger-popover"
+      className={cn(
+        "aui-composer-trigger-popover bg-popover text-popover-foreground absolute start-0 bottom-full z-50 mb-2 w-64 overflow-hidden rounded-xl border shadow-lg",
+        className,
+      )}
       {...props}
     >
       {directive ? (
@@ -260,12 +231,16 @@ const ComposerTriggerPopoverImpl: FC<ComposerTriggerPopoverProps> = ({
           removeOnExecute={action.removeOnExecute}
         />
       ) : null}
-      <PopoverContent
+      <Categories
+        iconMap={iconMap}
+        fallbackIcon={fallbackIcon}
+        emptyLabel={emptyCategoriesLabel}
+      />
+      <Items
         iconMap={iconMap}
         fallbackIcon={fallbackIcon}
         backLabel={backLabel}
-        emptyCategoriesLabel={emptyCategoriesLabel}
-        emptyItemsLabel={emptyItemsLabel}
+        emptyLabel={emptyItemsLabel}
         loadingLabel={loadingLabel}
       />
     </ComposerPrimitive.Unstable_TriggerPopover>

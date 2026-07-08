@@ -12,10 +12,16 @@
  */
 
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default {
   root: '.',
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve('./src'),
+    },
+  },
   server: {
     port: 8000,
     proxy: {
