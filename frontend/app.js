@@ -4619,6 +4619,15 @@ Here are the current findings:
     handleChatSubmission(promptText);
   });
 
+  // Listen for React CombinedComposer send events
+  window.addEventListener('react-composer-send', (e) => {
+    const text = e.detail?.text;
+    if (text) {
+      setAppState(true);
+      handleChatSubmission(text);
+    }
+  });
+
   // ── Stop Button ──────────────────────────────────────────────────────
   document.getElementById('stopGenerationBtn')?.addEventListener('click', async () => {
     if (abortController) {

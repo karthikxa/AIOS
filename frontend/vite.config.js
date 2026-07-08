@@ -11,8 +11,11 @@
  * No keys, no config, no restarts needed. Permanently connected.
  */
 
+import react from '@vitejs/plugin-react';
+
 export default {
   root: '.',
+  plugins: [react()],
   server: {
     port: 8000,
     proxy: {

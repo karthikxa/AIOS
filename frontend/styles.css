@@ -9114,6 +9114,15 @@ input:checked + .toggle-slider:before {
   min-width: 0 !important;
 }
 
+/* Hide vanilla textarea when React CombinedComposer is active */
+.chat-input-center-wrapper.react-composer-active .chat-prompt-input {
+  display: none !important;
+}
+
+.chat-input-center-wrapper.react-composer-active #composer-trigger-popover-root {
+  width: 100%;
+}
+
 .chat-box .chat-prompt-input {
   width: 100% !important;
   min-height: 56px !important;
