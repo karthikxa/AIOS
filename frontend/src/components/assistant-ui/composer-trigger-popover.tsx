@@ -12,10 +12,6 @@ import { ChevronLeftIcon, ChevronRightIcon, SparklesIcon } from "lucide-react";
 
 type IconComponent = FC<{ className?: string }>;
 
-function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
 type DirectiveBehaviorProps = {
   /** Formatter used to serialize the selected item into composer text. */
   formatter?: Unstable_DirectiveFormatter | undefined;
@@ -91,7 +87,13 @@ const Categories: FC<CategoriesProps> = ({
     {(categories) => (
       <div
         data-slot="composer-trigger-popover-categories"
-        className="flex flex-col py-1"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          paddingTop: "4px",
+          paddingBottom: "4px",
+          width: "100%",
+        }}
       >
         {categories.map((cat) => {
           const Icon = resolveIcon(cat.id, iconMap, fallbackIcon);
@@ -99,18 +101,32 @@ const Categories: FC<CategoriesProps> = ({
             <ComposerPrimitive.Unstable_TriggerPopoverCategoryItem
               key={cat.id}
               categoryId={cat.id}
-              className="hover:bg-zinc-100 dark:hover:bg-zinc-900 focus:bg-zinc-100 dark:focus:bg-zinc-900 data-[highlighted]:bg-zinc-100 dark:data-[highlighted]:bg-zinc-900 flex cursor-pointer items-center justify-between gap-2 px-4 py-2.5 text-sm transition-colors outline-none border-none bg-transparent w-full text-left"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "10px",
+                padding: "10px 16px",
+                fontSize: "14px",
+                cursor: "pointer",
+                border: "none",
+                background: "transparent",
+                width: "100%",
+                textAlign: "left",
+                outline: "none",
+                boxSizing: "border-box",
+              }}
             >
-              <span className="flex items-center gap-2.5 text-zinc-800 dark:text-zinc-200">
-                <Icon className="text-zinc-500 size-4" />
+              <span style={{ display: "flex", alignItems: "center", gap: "10px", color: "#27272a" }}>
+                <Icon style={{ color: "#a1a1aa", width: "16px", height: "16px" }} />
                 {cat.label}
               </span>
-              <ChevronRightIcon className="text-zinc-400 size-4" />
+              <ChevronRightIcon style={{ color: "#a1a1aa", width: "16px", height: "16px" }} />
             </ComposerPrimitive.Unstable_TriggerPopoverCategoryItem>
           );
         })}
         {categories.length === 0 && (
-          <div className="text-zinc-400 px-4 py-2 text-sm">
+          <div style={{ color: "#a1a1aa", padding: "10px 16px", fontSize: "14px" }}>
             {emptyLabel}
           </div>
         )}
@@ -140,13 +156,35 @@ const Items: FC<ItemsProps> = ({
       {(items) => (
         <div
           data-slot="composer-trigger-popover-items"
-          className="flex flex-col w-full"
+          style={{ display: "flex", flexDirection: "column", width: "100%" }}
         >
-          <ComposerPrimitive.Unstable_TriggerPopoverBack className="text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 dark:text-zinc-500 dark:hover:bg-zinc-900 flex cursor-pointer items-center gap-1 border-b px-4 py-2.5 text-[11px] font-medium tracking-wider uppercase transition-colors border-zinc-100 dark:border-zinc-800 bg-transparent border-none text-left">
+          <ComposerPrimitive.Unstable_TriggerPopoverBack
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
+              padding: "10px 16px",
+              fontSize: "11px",
+              fontWeight: 500,
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              color: "#71717a",
+              background: "transparent",
+              borderTop: "none",
+              borderLeft: "none",
+              borderRight: "none",
+              width: "100%",
+              textAlign: "left",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          >
             &lt; {backLabel.toUpperCase()}
           </ComposerPrimitive.Unstable_TriggerPopoverBack>
 
-          <div className="py-0.5">
+          <div style={{ paddingTop: "2px", paddingBottom: "2px" }}>
             {items.map((item, index) => {
               const iconKey =
                 typeof item.metadata?.icon === "string"
@@ -158,16 +196,28 @@ const Items: FC<ItemsProps> = ({
                   key={item.id}
                   item={item}
                   index={index}
-                  className="hover:bg-zinc-100/80 focus:bg-zinc-100/80 data-[highlighted]:bg-zinc-100/80 dark:hover:bg-zinc-900 dark:focus:bg-zinc-900 dark:data-[highlighted]:bg-zinc-900 flex w-full cursor-pointer flex-col items-start px-4 py-2.5 text-start transition-colors outline-none border-none bg-transparent rounded-none"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    width: "100%",
+                    cursor: "pointer",
+                    padding: "10px 16px",
+                    outline: "none",
+                    border: "none",
+                    background: "transparent",
+                    textAlign: "left",
+                    boxSizing: "border-box",
+                  }}
                 >
-                  <div className="flex items-center gap-2.5 w-full">
-                    <Icon className="text-zinc-800 dark:text-zinc-200 size-4 shrink-0" />
-                    <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%" }}>
+                    <Icon style={{ color: "#27272a", width: "16px", height: "16px", flexShrink: 0 }} />
+                    <span style={{ fontSize: "14px", fontWeight: 600, color: "#09090b" }}>
                       {item.label}
                     </span>
                   </div>
                   {item.description && (
-                    <div className="text-zinc-500 dark:text-zinc-400 pl-[26px] text-xs font-normal mt-0.5 leading-normal">
+                    <div style={{ color: "#71717a", paddingLeft: "26px", fontSize: "12px", fontWeight: 400, marginTop: "2px", lineHeight: "1.4" }}>
                       {item.description}
                     </div>
                   )}
@@ -175,7 +225,7 @@ const Items: FC<ItemsProps> = ({
               );
             })}
             {items.length === 0 && (
-              <div className="text-zinc-400 px-4 py-2.5 text-sm">
+              <div style={{ color: "#a1a1aa", padding: "10px 16px", fontSize: "14px" }}>
                 {isLoading ? loadingLabel : emptyLabel}
               </div>
             )}
@@ -249,10 +299,24 @@ const ComposerTriggerPopoverImpl: FC<ComposerTriggerPopoverProps> = ({
   return (
     <ComposerPrimitive.Unstable_TriggerPopover
       data-slot="composer-trigger-popover"
-      className={cn(
-        "aui-composer-trigger-popover bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 absolute start-0 bottom-full z-50 mb-2 w-72 overflow-hidden rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-md py-0 px-0",
-        className,
-      )}
+      className="aui-composer-trigger-popover"
+      style={{
+        position: "absolute",
+        bottom: "100%",
+        left: 0,
+        zIndex: 50,
+        marginBottom: "8px",
+        width: "288px",
+        backgroundColor: "#ffffff",
+        color: "#09090b",
+        border: "1px solid rgba(0, 0, 0, 0.08)",
+        borderRadius: "12px",
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        boxSizing: "border-box",
+      }}
       {...props}
     >
       {directive ? (

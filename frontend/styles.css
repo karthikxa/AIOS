@@ -10778,3 +10778,10 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
   color: var(--text) !important;
 }
 
+/* Highlight hover/keyboard styling for trigger popover */
+.aui-composer-trigger-popover [data-highlighted],
+.aui-composer-trigger-popover [role="option"]:hover,
+.aui-composer-trigger-popover button:hover {
+  background-color: #f4f4f5 !important;
+}
+

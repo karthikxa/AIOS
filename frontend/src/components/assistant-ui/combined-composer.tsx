@@ -104,7 +104,6 @@ function ComposerUI() {
         }}
         placeholder="Type @ to mention, / for commands..."
       />
-      <ComposerPrimitive.Send />
 
       <ComposerTriggerPopover
         char="@"
