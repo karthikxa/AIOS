@@ -9120,6 +9120,11 @@ input:checked + .toggle-slider:before {
   display: none !important;
 }
 
+/* Hide vanilla toolbar row when React CombinedComposer is active */
+.chat-box.react-composer-active .chat-toolbar-row {
+  display: none !important;
+}
+
 .chat-input-center-wrapper.react-composer-active #composer-trigger-popover-root {
   width: 100%;
 }
