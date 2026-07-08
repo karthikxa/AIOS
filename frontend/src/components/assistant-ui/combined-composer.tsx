@@ -17,6 +17,7 @@ import {
   SlashIcon,
   WrenchIcon,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ComposerTriggerPopover } from "./composer-trigger-popover";
 
 const SLASH_COMMANDS: readonly Unstable_SlashCommand[] = [
@@ -48,52 +49,6 @@ const slashIcons = {
 
 const noopAdapter = { async *stream() {} };
 
-/* ── Styles matching MinimalComposer pattern ─────────────────────────── */
-
-const styles = {
-  root: {
-    display: "flex",
-    width: "100%",
-    flexDirection: "column" as const,
-    borderRadius: 24,
-    border: "1px solid #e5e7eb",
-    background: "#f9fafb",
-    position: "relative" as const,
-  },
-  input: {
-    minHeight: 40,
-    width: "100%",
-    resize: "none" as const,
-    background: "transparent",
-    padding: "16px 20px 12px",
-    fontSize: 14,
-    lineHeight: 1.5,
-    color: "#1F2937",
-    border: "none",
-    outline: "none",
-    fontFamily: "'Inter', -apple-system, sans-serif",
-  },
-  footer: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    padding: "0 12px 12px",
-  },
-  sendBtn: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 32,
-    height: 32,
-    borderRadius: "50%",
-    background: "#111827",
-    color: "#fff",
-    border: "none",
-    cursor: "pointer",
-    opacity: 1,
-  },
-} as const;
-
 function ComposerUI() {
   const mention = unstable_useMentionAdapter();
   const slash = unstable_useSlashCommandAdapter({ commands: SLASH_COMMANDS });
@@ -110,15 +65,23 @@ function ComposerUI() {
   };
 
   return (
-    <ComposerPrimitive.Root onSubmit={handleSubmit} style={styles.root}>
+    <ComposerPrimitive.Root
+      onSubmit={handleSubmit}
+      className="flex w-full flex-col rounded-3xl border bg-muted relative"
+    >
       <ComposerPrimitive.Input
         placeholder="Message Zed..."
         rows={1}
-        style={styles.input}
+        className="min-h-10 w-full resize-none bg-transparent px-5 pt-4 pb-3 text-sm focus:outline-none"
       />
-      <div style={styles.footer}>
-        <ComposerPrimitive.Send style={styles.sendBtn}>
-          <ArrowUpIcon className="w-4 h-4" />
+      <div className="flex items-center justify-end px-3 pb-3">
+        <ComposerPrimitive.Send asChild>
+          <Button
+            size="icon"
+            className="h-8 w-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-30"
+          >
+            <ArrowUpIcon className="h-4 w-4" />
+          </Button>
         </ComposerPrimitive.Send>
       </div>
 
