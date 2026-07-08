@@ -9109,14 +9109,12 @@ input:checked + .toggle-slider:before {
 
 .chat-input-center-wrapper {
   width: 100% !important;
-  display: flex !important;
-  align-items: flex-start !important;
-  min-width: 0 !important;
+  display: block !important;
   position: relative !important;
 }
 
 .chat-input-center-wrapper #composer-trigger-popover-root {
-  width: 100%;
+  display: none;
 }
 
 .chat-box .chat-prompt-input {
@@ -9132,6 +9130,8 @@ input:checked + .toggle-slider:before {
   outline: none !important;
   background: transparent !important;
   resize: none !important;
+  display: block !important;
+  box-sizing: border-box !important;
 }
 
 .chat-box .chat-prompt-input::placeholder {
