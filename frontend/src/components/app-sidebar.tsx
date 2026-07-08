@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { useState } from "react";
+import { useState } from "react"
 import {
   Sidebar,
   SidebarContent,
@@ -12,9 +12,9 @@ import {
   SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
-} from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+  SidebarSeparator,
+  useSidebar,
+} from "@/components/ui/sidebar"
 import {
   Plus,
   Bot,
@@ -24,9 +24,8 @@ import {
   Calendar,
   Library,
   MessageSquare,
-  Settings,
-  User,
-} from "lucide-react";
+  PanelLeftIcon,
+} from "lucide-react"
 
 const navItems = [
   { id: "navNewTask", label: "New task", icon: Plus },
@@ -36,24 +35,33 @@ const navItems = [
   { id: "navPlugins", label: "Plugins", icon: Puzzle },
   { id: "navScheduled", label: "Scheduled", icon: Calendar },
   { id: "navLibrary", label: "Library", icon: Library },
-];
+]
 
 const chats = [
   { id: "chat-1", label: "How can I help you today?" },
-];
+]
 
 export function AppSidebar() {
-  const [activeId, setActiveId] = useState("navNewTask");
+  const [activeId, setActiveId] = useState("navNewTask")
+  const { state, toggleSidebar } = useSidebar()
 
   return (
-    <Sidebar>
-      <SidebarHeader className="flex items-center gap-2 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
-            <span className="text-xs font-bold text-primary-foreground">Z</span>
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="flex items-center gap-2 px-3 py-2">
+        <SidebarMenuButton
+          onClick={toggleSidebar}
+          size="lg"
+          className="data-[state=open]:bg-sidebar-accent"
+        >
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <span className="text-xs font-bold">Z</span>
           </div>
-          <span className="text-base font-semibold">zed</span>
-        </div>
+          {state === "expanded" && (
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-semibold">zed</span>
+            </div>
+          )}
+        </SidebarMenuButton>
       </SidebarHeader>
 
       <SidebarContent>
@@ -65,9 +73,9 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     isActive={activeId === item.id}
                     onClick={() => setActiveId(item.id)}
-                    className="cursor-pointer"
+                    tooltip={item.label}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon />
                     <span>{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -76,14 +84,16 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        <SidebarSeparator />
+
         <SidebarGroup>
           <SidebarGroupLabel>Chats</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {chats.map((chat) => (
                 <SidebarMenuItem key={chat.id}>
-                  <SidebarMenuButton className="cursor-pointer">
-                    <MessageSquare className="h-4 w-4" />
+                  <SidebarMenuButton tooltip={chat.label}>
+                    <MessageSquare />
                     <span className="truncate">{chat.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -93,14 +103,22 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-            <User className="h-4 w-4" />
-          </div>
-          <span className="text-sm font-medium">User</span>
-        </div>
+      <SidebarFooter className="px-3 py-2">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" tooltip="User">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-medium">
+                K
+              </div>
+              {state === "expanded" && (
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">User</span>
+                </div>
+              )}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }
