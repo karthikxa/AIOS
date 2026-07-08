@@ -5389,15 +5389,31 @@ Here are the current findings:
               </svg>
             </div>
           `;
+        } else if (step.icon === 'brain') {
+          iconHtml = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+              <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
+              <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>
+              <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>
+              <path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/>
+              <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/>
+              <path d="M3.477 10.896a4 4 0 0 1 .585-.396"/>
+              <path d="M19.938 10.5a4 4 0 0 1 .585.396"/>
+              <path d="M6 18a4 4 0 0 1-1.967-.516"/>
+              <path d="M19.967 17.484A4 4 0 0 1 18 18"/>
+            </svg>
+          `;
         } else {
           iconHtml = `
-            <svg class="status-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.5" style="animation: spin 1.2s linear infinite; flex-shrink: 0;">
+            <svg class="status-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" style="animation: spin 1.2s linear infinite; flex-shrink: 0;">
               <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-dasharray="4 4" stroke-linecap="round"/>
             </svg>
           `;
         }
       } else {
-        if (step.icon === 'lightbulb') {
+        if (step.icon === 'brain') {
+          iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .585-.396"/><path d="M19.938 10.5a4 4 0 0 1 .585.396"/><path d="M6 18a4 4 0 0 1-1.967-.516"/><path d="M19.967 17.484A4 4 0 0 1 18 18"/></svg>`;
+        } else if (step.icon === 'lightbulb') {
           iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`;
         } else if (step.icon === 'eye') {
           iconHtml = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
@@ -5427,13 +5443,34 @@ Here are the current findings:
 
       const titleSpan = document.createElement('span');
       titleSpan.className = 'step-title';
-      titleSpan.textContent = step.title;
-      if (step.status === 'complete') {
-        titleSpan.style.color = '#9CA3AF';
+      if (step.status === 'in_progress' && step.icon === 'brain') {
+        titleSpan.innerHTML = `<span class="reasoning-shimmer">${step.title}</span>`;
       } else {
-        titleSpan.style.color = '#374151';
+        titleSpan.textContent = step.title;
+      }
+      if (step.status === 'complete') {
+        titleSpan.style.color = '#9ca3af';
+      } else {
+        titleSpan.style.color = '#6b7280';
       }
       row.appendChild(titleSpan);
+
+      // Add duration text for completed thought
+      if (step.status === 'complete' && step.title === 'Reasoning' && step.duration) {
+        const durationSpan = document.createElement('span');
+        durationSpan.className = 'step-text';
+        durationSpan.textContent = ` for ${step.duration}`;
+        durationSpan.style.color = '#9ca3af';
+        row.appendChild(durationSpan);
+      }
+
+      // Add chevron for thought/reasoning
+      if (step.icon === 'brain') {
+        const chevron = document.createElement('span');
+        chevron.className = 'reasoning-chevron';
+        chevron.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+        row.appendChild(chevron);
+      }
 
       if (step.badge) {
         const badgeSpan = document.createElement('span');
@@ -5508,11 +5545,12 @@ Here are the current findings:
       activeSteps.push({
         id: 'thought',
         name: 'thought',
-        title: 'Thought',
-        icon: 'lightbulb',
+        title: 'Reasoning',
+        icon: 'brain',
         status: 'in_progress',
         badge: '',
-        text: ''
+        text: '',
+        startTime: Date.now()
       });
       renderActiveSteps();
     }
@@ -5522,6 +5560,11 @@ Here are the current findings:
     const step = activeSteps.find(s => s.id === 'thought');
     if (step) {
       step.status = 'complete';
+      // Calculate duration if start time was tracked
+      if (step.startTime) {
+        const elapsed = Math.round((Date.now() - step.startTime) / 1000);
+        step.duration = elapsed > 0 ? `${elapsed}s` : '<1s';
+      }
       renderActiveSteps();
     }
   }

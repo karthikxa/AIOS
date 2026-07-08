@@ -10109,10 +10109,10 @@ main.main-content.computer-split-mode #computerSplitPane {
 .chat-typing-status-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 14px;
-  margin-bottom: 14px;
-  padding: 4px 8px;
+  gap: 0;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  padding: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   user-select: none;
   width: 100%;
@@ -10123,9 +10123,10 @@ main.main-content.computer-split-mode #computerSplitPane {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13.5px;
-  color: #374151;
+  font-size: 13px;
+  color: #6b7280;
   line-height: 1.4;
+  padding: 6px 0;
   animation: fadeInStatus 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -10140,35 +10141,60 @@ main.main-content.computer-split-mode #computerSplitPane {
 
 .chat-typing-status-container .step-title {
   font-weight: 500;
-  color: #374151;
+  color: #6b7280;
 }
 
 .chat-typing-status-container .step-text {
-  color: #4B5563;
+  color: #9ca3af;
 }
 
 .chat-typing-status-container .step-status-completed {
-  color: #9CA3AF;
+  color: #9ca3af;
   margin-left: 4px;
 }
 
 .chat-typing-status-container .step-badge {
   display: inline-flex;
   align-items: center;
-  background: #EFF6FF;
-  color: #1D4ED8;
-  border: 1px solid #BFDBFE;
-  border-radius: 9999px;
-  padding: 2px 8px;
-  font-size: 11.5px;
-  font-weight: 600;
+  background: transparent;
+  color: #6b7280;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 500;
   line-height: 1;
   margin-left: 4px;
 }
 
 .chat-typing-status-container .step-badge svg {
   flex-shrink: 0;
-  color: #1D4ED8;
+  color: #9ca3af;
+}
+
+/* Shimmer animation for reasoning text */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.reasoning-shimmer {
+  background: linear-gradient(90deg, #6b7280 0%, #9ca3af 50%, #6b7280 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Chevron rotation */
+.reasoning-chevron {
+  transition: transform 0.2s ease;
+  margin-left: auto;
+}
+
+.reasoning-chevron.open {
+  transform: rotate(180deg);
 }
 
 /* Spinner Animations */
