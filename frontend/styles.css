@@ -10757,3 +10757,18 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
   background-color: #F3F4F6 !important;
   color: #EF4444 !important;
 }
+
+/* Fix React Composer Input Layout and prevent collapses */
+#composer-trigger-popover-root textarea {
+  width: 100% !important;
+  min-height: 56px !important;
+  height: 56px !important;
+  border: none !important;
+  outline: none !important;
+  resize: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
