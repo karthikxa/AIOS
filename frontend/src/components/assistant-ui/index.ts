@@ -6,3 +6,4 @@ export { SlashComposer } from "./slash-composer";
 export { MentionComposer } from "./mention-composer";
 export { CombinedComposer } from "./combined-composer";
 export { ComposerTriggerPopoverMount } from "./composer-trigger-popover-mount";
+export { BranchPicker } from "./branch-picker";
