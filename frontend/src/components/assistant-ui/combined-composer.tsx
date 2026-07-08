@@ -8,30 +8,36 @@ import {
   unstable_useSlashCommandAdapter,
   type Unstable_SlashCommand,
 } from "@assistant-ui/react";
-import { useCallback, type ReactNode } from "react";
+import {
+  FileTextIcon,
+  GlobeIcon,
+  LanguagesIcon,
+  SlashIcon,
+  WrenchIcon,
+} from "lucide-react";
 
 const SLASH_COMMANDS: readonly Unstable_SlashCommand[] = [
   {
     id: "summarize",
     description: "Summarize the conversation",
-    icon: "summarize",
+    icon: "FileText",
     execute: () => {},
   },
   {
     id: "translate",
     description: "Translate to another language",
-    icon: "translate",
+    icon: "Languages",
     execute: () => {},
   },
   {
     id: "search",
     description: "Search the web",
-    icon: "search",
+    icon: "Globe",
     execute: () => {},
   },
 ];
 
-// Minimal chat model adapter that delegates to the vanilla JS send handler
+// Minimal adapter — streams nothing, just provides the runtime context
 const noopAdapter = {
   async *stream() {},
 };
@@ -40,26 +46,38 @@ function ComposerUI() {
   const mention = unstable_useMentionAdapter();
   const slash = unstable_useSlashCommandAdapter({ commands: SLASH_COMMANDS });
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    // After the composer's internal send runs, grab the text and forward it
     const form = e.target as HTMLFormElement;
-    const input = form?.querySelector(
-      'textarea, [contenteditable]'
-    ) as HTMLTextAreaElement;
-    if (input?.value) {
+    const textarea = form?.querySelector("textarea") as HTMLTextAreaElement | null;
+    const text = textarea?.value?.trim();
+    if (text) {
       window.dispatchEvent(
-        new CustomEvent("react-composer-send", {
-          detail: { text: input.value },
-        })
+        new CustomEvent("react-composer-send", { detail: { text } })
       );
     }
-  }, []);
+  };
 
   return (
     <ComposerPrimitive.Root onSubmit={handleSubmit}>
       <ComposerPrimitive.Input placeholder="Type @ to mention, / for commands..." />
       <ComposerPrimitive.Send />
-      <ComposerPrimitive.Unstable_TriggerPopover char="@" {...mention} />
-      <ComposerPrimitive.Unstable_TriggerPopover char="/" {...slash} />
+
+      <ComposerPrimitive.Unstable_TriggerPopover
+        char="@"
+        {...mention}
+        fallbackIcon={WrenchIcon}
+      />
+      <ComposerPrimitive.Unstable_TriggerPopover
+        char="/"
+        {...slash}
+        iconMap={{
+          FileText: FileTextIcon,
+          Languages: LanguagesIcon,
+          Globe: GlobeIcon,
+        }}
+        fallbackIcon={SlashIcon}
+      />
     </ComposerPrimitive.Root>
   );
 }
