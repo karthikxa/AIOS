@@ -1,9 +1,12 @@
+"use client";
+
 import {
   AssistantRuntimeProvider,
   ComposerPrimitive,
-  useLocalRuntime,
+  unstable_defaultDirectiveFormatter,
   unstable_useMentionAdapter,
   unstable_useSlashCommandAdapter,
+  useLocalRuntime,
   type Unstable_SlashCommand,
 } from "@assistant-ui/react";
 import {
@@ -20,51 +23,35 @@ const SLASH_COMMANDS: readonly Unstable_SlashCommand[] = [
     id: "summarize",
     description: "Summarize the conversation",
     icon: "FileText",
-    execute: () => {
-      window.dispatchEvent(
-        new CustomEvent("react-composer-send", {
-          detail: { text: "Summarize the conversation" },
-        })
-      );
-    },
+    execute: () => {},
   },
   {
     id: "translate",
     description: "Translate to another language",
     icon: "Languages",
-    execute: () => {
-      window.dispatchEvent(
-        new CustomEvent("react-composer-send", {
-          detail: { text: "Translate: " },
-        })
-      );
-    },
+    execute: () => {},
   },
   {
     id: "search",
     description: "Search the web",
     icon: "Globe",
-    execute: () => {
-      window.dispatchEvent(
-        new CustomEvent("react-composer-send", {
-          detail: { text: "Search the web for: " },
-        })
-      );
-    },
+    execute: () => {},
   },
 ];
 
-// Minimal adapter — streams nothing, just provides the runtime context
-const noopAdapter = {
-  async *stream() {},
+const slashIcons = {
+  FileText: FileTextIcon,
+  Languages: LanguagesIcon,
+  Globe: GlobeIcon,
 };
+
+const noopAdapter = { async *stream() {} };
 
 function ComposerUI() {
   const mention = unstable_useMentionAdapter();
   const slash = unstable_useSlashCommandAdapter({ commands: SLASH_COMMANDS });
 
   const handleSubmit = (e: React.FormEvent) => {
-    // After the composer's internal send runs, grab the text and forward it
     const form = e.target as HTMLFormElement;
     const textarea = form?.querySelector("textarea") as HTMLTextAreaElement | null;
     const text = textarea?.value?.trim();
@@ -76,48 +63,43 @@ function ComposerUI() {
   };
 
   return (
-    <ComposerPrimitive.Root
-      onSubmit={handleSubmit}
-      style={{
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "stretch",
-      }}
-    >
+    <ComposerPrimitive.Root onSubmit={handleSubmit} style={{ position: "relative" }}>
       <ComposerPrimitive.Input
+        placeholder="Message Zed..."
         style={{
           width: "100%",
-          minHeight: "56px",
+          minHeight: 56,
+          height: 56,
+          fontSize: 15,
+          lineHeight: 1.6,
+          color: "#1F2937",
+          padding: 0,
           border: "none",
           outline: "none",
-          resize: "none",
-          padding: 0,
-          margin: 0,
-          marginBottom: "16px",
           background: "transparent",
-          boxShadow: "none",
-          fontSize: "20px",
-          color: "var(--text)",
-          fontFamily: "'Inter', sans-serif",
-          lineHeight: "1.6",
+          resize: "none",
+          fontFamily: "'Inter', -apple-system, sans-serif",
         }}
-        placeholder="Type @ to mention, / for commands..."
       />
+      <ComposerPrimitive.Send />
 
       <ComposerTriggerPopover
         char="@"
         {...mention}
+        directive={{ formatter: unstable_defaultDirectiveFormatter }}
         fallbackIcon={WrenchIcon}
       />
       <ComposerTriggerPopover
         char="/"
         {...slash}
-        iconMap={{
-          FileText: FileTextIcon,
-          Languages: LanguagesIcon,
-          Globe: GlobeIcon,
+        action={{
+          formatter: unstable_defaultDirectiveFormatter,
+          onExecute: (item) => {
+            const cmd = SLASH_COMMANDS.find((c) => c.id === item.id);
+            cmd?.execute();
+          },
         }}
+        iconMap={slashIcons}
         fallbackIcon={SlashIcon}
       />
     </ComposerPrimitive.Root>

@@ -1055,7 +1055,7 @@ header.app-header {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 180px;
+  min-height: 220px;
   position: relative;
   overflow: hidden;
   transition: var(--transition-smooth);
@@ -9112,6 +9112,7 @@ input:checked + .toggle-slider:before {
   display: flex !important;
   align-items: flex-start !important;
   min-width: 0 !important;
+  position: relative !important;
 }
 
 /* Hide vanilla textarea when React CombinedComposer is active */
@@ -9121,15 +9122,37 @@ input:checked + .toggle-slider:before {
 
 .chat-input-center-wrapper.react-composer-active #composer-trigger-popover-root {
   width: 100%;
+  min-height: 56px;
+}
+
+.chat-input-center-wrapper.react-composer-active #composer-trigger-popover-root textarea {
+  width: 100% !important;
+  min-height: 56px !important;
+  height: 56px !important;
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+  color: #1F2937 !important;
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  resize: none !important;
+  font-family: 'Inter', -apple-system, sans-serif !important;
+}
+
+.chat-input-center-wrapper.react-composer-active #composer-trigger-popover-root textarea::placeholder {
+  color: #8E8E93 !important;
+  font-size: 15.5px !important;
+  font-weight: 400 !important;
 }
 
 .chat-box .chat-prompt-input {
   width: 100% !important;
-  min-height: 56px !important;
-  height: 56px;
+  min-height: 96px !important;
+  height: auto;
   margin-bottom: 0 !important;
-  font-size: 15px !important;
-  line-height: 1.6 !important;
+  font-size: 16px !important;
+  line-height: 1.65 !important;
   color: #1F2937 !important;
   padding: 0 !important;
   border: none !important;
@@ -9140,7 +9163,7 @@ input:checked + .toggle-slider:before {
 
 .chat-box .chat-prompt-input::placeholder {
   color: #8E8E93 !important;
-  font-size: 15.5px !important;
+  font-size: 16px !important;
   font-weight: 400 !important;
   font-family: 'Inter', -apple-system, sans-serif !important;
 }
