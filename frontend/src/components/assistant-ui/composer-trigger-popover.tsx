@@ -1,411 +1,252 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useRef, type ComponentPropsWithoutRef, type FC } from "react";
 import {
   ComposerPrimitive,
   unstable_defaultDirectiveFormatter,
-  type Unstable_TriggerPopoverAdapter,
+  unstable_useTriggerPopoverScopeContext,
   type Unstable_DirectiveFormatter,
   type Unstable_TriggerPopoverItem,
-  type Unstable_TriggerPopoverCategory,
 } from "@assistant-ui/react";
-import type { FC, ReactNode } from "react";
-import type { ButtonHTMLAttributes } from "react";
+import { ChevronLeftIcon, ChevronRightIcon, SparklesIcon } from "lucide-react";
 
-// ── Types ────────────────────────────────────────────────────────────────────
+type IconComponent = FC<{ className?: string }>;
 
-export type ComposerTriggerPopoverProps = {
-  /** Trigger character, e.g. "@" or "/" (required; unique within the root) */
-  char: string;
-  /** Provides categories, items, and search (required) */
-  adapter: Unstable_TriggerPopoverAdapter;
-  /** Enables directive-insert behavior. Mutually exclusive with action. */
-  directive?: {
-    formatter: Unstable_DirectiveFormatter;
-    onInserted?: (item: Unstable_TriggerPopoverItem) => void;
-    chip?: ReactNode;
-  };
-  /** Enables action behavior. Mutually exclusive with directive. */
-  action?: {
-    formatter: Unstable_DirectiveFormatter;
-    onExecute: (item: Unstable_TriggerPopoverItem) => void;
-    removeOnExecute?: boolean;
-    chip?: ReactNode;
-  };
-  /** Maps item.metadata.icon / category.metadata.icon strings to icons */
-  iconMap?: Record<string, FC<{ className?: string }>>;
-  /** Icon used when no iconMap entry matches */
-  fallbackIcon?: FC<{ className?: string }>;
-  /** Back button label */
+function cn(...classes: any[]) {
+  return classes.filter(Boolean).join(" ");
+}
+
+type DirectiveBehaviorProps = {
+  /** Formatter used to serialize the selected item into composer text. */
+  formatter?: Unstable_DirectiveFormatter | undefined;
+  /** Called after the directive text has been inserted into the composer. */
+  onInserted?: ((item: Unstable_TriggerPopoverItem) => void) | undefined;
+};
+
+type ActionBehaviorProps = {
+  /** Formatter used to serialize the audit-trail chip (when `removeOnExecute` is false). */
+  formatter?: Unstable_DirectiveFormatter | undefined;
+  /** Invoked with the selected item at the moment of selection. */
+  onExecute: (item: Unstable_TriggerPopoverItem) => void;
+  /** If `true`, strip the trigger text from the composer after executing. @default false */
+  removeOnExecute?: boolean | undefined;
+};
+
+type ComposerTriggerPopoverBaseProps = Omit<
+  ComponentPropsWithoutRef<typeof ComposerPrimitive.Unstable_TriggerPopover>,
+  "children"
+> & {
+  /**
+   * Maps icon keys to components. Items look up via `item.metadata?.icon`
+   * (string); categories look up via their `id`.
+   */
+  iconMap?: Record<string, IconComponent>;
+  /** Fallback icon when no entry in `iconMap` matches. */
+  fallbackIcon?: IconComponent;
+  /** Label shown on the back button. @default "Back" */
   backLabel?: string;
-  /** Shown when no categories are available */
+  /** Label shown when no categories are available. @default "No items available" */
   emptyCategoriesLabel?: string;
-  /** Shown when no items match */
+  /** Label shown when no items match. @default "No matching items" */
   emptyItemsLabel?: string;
-  /** Whether the adapter is resolving items */
-  isLoading?: boolean;
-  /** Shown in place of emptyItemsLabel while isLoading */
+  /** Label shown while an async adapter is resolving items. @default "Loading…" */
   loadingLabel?: string;
-} & Omit<
-  React.HTMLAttributes<HTMLDivElement>,
-  "className" | "style" | "children"
->;
+};
 
-// ── Helper hooks ─────────────────────────────────────────────────────────────
+type ComposerTriggerPopoverProps = ComposerTriggerPopoverBaseProps &
+  (
+    | {
+        /** Insert-directive behavior. */
+        directive: DirectiveBehaviorProps;
+        action?: never;
+      }
+    | {
+        /** Action behavior. */
+        action: ActionBehaviorProps;
+        directive?: never;
+      }
+  );
 
-function useFilteredItems(
-  adapter: Unstable_TriggerPopoverAdapter,
-  query: string,
-  activeCategory: string | null,
-): Unstable_TriggerPopoverItem[] {
-  const [items, setItems] = useState<Unstable_TriggerPopoverItem[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const run = async () => {
-      const result = await adapter.getItems({
-        query,
-        categoryId: activeCategory ?? undefined,
-      });
-      if (!cancelled) setItems(result);
-    };
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [adapter, query, activeCategory]);
-
-  return items;
+function resolveIcon(
+  iconKey: string | undefined,
+  iconMap: Record<string, IconComponent> | undefined,
+  fallback: IconComponent,
+): IconComponent {
+  if (iconKey && iconMap?.[iconKey]) return iconMap[iconKey]!;
+  return fallback;
 }
 
-function useCategories(
-  adapter: Unstable_TriggerPopoverAdapter,
-): Unstable_TriggerPopoverCategory[] {
-  const [categories, setCategories] = useState<Unstable_TriggerPopoverCategory[]>([]);
+type CategoriesProps = {
+  iconMap: Record<string, IconComponent> | undefined;
+  fallbackIcon: IconComponent;
+  emptyLabel: string;
+};
 
-  useEffect(() => {
-    let cancelled = false;
-    const run = async () => {
-      const result = await adapter.getCategories();
-      if (!cancelled) setCategories(result);
-    };
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [adapter]);
-
-  return categories;
-}
-
-// ── Icon helper ──────────────────────────────────────────────────────────────
-
-function getItemIcon(
-  item: Unstable_TriggerPopoverItem,
-  iconMap?: Record<string, FC<{ className?: string }>>,
-  fallbackIcon?: FC<{ className?: string }>,
-): FC<{ className?: string }> {
-  const iconName = item.metadata?.icon;
-  if (iconName && iconMap?.[iconName]) return iconMap[iconName];
-  return fallbackIcon ?? (({ className }) => <span className={className}>✦</span>);
-}
-
-function getCategoryIcon(
-  category: Unstable_TriggerPopoverCategory,
-  iconMap?: Record<string, FC<{ className?: string }>>,
-  fallbackIcon?: FC<{ className?: string }>,
-): FC<{ className?: string }> {
-  const iconName = category.metadata?.icon;
-  if (iconName && iconMap?.[iconName]) return iconMap[iconName];
-  return fallbackIcon ?? (({ className }) => <span className={className}>📂</span>);
-}
-
-// ── Styles (inline, no UI changes to existing layout) ────────────────────────
-
-const styles = {
-  popover: {
-    position: "absolute" as const,
-    bottom: "100%",
-    left: 0,
-    marginBottom: 4,
-    minWidth: 280,
-    maxHeight: 320,
-    overflowY: "auto" as const,
-    background: "#fff",
-    border: "1px solid #e5e7eb",
-    borderRadius: 12,
-    boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
-    zIndex: 9999,
-    padding: 4,
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 14,
-  },
-  item: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    padding: "8px 12px",
-    borderRadius: 8,
-    cursor: "pointer",
-    transition: "background 0.1s",
-    border: "none",
-    background: "none",
-    width: "100%",
-    textAlign: "left" as const,
-    fontSize: 14,
-    color: "#111827",
-  },
-  itemHighlighted: {
-    background: "#f3f4f6",
-  },
-  category: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    padding: "8px 12px",
-    borderRadius: 8,
-    cursor: "pointer",
-    transition: "background 0.1s",
-    border: "none",
-    background: "none",
-    width: "100%",
-    textAlign: "left" as const,
-    fontSize: 14,
-    color: "#111827",
-  },
-  categoryHighlighted: {
-    background: "#f3f4f6",
-  },
-  backBtn: {
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-    padding: "6px 12px",
-    borderRadius: 8,
-    cursor: "pointer",
-    border: "none",
-    background: "none",
-    fontSize: 13,
-    color: "#6b7280",
-    marginBottom: 4,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: 600,
-    color: "#9ca3af",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.05em",
-    padding: "6px 12px 2px",
-  },
-  empty: {
-    padding: "16px 12px",
-    textAlign: "center" as const,
-    color: "#9ca3af",
-    fontSize: 13,
-  },
-} as const;
-
-// ── Component ────────────────────────────────────────────────────────────────
-
-export const ComposerTriggerPopover: FC<ComposerTriggerPopoverProps> = ({
-  char,
-  adapter,
-  directive,
-  action,
+const Categories: FC<CategoriesProps> = ({
   iconMap,
   fallbackIcon,
+  emptyLabel,
+}) => (
+  <ComposerPrimitive.Unstable_TriggerPopoverCategories>
+    {(categories) => (
+      <div
+        data-slot="composer-trigger-popover-categories"
+        className="flex flex-col py-1"
+      >
+        {categories.map((cat) => {
+          const Icon = resolveIcon(cat.id, iconMap, fallbackIcon);
+          return (
+            <ComposerPrimitive.Unstable_TriggerPopoverCategoryItem
+              key={cat.id}
+              categoryId={cat.id}
+              className="hover:bg-zinc-100 dark:hover:bg-zinc-800 focus:bg-zinc-100 dark:focus:bg-zinc-800 data-[highlighted]:bg-zinc-100 dark:data-[highlighted]:bg-zinc-800 flex cursor-pointer items-center justify-between gap-2 px-3 py-2 text-sm transition-colors outline-none border-none bg-transparent w-full text-left"
+            >
+              <span className="flex items-center gap-2 text-zinc-800 dark:text-zinc-200">
+                <Icon className="text-zinc-400 size-4" />
+                {cat.label}
+              </span>
+              <ChevronRightIcon className="text-zinc-400 size-4" />
+            </ComposerPrimitive.Unstable_TriggerPopoverCategoryItem>
+          );
+        })}
+        {categories.length === 0 && (
+          <div className="text-zinc-400 px-3 py-2 text-sm">
+            {emptyLabel}
+          </div>
+        )}
+      </div>
+    )}
+  </ComposerPrimitive.Unstable_TriggerPopoverCategories>
+);
+
+type ItemsProps = {
+  iconMap: Record<string, IconComponent> | undefined;
+  fallbackIcon: IconComponent;
+  backLabel: string;
+  emptyLabel: string;
+  loadingLabel: string;
+};
+
+const Items: FC<ItemsProps> = ({
+  iconMap,
+  fallbackIcon,
+  backLabel,
+  emptyLabel,
+  loadingLabel,
+}) => {
+  const { isLoading } = unstable_useTriggerPopoverScopeContext();
+  return (
+    <ComposerPrimitive.Unstable_TriggerPopoverItems>
+      {(items) => (
+        <div
+          data-slot="composer-trigger-popover-items"
+          className="flex flex-col"
+        >
+          <ComposerPrimitive.Unstable_TriggerPopoverBack className="text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex cursor-pointer items-center gap-1.5 border-b px-3 py-2 text-xs tracking-wide uppercase transition-colors border-zinc-100 dark:border-zinc-800">
+            <ChevronLeftIcon className="size-3.5" />
+            {backLabel}
+          </ComposerPrimitive.Unstable_TriggerPopoverBack>
+
+          <div className="py-1">
+            {items.map((item, index) => {
+              const iconKey =
+                typeof item.metadata?.icon === "string"
+                  ? item.metadata.icon
+                  : undefined;
+              const Icon = resolveIcon(iconKey, iconMap, fallbackIcon);
+              return (
+                <ComposerPrimitive.Unstable_TriggerPopoverItem
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  className="hover:bg-zinc-100 dark:hover:bg-zinc-800 focus:bg-zinc-100 dark:focus:bg-zinc-800 data-[highlighted]:bg-zinc-100 dark:data-[highlighted]:bg-zinc-800 flex w-full cursor-pointer flex-col items-start gap-0.5 px-3 py-2 text-start transition-colors outline-none border-none bg-transparent"
+                >
+                  <span className="flex items-center gap-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                    <Icon className="text-zinc-500 size-3.5" />
+                    {item.label}
+                  </span>
+                  {item.description && (
+                    <span className="text-zinc-400 ms-5.5 text-xs leading-tight">
+                      {item.description}
+                    </span>
+                  )}
+                </ComposerPrimitive.Unstable_TriggerPopoverItem>
+              );
+            })}
+            {items.length === 0 && (
+              <div className="text-zinc-400 px-3 py-2 text-sm">
+                {isLoading ? loadingLabel : emptyLabel}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </ComposerPrimitive.Unstable_TriggerPopoverItems>
+  );
+};
+
+const ComposerTriggerPopoverImpl: FC<ComposerTriggerPopoverProps> = ({
+  iconMap,
+  fallbackIcon = SparklesIcon,
   backLabel = "Back",
   emptyCategoriesLabel = "No items available",
   emptyItemsLabel = "No matching items",
-  isLoading = false,
   loadingLabel = "Loading…",
-  ...divProps
+  className,
+  directive,
+  action,
+  ...props
 }) => {
-  const [query, setQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const listRef = useRef<HTMLDivElement>(null);
-
-  const categories = useCategories(adapter);
-  const items = useFilteredItems(adapter, query, activeCategory);
-
-  const showCategories = activeCategory === null;
-  const list = showCategories ? categories : items;
-  const isEmpty = list.length === 0 && !isLoading;
-
-  // Reset on close / reopen
-  useEffect(() => {
-    setQuery("");
-    setActiveCategory(null);
-    setHighlightedIndex(0);
-  }, [char]);
-
-  // Scroll highlighted into view
-  useEffect(() => {
-    const el = listRef.current?.children[highlightedIndex] as HTMLElement | undefined;
-    el?.scrollIntoView({ block: "nearest" });
-  }, [highlightedIndex]);
-
-  const handleSelect = useCallback(
-    (item: Unstable_TriggerPopoverItem | Unstable_TriggerPopoverCategory) => {
-      if ("items" in item && Array.isArray(item.items)) {
-        // It's a category — drill in
-        setActiveCategory(item.id);
-        setQuery("");
-        setHighlightedIndex(0);
-        return;
-      }
-
-      const selectedItem = item as Unstable_TriggerPopoverItem;
-
-      if (directive) {
-        const text = directive.formatter(selectedItem);
-        // Insert into composer via a custom event
-        window.dispatchEvent(
-          new CustomEvent("composer-trigger-insert", {
-            detail: { char, text, item: selectedItem },
-          }),
-        );
-        directive.onInserted?.(selectedItem);
-      }
-
-      if (action) {
-        const text = action.formatter(selectedItem);
-        if (!action.removeOnExecute) {
-          window.dispatchEvent(
-            new CustomEvent("composer-trigger-insert", {
-              detail: { char, text, item: selectedItem },
-            }),
-          );
-        } else {
-          window.dispatchEvent(
-            new CustomEvent("composer-trigger-remove", {
-              detail: { char },
-            }),
-          );
-        }
-        action.onExecute(selectedItem);
-      }
-    },
-    [char, directive, action],
-  );
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setHighlightedIndex((i) => (i + 1) % Math.max(list.length, 1));
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setHighlightedIndex((i) => (i - 1 + list.length) % Math.max(list.length, 1));
-      } else if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        if (list[highlightedIndex]) {
-          handleSelect(list[highlightedIndex]);
-        }
-      } else if (e.key === "Tab" && !e.shiftKey) {
-        e.preventDefault();
-        if (list[highlightedIndex]) {
-          handleSelect(list[highlightedIndex]);
-        }
-      } else if (e.key === "Escape") {
-        window.dispatchEvent(new CustomEvent("composer-trigger-close"));
-      } else if (e.key === "Backspace" && query === "" && activeCategory !== null) {
-        e.preventDefault();
-        setActiveCategory(null);
-        setHighlightedIndex(0);
-      }
-    },
-    [list, highlightedIndex, query, activeCategory, handleSelect],
-  );
+  const warnedRef = useRef(false);
+  if (
+    process.env.NODE_ENV !== "production" &&
+    !warnedRef.current &&
+    Boolean(directive) === Boolean(action)
+  ) {
+    warnedRef.current = true;
+    console.warn(
+      "[assistant-ui] ComposerTriggerPopover requires exactly one of `directive` or `action` props.",
+    );
+  }
 
   return (
-    <div
-      ref={listRef}
-      role="listbox"
-      aria-label={`${char} options`}
-      style={styles.popover}
-      onKeyDown={handleKeyDown}
-      {...divProps}
+    <ComposerPrimitive.Unstable_TriggerPopover
+      data-slot="composer-trigger-popover"
+      className={cn(
+        "aui-composer-trigger-popover bg-white dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 absolute start-0 bottom-full z-50 mb-2 w-64 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-lg",
+        className,
+      )}
+      {...props}
     >
-      {/* Back button when inside a category */}
-      {activeCategory !== null && (
-        <button
-          style={styles.backBtn}
-          onClick={() => {
-            setActiveCategory(null);
-            setQuery("");
-            setHighlightedIndex(0);
-          }}
-          type="button"
-        >
-          ← {backLabel}
-        </button>
-      )}
-
-      {/* Category / Item label */}
-      {showCategories && categories.length > 0 && (
-        <div style={styles.label}>Mention</div>
-      )}
-      {!showCategories && (
-        <div style={styles.label}>Actions</div>
-      )}
-
-      {/* Empty state */}
-      {isEmpty && (
-        <div style={styles.empty}>
-          {isLoading
-            ? loadingLabel
-            : showCategories
-              ? emptyCategoriesLabel
-              : emptyItemsLabel}
-        </div>
-      )}
-
-      {/* Items */}
-      {list.map((item, i) => {
-        const isHighlighted = i === highlightedIndex;
-        const Icon = showCategories
-          ? getCategoryIcon(item as Unstable_TriggerPopoverCategory, iconMap, fallbackIcon)
-          : getItemIcon(item as Unstable_TriggerPopoverItem, iconMap, fallbackIcon);
-
-        return (
-          <button
-            key={item.id}
-            role="option"
-            aria-selected={isHighlighted}
-            style={{
-              ...(showCategories ? styles.category : styles.item),
-              ...(isHighlighted
-                ? showCategories
-                  ? styles.categoryHighlighted
-                  : styles.itemHighlighted
-                : {}),
-            }}
-            onMouseEnter={() => setHighlightedIndex(i)}
-            onClick={() => handleSelect(item)}
-            type="button"
-          >
-            <Icon className="w-4 h-4 flex-shrink-0 opacity-60" />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 500 }}>{item.label}</div>
-              {item.description && (
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "#6b7280",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {item.description}
-                </div>
-              )}
-            </div>
-          </button>
-        );
-      })}
-    </div>
+      {directive ? (
+        <ComposerPrimitive.Unstable_TriggerPopover.Directive
+          formatter={directive.formatter ?? unstable_defaultDirectiveFormatter}
+          onInserted={directive.onInserted}
+        />
+      ) : action ? (
+        <ComposerPrimitive.Unstable_TriggerPopover.Action
+          formatter={action.formatter ?? unstable_defaultDirectiveFormatter}
+          onExecute={action.onExecute}
+          removeOnExecute={action.removeOnExecute}
+        />
+      ) : null}
+      <Categories
+        iconMap={iconMap}
+        fallbackIcon={fallbackIcon}
+        emptyLabel={emptyCategoriesLabel}
+      />
+      <Items
+        iconMap={iconMap}
+        fallbackIcon={fallbackIcon}
+        backLabel={backLabel}
+        emptyLabel={emptyItemsLabel}
+        loadingLabel={loadingLabel}
+      />
+    </ComposerPrimitive.Unstable_TriggerPopover>
   );
 };
+ComposerTriggerPopoverImpl.displayName = "ComposerTriggerPopover";
+
+export const ComposerTriggerPopover = memo(
+  ComposerTriggerPopoverImpl,
+) as FC<ComposerTriggerPopoverProps>;
