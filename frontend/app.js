@@ -851,7 +851,7 @@ const starIndicator = `
   }
 
   function appendMessage(sender, text, avatarUrlOrText = '', reasoning = '', tool_calls = []) {
-    if (!chatMessagesLog) return;
+    if (!chatMessagesLog) return null;
     
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${sender}`;
@@ -926,6 +926,8 @@ const starIndicator = `
     }
 
     chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
+    
+    return msgDiv;
   }
 
   function generateSwarmAgents(promptText, count = 250) {
@@ -3910,7 +3912,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
                   tool_choice: 'auto',
                   temperature: 0.1,
                   max_tokens: 2048,
-                  stream: false,
+                  stream: true,
                 }),
                 signal: abortController.signal,
               });
@@ -3933,7 +3935,71 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
                 throw new Error(`LLM error: ${errDetail}`);
               }
 
-              llmData = await llmResp.json();
+              // Handle streaming response
+              const reader = llmResp.body.getReader();
+              const decoder = new TextDecoder();
+              let fullContent = '';
+              let toolCalls = [];
+              let buffer = '';
+
+              // Create or get the streaming message bubble
+              let streamingMsgDiv = chatMessagesLog.querySelector('.streaming-assistant-msg');
+              if (!streamingMsgDiv) {
+                streamingMsgDiv = appendMessage('assistant', '', '', [], true);
+                streamingMsgDiv.classList.add('streaming-assistant-msg');
+              }
+              const streamingBubble = streamingMsgDiv.querySelector('.cot-response-text-container');
+
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                  if (line.startsWith('data: ')) {
+                    const data = line.slice(6).trim();
+                    if (data === '[DONE]') continue;
+                    try {
+                      const chunk = JSON.parse(data);
+                      const delta = chunk.choices?.[0]?.delta;
+                      if (delta) {
+                        if (delta.content) {
+                          fullContent += delta.content;
+                          if (streamingBubble) {
+                            streamingBubble.innerHTML = renderMarkdown(fullContent);
+                            chatMessagesLog.scrollTop = chatMessagesLog.scrollHeight;
+                          }
+                        }
+                        if (delta.tool_calls) {
+                          for (const tc of delta.tool_calls) {
+                            if (tc.index !== undefined) {
+                              if (!toolCalls[tc.index]) {
+                                toolCalls[tc.index] = { id: tc.id || '', function: { name: '', arguments: '' } };
+                              }
+                              if (tc.id) toolCalls[tc.index].id = tc.id;
+                              if (tc.function?.name) toolCalls[tc.index].function.name += tc.function.name;
+                              if (tc.function?.arguments) toolCalls[tc.index].function.arguments += tc.function.arguments;
+                            }
+                          }
+                        }
+                      }
+                    } catch (e) {}
+                  }
+                }
+              }
+
+              llmData = {
+                choices: [{
+                  message: {
+                    role: 'assistant',
+                    content: fullContent,
+                    tool_calls: toolCalls.length > 0 ? toolCalls : undefined
+                  }
+                }]
+              };
               consecutiveErrors = 0;
               break; // Success, exit retry loop
             } catch (err) {
@@ -3963,12 +4029,18 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           // If no tool calls, the LLM is done talking
           if (!assistantMsg.tool_calls || assistantMsg.tool_calls.length === 0) {
             const text = assistantMsg.content || 'Done.';
-            // Remove the typing indicator message entirely, then append the real response
-            const existingTypingMsg = chatMessagesLog.querySelector('.typing-placeholder')?.closest('.chat-message');
-            if (existingTypingMsg) {
-              existingTypingMsg.remove();
+            // Remove streaming class and finalize the message
+            const streamingMsg = chatMessagesLog.querySelector('.streaming-assistant-msg');
+            if (streamingMsg) {
+              streamingMsg.classList.remove('streaming-assistant-msg');
+            } else {
+              // Fallback: remove typing placeholder and append
+              const existingTypingMsg = chatMessagesLog.querySelector('.typing-placeholder')?.closest('.chat-message');
+              if (existingTypingMsg) {
+                existingTypingMsg.remove();
+              }
+              appendMessage('assistant', text);
             }
-            appendMessage('assistant', text);
             updateStatus('Task complete.', `${step + 1} / ${maxSteps}`);
             addProgressStep('Delivering result to user', 'done');
             if (progressBody && progressBody.children.length > 1) {
