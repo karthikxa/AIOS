@@ -89,16 +89,17 @@ function ComposerUI() {
         style={{
           width: "100%",
           minHeight: "56px",
-          height: "56px",
           border: "none",
           outline: "none",
           resize: "none",
           padding: 0,
           margin: 0,
+          marginBottom: "16px",
           background: "transparent",
           boxShadow: "none",
-          fontSize: "15px",
-          color: "#1F2937",
+          fontSize: "20px",
+          color: "var(--text)",
+          fontFamily: "'Inter', sans-serif",
           lineHeight: "1.6",
         }}
         placeholder="Type @ to mention, / for commands..."

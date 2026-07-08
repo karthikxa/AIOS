@@ -10762,13 +10762,19 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
 #composer-trigger-popover-root textarea {
   width: 100% !important;
   min-height: 56px !important;
-  height: 56px !important;
   border: none !important;
   outline: none !important;
   resize: none !important;
   padding: 0 !important;
-  margin: 0 !important;
+  margin-top: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  margin-bottom: var(--space-md) !important;
   background: transparent !important;
   box-shadow: none !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 400 !important;
+  color: var(--text) !important;
 }
 
