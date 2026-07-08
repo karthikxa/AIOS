@@ -10,6 +10,7 @@ import {
   type Unstable_SlashCommand,
 } from "@assistant-ui/react";
 import {
+  ArrowUpIcon,
   FileTextIcon,
   GlobeIcon,
   LanguagesIcon,
@@ -47,6 +48,52 @@ const slashIcons = {
 
 const noopAdapter = { async *stream() {} };
 
+/* ── Styles matching MinimalComposer pattern ─────────────────────────── */
+
+const styles = {
+  root: {
+    display: "flex",
+    width: "100%",
+    flexDirection: "column" as const,
+    borderRadius: 24,
+    border: "1px solid #e5e7eb",
+    background: "#f9fafb",
+    position: "relative" as const,
+  },
+  input: {
+    minHeight: 40,
+    width: "100%",
+    resize: "none" as const,
+    background: "transparent",
+    padding: "16px 20px 12px",
+    fontSize: 14,
+    lineHeight: 1.5,
+    color: "#1F2937",
+    border: "none",
+    outline: "none",
+    fontFamily: "'Inter', -apple-system, sans-serif",
+  },
+  footer: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    padding: "0 12px 12px",
+  },
+  sendBtn: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 32,
+    height: 32,
+    borderRadius: "50%",
+    background: "#111827",
+    color: "#fff",
+    border: "none",
+    cursor: "pointer",
+    opacity: 1,
+  },
+} as const;
+
 function ComposerUI() {
   const mention = unstable_useMentionAdapter();
   const slash = unstable_useSlashCommandAdapter({ commands: SLASH_COMMANDS });
@@ -63,25 +110,17 @@ function ComposerUI() {
   };
 
   return (
-    <ComposerPrimitive.Root onSubmit={handleSubmit} style={{ position: "relative" }}>
+    <ComposerPrimitive.Root onSubmit={handleSubmit} style={styles.root}>
       <ComposerPrimitive.Input
         placeholder="Message Zed..."
-        style={{
-          width: "100%",
-          minHeight: 56,
-          height: 56,
-          fontSize: 15,
-          lineHeight: 1.6,
-          color: "#1F2937",
-          padding: 0,
-          border: "none",
-          outline: "none",
-          background: "transparent",
-          resize: "none",
-          fontFamily: "'Inter', -apple-system, sans-serif",
-        }}
+        rows={1}
+        style={styles.input}
       />
-      <ComposerPrimitive.Send />
+      <div style={styles.footer}>
+        <ComposerPrimitive.Send style={styles.sendBtn}>
+          <ArrowUpIcon className="w-4 h-4" />
+        </ComposerPrimitive.Send>
+      </div>
 
       <ComposerTriggerPopover
         char="@"
@@ -98,6 +137,7 @@ function ComposerUI() {
             const cmd = SLASH_COMMANDS.find((c) => c.id === item.id);
             cmd?.execute();
           },
+          removeOnExecute: true,
         }}
         iconMap={slashIcons}
         fallbackIcon={SlashIcon}
