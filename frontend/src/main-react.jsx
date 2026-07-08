@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { CombinedComposer } from './components/assistant-ui/combined-composer';
+import './index.css';
 
 // Mount React app into the existing DOM
 const container = document.getElementById('composer-trigger-popover-root');
