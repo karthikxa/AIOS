@@ -9,17 +9,23 @@ import {
   type Unstable_TriggerItem,
 } from "@assistant-ui/react";
 import { ChevronLeftIcon, ChevronRightIcon, SparklesIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type IconComponent = FC<{ className?: string }>;
 
 type DirectiveBehaviorProps = {
+  /** Formatter used to serialize the selected item into composer text. */
   formatter?: Unstable_DirectiveFormatter | undefined;
+  /** Called after the directive text has been inserted into the composer. */
   onInserted?: ((item: Unstable_TriggerItem) => void) | undefined;
 };
 
 type ActionBehaviorProps = {
+  /** Formatter used to serialize the audit-trail chip (when `removeOnExecute` is false). */
   formatter?: Unstable_DirectiveFormatter | undefined;
+  /** Invoked with the selected item at the moment of selection. */
   onExecute: (item: Unstable_TriggerItem) => void;
+  /** If `true`, strip the trigger text from the composer after executing. @default false */
   removeOnExecute?: boolean | undefined;
 };
 
@@ -27,18 +33,35 @@ type ComposerTriggerPopoverBaseProps = Omit<
   ComponentPropsWithoutRef<typeof ComposerPrimitive.Unstable_TriggerPopover>,
   "children"
 > & {
+  /**
+   * Maps icon keys to components. Items look up via `item.metadata?.icon`
+   * (string); categories look up via their `id`.
+   */
   iconMap?: Record<string, IconComponent>;
+  /** Fallback icon when no entry in `iconMap` matches. */
   fallbackIcon?: IconComponent;
+  /** Label shown on the back button. @default "Back" */
   backLabel?: string;
+  /** Label shown when no categories are available. @default "No items available" */
   emptyCategoriesLabel?: string;
+  /** Label shown when no items match. @default "No matching items" */
   emptyItemsLabel?: string;
+  /** Label shown while an async adapter is resolving items. @default "Loading…" */
   loadingLabel?: string;
 };
 
 type ComposerTriggerPopoverProps = ComposerTriggerPopoverBaseProps &
   (
-    | { directive: DirectiveBehaviorProps; action?: never }
-    | { action: ActionBehaviorProps; directive?: never }
+    | {
+        /** Insert-directive behavior. */
+        directive: DirectiveBehaviorProps;
+        action?: never;
+      }
+    | {
+        /** Action behavior. */
+        action: ActionBehaviorProps;
+        directive?: never;
+      }
   );
 
 function resolveIcon(
@@ -49,109 +72,6 @@ function resolveIcon(
   if (iconKey && iconMap?.[iconKey]) return iconMap[iconKey]!;
   return fallback;
 }
-
-/* ── Inline styles matching existing zed chat UI ────────────────────────── */
-
-const s = {
-  popover: {
-    position: "absolute" as const,
-    bottom: "100%",
-    left: 0,
-    marginBottom: 8,
-    width: 256,
-    overflow: "hidden",
-    borderRadius: 12,
-    border: "1px solid #e5e7eb",
-    boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
-    background: "#fff",
-    color: "#111827",
-    zIndex: 50,
-  },
-  categories: {
-    display: "flex",
-    flexDirection: "column" as const,
-    padding: "4px 0",
-  },
-  categoryItem: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
-    padding: "8px 12px",
-    fontSize: 14,
-    cursor: "pointer",
-    border: "none",
-    background: "none",
-    width: "100%",
-    textAlign: "left" as const,
-    color: "#111827",
-    transition: "background 0.1s",
-    outline: "none",
-  },
-  items: {
-    display: "flex",
-    flexDirection: "column" as const,
-  },
-  backBtn: {
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-    padding: "8px 12px",
-    fontSize: 11,
-    fontWeight: 600,
-    color: "#6b7280",
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.05em",
-    cursor: "pointer",
-    borderBottom: "1px solid #f3f4f6",
-    border: "none",
-    borderBottom: "1px solid #f3f4f6",
-    background: "none",
-    width: "100%",
-    textAlign: "left" as const,
-    transition: "background 0.1s",
-    outline: "none",
-  },
-  item: {
-    display: "flex",
-    flexDirection: "column" as const,
-    alignItems: "flex-start",
-    gap: 2,
-    padding: "8px 12px",
-    fontSize: 14,
-    cursor: "pointer",
-    border: "none",
-    background: "none",
-    width: "100%",
-    textAlign: "left" as const,
-    color: "#111827",
-    transition: "background 0.1s",
-    outline: "none",
-  },
-  itemLabel: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    fontSize: 14,
-    fontWeight: 500,
-  },
-  itemDesc: {
-    fontSize: 12,
-    color: "#6b7280",
-    lineHeight: "1.3",
-    marginLeft: 22,
-  },
-  empty: {
-    padding: "8px 12px",
-    fontSize: 14,
-    color: "#9ca3af",
-  },
-  highlighted: {
-    background: "#f3f4f6",
-  },
-} as const;
-
-/* ── Categories ─────────────────────────────────────────────────────────── */
 
 type CategoriesProps = {
   iconMap: Record<string, IconComponent> | undefined;
@@ -166,38 +86,35 @@ const Categories: FC<CategoriesProps> = ({
 }) => (
   <ComposerPrimitive.Unstable_TriggerPopoverCategories>
     {(categories) => (
-      <div data-slot="composer-trigger-popover-categories" style={s.categories}>
+      <div
+        data-slot="composer-trigger-popover-categories"
+        className="flex flex-col py-1"
+      >
         {categories.map((cat) => {
           const Icon = resolveIcon(cat.id, iconMap, fallbackIcon);
           return (
             <ComposerPrimitive.Unstable_TriggerPopoverCategoryItem
               key={cat.id}
               categoryId={cat.id}
-              style={s.categoryItem}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.background = "#f3f4f6")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background = "none")
-              }
+              className="hover:bg-accent focus:bg-accent data-[highlighted]:bg-accent flex cursor-pointer items-center justify-between gap-2 px-3 py-2 text-sm transition-colors outline-none"
             >
-              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <Icon className="w-4 h-4" style={{ opacity: 0.5 }} />
+              <span className="flex items-center gap-2">
+                <Icon className="text-muted-foreground size-4" />
                 {cat.label}
               </span>
-              <ChevronRightIcon className="w-4 h-4" style={{ opacity: 0.5 }} />
+              <ChevronRightIcon className="text-muted-foreground size-4" />
             </ComposerPrimitive.Unstable_TriggerPopoverCategoryItem>
           );
         })}
         {categories.length === 0 && (
-          <div style={s.empty}>{emptyLabel}</div>
+          <div className="text-muted-foreground px-3 py-2 text-sm">
+            {emptyLabel}
+          </div>
         )}
       </div>
     )}
   </ComposerPrimitive.Unstable_TriggerPopoverCategories>
 );
-
-/* ── Items ──────────────────────────────────────────────────────────────── */
 
 type ItemsProps = {
   iconMap: Record<string, IconComponent> | undefined;
@@ -218,21 +135,16 @@ const Items: FC<ItemsProps> = ({
   return (
     <ComposerPrimitive.Unstable_TriggerPopoverItems>
       {(items) => (
-        <div data-slot="composer-trigger-popover-items" style={s.items}>
-          <ComposerPrimitive.Unstable_TriggerPopoverBack
-            style={s.backBtn}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background = "#f3f4f6")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = "none")
-            }
-          >
-            <ChevronLeftIcon className="w-3.5 h-3.5" />
+        <div
+          data-slot="composer-trigger-popover-items"
+          className="flex flex-col"
+        >
+          <ComposerPrimitive.Unstable_TriggerPopoverBack className="text-muted-foreground hover:bg-accent flex cursor-pointer items-center gap-1.5 border-b px-3 py-2 text-xs tracking-wide uppercase transition-colors">
+            <ChevronLeftIcon className="size-3.5" />
             {backLabel}
           </ComposerPrimitive.Unstable_TriggerPopoverBack>
 
-          <div style={{ padding: "4px 0" }}>
+          <div className="py-1">
             {items.map((item, index) => {
               const iconKey =
                 typeof item.metadata?.icon === "string"
@@ -244,26 +156,22 @@ const Items: FC<ItemsProps> = ({
                   key={item.id}
                   item={item}
                   index={index}
-                  style={s.item}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "#f3f4f6")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "none")
-                  }
+                  className="hover:bg-accent focus:bg-accent data-[highlighted]:bg-accent flex w-full cursor-pointer flex-col items-start gap-0.5 px-3 py-2 text-start transition-colors outline-none"
                 >
-                  <span style={s.itemLabel}>
-                    <Icon className="w-3.5 h-3.5" style={{ opacity: 0.6 }} />
+                  <span className="flex items-center gap-2 text-sm font-medium">
+                    <Icon className="text-primary size-3.5" />
                     {item.label}
                   </span>
                   {item.description && (
-                    <span style={s.itemDesc}>{item.description}</span>
+                    <span className="text-muted-foreground ms-5.5 text-xs leading-tight">
+                      {item.description}
+                    </span>
                   )}
                 </ComposerPrimitive.Unstable_TriggerPopoverItem>
               );
             })}
             {items.length === 0 && (
-              <div style={s.empty}>
+              <div className="text-muted-foreground px-3 py-2 text-sm">
                 {isLoading ? loadingLabel : emptyLabel}
               </div>
             )}
@@ -274,8 +182,10 @@ const Items: FC<ItemsProps> = ({
   );
 };
 
-/* ── Main component ─────────────────────────────────────────────────────── */
-
+/**
+ * Pre-built popover UI for a trigger-driven picker (mentions, slash commands, etc).
+ * Pass exactly one of `directive` (inserts a chip) or `action` (fires a handler).
+ */
 const ComposerTriggerPopoverImpl: FC<ComposerTriggerPopoverProps> = ({
   iconMap,
   fallbackIcon = SparklesIcon,
@@ -303,7 +213,10 @@ const ComposerTriggerPopoverImpl: FC<ComposerTriggerPopoverProps> = ({
   return (
     <ComposerPrimitive.Unstable_TriggerPopover
       data-slot="composer-trigger-popover"
-      style={s.popover}
+      className={cn(
+        "aui-composer-trigger-popover bg-popover text-popover-foreground absolute start-0 bottom-full z-50 mb-2 w-64 overflow-hidden rounded-xl border shadow-lg",
+        className,
+      )}
       {...props}
     >
       {directive ? (
