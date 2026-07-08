@@ -87,13 +87,7 @@ const Categories: FC<CategoriesProps> = ({
     {(categories) => (
       <div
         data-slot="composer-trigger-popover-categories"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          paddingTop: "4px",
-          paddingBottom: "4px",
-          width: "100%",
-        }}
+        className="popover-categories-list"
       >
         {categories.map((cat) => {
           const Icon = resolveIcon(cat.id, iconMap, fallbackIcon);
@@ -101,32 +95,18 @@ const Categories: FC<CategoriesProps> = ({
             <ComposerPrimitive.Unstable_TriggerPopoverCategoryItem
               key={cat.id}
               categoryId={cat.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "10px",
-                padding: "10px 16px",
-                fontSize: "14px",
-                cursor: "pointer",
-                border: "none",
-                background: "transparent",
-                width: "100%",
-                textAlign: "left",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
+              className="popover-category-item"
             >
-              <span style={{ display: "flex", alignItems: "center", gap: "10px", color: "#27272a" }}>
-                <Icon style={{ color: "#a1a1aa", width: "16px", height: "16px" }} />
+              <span className="popover-category-item-label">
+                <Icon className="popover-category-icon" />
                 {cat.label}
               </span>
-              <ChevronRightIcon style={{ color: "#a1a1aa", width: "16px", height: "16px" }} />
+              <ChevronRightIcon className="popover-category-chevron" />
             </ComposerPrimitive.Unstable_TriggerPopoverCategoryItem>
           );
         })}
         {categories.length === 0 && (
-          <div style={{ color: "#a1a1aa", padding: "10px 16px", fontSize: "14px" }}>
+          <div className="popover-empty-label">
             {emptyLabel}
           </div>
         )}
@@ -156,35 +136,13 @@ const Items: FC<ItemsProps> = ({
       {(items) => (
         <div
           data-slot="composer-trigger-popover-items"
-          style={{ display: "flex", flexDirection: "column", width: "100%" }}
+          className="popover-items-list"
         >
-          <ComposerPrimitive.Unstable_TriggerPopoverBack
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-              borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
-              padding: "10px 16px",
-              fontSize: "11px",
-              fontWeight: 500,
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              color: "#71717a",
-              background: "transparent",
-              borderTop: "none",
-              borderLeft: "none",
-              borderRight: "none",
-              width: "100%",
-              textAlign: "left",
-              outline: "none",
-              boxSizing: "border-box",
-            }}
-          >
+          <ComposerPrimitive.Unstable_TriggerPopoverBack className="popover-back-button">
             &lt; {backLabel.toUpperCase()}
           </ComposerPrimitive.Unstable_TriggerPopoverBack>
 
-          <div style={{ paddingTop: "2px", paddingBottom: "2px" }}>
+          <div className="popover-items-wrapper">
             {items.map((item, index) => {
               const iconKey =
                 typeof item.metadata?.icon === "string"
@@ -196,28 +154,16 @@ const Items: FC<ItemsProps> = ({
                   key={item.id}
                   item={item}
                   index={index}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    width: "100%",
-                    cursor: "pointer",
-                    padding: "10px 16px",
-                    outline: "none",
-                    border: "none",
-                    background: "transparent",
-                    textAlign: "left",
-                    boxSizing: "border-box",
-                  }}
+                  className="popover-item"
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%" }}>
-                    <Icon style={{ color: "#27272a", width: "16px", height: "16px", flexShrink: 0 }} />
-                    <span style={{ fontSize: "14px", fontWeight: 600, color: "#09090b" }}>
+                  <div className="popover-item-title-row">
+                    <Icon className="popover-item-icon" />
+                    <span className="popover-item-label">
                       {item.label}
                     </span>
                   </div>
                   {item.description && (
-                    <div style={{ color: "#71717a", paddingLeft: "26px", fontSize: "12px", fontWeight: 400, marginTop: "2px", lineHeight: "1.4" }}>
+                    <div className="popover-item-description">
                       {item.description}
                     </div>
                   )}
@@ -225,7 +171,7 @@ const Items: FC<ItemsProps> = ({
               );
             })}
             {items.length === 0 && (
-              <div style={{ color: "#a1a1aa", padding: "10px 16px", fontSize: "14px" }}>
+              <div className="popover-empty-label">
                 {isLoading ? loadingLabel : emptyLabel}
               </div>
             )}
@@ -300,23 +246,6 @@ const ComposerTriggerPopoverImpl: FC<ComposerTriggerPopoverProps> = ({
     <ComposerPrimitive.Unstable_TriggerPopover
       data-slot="composer-trigger-popover"
       className="aui-composer-trigger-popover"
-      style={{
-        position: "absolute",
-        bottom: "100%",
-        left: 0,
-        zIndex: 50,
-        marginBottom: "8px",
-        width: "288px",
-        backgroundColor: "#ffffff",
-        color: "#09090b",
-        border: "1px solid rgba(0, 0, 0, 0.08)",
-        borderRadius: "12px",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        boxSizing: "border-box",
-      }}
       {...props}
     >
       {directive ? (
