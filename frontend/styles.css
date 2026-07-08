@@ -10929,16 +10929,25 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
   width: 100% !important;
 }
 
-/* Icons styling */
-.aui-composer-trigger-popover [role="option"] svg {
-  color: #27272a !important;
-  width: 16px !important;
-  height: 16px !important;
+/* Icons styling — force monochrome */
+.aui-composer-trigger-popover [role="option"] svg,
+.aui-composer-trigger-popover svg {
+  color: #71717a !important;
+  width: 14px !important;
+  height: 14px !important;
   flex-shrink: 0 !important;
+  fill: none !important;
+  stroke: currentColor !important;
+}
+
+.aui-composer-trigger-popover [role="option"] span:first-child svg {
+  color: #71717a !important;
 }
 
 .aui-composer-trigger-popover [data-slot="composer-trigger-popover-categories"] [role="option"] svg {
   color: #a1a1aa !important;
+  fill: none !important;
+  stroke: currentColor !important;
 }
 
 /* Description styling */
