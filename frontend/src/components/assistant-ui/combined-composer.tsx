@@ -2,6 +2,8 @@ import {
   AssistantRuntimeProvider,
   ComposerPrimitive,
   useLocalRuntime,
+  unstable_useMentionAdapter,
+  unstable_useSlashCommandAdapter,
   type Unstable_SlashCommand,
 } from "@assistant-ui/react";
 import {
@@ -11,8 +13,6 @@ import {
   SlashIcon,
   WrenchIcon,
 } from "lucide-react";
-import { unstable_useMentionAdapter } from "./use-mention-adapter";
-import { unstable_useSlashCommandAdapter } from "./use-slash-command-adapter";
 import { ComposerTriggerPopover } from "./composer-trigger-popover";
 
 const SLASH_COMMANDS: readonly Unstable_SlashCommand[] = [
