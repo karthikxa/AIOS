@@ -78,7 +78,21 @@ function ComposerUI() {
   return (
     <ComposerPrimitive.Root onSubmit={handleSubmit}>
       <ComposerPrimitive.Input
-        className="w-full bg-transparent border-0 border-none outline-none resize-none p-0 m-0 text-[15.5px] leading-relaxed text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-400/80 focus:ring-0 focus:outline-none focus:border-none focus-visible:ring-0 focus-visible:outline-none shadow-none"
+        style={{
+          width: "100%",
+          minHeight: "56px",
+          height: "56px",
+          border: "none",
+          outline: "none",
+          resize: "none",
+          padding: 0,
+          margin: 0,
+          background: "transparent",
+          boxShadow: "none",
+          fontSize: "15px",
+          color: "#1F2937",
+          lineHeight: "1.6",
+        }}
         placeholder="Type @ to mention, / for commands..."
       />
       <ComposerPrimitive.Send />
