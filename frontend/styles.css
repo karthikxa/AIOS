@@ -5842,32 +5842,32 @@ input:checked + .toggle-slider:before {
 
 
 .chain-of-thought {
-  border: 1px solid #E5E7EB;
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 12px;
-  background: #FAFBFC;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+  margin-bottom: 8px;
+  background: transparent;
 }
 
 .cot-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 4px 0;
   cursor: pointer;
   user-select: none;
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-  background: #F3F4F6;
-  border-bottom: 1px solid transparent;
-  transition: background 0.15s;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  background: transparent;
+  border-bottom: none;
+  transition: color 0.15s;
 }
 .cot-header:hover {
-  background: #EEF0F2;
+  color: #374151;
 }
 .cot-header.open {
-  border-bottom-color: #E5E7EB;
+  border-bottom-color: transparent;
 }
 .cot-chevron {
   flex-shrink: 0;
@@ -5887,16 +5887,16 @@ input:checked + .toggle-slider:before {
 .cot-step-count {
   font-size: 11px;
   font-weight: 500;
-  color: #9CA3AF;
-  background: rgba(0,0,0,0.04);
-  padding: 1px 8px;
-  border-radius: 10px;
+  color: #9ca3af;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
   white-space: nowrap;
 }
 
 .cot-content {
   display: none;
-  padding: 12px 16px 8px 18px;
+  padding: 4px 0 4px 22px;
   position: relative;
 }
 .chain-of-thought[data-open="true"] > .cot-content {
