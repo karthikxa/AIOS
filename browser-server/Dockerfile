@@ -30,6 +30,8 @@ RUN npm install --only=production
 # Copy server files
 COPY browser-server/server.js .
 COPY browser-server/registry.js .
+COPY browser-server/start.sh .
+RUN chmod +x start.sh
 
 # Expose ports
 # 8080 - Main API (Render auto-detects this)
@@ -38,4 +40,4 @@ COPY browser-server/registry.js .
 EXPOSE 8080 6901 6902
 
 # Start both KasmVNC and Node.js server
-CMD ["/bin/bash", "-c", "/dockerStartup.sh & sleep 10 && echo '=== Starting Node.js server ===' && ls -la /app && cd /app && node server.js & wait"]
+CMD ["./start.sh"]
