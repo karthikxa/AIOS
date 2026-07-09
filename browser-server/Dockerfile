@@ -8,6 +8,7 @@ ENV HEIGHT=720
 ENV QUALITY=80
 ENV FPS=30
 ENV VNC_PW=password123
+ENV PORT=8080
 
 # Install Chromium and Node.js
 RUN apt-get update && apt-get install -y \
@@ -31,11 +32,10 @@ COPY browser-server/server.js .
 COPY browser-server/registry.js .
 
 # Expose ports
-# 5900 - VNC
+# 8080 - Main API (Render auto-detects this)
 # 6901 - noVNC web interface
 # 6902 - KasmVNC WebSocket API
-# 3000 - Node.js API
-EXPOSE 5900 6901 6902 3000
+EXPOSE 8080 6901 6902
 
 # Start both KasmVNC and Node.js server
-CMD ["/bin/bash", "-c", "/dockerStartup.sh & sleep 5 && node server.js"]
+CMD ["/bin/bash", "-c", "/dockerStartup.sh & sleep 10 && cd /app && PORT=8080 node server.js 2>&1"]
