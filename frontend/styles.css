@@ -1051,11 +1051,11 @@ header.app-header {
   background-color: var(--card);
   border: 1.2px solid rgba(91, 174, 255, 0.35);
   border-radius: var(--radius-chat);
-  padding: var(--space-md);
+  padding: 10px 16px 8px 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 220px;
+  min-height: 70px;
   position: relative;
   overflow: hidden;
   transition: var(--transition-smooth);
@@ -2384,7 +2384,7 @@ input:checked + .toggle-slider:before {
   }
 
   .chat-box {
-    min-height: 120px;
+    min-height: 70px;
   }
 
   .model-dropdown-container {
