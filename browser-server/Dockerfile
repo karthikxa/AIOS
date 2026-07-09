@@ -23,12 +23,12 @@ ENV CHROME_BIN=/usr/bin/chromium-browser
 WORKDIR /app
 
 # Copy package files first for caching
-COPY package*.json ./
+COPY browser-server/package*.json ./
 RUN npm ci --only=production
 
 # Copy server files
-COPY server.js .
-COPY registry.js .
+COPY browser-server/server.js .
+COPY browser-server/registry.js .
 
 # Expose ports
 # 5900 - VNC
