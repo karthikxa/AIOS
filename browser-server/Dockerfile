@@ -24,7 +24,7 @@ WORKDIR /app
 
 # Copy package files first for caching
 COPY browser-server/package*.json ./
-RUN npm ci --only=production
+RUN npm install --only=production
 
 # Copy server files
 COPY browser-server/server.js .
