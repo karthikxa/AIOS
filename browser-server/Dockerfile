@@ -38,4 +38,4 @@ COPY browser-server/registry.js .
 EXPOSE 8080 6901 6902
 
 # Start both KasmVNC and Node.js server
-CMD ["/bin/bash", "-c", "/dockerStartup.sh & sleep 10 && cd /app && PORT=8080 node server.js 2>&1"]
+CMD ["/bin/bash", "-c", "/dockerStartup.sh & sleep 10 && echo '=== Starting Node.js server ===' && ls -la /app && cd /app && node server.js & wait"]
