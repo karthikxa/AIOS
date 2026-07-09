@@ -2626,6 +2626,40 @@ JSON Structure:
   }
   // Check for pending query from OAuth redirect (user just connected a service)
   (function _checkPendingQuery() {
+    // First check URL params from OAuth redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    const connectedPlugin = urlParams.get('connected');
+    const pluginId = urlParams.get('plugin_id');
+    const userId = urlParams.get('user_id');
+    
+    if (connectedPlugin && userId) {
+      // Store the connected plugin status
+      const connectedPlugins = JSON.parse(localStorage.getItem('zed_connected_plugins') || '{}');
+      connectedPlugins[connectedPlugin] = {
+        connected: true,
+        user_id: userId,
+        connected_at: Date.now()
+      };
+      localStorage.setItem('zed_connected_plugins', JSON.stringify(connectedPlugins));
+      localStorage.setItem('zed_user_id', userId);
+      
+      // Clean URL without reloading
+      window.history.replaceState({}, '', '/plugins');
+      
+      // Navigate to plugins page and show connected status
+      setTimeout(() => {
+        if (typeof navigateTo === 'function') {
+          navigateTo('plugins');
+        } else {
+          // Fallback: click the plugins nav item
+          const pluginsNav = document.getElementById('navPlugins');
+          if (pluginsNav) pluginsNav.click();
+        }
+        showToast(`${connectedPlugin.charAt(0).toUpperCase() + connectedPlugin.slice(1)} connected successfully!`, 'success');
+      }, 300);
+      return;
+    }
+    
     const pending = sessionStorage.getItem('pendingQuery');
     if (pending) {
       sessionStorage.removeItem('pendingQuery');

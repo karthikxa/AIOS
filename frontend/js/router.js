@@ -50,12 +50,18 @@ export function initRouter() {
     showCenterContainer();
   }
 
-  // Default to "New task" on load
-  const defaultNav = document.getElementById('navNewTask');
-  if (defaultNav) {
-    navItems.forEach(i => i.classList.remove('active'));
-    defaultNav.classList.add('active');
-    showChatView();
+  // Check for OAuth callback params — if present, show plugins page immediately
+  const urlParams = new URLSearchParams(window.location.search);
+  const oauthCallback = urlParams.has('connected') || urlParams.has('plugin_id') || urlParams.has('error');
+
+  if (!oauthCallback) {
+    // Default to "New task" on load only if not an OAuth callback
+    const defaultNav = document.getElementById('navNewTask');
+    if (defaultNav) {
+      navItems.forEach(i => i.classList.remove('active'));
+      defaultNav.classList.add('active');
+      showChatView();
+    }
   }
 
   navItems.forEach(item => {
