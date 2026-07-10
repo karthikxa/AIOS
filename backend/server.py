@@ -487,20 +487,20 @@ async def lifespan(app: FastAPI):
                     return
 
                 try:
+                    # Use backend server which has tools registered
                     llm_base_url = os.environ.get(
-                        "ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"
+                        "ZED_PRO_BASE_URL", "https://aios-lovat-two.vercel.app"
                     ).rstrip("/")
                     llm_api_key = os.environ.get(
                         "ZED_PRO_API_KEY", os.environ.get("OPENAI_API_KEY", "no-key")
                     )
-                    if not llm_base_url.endswith("/v1"):
-                        llm_base_url += "/v1"
                     resp = httpx.post(
-                        f"{llm_base_url}/chat/completions",
+                        f"{llm_base_url}/v1/chat/completions",
                         json={
                             "model": _llm_model,
                             "messages": [{"role": "user", "content": _prompt}],
                             "max_tokens": 4096,
+                            "tools": True,  # Enable tools for Gmail etc.
                         },
                         headers={
                             "Authorization": f"Bearer {llm_api_key}",
