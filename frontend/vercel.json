@@ -17,7 +17,7 @@
   ],
   "rewrites": [
     { "source": "/api/:path*", "destination": "https://backend-server-6ghr.onrender.com/api/:path*" },
-    { "source": "/v1/:path*", "destination": "https://backend-server-6ghr.onrender.com/v1/:path*" },
+    { "source": "/v1/:path*", "destination": "https://backend-server-6ghr.onrender.com/:path*" },
     { "source": "/oauth/:path*", "destination": "https://backend-server-6ghr.onrender.com/oauth/:path*" },
     { "source": "/robots.txt", "destination": "/robots.txt" },
     { "source": "/llms.txt", "destination": "/llms.txt" },

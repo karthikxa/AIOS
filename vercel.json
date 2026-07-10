@@ -18,7 +18,7 @@
   ],
   "rewrites": [
     { "source": "/api/:path*", "destination": "https://backend-server-6ghr.onrender.com/api/:path*" },
-    { "source": "/v1/:path*", "destination": "https://backend-server-6ghr.onrender.com/v1/:path*" },
+    { "source": "/v1/:path*", "destination": "https://backend-server-6ghr.onrender.com/:path*" },
     { "source": "/oauth/:path*", "destination": "https://backend-server-6ghr.onrender.com/oauth/:path*" },
     { "source": "/((?!assets/|api/|v1/|oauth/).*)", "destination": "/index.html" }
   ]
