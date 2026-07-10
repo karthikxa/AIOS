@@ -3879,7 +3879,7 @@ input:checked + .toggle-slider:before {
   border: 1px solid #E8E8E8;
   color: #111111;
   height: 48px;
-  padding: 0 28px;
+  padding: 0 32px;
   border-radius: 14px;
   font-size: 15px;
   font-weight: 600;
@@ -3887,9 +3887,10 @@ input:checked + .toggle-slider:before {
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
 }
 
 .btn-create-schedule-hero svg {
