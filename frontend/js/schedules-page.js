@@ -800,9 +800,53 @@ function openCreateScheduleSidebar() {
       closeSidebar();
     } else {
       submitBtn.disabled = false;
-      overlay.querySelector('#schedSubmitLabel').textContent = 'Create';
+      const label = overlay.querySelector('#schedSubmitLabel');
+      if (label) label.textContent = submitBtn.dataset.editId ? 'Update' : 'Create';
     }
   });
+}
+
+// ── Edit Schedule ──
+
+function openEditSchedule(scheduleId) {
+  const schedule = schedulesStore.getSchedules().find(s => s.id === scheduleId);
+  if (!schedule) return;
+
+  // Pre-fill create form with existing data
+  const createBtn = document.getElementById('btnCreateSchedule');
+  if (createBtn) createBtn.click();
+
+  setTimeout(() => {
+    const overlay = document.getElementById('createScheduleSidebarOverlay');
+    if (!overlay) return;
+
+    // Update title
+    const title = overlay.querySelector('.zed-sidebar-title');
+    if (title) title.textContent = 'Edit Schedule';
+
+    // Pre-fill name
+    const nameInput = overlay.querySelector('#schedName');
+    if (nameInput) nameInput.value = schedule.name;
+
+    // Pre-fill task
+    const taskInput = overlay.querySelector('#schedTask');
+    if (taskInput) taskInput.value = schedule.prompt || '';
+
+    // Pre-fill agent
+    const agentInput = overlay.querySelector('#schedAgentInput');
+    if (agentInput && schedule.agentName) {
+      agentInput.value = schedule.agentName;
+      agentInput.dataset.selected = 'true';
+    }
+
+    // Update submit button
+    const submitBtn = overlay.querySelector('#zedSchedSidebarSubmit');
+    if (submitBtn) {
+      submitBtn.dataset.editId = scheduleId;
+      const label = overlay.querySelector('#schedSubmitLabel');
+      if (label) label.textContent = 'Update';
+    }
+  }, 100);
 }
 
 // ── Auto-init ─────────────────────────────────────────────────────────────────
