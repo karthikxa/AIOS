@@ -131,6 +131,11 @@ export function initCreateAgentPage() {
         dot.innerHTML = isSelected ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width: 10px; height: 10px;"><polyline points="20 6 9 17 4 12" /></svg>' : '';
       }
     });
+    // Show/hide custom cron input
+    const customCronRow = document.getElementById('customCronRow');
+    if (customCronRow) {
+      customCronRow.style.display = state.schedule === 'custom' ? 'block' : 'none';
+    }
   }
 
   // Dynamic rendering of Connected Plugins & Custom Skills

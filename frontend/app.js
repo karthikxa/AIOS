@@ -2632,16 +2632,24 @@ JSON Structure:
     const pluginId = urlParams.get('plugin_id');
     const userId = urlParams.get('user_id');
     
-    if (connectedPlugin && userId) {
+    // Also check for pending plugin from before redirect
+    const pendingPlugin = localStorage.getItem('zed_pending_plugin');
+    const pendingUserId = localStorage.getItem('zed_user_id');
+    
+    const pluginToConnect = connectedPlugin || pendingPlugin;
+    const userForPlugin = userId || pendingUserId;
+    
+    if (pluginToConnect && userForPlugin) {
       // Store the connected plugin status
       const connectedPlugins = JSON.parse(localStorage.getItem('zed_connected_plugins') || '{}');
-      connectedPlugins[connectedPlugin] = {
+      connectedPlugins[pluginToConnect] = {
         connected: true,
-        user_id: userId,
+        user_id: userForPlugin,
         connected_at: Date.now()
       };
       localStorage.setItem('zed_connected_plugins', JSON.stringify(connectedPlugins));
-      localStorage.setItem('zed_user_id', userId);
+      localStorage.setItem('zed_user_id', userForPlugin);
+      localStorage.removeItem('zed_pending_plugin');
       
       // Clean URL without reloading
       window.history.replaceState({}, '', '/plugins');
@@ -2655,7 +2663,7 @@ JSON Structure:
           const pluginsNav = document.getElementById('navPlugins');
           if (pluginsNav) pluginsNav.click();
         }
-        showToast(`${connectedPlugin.charAt(0).toUpperCase() + connectedPlugin.slice(1)} connected successfully!`, 'success');
+        showToast(`${pluginToConnect.charAt(0).toUpperCase() + pluginToConnect.slice(1)} connected successfully!`, 'success');
       }, 300);
       return;
     }

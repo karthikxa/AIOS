@@ -1445,6 +1445,12 @@
                   <div class="sched-card-desc">Set custom schedule</div>
                 </div>
               </div>
+              <!-- Custom Cron Input (hidden by default, shown when Custom selected) -->
+              <div id="customCronRow" style="display: none; margin-top: 12px;">
+                <label style="font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 6px;">Cron Expression</label>
+                <input type="text" id="customCronInput" placeholder="e.g. 0 9 * * 1-5 (weekdays at 9am)" style="width: 100%; padding: 10px 12px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 13px; font-family: monospace; outline: none; box-sizing: border-box;" />
+                <div style="font-size: 11px; color: #9CA3AF; margin-top: 4px;">Format: minute hour day-of-month month day-of-week</div>
+              </div>
             </div>
           </div>
 
@@ -1732,7 +1738,6 @@
                 <button class="ea-tab-btn" data-tab="skills">Skills & Integrations</button>
                 <button class="ea-tab-btn" data-tab="model">Model</button>
                 <button class="ea-tab-btn" data-tab="chat">Chat</button>
-                <button class="ea-tab-btn" data-tab="desktop">Agent Desktop</button>
                 <button class="ea-tab-btn" data-tab="advanced">Advanced Settings</button>
               </div>
 

@@ -56,6 +56,11 @@ class PluginsStore {
           if (id === 'google') continue;
           if (data && data.connected) this.connected[id] = data;
         }
+        // Also load from localStorage as fallback
+        const localConnections = JSON.parse(localStorage.getItem('zed_connected_plugins') || '{}');
+        for (const [id, data] of Object.entries(localConnections)) {
+          if (!this.connected[id]) this.connected[id] = data;
+        }
         console.log('[Plugins] connected map:', JSON.stringify(this.connected));
         this.installed = this.popular.filter(p => this.connected[p.id]);
         this.popular = this.popular.filter(p => !this.connected[p.id]);
@@ -71,7 +76,10 @@ class PluginsStore {
   }
 
   async connect(pluginId) {
-    // Redirect to OAuth connector (proxied via Vite to backend on port 8642)
+    // Save pending connection before redirect
+    localStorage.setItem('zed_pending_plugin', pluginId);
+    localStorage.setItem('zed_user_id', this.userId);
+    // Redirect to OAuth connector
     const redirectTarget = window.location.origin + '/plugins';
     window.location.href = `/oauth/google/connect?user_id=${encodeURIComponent(this.userId)}&plugin_id=${encodeURIComponent(pluginId)}&redirect_to=${encodeURIComponent(redirectTarget)}`;
   }
