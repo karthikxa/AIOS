@@ -131,7 +131,8 @@ class AgentsStore {
           model: data.model || 'Zed Pro',
           provider: data.provider || 'zed-pro',
           schedule: data.schedule || 'Manual',
-          status: data.status || 'active'
+          status: data.status || 'active',
+          plugins: data.plugins || []
         })
       });
       if (res.ok) {
@@ -369,6 +370,18 @@ function renderAgentsList(store) {
             return `<span style="font-size: 10.5px; color: #4F46E5; background: #EEF2FF; border-radius: 9999px; padding: 2px 8px; font-weight: 500; white-space: nowrap;" title="${skill.name}: ${skill.desc}">${skill.name}</span>`;
           }).join('')}
           ${agent.skills.length > 3 ? `<span style="font-size: 10.5px; color: #6B7280; background: #F3F4F6; border-radius: 9999px; padding: 2px 6px; font-weight: 500;">+${agent.skills.length - 3}</span>` : ''}
+        </div>
+        ` : ''}
+
+        <!-- Plugins Section -->
+        ${(agent.plugins && agent.plugins.length > 0) ? `
+        <div class="agent-item-plugins-col" style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap; max-width: 180px;">
+          ${agent.plugins.slice(0, 3).map(pluginId => {
+            const plugin = pluginsStore.installed?.find(p => p.id === pluginId);
+            const name = plugin?.name || pluginId;
+            return `<span style="font-size: 10.5px; color: #047857; background: #ECFDF5; border-radius: 9999px; padding: 2px 8px; font-weight: 500; white-space: nowrap;" title="${name}">🔌 ${name}</span>`;
+          }).join('')}
+          ${agent.plugins.length > 3 ? `<span style="font-size: 10.5px; color: #6B7280; background: #F3F4F6; border-radius: 9999px; padding: 2px 6px; font-weight: 500;">+${agent.plugins.length - 3}</span>` : ''}
         </div>
         ` : ''}
 

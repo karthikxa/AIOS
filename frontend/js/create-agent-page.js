@@ -444,12 +444,12 @@ export function initCreateAgentPage() {
       return;
     }
 
-    // Check that at least one plugin is connected
+    // Get selected plugins (optional - agent can work without plugins)
     const installed = pluginsStore.installed || [];
-    if (installed.length === 0) {
-      showToast('Connect at least one plugin before creating an agent.', 'warning');
-      return;
-    }
+    const selectedPlugins = installed.filter(p => {
+      const checkbox = document.querySelector(`.ca-plugin-item[data-plugin-id="${p.id}"] input[type="checkbox"]`);
+      return checkbox && checkbox.checked;
+    });
 
     // Format schedule text for rendering
     let scheduleText = 'Manual';
@@ -468,7 +468,7 @@ export function initCreateAgentPage() {
       nextRunText = 'Next run: Pending';
     }
 
-    // Call store
+    // Call store with plugins
     agentsStore.addAgent({
       name: state.name,
       desc: state.desc,
@@ -478,7 +478,8 @@ export function initCreateAgentPage() {
       model: state.model,
       avatar: state.avatar,
       provider: state.provider,
-      skills: state.skills
+      skills: state.skills,
+      plugins: selectedPlugins.map(p => p.id)
     });
 
     // Hide Form, Show Agent list

@@ -1867,13 +1867,13 @@ async def run_agent_now(agent_id: str):
         if agent_desc:
             prompt = agent_desc
 
-    # Get LLM config — prefer ZED_PRO keys (set at server startup)
+    # Get LLM config — use backend server which has tools
     llm_model = agent.get("model", "auto")
     # Normalize legacy model name
     if not llm_model or llm_model in ("Zed Pro", "zed-pro", ""):
         llm_model = "auto"
     llm_base_url = os.environ.get("LLM_BASE_URL", os.environ.get(
-        "ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"))
+        "ZED_PRO_BASE_URL", "https://aios-lovat-two.vercel.app"))
     llm_api_key = os.environ.get("LLM_API_KEY", os.environ.get(
         "ZED_PRO_API_KEY", os.environ.get("OPENAI_API_KEY", "no-key")))
 
@@ -1899,6 +1899,7 @@ async def run_agent_now(agent_id: str):
                     {"role": "user", "content": prompt},
                 ],
                 "max_tokens": 4096,
+                "tools": True,  # Enable tools for Gmail, Drive, Calendar etc.
             }
             logger.info("Agent %s calling LLM at %s with model %s", agent_id, url, llm_model)
             resp = httpx.post(url, json=body, headers=headers, timeout=120.0)
