@@ -21,8 +21,27 @@ from fastapi.responses import RedirectResponse
 logger = logging.getLogger("plugins.google")
 
 # ── Shared token state ────────────────────────────────────────────────────────
+import sys
+
 _google_tokens: dict = {}
 _oauth_states: dict = {}  # user_id -> code_verifier for PKCE
+
+# Share state if this module is imported under different names (double-import guard)
+for mod_name, mod in list(sys.modules.items()):
+    if (mod_name.endswith("dashboard_auth__google") or mod_name.endswith("plugins.dashboard_auth.google")) and mod_name != __name__:
+        if hasattr(mod, "_google_tokens"):
+            _google_tokens = mod._google_tokens
+        if hasattr(mod, "_oauth_states"):
+            _oauth_states = mod._oauth_states
+        break
+
+def _update_all_instances(attr_name, value):
+    for mod_name, mod in list(sys.modules.items()):
+        if mod_name.endswith("dashboard_auth__google") or mod_name.endswith("plugins.dashboard_auth.google"):
+            try:
+                setattr(mod, attr_name, value)
+            except Exception:
+                pass
 
 def set_tokens(plugin_id: str, tokens: dict) -> None:
     _google_tokens[plugin_id] = tokens
@@ -378,6 +397,7 @@ def init_db(db_path):
     """)
     db.commit()
     _connections_db = db
+    _update_all_instances("_connections_db", db)
     # Reload tokens from DB into in-memory cache so tools are available
     _reload_tokens_from_db()
     logger.info("Connections DB ready: %s", db_path)
@@ -2434,7 +2454,7 @@ CHAT_DELETE_MESSAGE_SCHEMA = {
 # The plugin scanner doesn't reach depth-2 dirs (dashboard_auth/google/),
 # so we register directly with the tool registry.
 try:
-    if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
+    if True:
         from tools.registry import registry
 
         _GOOGLE_TOOL_DEFS = [
