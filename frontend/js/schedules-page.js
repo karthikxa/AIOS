@@ -463,34 +463,36 @@ function toggleRowMenu(triggerBtn, id) {
   menu.style.cssText = `
     position: fixed;
     background: #FFFFFF;
-    border: 1px solid #E8E8E8;
+    border: 1px solid #E5E7EB;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
     padding: 6px;
-    min-width: 160px;
+    min-width: 180px;
     z-index: 9999;
     display: flex;
     flex-direction: column;
     gap: 2px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, sans-serif;
+    animation: menuFadeIn 0.15s ease-out;
   `;
 
   const rect = triggerBtn.getBoundingClientRect();
   menu.style.top  = `${rect.bottom + 6}px`;
-  menu.style.left = `${Math.max(4, rect.right - 160)}px`;
+  menu.style.left = `${Math.max(4, rect.right - 180)}px`;
 
   const actions = [
-    { action: 'run-now',       label: '▶ Run Now',                    color: '#111' },
-    { action: 'toggle-status', label: isAct ? '⏸ Pause' : '▶ Activate', color: '#111' },
-    { action: 'delete',        label: '🗑 Delete',                     color: '#E11D48' },
+    { action: 'run-now',       label: 'Run now',    icon: '▶',  color: '#111827' },
+    { action: 'toggle-status', label: isAct ? 'Pause' : 'Activate', icon: isAct ? '⏸' : '▶', color: '#111827' },
+    { action: 'delete',        label: 'Delete',      icon: '🗑', color: '#EF4444' },
   ];
 
   menu.innerHTML = actions.map(a => `
     <button class="sched-menu-item" data-action="${a.action}" style="
+      display: flex; align-items: center; gap: 8px;
       background: none; border: none; text-align: left; padding: 8px 12px;
       font-size: 13px; color: ${a.color}; cursor: pointer; border-radius: 8px;
-      font-weight: 500; width: 100%;
-    ">${a.label}</button>
+      font-weight: 500; width: 100%; transition: background 0.1s;
+    "><span style="font-size: 12px;">${a.icon}</span> ${a.label}</button>
   `).join('');
 
   document.body.appendChild(menu);
