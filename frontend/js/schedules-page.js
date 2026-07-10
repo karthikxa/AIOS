@@ -10,19 +10,61 @@ function cronToHuman(schedule) {
   // If it's an object from cron.jobs (parsed schedule dict)
   if (typeof schedule === 'object') {
     if (schedule.display) return schedule.display;
-    if (schedule.kind === 'cron' && schedule.expr) return `Cron: ${schedule.expr}`;
+    if (schedule.kind === 'cron' && schedule.expr) return parseCronExpression(schedule.expr);
     if (schedule.kind === 'interval' && schedule.minutes) return `Every ${schedule.minutes}m`;
-    if (schedule.kind === 'once' && schedule.run_at) return `Once at ${new Date(schedule.run_at).toLocaleString()}`;
+    if (schedule.kind === 'once' && schedule.run_at) return `Once at ${new Date(schedule.run_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
     return JSON.stringify(schedule);
   }
   // Raw string fallbacks
   const s = String(schedule).trim();
   if (s === '* * * * *')   return 'Every minute';
   if (s === '0 * * * *')   return 'Every hour';
-  if (s === '0 9 * * *')   return 'Daily at 9:00 AM';
-  if (s === '0 9 * * 1')   return 'Weekly (Mon 9:00 AM)';
+  if (s === '0 9 * * *')   return 'Daily at 9:00 AM IST';
+  if (s === '0 9 * * 1')   return 'Weekly (Mon 9:00 AM IST)';
   if (s === '0 0 1 * *')   return 'Monthly (1st, midnight)';
-  return s;
+  return parseCronExpression(s);
+}
+
+function parseCronExpression(expr) {
+  const parts = expr.split(' ');
+  if (parts.length !== 5) return expr;
+
+  const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const formatTime = (h, m) => {
+    const hour = parseInt(h);
+    const min = parseInt(m);
+    if (isNaN(hour) || isNaN(min)) return expr;
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${min.toString().padStart(2, '0')} ${ampm} IST`;
+  };
+
+  // Every minute
+  if (minute === '*' && hour === '*') return 'Every minute';
+
+  // Every hour at specific minute
+  if (hour === '*') return `Every hour at :${minute.padStart(2, '0')}`;
+
+  // Daily at specific time
+  if (dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+    return `Daily at ${formatTime(hour, minute)}`;
+  }
+
+  // Weekly on specific day
+  if (dayOfMonth === '*' && month === '*' && dayOfWeek !== '*') {
+    const dayNames = dayOfWeek.split(',').map(d => days[parseInt(d)] || d).join(', ');
+    return `Every ${dayNames} at ${formatTime(hour, minute)}`;
+  }
+
+  // Monthly on specific day
+  if (dayOfMonth !== '*' && month === '*' && dayOfWeek === '*') {
+    return `Monthly on day ${dayOfMonth} at ${formatTime(hour, minute)}`;
+  }
+
+  // Default: show the expression
+  return `Cron: ${expr}`;
 }
 
 function nextRunHuman(job) {
@@ -37,7 +79,7 @@ function nextRunHuman(job) {
     if (diffMs < 60000) return 'In < 1 min';
     if (diffMs < 3600000) return `In ${Math.round(diffMs / 60000)} min`;
     if (diffMs < 86400000) return `In ${Math.round(diffMs / 3600000)}h`;
-    return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   } catch {
     return cronToHuman(job.schedule);
   }
@@ -116,7 +158,7 @@ class SchedulesStore {
       agentId: job.agent_id || '',
       status: job.enabled === false ? 'paused' : 'active',
       prompt: job.prompt || '',
-      lastRun: job.last_run_at ? new Date(job.last_run_at).toLocaleString() : 'Never',
+      lastRun: job.last_run_at ? new Date(job.last_run_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Never',
       lastStatus: job.last_status || null,
       frequency: 'custom',
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
