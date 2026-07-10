@@ -431,11 +431,7 @@ function renderTable(store) {
       ? `<span class="status-pill active">Active <span class="dot-green"></span></span>`
       : `<span class="status-pill paused">Paused</span>`;
 
-    const lastRunBadge = item.lastStatus === 'success'
-      ? `<span style="font-size:11px;color:#10B981;background:#ECFDF5;border-radius:4px;padding:1px 6px;margin-left:6px;">✓ OK</span>`
-      : item.lastStatus === 'error'
-      ? `<span style="font-size:11px;color:#EF4444;background:#FEF2F2;border-radius:4px;padding:1px 6px;margin-left:6px;">✗ Error</span>`
-      : '';
+    const lastRunBadge = '';
 
     const agentBadge = item.role
       ? `<span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
@@ -524,6 +520,7 @@ function toggleRowMenu(triggerBtn, id) {
 
   const actions = [
     { action: 'run-now',       label: 'Run now',    icon: '▶',  color: '#111827' },
+    { action: 'edit',          label: 'Edit',        icon: '✏️', color: '#111827' },
     { action: 'toggle-status', label: isAct ? 'Pause' : 'Activate', icon: isAct ? '⏸' : '▶', color: '#111827' },
     { action: 'delete',        label: 'Delete',      icon: '🗑', color: '#EF4444' },
   ];
@@ -546,6 +543,7 @@ function toggleRowMenu(triggerBtn, id) {
       e.stopPropagation();
       const action = btnEl.getAttribute('data-action');
       if (action === 'run-now')       schedulesStore.runNow(id);
+      if (action === 'edit')          openEditSchedule(id);
       if (action === 'toggle-status') schedulesStore.toggleStatus(id);
       if (action === 'delete') {
         if (confirm(`Delete schedule "${item.name}"?`)) schedulesStore.deleteSchedule(id);
@@ -772,6 +770,11 @@ function openCreateScheduleSidebar() {
     if (!name) {
       window.showToast && window.showToast('Schedule name is required.', 'warning');
       overlay.querySelector('#schedName').focus();
+      return;
+    }
+    if (!agentId) {
+      window.showToast && window.showToast('Please select an agent.', 'warning');
+      overlay.querySelector('#schedAgentInput').focus();
       return;
     }
     if (!taskBrief) {
