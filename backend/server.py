@@ -503,11 +503,11 @@ async def lifespan(app: FastAPI):
                     max_tool_rounds = 5
                     result = "No response"
                     
-                    # Get tool definitions for the request - include email tools
+                    # Get tool definitions for the request - include ALL available tools
                     try:
                         from model_tools import get_tool_definitions
                         tool_defs = get_tool_definitions(
-                            enabled_toolsets=["zed-email", "terminal", "file", "search", "web", "skills", "memory", "cronjob", "todo"]
+                            enabled_toolsets=None  # None = all available tools
                         )
                     except Exception:
                         tool_defs = []
