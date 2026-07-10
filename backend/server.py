@@ -491,6 +491,9 @@ async def lifespan(app: FastAPI):
                     llm_base_url = os.environ.get(
                         "ZED_PRO_BASE_URL", "https://aios-lovat-two.vercel.app"
                     ).rstrip("/")
+                    # Remove trailing /v1 if present to avoid double /v1
+                    if llm_base_url.endswith("/v1"):
+                        llm_base_url = llm_base_url[:-3]
                     llm_api_key = os.environ.get(
                         "ZED_PRO_API_KEY", os.environ.get("OPENAI_API_KEY", "no-key")
                     )
