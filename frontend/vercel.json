@@ -38,7 +38,15 @@
       "destination": "https://backend-server-6ghr.onrender.com/oauth/:path*"
     },
     {
-      "source": "/(.*)",
+      "source": "/robots.txt",
+      "destination": "/robots.txt"
+    },
+    {
+      "source": "/llms.txt",
+      "destination": "/llms.txt"
+    },
+    {
+      "source": "/((?!assets/|api/|v1/|oauth/|robots\.txt|llms\.txt).*)",
       "destination": "/index.html"
     }
   ]

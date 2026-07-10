@@ -1,0 +1,23 @@
+# Zed - AI Workspace
+
+Zed is an AI-powered dashboard with intelligent agents, model management, plugins, and computer automation.
+
+## Features
+
+- [AI Agents](/agents) - Create and manage AI agents with custom skills
+- [Model Management](/models) - Connect and configure AI models
+- [Plugins](/plugins) - Integrate with Gmail, Google Drive, Notion, and more
+- [Scheduled Tasks](/scheduled) - Automate recurring workflows
+- [Computer Mode](/computer) - Browser automation with live streaming
+- [Voice Agents](/voice) - Create voice-based AI agents
+
+## API
+
+- `/api/*` - Backend API endpoints
+- `/v1/*` - LLM proxy endpoints
+- `/oauth/*` - OAuth authentication endpoints
+
+## Links
+
+- [GitHub Repository](https://github.com/karthikxa/AIOS)
+- [Documentation](https://github.com/karthikxa/AIOS/blob/main/README.md)

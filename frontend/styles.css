@@ -135,7 +135,7 @@ aside.sidebar {
   align-items: center;
   gap: 12px;
   padding: 8px 14px;
-  color: var(--text-secondary);
+  color: #374151;
   font-size: 15px;
   font-weight: 500;
   text-decoration: none;

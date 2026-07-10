@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /v1/
+Disallow: /oauth/
+
+Sitemap: https://aios-lovat-two.vercel.app/sitemap.xml
