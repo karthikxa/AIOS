@@ -9,7 +9,7 @@ function cronToHuman(schedule) {
   if (!schedule) return 'Manual';
   // If it's an object from cron.jobs (parsed schedule dict)
   if (typeof schedule === 'object') {
-    if (schedule.display) return schedule.display;
+    if (schedule.display && schedule.display !== '* * * * *') return schedule.display;
     if (schedule.kind === 'cron' && schedule.expr) return parseCronExpression(schedule.expr);
     if (schedule.kind === 'interval' && schedule.minutes) return `Every ${schedule.minutes}m`;
     if (schedule.kind === 'once' && schedule.run_at) return `Once at ${new Date(schedule.run_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
@@ -158,7 +158,7 @@ class SchedulesStore {
       agentId: job.agent_id || '',
       status: job.enabled === false ? 'paused' : 'active',
       prompt: job.prompt || '',
-      lastRun: job.last_run_at ? new Date(job.last_run_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Never',
+      lastRun: job.last_run_at ? new Date(job.last_run_at * 1000).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Never',
       lastStatus: job.last_status || null,
       frequency: 'custom',
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
