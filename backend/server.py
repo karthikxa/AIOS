@@ -366,6 +366,13 @@ async def lifespan(app: FastAPI):
     # Initialize Google OAuth plugin DB
     init_google_db(ZED_HOME / "connections.db")
 
+    # Restore Google tokens from database
+    try:
+        from plugins.dashboard_auth.google import _restore_google_tokens
+        _restore_google_tokens()
+    except Exception as e:
+        logger.warning("Failed to restore Google tokens: %s", e)
+
     # Discover plugins and tools
     _plugin_manager = discover_plugins()
     discover_builtin_tools()
