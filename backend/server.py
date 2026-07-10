@@ -503,7 +503,6 @@ async def lifespan(app: FastAPI):
                             "model": _llm_model,
                             "messages": [{"role": "user", "content": _prompt}],
                             "max_tokens": 4096,
-                            "tools": True,  # Enable tools for Gmail etc.
                         },
                         headers={
                             "Authorization": f"Bearer {llm_api_key}",
@@ -1902,7 +1901,6 @@ async def run_agent_now(agent_id: str):
                     {"role": "user", "content": prompt},
                 ],
                 "max_tokens": 4096,
-                "tools": True,  # Enable tools for Gmail, Drive, Calendar etc.
             }
             logger.info("Agent %s calling LLM at %s with model %s", agent_id, url, llm_model)
             resp = httpx.post(url, json=body, headers=headers, timeout=120.0)
