@@ -1,7 +1,16 @@
 FROM superagent-desktop
 
+USER root
+
+# Override the kasmvnc config to disable SSL and basic auth requirements
+COPY kasmvnc_nossl.yaml /etc/kasmvnc/kasmvnc.yaml
+RUN chmod 644 /etc/kasmvnc/kasmvnc.yaml
+
 # Override the startup script to remove SSL and auth requirements
 COPY vnc_startup_nossl.sh /dockerstartup/vnc_startup_nossl.sh
 RUN chmod +x /dockerstartup/vnc_startup_nossl.sh
+
+# Switch back to the default non-root user (usually 1000 in Kasm)
+USER 1000
 
 ENTRYPOINT ["/dockerstartup/vnc_startup_nossl.sh"]

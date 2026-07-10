@@ -5,6 +5,10 @@ set -e
 rm -f self.pem /self.pem /root/self.pem /root/.vnc/self.pem "${HOME}/.vnc/self.pem" "${HOME}/self.pem" /usr/share/novnc/self.pem /opt/novnc/self.pem 2>/dev/null || true
 find / -name "self.pem" -exec rm -f {} + 2>/dev/null || true
 
+# Force KasmVNC user config to use the non-SSL settings
+mkdir -p "${HOME}/.kasmvnc" 2>/dev/null || true
+cp -f /etc/kasmvnc/kasmvnc.yaml "${HOME}/.kasmvnc/kasmvnc.yaml" 2>/dev/null || true
+
 # Source the original startup script's functions and config
 source /dockerstartup/vnc_startup.sh --skip
 
