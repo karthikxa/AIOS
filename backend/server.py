@@ -497,25 +497,88 @@ async def lifespan(app: FastAPI):
                     llm_api_key = os.environ.get(
                         "ZED_PRO_API_KEY", os.environ.get("OPENAI_API_KEY", "no-key")
                     )
-                    resp = httpx.post(
-                        f"{llm_base_url}/v1/chat/completions",
-                        json={
-                            "model": _llm_model,
-                            "messages": [{"role": "user", "content": _prompt}],
-                            "max_tokens": 4096,
-                        },
-                        headers={
-                            "Authorization": f"Bearer {llm_api_key}",
-                            "Content-Type": "application/json",
-                        },
-                        timeout=120.0,
-                    )
-                    if resp.status_code == 200:
-                        result = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "No response")
-                        status = "success"
+
+                    # Tool calling loop - execute tools until LLM gives final response
+                    messages = [{"role": "user", "content": _prompt}]
+                    max_tool_rounds = 5
+                    result = "No response"
+                    
+                    # Get tool definitions for the request
+                    try:
+                        from model_tools import get_tool_definitions
+                        tool_defs = get_tool_definitions()
+                    except Exception:
+                        tool_defs = []
+                    
+                    for tool_round in range(max_tool_rounds):
+                        resp = httpx.post(
+                            f"{llm_base_url}/v1/chat/completions",
+                            json={
+                                "model": _llm_model,
+                                "messages": messages,
+                                "max_tokens": 4096,
+                                "tools": tool_defs if tool_defs else None,
+                            },
+                            headers={
+                                "Authorization": f"Bearer {llm_api_key}",
+                                "Content-Type": "application/json",
+                            },
+                            timeout=120.0,
+                        )
+                        
+                        if resp.status_code != 200:
+                            result = f"LLM error {resp.status_code}: {resp.text[:200]}"
+                            status = "error"
+                            break
+                        
+                        data = resp.json()
+                        choice = data.get("choices", [{}])[0]
+                        assistant_msg = choice.get("message", {})
+                        
+                        # If no tool calls, we're done
+                        if not assistant_msg.get("tool_calls"):
+                            result = assistant_msg.get("content", "No response")
+                            status = "success"
+                            break
+                        
+                        # Add assistant message with tool calls
+                        messages.append(assistant_msg)
+                        
+                        # Execute each tool call
+                        for tool_call in assistant_msg["tool_calls"]:
+                            func = tool_call.get("function", {})
+                            func_name = func.get("name", "")
+                            func_args = json.loads(func.get("arguments", "{}"))
+                            
+                            # Call the backend's tool execution endpoint
+                            tool_resp = httpx.post(
+                                f"{llm_base_url}/api/tools/execute",
+                                json={
+                                    "tool": func_name,
+                                    "args": func_args
+                                },
+                                headers={
+                                    "Authorization": f"Bearer {llm_api_key}",
+                                    "Content-Type": "application/json",
+                                },
+                                timeout=30.0,
+                            )
+                            
+                            tool_result = tool_resp.json() if tool_resp.status_code == 200 else {"error": f"Tool failed: {tool_resp.status_code}"}
+                            
+                            # Add tool result to messages
+                            messages.append({
+                                "role": "tool",
+                                "tool_call_id": tool_call.get("id", ""),
+                                "content": json.dumps(tool_result)
+                            })
+                    
                     else:
-                        result = f"LLM error {resp.status_code}: {resp.text[:200]}"
+                        # Max rounds reached
+                        result = "Max tool rounds reached"
                         status = "error"
+                    
+                    logger.info("Cron job '%s' completed with %d tool rounds", _job_name, tool_round + 1)
                 except Exception as e:
                     result = f"Execution failed: {e}"
                     status = "error"
@@ -881,6 +944,9 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
     # Skip AIAgent entirely — go direct to freellmapi via httpx (no auth header).
     use_agent = bool(request.dashboard_state)  # only agentic mode uses AIAgent
 
+    # Check if tools are enabled (from cron scheduler or agent runner)
+    tools_enabled = request.tools and len(request.tools) > 0 if request.tools else False
+
     if not use_agent:
         payload = build_payload()
         # Route dynamically to remote LLM Proxy URL (like Render) if configured.
@@ -892,7 +958,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
         if api_key:
             proxy_headers["Authorization"] = f"Bearer {api_key}"
 
-        if request.stream:
+        if request.stream and not tools_enabled:
             async def stream_direct():
                 try:
                     async with _http_client.stream(
@@ -920,23 +986,92 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                 },
             )
         else:
-            try:
-                resp = await _http_client.post(
-                    freellmapi_target,
-                    json=payload,
-                    headers=proxy_headers,
-                    timeout=120.0,
-                )
-                if not resp.is_success:
-                    logger.error("freellmapi error %s: %s", resp.status_code, resp.text[:500])
-                return Response(
-                    content=resp.content,
-                    status_code=resp.status_code,
-                    media_type="application/json",
-                )
-            except Exception as e:
-                logger.exception("Direct proxy error")
-                raise HTTPException(status_code=500, detail=str(e))
+            # Tool calling loop for non-streaming requests with tools enabled
+            if tools_enabled:
+                try:
+                    messages = [msg.dict(exclude_none=True) for msg in request.messages]
+                    max_rounds = 5
+                    final_result = None
+
+                    for round_num in range(max_rounds):
+                        resp = await _http_client.post(
+                            freellmapi_target,
+                            json=payload,
+                            headers=proxy_headers,
+                            timeout=120.0,
+                        )
+                        if not resp.is_success:
+                            return Response(
+                                content=resp.content,
+                                status_code=resp.status_code,
+                                media_type="application/json",
+                            )
+
+                        data = resp.json()
+                        choice = data.get("choices", [{}])[0]
+                        assistant_msg = choice.get("message", {})
+
+                        # If no tool calls, return the response
+                        if not assistant_msg.get("tool_calls"):
+                            final_result = data
+                            break
+
+                        # Add assistant message to history
+                        messages.append(assistant_msg)
+
+                        # Execute each tool call
+                        for tool_call in assistant_msg["tool_calls"]:
+                            func = tool_call.get("function", {})
+                            func_name = func.get("name", "")
+                            func_args = json.loads(func.get("arguments", "{}"))
+
+                            try:
+                                from model_tools import handle_function_call
+                                tool_result = handle_function_call(
+                                    function_name=func_name,
+                                    function_args=func_args,
+                                )
+                            except Exception as tool_err:
+                                tool_result = json.dumps({"error": str(tool_err)})
+
+                            messages.append({
+                                "role": "tool",
+                                "tool_call_id": tool_call.get("id", ""),
+                                "content": tool_result if isinstance(tool_result, str) else json.dumps(tool_result)
+                            })
+
+                        # Update payload for next round
+                        payload["messages"] = messages
+                    else:
+                        # Max rounds reached
+                        final_result = {"choices": [{"message": {"content": "Max tool rounds reached"}}]}
+
+                    return Response(
+                        content=json.dumps(final_result) if isinstance(final_result, dict) else final_result,
+                        status_code=200,
+                        media_type="application/json",
+                    )
+                except Exception as e:
+                    logger.exception("Tool calling loop error")
+                    raise HTTPException(status_code=500, detail=str(e))
+            else:
+                try:
+                    resp = await _http_client.post(
+                        freellmapi_target,
+                        json=payload,
+                        headers=proxy_headers,
+                        timeout=120.0,
+                    )
+                    if not resp.is_success:
+                        logger.error("freellmapi error %s: %s", resp.status_code, resp.text[:500])
+                    return Response(
+                        content=resp.content,
+                        status_code=resp.status_code,
+                        media_type="application/json",
+                    )
+                except Exception as e:
+                    logger.exception("Direct proxy error")
+                    raise HTTPException(status_code=500, detail=str(e))
 
     # ── AIAgent path (agentic / dashboard mode) ───────────────────────────────
     session_id = raw_request.headers.get("x-zed-session-id") or raw_request.headers.get("x-session-id")
@@ -1256,6 +1391,30 @@ async def list_tools():
     except Exception as e:
         logger.warning("list_tools error: %s", e)
         return {"tools": [], "count": 0}
+
+
+@app.post("/api/tools/execute")
+async def execute_tool_endpoint(request: Request):
+    """Execute a tool by name and arguments. Used by cron scheduler and agents."""
+    try:
+        body = await request.json()
+        tool_name = body.get("tool", "")
+        tool_args = body.get("args", {})
+        
+        if not tool_name:
+            return {"error": "tool name required"}
+        
+        # Import and use handle_function_call
+        from model_tools import handle_function_call
+        result = handle_function_call(
+            function_name=tool_name,
+            function_args=tool_args,
+            task_id=body.get("task_id"),
+        )
+        return {"result": result}
+    except Exception as e:
+        logger.error("Tool execution error: %s", e)
+        return {"error": str(e)}
 
 
 # ── Public API Tools (from public-api-lists) ────────────────────────────────────
@@ -1894,28 +2053,85 @@ async def run_agent_now(agent_id: str):
                 "Authorization": f"Bearer {llm_api_key}",
                 "Content-Type": "application/json",
             }
-            body = {
-                "model": llm_model,
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt},
-                ],
-                "max_tokens": 4096,
-            }
+            
+            # Tool calling loop
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ]
+            max_tool_rounds = 5
+            result = "No response"
+            status = "error"
+            
             logger.info("Agent %s calling LLM at %s with model %s", agent_id, url, llm_model)
-            resp = httpx.post(url, json=body, headers=headers, timeout=120.0)
-            logger.info("Agent %s LLM response status: %s", agent_id, resp.status_code)
-
-            if resp.status_code != 200:
-                error_text = resp.text[:500]
-                logger.error("Agent %s LLM error: %s %s", agent_id, resp.status_code, error_text)
-                result = f"LLM error {resp.status_code}: {error_text}"
-                status = "error"
-            else:
+            
+            for tool_round in range(max_tool_rounds):
+                body = {
+                    "model": llm_model,
+                    "messages": messages,
+                    "max_tokens": 4096,
+                }
+                resp = httpx.post(url, json=body, headers=headers, timeout=120.0)
+                logger.info("Agent %s LLM response status: %s", agent_id, resp.status_code)
+                
+                if resp.status_code != 200:
+                    error_text = resp.text[:500]
+                    logger.error("Agent %s LLM error: %s %s", agent_id, resp.status_code, error_text)
+                    result = f"LLM error {resp.status_code}: {error_text}"
+                    status = "error"
+                    break
+                
                 data = resp.json()
-                result = data.get("choices", [{}])[0].get("message", {}).get("content", "No response")
-                status = "success"
-                logger.info("Agent %s completed: %s", agent_id, result[:200])
+                choice = data.get("choices", [{}])[0]
+                assistant_msg = choice.get("message", {})
+                
+                # If no tool calls, we're done
+                if not assistant_msg.get("tool_calls"):
+                    result = assistant_msg.get("content", "No response")
+                    status = "success"
+                    logger.info("Agent %s completed: %s", agent_id, result[:200])
+                    break
+                
+                # Add assistant message with tool calls
+                messages.append(assistant_msg)
+                
+                # Execute each tool call
+                for tool_call in assistant_msg["tool_calls"]:
+                    func = tool_call.get("function", {})
+                    func_name = func.get("name", "")
+                    func_args = json.loads(func.get("arguments", "{}"))
+                    
+                    # Call the backend's tool execution endpoint
+                    try:
+                        tool_resp = httpx.post(
+                            f"{base_url.replace('/v1', '')}/api/tools/execute",
+                            json={
+                                "tool": func_name,
+                                "args": func_args
+                            },
+                            headers={
+                                "Authorization": f"Bearer {llm_api_key}",
+                                "Content-Type": "application/json",
+                            },
+                            timeout=30.0,
+                        )
+                        tool_result = tool_resp.json() if tool_resp.status_code == 200 else {"error": f"Tool failed: {tool_resp.status_code}"}
+                    except Exception as tool_err:
+                        tool_result = {"error": str(tool_err)}
+                    
+                    # Add tool result to messages
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call.get("id", ""),
+                        "content": json.dumps(tool_result)
+                    })
+            
+            else:
+                # Max rounds reached
+                result = "Max tool rounds reached"
+                status = "error"
+            
+            logger.info("Agent %s completed with %d tool rounds", agent_id, tool_round + 1)
 
             # Save result (success or error — always write so /api/agent_output shows something)
             (output_dir / f"{run_id}.json").write_text(json.dumps({
