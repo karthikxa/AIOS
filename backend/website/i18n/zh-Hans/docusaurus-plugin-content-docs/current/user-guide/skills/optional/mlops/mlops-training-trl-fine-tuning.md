@@ -270,7 +270,7 @@ trl dpo \
 
 ä»¥æœ€å°å†…å­˜å ç”¨è¿›è¡Œå¼ºåŒ–å­¦ä¹ è®­ç»ƒã€‚
 
-å…³äºŽæ·±å…¥çš„ GRPO æŒ‡å¯¼â€”â€”å¥–åŠ±å‡½æ•°è®¾è®¡ã€å…³é”®è®­ç»ƒæ´žå¯Ÿï¼ˆæŸå¤±è¡Œä¸ºã€æ¨¡å¼å´©æºƒã€è°ƒå‚ï¼‰ä»¥åŠé«˜çº§å¤šé˜¶æ®µæ¨¡å¼â€”â€”è¯·å‚é˜… **[references/grpo-training.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/references/grpo-training.md)**ã€‚ç”Ÿäº§å°±ç»ªçš„è®­ç»ƒè„šæœ¬ä½äºŽ **[templates/basic_grpo_training.py](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/templates/basic_grpo_training.py)**ã€‚
+å…³äºŽæ·±å…¥çš„ GRPO æŒ‡å¯¼â€”â€”å¥–åŠ±å‡½æ•°è®¾è®¡ã€å…³é”®è®­ç»ƒæ´žå¯Ÿï¼ˆæŸå¤±è¡Œä¸ºã€æ¨¡å¼å´©æºƒã€è°ƒå‚ï¼‰ä»¥åŠé«˜çº§å¤šé˜¶æ®µæ¨¡å¼â€”â€”è¯·å‚é˜… **[references/grpo-training.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/references/grpo-training.md)**ã€‚ç”Ÿäº§å°±ç»ªçš„è®­ç»ƒè„šæœ¬ä½äºŽ **[templates/basic_grpo_training.py](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/templates/basic_grpo_training.py)**ã€‚
 
 å¤åˆ¶æ­¤æ£€æŸ¥æ¸…å•ï¼š
 
@@ -440,15 +440,15 @@ config = PPOConfig(
 
 ## é«˜çº§ä¸»é¢˜
 
-**SFT è®­ç»ƒæŒ‡å—**ï¼šå‚é˜… [references/sft-training.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/references/sft-training.md)ï¼Œäº†è§£æ•°æ®é›†æ ¼å¼ã€chat templateã€packing ç­–ç•¥åŠå¤š GPU è®­ç»ƒã€‚
+**SFT è®­ç»ƒæŒ‡å—**ï¼šå‚é˜… [references/sft-training.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/references/sft-training.md)ï¼Œäº†è§£æ•°æ®é›†æ ¼å¼ã€chat templateã€packing ç­–ç•¥åŠå¤š GPU è®­ç»ƒã€‚
 
-**DPO å˜ä½“**ï¼šå‚é˜… [references/dpo-variants.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/references/dpo-variants.md)ï¼Œäº†è§£ IPOã€cDPOã€RPO åŠå…¶ä»– DPO æŸå¤±å‡½æ•°ä¸ŽæŽ¨èè¶…å‚æ•°ã€‚
+**DPO å˜ä½“**ï¼šå‚é˜… [references/dpo-variants.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/references/dpo-variants.md)ï¼Œäº†è§£ IPOã€cDPOã€RPO åŠå…¶ä»– DPO æŸå¤±å‡½æ•°ä¸ŽæŽ¨èè¶…å‚æ•°ã€‚
 
-**å¥–åŠ±å»ºæ¨¡**ï¼šå‚é˜… [references/reward-modeling.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/references/reward-modeling.md)ï¼Œäº†è§£ç»“æžœå¥–åŠ±ä¸Žè¿‡ç¨‹å¥–åŠ±ã€Bradley-Terry æŸå¤±åŠå¥–åŠ±æ¨¡åž‹è¯„ä¼°ã€‚
+**å¥–åŠ±å»ºæ¨¡**ï¼šå‚é˜… [references/reward-modeling.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/references/reward-modeling.md)ï¼Œäº†è§£ç»“æžœå¥–åŠ±ä¸Žè¿‡ç¨‹å¥–åŠ±ã€Bradley-Terry æŸå¤±åŠå¥–åŠ±æ¨¡åž‹è¯„ä¼°ã€‚
 
-**åœ¨çº¿ RL æ–¹æ³•**ï¼šå‚é˜… [references/online-rl.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/references/online-rl.md)ï¼Œäº†è§£ PPOã€GRPOã€RLOO åŠ OnlineDPO çš„è¯¦ç»†é…ç½®ã€‚
+**åœ¨çº¿ RL æ–¹æ³•**ï¼šå‚é˜… [references/online-rl.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/references/online-rl.md)ï¼Œäº†è§£ PPOã€GRPOã€RLOO åŠ OnlineDPO çš„è¯¦ç»†é…ç½®ã€‚
 
-**GRPO æ·±åº¦è§£æž**ï¼šå‚é˜… [references/grpo-training.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/references/grpo-training.md)ï¼ŒèŽ·å–ä¸“å®¶çº§ GRPO æ¨¡å¼â€”â€”å¥–åŠ±å‡½æ•°è®¾è®¡ç†å¿µã€è®­ç»ƒæ´žå¯Ÿï¼ˆä¸ºä½•æŸå¤±ä¸Šå‡ã€æ¨¡å¼å´©æºƒæ£€æµ‹ï¼‰ã€è¶…å‚æ•°è°ƒä¼˜ã€å¤šé˜¶æ®µè®­ç»ƒåŠæ•…éšœæŽ’æŸ¥ã€‚ç”Ÿäº§å°±ç»ªæ¨¡æ¿ä½äºŽ [templates/basic_grpo_training.py](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/templates/basic_grpo_training.py)ã€‚
+**GRPO æ·±åº¦è§£æž**ï¼šå‚é˜… [references/grpo-training.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/references/grpo-training.md)ï¼ŒèŽ·å–ä¸“å®¶çº§ GRPO æ¨¡å¼â€”â€”å¥–åŠ±å‡½æ•°è®¾è®¡ç†å¿µã€è®­ç»ƒæ´žå¯Ÿï¼ˆä¸ºä½•æŸå¤±ä¸Šå‡ã€æ¨¡å¼å´©æºƒæ£€æµ‹ï¼‰ã€è¶…å‚æ•°è°ƒä¼˜ã€å¤šé˜¶æ®µè®­ç»ƒåŠæ•…éšœæŽ’æŸ¥ã€‚ç”Ÿäº§å°±ç»ªæ¨¡æ¿ä½äºŽ [templates/basic_grpo_training.py](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/training/trl-fine-tuning/templates/basic_grpo_training.py)ã€‚
 
 ## ç¡¬ä»¶è¦æ±‚
 

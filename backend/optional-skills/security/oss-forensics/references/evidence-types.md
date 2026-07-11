@@ -1,4 +1,4 @@
-# Evidence Types Reference
+﻿# Evidence Types Reference
 
 Taxonomy of all evidence types, IOC types, GitHub event types, and observation types
 used in OSS forensic investigations.

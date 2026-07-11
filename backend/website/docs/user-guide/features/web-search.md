@@ -32,7 +32,7 @@ Brave Search, DDGS, and xAI are **search-only** â€” pair any of them with F
 **Per-capability split:** you can use different providers for search and extract independently â€” for example SearXNG (free) for search and Firecrawl for extract. See [Per-capability configuration](#per-capability-configuration) below.
 
 :::tip Nous Subscribers
-If you have a paid [Nous Portal](https://portal.nousresearch.com) subscription, web search and extract are available through the **[Tool Gateway](tool-gateway.md)** via managed Firecrawl â€” no API key needed. New installs can run `zed setup --portal` to log in and turn on all gateway tools at once; existing installs can flip just web via `zed tools`.
+If you have a paid [Zed Portal](https://portal.zedteam.com) subscription, web search and extract are available through the **[Tool Gateway](tool-gateway.md)** via managed Firecrawl â€” no API key needed. New installs can run `zed setup --portal` to log in and turn on all gateway tools at once; existing installs can flip just web via `zed tools`.
 :::
 
 ---

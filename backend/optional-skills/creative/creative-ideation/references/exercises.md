@@ -1,4 +1,4 @@
-# Time-Boxed Exercises
+﻿# Time-Boxed Exercises
 
 Concrete exercises grouped by duration. Use when the user wants to *do* an exercise, not be given ideas. Each entry: parent method, output expected.
 

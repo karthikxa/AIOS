@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Standalone NeuTTS synthesis helper.
 
 Called by tts_tool.py via subprocess to keep the TTS model (~500MB)

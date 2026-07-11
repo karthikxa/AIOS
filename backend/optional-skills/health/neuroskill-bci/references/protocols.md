@@ -1,4 +1,4 @@
-# NeuroSkill Guided Protocols
+﻿# NeuroSkill Guided Protocols
 
 Over 70 mind-body practices triggered by specific biometric (EXG) signals. These
 are sourced from NeuroLoop's protocol repertoire and are designed to be suggested

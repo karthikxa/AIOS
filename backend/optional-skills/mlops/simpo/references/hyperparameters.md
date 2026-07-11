@@ -1,4 +1,4 @@
-# Hyperparameters
+﻿# Hyperparameters
 
 Complete guide to SimPO hyperparameter selection and tuning.
 

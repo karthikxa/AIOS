@@ -3521,7 +3521,7 @@ def check_for_skill_updates(
 # Zed centralized index source
 # ---------------------------------------------------------------------------
 
-ZED_INDEX_URL = "https://zed-agent.nousresearch.com/docs/api/skills-index.json"
+ZED_INDEX_URL = "https://zed-agent.zedteam.com/docs/api/skills-index.json"
 ZED_INDEX_CACHE_FILE = INDEX_CACHE_DIR / "zed-index.json"
 ZED_INDEX_TTL = 6 * 3600  # 6 hours
 

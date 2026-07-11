@@ -1,4 +1,4 @@
-# FSDP2 in TorchTitan
+﻿# FSDP2 in TorchTitan
 
 ## Why FSDP2?
 

@@ -1,4 +1,4 @@
-"""Helpers for the temporary psutil-on-Android compatibility installer."""
+﻿"""Helpers for the temporary psutil-on-Android compatibility installer."""
 
 from __future__ import annotations
 

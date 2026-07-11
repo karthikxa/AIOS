@@ -23,16 +23,16 @@ from zed_cli.model_switch import (
 @pytest.mark.parametrize(
     "model_name",
     [
-        "NousResearch/Zed-3-Llama-3.1-70B",
-        "NousResearch/Zed-3-Llama-3.1-405B",
+        "ZedTeam/Zed-3-Llama-3.1-70B",
+        "ZedTeam/Zed-3-Llama-3.1-405B",
         "zed-3",
         "Zed-3",
         "zed-4",
         "zed-4-405b",
         "zed_4_70b",
         "openrouter/zed3:70b",
-        "openrouter/nousresearch/zed-4-405b",
-        "NousResearch/Zed3",
+        "openrouter/zedteam/zed-4-405b",
+        "ZedTeam/Zed3",
         "zed-3.1",
     ],
 )

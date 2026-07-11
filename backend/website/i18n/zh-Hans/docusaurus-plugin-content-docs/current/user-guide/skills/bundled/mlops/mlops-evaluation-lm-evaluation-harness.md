@@ -483,13 +483,13 @@ lm_eval --model hf \
 
 ## è¿›é˜¶ä¸»é¢˜
 
-**åŸºå‡†æè¿°**ï¼šå‚è§ [references/benchmark-guide.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/evaluation/lm-evaluation-harness/references/benchmark-guide.md)ï¼Œäº†è§£æ‰€æœ‰ 60+ ä¸ªä»»åŠ¡çš„è¯¦ç»†è¯´æ˜Žã€æµ‹é‡å†…å®¹åŠç»“æžœè§£è¯»ã€‚
+**åŸºå‡†æè¿°**ï¼šå‚è§ [references/benchmark-guide.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/evaluation/lm-evaluation-harness/references/benchmark-guide.md)ï¼Œäº†è§£æ‰€æœ‰ 60+ ä¸ªä»»åŠ¡çš„è¯¦ç»†è¯´æ˜Žã€æµ‹é‡å†…å®¹åŠç»“æžœè§£è¯»ã€‚
 
-**è‡ªå®šä¹‰ä»»åŠ¡**ï¼šå‚è§ [references/custom-tasks.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/evaluation/lm-evaluation-harness/references/custom-tasks.md)ï¼Œäº†è§£å¦‚ä½•åˆ›å»ºç‰¹å®šé¢†åŸŸçš„è¯„ä¼°ä»»åŠ¡ã€‚
+**è‡ªå®šä¹‰ä»»åŠ¡**ï¼šå‚è§ [references/custom-tasks.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/evaluation/lm-evaluation-harness/references/custom-tasks.md)ï¼Œäº†è§£å¦‚ä½•åˆ›å»ºç‰¹å®šé¢†åŸŸçš„è¯„ä¼°ä»»åŠ¡ã€‚
 
-**API è¯„ä¼°**ï¼šå‚è§ [references/api-evaluation.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/evaluation/lm-evaluation-harness/references/api-evaluation.md)ï¼Œäº†è§£å¦‚ä½•è¯„ä¼° OpenAIã€Anthropic åŠå…¶ä»– API æ¨¡åž‹ã€‚
+**API è¯„ä¼°**ï¼šå‚è§ [references/api-evaluation.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/evaluation/lm-evaluation-harness/references/api-evaluation.md)ï¼Œäº†è§£å¦‚ä½•è¯„ä¼° OpenAIã€Anthropic åŠå…¶ä»– API æ¨¡åž‹ã€‚
 
-**å¤š GPU ç­–ç•¥**ï¼šå‚è§ [references/distributed-eval.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/evaluation/lm-evaluation-harness/references/distributed-eval.md)ï¼Œäº†è§£æ•°æ®å¹¶è¡Œä¸Žå¼ é‡å¹¶è¡Œè¯„ä¼°æ–¹æ¡ˆã€‚
+**å¤š GPU ç­–ç•¥**ï¼šå‚è§ [references/distributed-eval.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/evaluation/lm-evaluation-harness/references/distributed-eval.md)ï¼Œäº†è§£æ•°æ®å¹¶è¡Œä¸Žå¼ é‡å¹¶è¡Œè¯„ä¼°æ–¹æ¡ˆã€‚
 
 ## ç¡¬ä»¶è¦æ±‚
 

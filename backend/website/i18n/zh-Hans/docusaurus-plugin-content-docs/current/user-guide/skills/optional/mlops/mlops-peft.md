@@ -440,8 +440,8 @@ TrainingArguments(learning_rate=1e-4)
 
 ## å‚è€ƒèµ„æ–™
 
-- **[é«˜çº§ç”¨æ³•](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/peft/references/advanced-usage.md)** â€” DoRAã€LoftQã€ç§©ç¨³å®šåŒ–ã€è‡ªå®šä¹‰æ¨¡å—
-- **[æ•…éšœæŽ’æŸ¥](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/peft/references/troubleshooting.md)** â€” å¸¸è§é”™è¯¯ã€è°ƒè¯•ã€ä¼˜åŒ–
+- **[é«˜çº§ç”¨æ³•](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/peft/references/advanced-usage.md)** â€” DoRAã€LoftQã€ç§©ç¨³å®šåŒ–ã€è‡ªå®šä¹‰æ¨¡å—
+- **[æ•…éšœæŽ’æŸ¥](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/peft/references/troubleshooting.md)** â€” å¸¸è§é”™è¯¯ã€è°ƒè¯•ã€ä¼˜åŒ–
 
 ## èµ„æº
 

@@ -1,4 +1,4 @@
-# Creative Discipline
+﻿# Creative Discipline
 
 Practices for sustained work over weeks and months, not single-session ideation. Four traditions:
 

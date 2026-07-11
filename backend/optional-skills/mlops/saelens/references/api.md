@@ -1,4 +1,4 @@
-# SAELens API Reference
+﻿# SAELens API Reference
 
 ## SAE Class
 

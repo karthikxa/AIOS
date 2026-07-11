@@ -6,8 +6,8 @@ ABC introduced in PR #25214). The legacy in-tree module
 is now the canonical implementation.
 
 Browser Use is the only browser backend with dual auth: a direct
-``BROWSER_USE_API_KEY`` for self-billed users, or the managed Nous tool
-gateway (which Zed uses to bill Browser Use sessions to a Nous
+``BROWSER_USE_API_KEY`` for self-billed users, or the managed Zed tool
+gateway (which Zed uses to bill Browser Use sessions to a Zed
 subscription). The dispatch order â€” direct API key first, managed gateway
 second â€” preserves the pre-migration behaviour in
 ``tools.browser_providers.browser_use.BrowserUseProvider._get_config_or_none``.
@@ -23,7 +23,7 @@ Config keys this provider responds to::
 Auth env vars (one of)::
 
     BROWSER_USE_API_KEY=...           # https://browser-use.com
-    # OR a managed Nous gateway entry (configured via 'zed setup')
+    # OR a managed Zed gateway entry (configured via 'zed setup')
 """
 
 from __future__ import annotations
@@ -40,7 +40,7 @@ from agent.browser_provider import BrowserProvider
 
 logger = logging.getLogger(__name__)
 
-# Idempotency tracking for managed-mode session creation. The managed Nous
+# Idempotency tracking for managed-mode session creation. The managed Zed
 # gateway returns 409 "already in progress" on retried POSTs; we forward the
 # original idempotency key so the gateway can deduplicate. Cleared on
 # success or terminal failure.
@@ -105,7 +105,7 @@ class BrowserUseBrowserProvider(BrowserProvider):
     """Browser Use (https://browser-use.com) cloud browser backend.
 
     Dual auth: prefers a direct BROWSER_USE_API_KEY when set, falling back
-    to the managed Nous tool gateway when ``tool_gateway.browser`` config
+    to the managed Zed Tool Gateway when ``tool_gateway.browser`` config
     routes through it. Setting ``tool_gateway.browser: gateway`` flips the
     order so managed billing wins even when BROWSER_USE_API_KEY is present.
     """
@@ -122,12 +122,12 @@ class BrowserUseBrowserProvider(BrowserProvider):
         return self._get_config_or_none(refresh_token=False) is not None
 
     # ------------------------------------------------------------------
-    # Config resolution (direct API key OR managed Nous gateway)
+    # Config resolution (direct API key OR managed Zed gateway)
     # ------------------------------------------------------------------
 
     def _get_config_or_none(self, *, refresh_token: bool = True) -> Optional[Dict[str, Any]]:
         # Import here to avoid a hard dependency at module-import time â€”
-        # managed_tool_gateway pulls in the Nous auth stack which can be
+        # managed_tool_gateway pulls in the Zed auth stack which can be
         # heavy and is not needed for direct-API-key users.
         from tools.managed_tool_gateway import (
             peek_nous_access_token,
@@ -136,7 +136,7 @@ class BrowserUseBrowserProvider(BrowserProvider):
         from tools.tool_backend_helpers import prefers_gateway
 
         # Direct API key wins unless the user has explicitly opted into the
-        # managed Nous gateway via ``tool_gateway.browser: gateway``.
+        # managed Zed gateway via ``tool_gateway.browser: gateway``.
         api_key = os.environ.get("BROWSER_USE_API_KEY")
         if api_key and not prefers_gateway("browser"):
             return {
@@ -145,7 +145,7 @@ class BrowserUseBrowserProvider(BrowserProvider):
                 "managed_mode": False,
             }
 
-        # Keep availability scans off the synchronous OAuth refresh path.
+        # Keep availability scans off the synchroZed OAuth refresh path.
         managed = resolve_managed_tool_gateway(
             "browser-use",
             token_reader=None if refresh_token else peek_nous_access_token,

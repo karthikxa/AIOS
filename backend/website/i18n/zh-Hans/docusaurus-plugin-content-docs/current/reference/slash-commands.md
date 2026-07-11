@@ -253,6 +253,6 @@ CLI åœ¨æ‰§è¡Œä¼šä¸¢å¼ƒæœªä¿å­˜ä¼šè¯çŠ¶æ�
 
 å¯¹äºŽä¸Šè¿°æ¯ä¸ªå‘½ä»¤ï¼ŒCLI ä¼šæ‰“å¼€ä¸€ä¸ªä¸‰é€‰é¡¹å¼¹çª—ï¼š**Approve Once**ï¼ˆæœ¬æ¬¡æ‰§è¡Œï¼‰ã€**Always Approve**ï¼ˆæ‰§è¡Œå¹¶æŒä¹…åŒ– `approvals.destructive_slash_confirm: false`ï¼Œä½¿æœªæ¥çš„ç ´åæ€§å‘½ä»¤æ— éœ€æç¤ºç›´æŽ¥è¿è¡Œï¼‰ï¼Œæˆ– **Cancel**ã€‚
 
-**å†…è”è·³è¿‡ï¼š** è¿½åŠ  `now`ã€`--yes` æˆ– `-y` å¯ä¸ºå•æ¬¡è°ƒç”¨ç»•è¿‡å¼¹çª—â€”â€”ä¾‹å¦‚ `/reset now`ã€`/new --yes my-session`ã€`/clear -y`ã€`/undo -y`ã€‚é€‚ç”¨äºŽå¼¹çª—åœ¨ä½ çš„ç»ˆç«¯æ— æ³•æ­£å¸¸æ¸²æŸ“çš„æƒ…å†µï¼ˆè§ [issue #30768](https://github.com/NousResearch/zed-agent/issues/30768)ï¼ŒåŽŸç”Ÿ Windows PowerShellï¼‰æˆ–å¯¹ CLI è¿›è¡Œè„šæœ¬åŒ–æ“ä½œæ—¶ã€‚
+**å†…è”è·³è¿‡ï¼š** è¿½åŠ  `now`ã€`--yes` æˆ– `-y` å¯ä¸ºå•æ¬¡è°ƒç”¨ç»•è¿‡å¼¹çª—â€”â€”ä¾‹å¦‚ `/reset now`ã€`/new --yes my-session`ã€`/clear -y`ã€`/undo -y`ã€‚é€‚ç”¨äºŽå¼¹çª—åœ¨ä½ çš„ç»ˆç«¯æ— æ³•æ­£å¸¸æ¸²æŸ“çš„æƒ…å†µï¼ˆè§ [issue #30768](https://github.com/zedteam/zed-agent/issues/30768)ï¼ŒåŽŸç”Ÿ Windows PowerShellï¼‰æˆ–å¯¹ CLI è¿›è¡Œè„šæœ¬åŒ–æ“ä½œæ—¶ã€‚
 
 åœ¨ `~/.zed/config.yaml` ä¸­è®¾ç½® `approvals.destructive_slash_confirm: false` å¯å…¨å±€ç¦ç”¨æç¤ºï¼›è®¾ç½®å›ž `true` å¯é‡æ–°å¯ç”¨ã€‚èƒŒæ™¯è¯´æ˜Žè§ [å®‰å…¨â€”â€”ç ´åæ€§æ–œæ å‘½ä»¤ç¡®è®¤](../user-guide/security.md#dangerous-command-approval)ã€‚

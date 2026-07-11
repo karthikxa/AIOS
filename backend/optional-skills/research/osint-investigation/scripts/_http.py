@@ -13,7 +13,7 @@ import urllib.request
 
 DEFAULT_UA = (
     "zed-osint-investigation/0.2 "
-    "(+https://github.com/NousResearch/zed-agent; "
+    "(+https://github.com/ZedTeam/zed-agent; "
     "set ZED_OSINT_UA env var to identify yourself per "
     "Wikimedia / SEC fair-use guidance)"
 )

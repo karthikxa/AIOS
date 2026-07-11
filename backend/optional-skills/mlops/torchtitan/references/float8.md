@@ -1,4 +1,4 @@
-# Float8 Training in TorchTitan
+﻿# Float8 Training in TorchTitan
 
 Float8 training provides substantial speedups for models where GEMMs are large enough that the FP8 tensorcore speedup outweighs dynamic quantization overhead.
 

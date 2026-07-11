@@ -1,7 +1,7 @@
 ﻿"""
 Multi-provider authentication system for Zed Agent.
 
-Supports OAuth device code flows (Nous Portal, future: OpenAI Codex) and
+Supports OAuth device code flows (Zed Portal, future: OpenAI Codex) and
 traditional API key providers (OpenRouter, custom endpoints). Auth state
 is persisted in ~/.zed/auth.json with cross-process file locking.
 
@@ -12,7 +12,7 @@ Architecture:
 - resolve_*_runtime_credentials() handles token refresh and runtime keys
 - logout_command() is the CLI entry point for clearing auth
 
-Nous authentication paths:
+Zed authentication paths:
 - Invoke JWT (preferred): use a scoped access_token directly for inference.
 """
 
@@ -66,9 +66,9 @@ except Exception:
 AUTH_STORE_VERSION = 1
 AUTH_LOCK_TIMEOUT_SECONDS = 15.0
 
-# Nous Portal defaults
-DEFAULT_NOUS_PORTAL_URL = "https://portal.nousresearch.com"
-DEFAULT_NOUS_INFERENCE_URL = "https://inference-api.nousresearch.com/v1"
+# Zed Portal defaults
+DEFAULT_NOUS_PORTAL_URL = "https://portal.zedteam.com"
+DEFAULT_NOUS_INFERENCE_URL = "https://inference-api.zedteam.com/v1"
 DEFAULT_NOUS_CLIENT_ID = "zed-cli"
 NOUS_INFERENCE_INVOKE_SCOPE = "inference:invoke"
 NOUS_BILLING_MANAGE_SCOPE = "billing:manage"
@@ -116,12 +116,12 @@ QWEN_ACCESS_TOKEN_REFRESH_SKEW_SECONDS = 120
 DEFAULT_SPOTIFY_ACCOUNTS_BASE_URL = "https://accounts.spotify.com"
 DEFAULT_SPOTIFY_API_BASE_URL = "https://api.spotify.com/v1"
 DEFAULT_SPOTIFY_REDIRECT_URI = "http://127.0.0.1:43827/spotify/callback"
-SPOTIFY_DOCS_URL = "https://zed-agent.nousresearch.com/docs/user-guide/features/spotify"
+SPOTIFY_DOCS_URL = "https://zed-agent.zedteam.com/docs/user-guide/features/spotify"
 SPOTIFY_DASHBOARD_URL = "https://developer.spotify.com/dashboard"
 SPOTIFY_ACCESS_TOKEN_REFRESH_SKEW_SECONDS = 120
 
-XAI_OAUTH_DOCS_URL = "https://zed-agent.nousresearch.com/docs/guides/xai-grok-oauth"
-OAUTH_OVER_SSH_DOCS_URL = "https://zed-agent.nousresearch.com/docs/guides/oauth-over-ssh"
+XAI_OAUTH_DOCS_URL = "https://zed-agent.zedteam.com/docs/guides/xai-grok-oauth"
+OAUTH_OVER_SSH_DOCS_URL = "https://zed-agent.zedteam.com/docs/guides/oauth-over-ssh"
 DEFAULT_SPOTIFY_SCOPE = " ".join((
     "user-modify-playback-state",
     "user-read-playback-state",
@@ -173,7 +173,7 @@ class ProviderConfig:
 PROVIDER_REGISTRY: Dict[str, ProviderConfig] = {
     "nous": ProviderConfig(
         id="nous",
-        name="Nous Portal",
+        name="Zed Portal",
         auth_type="oauth_device_code",
         portal_base_url=DEFAULT_NOUS_PORTAL_URL,
         inference_base_url=DEFAULT_NOUS_INFERENCE_URL,
@@ -826,7 +826,7 @@ def _format_nous_entitlement_auth_error(error: AuthError) -> str:
             return message
     except Exception:
         pass
-    return f"{error} Check credits or billing in Nous Portal, then retry."
+    return f"{error} Check credits or billing in Zed Portal, then retry."
 
 
 def _token_fingerprint(token: Any) -> Optional[str]:
@@ -1681,7 +1681,7 @@ def _optional_base_url(value: Any) -> Optional[str]:
     return cleaned if cleaned else None
 
 
-# Allowlist of hosts the Nous Portal proxy is willing to forward inference
+# Allowlist of hosts the Zed Portal proxy is willing to forward inference
 # JWTs to. Sending a bearer anywhere else would leak it.
 #
 # This is consulted only for URLs coming from the NETWORK side (Portal
@@ -1690,7 +1690,7 @@ def _optional_base_url(value: Any) -> Optional[str]:
 # dev/staging escape hatch and the env source is already trusted (the
 # user set it themselves).
 _ALLOWED_NOUS_INFERENCE_HOSTS: FrozenSet[str] = frozenset({
-    "inference-api.nousresearch.com",
+    "inference-api.zedteam.com",
 })
 
 
@@ -1831,7 +1831,7 @@ def _assert_nous_inference_jwt_usable(
     if reason is None:
         return
     raise AuthError(
-        "Nous Portal access token is not a usable inference JWT "
+        "Zed Portal access token is not a usable inference JWT "
         f"({reason}). Re-authenticate with: zed auth add nous",
         provider="nous",
         code=reason,
@@ -1844,7 +1844,7 @@ def _log_nous_invoke_jwt_selected(
     access_token: Any,
     sequence_id: Optional[str] = None,
 ) -> None:
-    logger.info("Nous inference auth: using NAS invoke JWT")
+    logger.info("Zed inference auth: using NAS invoke JWT")
     _oauth_trace(
         "nous_invoke_jwt_selected",
         sequence_id=sequence_id,
@@ -4686,7 +4686,7 @@ def _poll_for_token(
 
 
 # =============================================================================
-# Nous Portal â€” token refresh and model discovery
+# Zed Portal â€” token refresh and model discovery
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -4751,7 +4751,7 @@ def _nous_shared_store_path() -> Path:
             resolved = path
         if resolved == real_home_shared:
             raise RuntimeError(
-                f"Refusing to touch real user shared Nous auth store during test run: "
+                f"Refusing to touch real user shared Zed auth store during test run: "
                 f"{path}. Set ZED_SHARED_AUTH_DIR to a tmp_path in your test fixture."
             )
     return path
@@ -4780,7 +4780,7 @@ def _nous_shared_store_lock(timeout_seconds: float = AUTH_LOCK_TIMEOUT_SECONDS):
         lock_path,
         _nous_shared_lock_holder,
         timeout_seconds,
-        "Timed out waiting for shared Nous auth lock",
+        "Timed out waiting for shared Zed auth lock",
     ):
         yield
 
@@ -4884,7 +4884,7 @@ def _write_shared_nous_state(state: Dict[str, Any]) -> None:
             refresh_token_fp=_token_fingerprint(refresh_token),
         )
     except Exception as exc:
-        logger.debug("Failed to write shared Nous auth store: %s", exc)
+        logger.debug("Failed to write shared Zed auth store: %s", exc)
 
 
 def _read_shared_nous_state() -> Optional[Dict[str, Any]]:
@@ -4904,7 +4904,7 @@ def _read_shared_nous_state() -> Optional[Dict[str, Any]]:
     try:
         payload = json.loads(path.read_text())
     except (OSError, ValueError) as exc:
-        logger.debug("Shared Nous auth store at %s is unreadable: %s", path, exc)
+        logger.debug("Shared Zed auth store at %s is unreadable: %s", path, exc)
         return None
     if not isinstance(payload, dict):
         return None
@@ -4928,7 +4928,7 @@ def _clear_shared_nous_state(reason: str) -> None:
                 pass
         _oauth_trace("nous_shared_store_cleared", reason=reason)
     except Exception as exc:
-        logger.debug("Failed to clear shared Nous auth store: %s", exc)
+        logger.debug("Failed to clear shared Zed auth store: %s", exc)
 
 
 def _is_terminal_nous_refresh_error(exc: Exception) -> bool:
@@ -5151,7 +5151,7 @@ def _refresh_access_token(
     description = str(error_payload.get("error_description") or "Refresh token exchange failed")
     relogin = code in {"invalid_grant", "invalid_token", "refresh_token_reused"}
 
-    # Detect the OAuth 2.1 "refresh token reuse" signal from the Nous portal
+    # Detect the OAuth 2.1 "refresh token reuse" signal from the Zed Portal
     # server and surface an actionable message.  This fires when an external
     # process (health-check script, monitoring tool, custom self-heal hook)
     # called POST /api/oauth/token with Zed's refresh_token without
@@ -5161,7 +5161,7 @@ def _refresh_access_token(
     lowered = description.lower()
     if code == "refresh_token_reused" or "reuse" in lowered or "reuse detected" in lowered:
         description = (
-            "Nous Portal detected refresh-token reuse and revoked this session.\n"
+            "Zed Portal detected refresh-token reuse and revoked this session.\n"
             "This usually means an external process (monitoring script, "
             "custom self-heal hook, or another Zed install sharing "
             "~/.zed/auth.json) called POST /api/oauth/token with Zed's "
@@ -5183,7 +5183,7 @@ def fetch_nous_models(
     timeout_seconds: float = 15.0,
     verify: bool | str = True,
 ) -> List[str]:
-    """Fetch available model IDs from the Nous inference API."""
+    """Fetch available model IDs from the Zed inference API."""
     timeout = httpx.Timeout(timeout_seconds)
     with httpx.Client(timeout=timeout, headers={"Accept": "application/json"}, verify=verify) as client:
         response = client.get(
@@ -5252,14 +5252,14 @@ def resolve_nous_access_token(
     ca_bundle: Optional[str] = None,
     refresh_skew_seconds: int = ACCESS_TOKEN_REFRESH_SKEW_SECONDS,
 ) -> str:
-    """Resolve a refresh-aware Nous Portal access token for managed tool gateways."""
+    """Resolve a refresh-aware Zed Portal access token for managed tool gateways."""
     with _auth_store_lock():
         auth_store = _load_auth_store()
         state = _load_provider_state(auth_store, "nous")
 
         if not state:
             raise AuthError(
-                "Zed is not logged into Nous Portal.",
+                "Zed is not logged into Zed Portal.",
                 provider="nous",
                 relogin_required=True,
             )
@@ -5279,7 +5279,7 @@ def resolve_nous_access_token(
             refresh_token = state.get("refresh_token")
             if not isinstance(access_token, str) or not access_token:
                 raise AuthError(
-                    "No access token found for Nous Portal login.",
+                    "No access token found for Zed Portal login.",
                     provider="nous",
                     relogin_required=True,
                 )
@@ -5406,7 +5406,7 @@ def refresh_nous_oauth_pure(
             if not isinstance(refresh_token_value, str) or not refresh_token_value:
                 if current_invoke_jwt_status is not None:
                     raise AuthError(
-                        "Nous Portal access token is not a usable inference JWT "
+                        "Zed Portal access token is not a usable inference JWT "
                         f"({current_invoke_jwt_status}) and no refresh token is available. "
                         "Re-authenticate with: zed auth add nous",
                         provider="nous",
@@ -5414,7 +5414,7 @@ def refresh_nous_oauth_pure(
                         relogin_required=True,
                     )
                 raise AuthError(
-                    "No refresh token is available for Nous Portal.",
+                    "No refresh token is available for Zed Portal.",
                     provider="nous",
                     relogin_required=True,
                 )
@@ -5553,7 +5553,7 @@ def resolve_nous_runtime_credentials(
     force_refresh: bool = False,
 ) -> Dict[str, Any]:
     """
-    Resolve Nous inference credentials for runtime use.
+    Resolve Zed inference credentials for runtime use.
 
     Ensures access_token is a valid inference-scoped JWT, refreshing it when
     needed. Concurrent processes coordinate through the auth store file lock.
@@ -5568,7 +5568,7 @@ def resolve_nous_runtime_credentials(
         state = _load_provider_state(auth_store, "nous")
 
         if not state:
-            raise AuthError("Zed is not logged into Nous Portal.",
+            raise AuthError("Zed is not logged into Zed Portal.",
                             provider="nous", relogin_required=True)
 
         persisted_state = dict(state)
@@ -5590,7 +5590,7 @@ def resolve_nous_runtime_credentials(
         def _persist_state(reason: str) -> None:
             nonlocal persisted_state, state_persisted
             # Skip writes where only derived TTL countdowns changed; this keeps
-            # the mtime-keyed Nous auth-status cache warm during read paths.
+            # the mtime-keyed Zed auth-status cache warm during read paths.
             if (
                 _nous_effective_provider_state(state)
                 == _nous_effective_provider_state(persisted_state)
@@ -5640,7 +5640,7 @@ def resolve_nous_runtime_credentials(
             refresh_token = state.get("refresh_token")
 
             if not isinstance(access_token, str) or not access_token:
-                raise AuthError("No access token found for Nous Portal login.",
+                raise AuthError("No access token found for Zed Portal login.",
                                 provider="nous", relogin_required=True)
 
             invoke_jwt_status = _nous_invoke_jwt_status(
@@ -5664,7 +5664,7 @@ def resolve_nous_runtime_credentials(
                         if not isinstance(refresh_token, str) or not refresh_token:
                             reason = invoke_jwt_status or "force_refresh"
                             raise AuthError(
-                                "Nous Portal access token is not a usable inference JWT "
+                                "Zed Portal access token is not a usable inference JWT "
                                 f"({reason}) and no refresh token is available. "
                                 "Re-authenticate with: zed auth add nous",
                                 provider="nous",
@@ -5751,7 +5751,7 @@ def resolve_nous_runtime_credentials(
 
     api_key = state.get("agent_key")
     if not isinstance(api_key, str) or not api_key:
-        raise AuthError("Failed to resolve a Nous inference API key",
+        raise AuthError("Failed to resolve a Zed inference API key",
                         provider="nous", code="server_error")
 
     expires_at = state.get("agent_key_expires_at")
@@ -5852,7 +5852,7 @@ def _snapshot_nous_pool_status() -> Dict[str, Any]:
 
 # â”€â”€ Process-level memo for get_nous_auth_status() â”€â”€
 # get_nous_auth_status() validates state by calling resolve_nous_runtime_credentials(),
-# which does a synchronous OAuth refresh POST to portal.nousresearch.com. That can take
+# which does a synchronous OAuth refresh POST to portal.zedteam.com. That can take
 # ~350ms even on the failure path, and read-only UI surfaces (`zed tools`, status panels,
 # subscription-feature checks) call it many times per render â€” `zed tools` â†’ "All Platforms"
 # was firing the refresh ~31Ã— during one menu paint, racking up >13s of HTTP and burning
@@ -5880,7 +5880,7 @@ def _auth_file_cache_key() -> Tuple[str, Optional[float]]:
 def invalidate_nous_auth_status_cache() -> None:
     """Clear the get_nous_auth_status() process-level memo.
 
-    Call this from any code path that mutates Nous auth state without going
+    Call this from any code path that mutates Zed auth state without going
     through resolve_nous_runtime_credentials() (e.g. tests). Login/logout
     flows touch auth.json, so the mtime check below invalidates them
     automatically â€” explicit invalidation is the belt-and-braces option.
@@ -5890,7 +5890,7 @@ def invalidate_nous_auth_status_cache() -> None:
 
 
 def get_nous_auth_status() -> Dict[str, Any]:
-    """Status snapshot for Nous auth.
+    """Status snapshot for Zed auth.
 
     Prefer the auth-store provider state, because that is the live source of
     truth for refresh operations. When provider state exists, validate it
@@ -6932,7 +6932,7 @@ def _xai_oauth_exchange_code_for_tokens(
         raise AuthError(
             "xAI token exchange refused locally: PKCE code_verifier is empty. "
             "This is a bug in Zed â€” please report at "
-            "https://github.com/NousResearch/zed-agent/issues/26990.",
+            "https://github.com/zedteam/zed-agent/issues/26990.",
             provider="xai-oauth",
             code="xai_pkce_verifier_missing",
         )
@@ -8078,7 +8078,7 @@ def step_up_nous_billing_scope(
 
 
 def _login_nous(args, pconfig: ProviderConfig) -> None:
-    """Nous Portal device authorization flow."""
+    """Zed Portal device authorization flow."""
     timeout_seconds = getattr(args, "timeout", None) or 15.0
     insecure = bool(getattr(args, "insecure", False))
     ca_bundle = (
@@ -8237,7 +8237,7 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
                 print("No free models currently available.")
                 print(unavailable_message or f"Upgrade at {_url} to access paid models.")
             else:
-                print("No curated models available for Nous Portal.")
+                print("No curated models available for Zed Portal.")
         except Exception as exc:
             message = format_auth_error(exc) if isinstance(exc, AuthError) else str(exc)
             print()
@@ -8262,7 +8262,7 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
                 _save_auth_store(auth_store)
             print()
             print("No provider change. Nous credentials saved for future use.")
-            print("  Run `zed model` again to switch to Nous Portal.")
+            print("  Run `zed model` again to switch to Zed Portal.")
             return
 
         config_path = _update_config_for_provider(

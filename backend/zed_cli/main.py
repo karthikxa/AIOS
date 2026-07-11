@@ -841,7 +841,7 @@ def _has_any_provider_configured() -> bool:
     except Exception:
         pass
 
-    # Check for Nous Portal OAuth credentials
+    # Check for Zed Portal OAuth credentials
     auth_file = get_zed_home() / "auth.json"
     if auth_file.exists():
         try:
@@ -3261,7 +3261,7 @@ def _aux_config_menu() -> None:
         print("  Side tasks (vision, compression, web extraction, etc.) default")
         print('  to your main chat model.  "auto" means "use my main model" â€”')
         print("  Zed only falls back to a lightweight backend (OpenRouter,")
-        print("  Nous Portal) if the main model is unavailable.  Override a")
+        print("  Zed Portal) if the main model is unavailable.  Override a")
         print("  task below if you want it pinned to a specific provider/model.")
         print()
 
@@ -5724,7 +5724,7 @@ def _print_curator_first_run_notice() -> None:
     print("  Preview now:  zed curator run --dry-run")
     print("  Pause it:     zed curator pause")
     print(
-        "  Docs:         https://zed-agent.nousresearch.com/docs/user-guide/features/curator"
+        "  Docs:         https://zed-agent.zedteam.com/docs/user-guide/features/curator"
     )
 
 
@@ -5968,7 +5968,7 @@ def _update_via_zip(args):
         )
         sys.exit(1)
     zip_url = (
-        f"https://github.com/NousResearch/zed-agent/archive/refs/heads/{branch}.zip"
+        f"https://github.com/zedteam/zed-agent/archive/refs/heads/{branch}.zip"
     )
 
     print("â†’ Downloading latest version...")
@@ -6376,12 +6376,12 @@ def _discard_stashed_changes(
 # =========================================================================
 
 OFFICIAL_REPO_URLS = {
-    "https://github.com/NousResearch/zed-agent.git",
-    "git@github.com:NousResearch/zed-agent.git",
-    "https://github.com/NousResearch/zed-agent",
-    "git@github.com:NousResearch/zed-agent",
+    "https://github.com/zedteam/zed-agent.git",
+    "git@github.com:zedteam/zed-agent.git",
+    "https://github.com/zedteam/zed-agent",
+    "git@github.com:zedteam/zed-agent",
 }
-OFFICIAL_REPO_URL = "https://github.com/NousResearch/zed-agent.git"
+OFFICIAL_REPO_URL = "https://github.com/zedteam/zed-agent.git"
 SKIP_UPSTREAM_PROMPT_FILE = ".skip_upstream_prompt"
 
 
@@ -6515,7 +6515,7 @@ def _sync_with_upstream_if_needed(git_cmd: list[str], cwd: Path) -> None:
         # Ask user if they want to add upstream
         print()
         print("â„¹ Your fork is not tracking the official Zed repository.")
-        print("  This means you may miss updates from NousResearch/zed-agent.")
+        print("  This means you may miss updates from zedteam/zed-agent.")
         print()
         try:
             response = (
@@ -6529,7 +6529,7 @@ def _sync_with_upstream_if_needed(git_cmd: list[str], cwd: Path) -> None:
             print("â†’ Adding upstream remote...")
             if _add_upstream_remote(git_cmd, cwd):
                 print(
-                    "  âœ“ Added upstream: https://github.com/NousResearch/zed-agent.git"
+                    "  âœ“ Added upstream: https://github.com/zedteam/zed-agent.git"
                 )
                 has_upstream = True
             else:
@@ -6537,7 +6537,7 @@ def _sync_with_upstream_if_needed(git_cmd: list[str], cwd: Path) -> None:
                 return
         else:
             print(
-                "  Skipped. Run 'git remote add upstream https://github.com/NousResearch/zed-agent.git' to add later."
+                "  Skipped. Run 'git remote add upstream https://github.com/zedteam/zed-agent.git' to add later."
             )
             _mark_skip_upstream_prompt()
             return
@@ -8632,7 +8632,7 @@ def _cmd_update_impl(args, gateway_mode: bool):
                 return
             print("âœ— Not a git repository. Please reinstall:")
             print(
-                "  curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash"
+                "  curl -fsSL https://zed-agent.zedteam.com/install.sh | bash"
             )
             sys.exit(1)
 
@@ -11049,7 +11049,7 @@ def cmd_dashboard(args):
 
 
 def cmd_dashboard_register(args):
-    """Register a self-hosted dashboard OAuth client with Nous Portal."""
+    """Register a self-hosted dashboard OAuth client with Zed Portal."""
     from zed_cli.dashboard_register import cmd_dashboard_register as _impl
 
     _impl(args)
@@ -11653,7 +11653,7 @@ def main():
             "Manage the fallback provider chain.  Fallback providers are tried "
             "in order when the primary model fails with rate-limit, overload, or "
             "connection errors.  See: "
-            "https://zed-agent.nousresearch.com/docs/user-guide/features/fallback-providers"
+            "https://zed-agent.zedteam.com/docs/user-guide/features/fallback-providers"
         ),
     )
     fallback_subparsers = fallback_parser.add_subparsers(dest="fallback_command")
@@ -11687,7 +11687,7 @@ def main():
             "Pull API keys from an external secret manager at process startup "
             "instead of storing them in ~/.zed/.env.  Currently supports "
             "Bitwarden Secrets Manager.  See: "
-            "https://zed-agent.nousresearch.com/docs/user-guide/secrets/bitwarden"
+            "https://zed-agent.zedteam.com/docs/user-guide/secrets/bitwarden"
         ),
     )
     secrets_subparsers = secrets_parser.add_subparsers(dest="secrets_command")
@@ -11841,7 +11841,7 @@ def main():
     build_webhook_parser(subparsers, cmd_webhook=cmd_webhook)
 
     # =========================================================================
-    # portal command â€” Nous Portal status + Tool Gateway routing
+    # portal command â€” Zed Portal status + Tool Gateway routing
     # =========================================================================
     from zed_cli.portal_cli import add_parser as _add_portal_parser
     _add_portal_parser(subparsers)

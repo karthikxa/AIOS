@@ -1,4 +1,4 @@
-"""Persistent memory + session history, both in SQLite under ~/.hermes.
+"""Persistent memory + session history, both in SQLite under ~/.zed.
 
 Two tables, two databases (so memory and session storage can be backed up /
 cleared independently):

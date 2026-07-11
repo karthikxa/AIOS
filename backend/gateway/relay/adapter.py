@@ -1,4 +1,4 @@
-"""RelayAdapter — one generic gateway adapter fronted by the connector. EXPERIMENTAL.
+﻿"""RelayAdapter — one generic gateway adapter fronted by the connector. EXPERIMENTAL.
 
 A single ``BasePlatformAdapter`` subclass that, at handshake, receives a
 ``CapabilityDescriptor`` from the connector telling it which platform it is

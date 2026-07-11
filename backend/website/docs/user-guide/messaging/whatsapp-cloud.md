@@ -309,7 +309,7 @@ Meta only allows **free-form messages** within a 24-hour window after the user's
 
 Zed warns the agent about this window in its system prompt, so the model knows to mention it when scheduling delayed messages.
 
-Message-template support (the workaround for outside-window sends) is not yet implemented in Zed. If you need it, please [open an issue](https://github.com/NousResearch/zed-agent/issues) â€” it's planned but waiting on a clear demand signal.
+Message-template support (the workaround for outside-window sends) is not yet implemented in Zed. If you need it, please [open an issue](https://github.com/zedteam/zed-agent/issues) â€” it's planned but waiting on a clear demand signal.
 
 ### Group chats
 
@@ -373,7 +373,7 @@ zed config set stt.use_gateway true
 zed gateway restart
 ```
 
-This uses your Nous Portal access token instead of needing a separate OpenAI key.
+This uses your Zed Portal access token instead of needing a separate OpenAI key.
 
 ---
 

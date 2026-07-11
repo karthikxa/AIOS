@@ -43,7 +43,7 @@ That ordering matters because Zed treats the saved model/provider choice as the 
 Current provider families include (see `plugins/model-providers/` for the complete bundled set):
 
 - OpenRouter
-- Nous Portal
+- Zed Portal
 - OpenAI Codex
 - Copilot / Copilot ACP
 - Anthropic (native)

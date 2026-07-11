@@ -1,4 +1,4 @@
-"""Graph-backed Teams meeting helpers for the plugin runtime."""
+﻿"""Graph-backed Teams meeting helpers for the plugin runtime."""
 
 from __future__ import annotations
 

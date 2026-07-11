@@ -1,6 +1,6 @@
 ﻿"""Tests for get_zed_home() profile-mode fallback warning.
 
-Regression test for https://github.com/NousResearch/zed-agent/issues/18594.
+Regression test for https://github.com/ZedTeam/zed-agent/issues/18594.
 
 When ZED_HOME is unset but an active_profile file indicates a non-default
 profile is active, get_zed_home() should:

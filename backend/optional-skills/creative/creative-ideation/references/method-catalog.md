@@ -1,4 +1,4 @@
-# Method Catalog
+﻿# Method Catalog
 
 One-line summary + when-to-use for every method. Cross-reference with `heuristics.md` and the routing table in `SKILL.md`.
 

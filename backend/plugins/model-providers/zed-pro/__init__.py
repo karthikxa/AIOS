@@ -1,4 +1,4 @@
-from providers import register_provider
+﻿from providers import register_provider
 from providers.base import ProviderProfile
 
 zed_pro = ProviderProfile(

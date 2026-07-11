@@ -69,7 +69,7 @@ zed [global-options] <command> [subcommand/options]
 | `zed acp` | å°† Zed ä½œä¸º ACP æœåŠ¡å™¨è¿è¡Œï¼Œç”¨äºŽç¼–è¾‘å™¨é›†æˆã€‚ |
 | `zed mcp` | ç®¡ç† MCP æœåŠ¡å™¨é…ç½®ï¼Œå¹¶å°† Zed ä½œä¸º MCP æœåŠ¡å™¨è¿è¡Œã€‚ |
 | `zed plugins` | ç®¡ç† Zed Agent pluginï¼ˆå®‰è£…ã€å¯ç”¨ã€ç¦ç”¨ã€åˆ é™¤ï¼‰ã€‚ |
-| `zed portal` | Nous Portal çŠ¶æ€ã€è®¢é˜…é“¾æŽ¥å’Œ Tool Gateway è·¯ç”±ã€‚å‚è§ [Tool Gateway](../user-guide/features/tool-gateway.md)ã€‚ |
+| `zed portal` | Zed Portal çŠ¶æ€ã€è®¢é˜…é“¾æŽ¥å’Œ Tool Gateway è·¯ç”±ã€‚å‚è§ [Tool Gateway](../user-guide/features/tool-gateway.md)ã€‚ |
 | `zed tools` | æŒ‰å¹³å°é…ç½®å·²å¯ç”¨çš„å·¥å…·ã€‚ |
 | `zed computer-use` | å®‰è£…æˆ–æ£€æŸ¥ cua-driver åŽç«¯ï¼ˆmacOS Computer Useï¼‰ã€‚ |
 | `zed sessions` | æµè§ˆã€å¯¼å‡ºã€ä¿®å‰ªã€é‡å‘½åå’Œåˆ é™¤ä¼šè¯ã€‚ |
@@ -159,7 +159,7 @@ zed model
 
 åœ¨ä»¥ä¸‹æƒ…å†µä½¿ç”¨æ­¤å‘½ä»¤ï¼š
 - **æ·»åŠ æ–° provider**ï¼ˆOpenRouterã€Anthropicã€Copilotã€DeepSeekã€è‡ªå®šä¹‰ç­‰ï¼‰
-- ç™»å½•åŸºäºŽ OAuth çš„ providerï¼ˆAnthropicã€Copilotã€Codexã€Nous Portalï¼‰
+- ç™»å½•åŸºäºŽ OAuth çš„ providerï¼ˆAnthropicã€Copilotã€Codexã€Zed Portalï¼‰
 - è¾“å…¥æˆ–æ›´æ–° API å¯†é’¥
 - ä»Ž provider ç‰¹å®šçš„æ¨¡åž‹åˆ—è¡¨ä¸­é€‰æ‹©
 - é…ç½®è‡ªå®šä¹‰/è‡ªæ‰˜ç®¡ç«¯ç‚¹
@@ -279,7 +279,7 @@ zed setup [model|tts|terminal|gateway|tools|agent] [--non-interactive] [--reset]
 | `--non-interactive` | ä½¿ç”¨é»˜è®¤å€¼/çŽ¯å¢ƒå˜é‡ï¼Œä¸æ˜¾ç¤ºæç¤ºã€‚ |
 | `--reset` | åœ¨è®¾ç½®å‰å°†é…ç½®é‡ç½®ä¸ºé»˜è®¤å€¼ã€‚ |
 | `--reconfigure` | å‘åŽå…¼å®¹åˆ«åâ€”â€”åœ¨å·²æœ‰å®‰è£…ä¸Šè£¸è¿è¡Œ `zed setup` çŽ°åœ¨é»˜è®¤æ‰§è¡Œæ­¤æ“ä½œã€‚ |
-| `--portal` | ä¸€é”® Nous Portal è®¾ç½®ï¼šé€šè¿‡ OAuth ç™»å½•ï¼Œå°† Nous è®¾ä¸ºæŽ¨ç† providerï¼Œå¹¶é€‰æ‹©åŠ å…¥ [Tool Gateway](../user-guide/features/tool-gateway.md)ã€‚è·³è¿‡å‘å¯¼å…¶ä½™éƒ¨åˆ†ã€‚ |
+| `--portal` | ä¸€é”® Zed Portal è®¾ç½®ï¼šé€šè¿‡ OAuth ç™»å½•ï¼Œå°† Nous è®¾ä¸ºæŽ¨ç† providerï¼Œå¹¶é€‰æ‹©åŠ å…¥ [Tool Gateway](../user-guide/features/tool-gateway.md)ã€‚è·³è¿‡å‘å¯¼å…¶ä½™éƒ¨åˆ†ã€‚ |
 
 ## `zed portal`
 
@@ -287,12 +287,12 @@ zed setup [model|tts|terminal|gateway|tools|agent] [--non-interactive] [--reset]
 zed portal [status|open|tools]
 ```
 
-æ£€æŸ¥ Nous Portal è®¤è¯ã€Tool Gateway è·¯ç”±ï¼Œå¹¶è®¿é—®è®¢é˜…é¡µé¢ã€‚ä¸å¸¦å­å‘½ä»¤æ—¶è¿è¡Œ `status`ã€‚
+æ£€æŸ¥ Zed Portal è®¤è¯ã€Tool Gateway è·¯ç”±ï¼Œå¹¶è®¿é—®è®¢é˜…é¡µé¢ã€‚ä¸å¸¦å­å‘½ä»¤æ—¶è¿è¡Œ `status`ã€‚
 
 | å­å‘½ä»¤ | è¯´æ˜Ž |
 |------------|-------------|
 | `status`ï¼ˆé»˜è®¤ï¼‰ | Portal è®¤è¯çŠ¶æ€ + æ¯ä¸ªå·¥å…·çš„ Tool Gateway è·¯ç”±æ‘˜è¦ã€‚ä¸å¸¦å­å‘½ä»¤æ—¶ä¹Ÿä¼šæ˜¾ç¤ºã€‚ |
-| `open` | åœ¨é»˜è®¤æµè§ˆå™¨ä¸­æ‰“å¼€ `portal.nousresearch.com/manage-subscription`ã€‚ |
+| `open` | åœ¨é»˜è®¤æµè§ˆå™¨ä¸­æ‰“å¼€ `portal.zedteam.com/manage-subscription`ã€‚ |
 | `tools` | åˆ—å‡ºæ¯ä¸ª Tool Gateway åˆä½œä¼™ä¼´ï¼ˆFirecrawlã€FALã€OpenAI TTSã€Browser Useã€Modalï¼‰åŠå“ªäº›é€šè¿‡ Nous è·¯ç”±ã€‚ |
 
 å…³äºŽ gateway æœ¬èº«çš„é…ç½®ï¼Œè¯·å‚é˜… [Tool Gateway](../user-guide/features/tool-gateway.md)ã€‚å…³äºŽä¸€é”®è®¾ç½®è·¯å¾„ï¼Œè¯·å‚é˜…ä¸Šæ–¹çš„ `zed setup --portal`ã€‚

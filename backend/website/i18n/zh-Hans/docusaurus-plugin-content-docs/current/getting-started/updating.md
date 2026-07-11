@@ -140,7 +140,7 @@ tail -f ~/.zed/logs/update.log
 zed version
 ```
 
-ä¸Ž [GitHub releases é¡µé¢](https://github.com/NousResearch/zed-agent/releases) ä¸Šçš„æœ€æ–°ç‰ˆæœ¬è¿›è¡Œæ¯”è¾ƒã€‚
+ä¸Ž [GitHub releases é¡µé¢](https://github.com/zedteam/zed-agent/releases) ä¸Šçš„æœ€æ–°ç‰ˆæœ¬è¿›è¡Œæ¯”è¾ƒã€‚
 
 ### ä»Žæ¶ˆæ¯å¹³å°æ›´æ–°
 

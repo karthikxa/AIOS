@@ -1,4 +1,4 @@
-# Qdrant Troubleshooting Guide
+﻿# Qdrant Troubleshooting Guide
 
 ## Installation Issues
 

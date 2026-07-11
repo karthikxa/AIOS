@@ -362,13 +362,13 @@ python -m torch.distributed.checkpoint.format_utils \
 
 ## è¿›é˜¶ä¸»é¢˜
 
-**FSDP2 é…ç½®**ï¼šå‚è§ [references/fsdp.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/torchtitan/references/fsdp.md)ï¼Œäº†è§£ FSDP2 ä¸Ž FSDP1 çš„è¯¦ç»†å¯¹æ¯”åŠ ZeRO ç­‰ä»·å…³ç³»ã€‚
+**FSDP2 é…ç½®**ï¼šå‚è§ [references/fsdp.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/torchtitan/references/fsdp.md)ï¼Œäº†è§£ FSDP2 ä¸Ž FSDP1 çš„è¯¦ç»†å¯¹æ¯”åŠ ZeRO ç­‰ä»·å…³ç³»ã€‚
 
-**Float8 è®­ç»ƒ**ï¼šå‚è§ [references/float8.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/torchtitan/references/float8.md)ï¼Œäº†è§£ tensorwise ä¸Ž rowwise ç¼©æ”¾æ–¹æ¡ˆã€‚
+**Float8 è®­ç»ƒ**ï¼šå‚è§ [references/float8.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/torchtitan/references/float8.md)ï¼Œäº†è§£ tensorwise ä¸Ž rowwise ç¼©æ”¾æ–¹æ¡ˆã€‚
 
-**æ£€æŸ¥ç‚¹**ï¼šå‚è§ [references/checkpoint.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/torchtitan/references/checkpoint.md)ï¼Œäº†è§£ HuggingFace è½¬æ¢ä¸Žå¼‚æ­¥æ£€æŸ¥ç‚¹ã€‚
+**æ£€æŸ¥ç‚¹**ï¼šå‚è§ [references/checkpoint.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/torchtitan/references/checkpoint.md)ï¼Œäº†è§£ HuggingFace è½¬æ¢ä¸Žå¼‚æ­¥æ£€æŸ¥ç‚¹ã€‚
 
-**æ·»åŠ è‡ªå®šä¹‰æ¨¡åž‹**ï¼šå‚è§ [references/custom-models.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/torchtitan/references/custom-models.md)ï¼Œäº†è§£ TrainSpec åè®®ã€‚
+**æ·»åŠ è‡ªå®šä¹‰æ¨¡åž‹**ï¼šå‚è§ [references/custom-models.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/torchtitan/references/custom-models.md)ï¼Œäº†è§£ TrainSpec åè®®ã€‚
 
 ## èµ„æº
 

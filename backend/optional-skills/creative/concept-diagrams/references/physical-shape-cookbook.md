@@ -1,4 +1,4 @@
-# Physical Shape Cookbook
+﻿# Physical Shape Cookbook
 
 Guidance for drawing physical objects (vehicles, buildings, hardware, mechanical systems, anatomy) — when rectangles aren't enough.
 

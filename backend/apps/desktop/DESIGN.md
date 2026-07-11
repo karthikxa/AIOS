@@ -1,4 +1,4 @@
-# Desktop Design System
+﻿# Desktop Design System
 
 Conventions for the Electron desktop app (`apps/desktop`). Read this before
 adding a component, overlay, or style. The rule of thumb: **one source per

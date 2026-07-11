@@ -1,4 +1,4 @@
-"""Async LSP client over stdin/stdout.
+﻿"""Async LSP client over stdin/stdout.
 
 One :class:`LSPClient` corresponds to one ``(language_server, workspace_root)``
 pair — exactly what OpenCode keys clients on, and the same shape Claude

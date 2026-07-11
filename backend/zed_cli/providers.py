@@ -52,7 +52,7 @@ ZED_OVERLAYS: Dict[str, ZedOverlay] = {
     "nous": ZedOverlay(
         transport="openai_chat",
         auth_type="oauth_device_code",
-        base_url_override="https://inference-api.nousresearch.com/v1",
+        base_url_override="https://inference-api.zedteam.com/v1",
     ),
     "openai-codex": ZedOverlay(
         transport="codex_responses",
@@ -365,7 +365,7 @@ ALIASES: Dict[str, str] = {
 # not in the catalog.
 
 _LABEL_OVERRIDES: Dict[str, str] = {
-    "nous": "Nous Portal",
+    "nous": "Zed Portal",
     "openai-codex": "OpenAI Codex",
     "copilot-acp": "GitHub Copilot ACP",
     "stepfun": "StepFun Step Plan",

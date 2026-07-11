@@ -8,10 +8,10 @@ sidebar_position: 2
 # Nous Tool Gatewayï¼ˆå·¥å…·ç½‘å…³ï¼‰
 
 :::tip å¿«é€Ÿå¼€å§‹
-Tool Gateway åŒ…å«åœ¨ä»˜è´¹ Nous Portal è®¢é˜…ä¸­ã€‚**[ç®¡ç†è®¢é˜… â†’](https://portal.nousresearch.com/manage-subscription)**
+Tool Gateway åŒ…å«åœ¨ä»˜è´¹ Zed Portal è®¢é˜…ä¸­ã€‚**[ç®¡ç†è®¢é˜… â†’](https://portal.zedteam.com/manage-subscription)**
 :::
 
-**Tool Gateway** è®©å·²ä»˜è´¹çš„ [Nous Portal](https://portal.nousresearch.com) ç”¨æˆ·é€šè¿‡åŒä¸€ä»½è®¢é˜…ï¼Œç›´æŽ¥ä½¿ç”¨ç½‘é¡µæœç´¢ã€æ–‡ç”Ÿå›¾ã€è¯­éŸ³åˆæˆï¼ˆTTSï¼‰ä¸Žæµè§ˆå™¨è‡ªåŠ¨åŒ–ï¼Œè€Œ**ä¸å¿…**å†åˆ†åˆ«æ³¨å†Œ Firecrawlã€FALã€OpenAIã€Browser Use ç­‰æœåŠ¡çš„ API Keyã€‚
+**Tool Gateway** è®©å·²ä»˜è´¹çš„ [Zed Portal](https://portal.zedteam.com) ç”¨æˆ·é€šè¿‡åŒä¸€ä»½è®¢é˜…ï¼Œç›´æŽ¥ä½¿ç”¨ç½‘é¡µæœç´¢ã€æ–‡ç”Ÿå›¾ã€è¯­éŸ³åˆæˆï¼ˆTTSï¼‰ä¸Žæµè§ˆå™¨è‡ªåŠ¨åŒ–ï¼Œè€Œ**ä¸å¿…**å†åˆ†åˆ«æ³¨å†Œ Firecrawlã€FALã€OpenAIã€Browser Use ç­‰æœåŠ¡çš„ API Keyã€‚
 
 ## åŒ…å«èƒ½åŠ›
 
@@ -26,7 +26,7 @@ Tool Gateway åŒ…å«åœ¨ä»˜è´¹ Nous Portal è®¢é˜…ä¸­ã�
 
 ## èµ„æ ¼ä¸Žè´¦å·
 
-Tool Gateway ä»…å¯¹ **[ä»˜è´¹](https://portal.nousresearch.com/manage-subscription)** Nous Portal è®¢é˜…å¼€æ”¾ï¼›å…è´¹æ¡£ä¸å¯ç”¨â€”â€”è¯· [å‡çº§è®¢é˜…](https://portal.nousresearch.com/manage-subscription) åŽè§£é”ã€‚
+Tool Gateway ä»…å¯¹ **[ä»˜è´¹](https://portal.zedteam.com/manage-subscription)** Zed Portal è®¢é˜…å¼€æ”¾ï¼›å…è´¹æ¡£ä¸å¯ç”¨â€”â€”è¯· [å‡çº§è®¢é˜…](https://portal.zedteam.com/manage-subscription) åŽè§£é”ã€‚
 
 æ£€æŸ¥å½“å‰çŠ¶æ€ï¼š
 
@@ -40,7 +40,7 @@ zed status
 
 ### åœ¨æ¨¡åž‹é…ç½®æµç¨‹ä¸­
 
-è¿è¡Œ `zed model` å¹¶é€‰æ‹© Nous Portal ä½œä¸ºæä¾›å•†æ—¶ï¼ŒZed ä¼šä¸»åŠ¨è¯¢é—®æ˜¯å¦å¯ç”¨ Tool Gatewayï¼š
+è¿è¡Œ `zed model` å¹¶é€‰æ‹© Zed Portal ä½œä¸ºæä¾›å•†æ—¶ï¼ŒZed ä¼šä¸»åŠ¨è¯¢é—®æ˜¯å¦å¯ç”¨ Tool Gatewayï¼š
 
 ```
 Your Nous subscription includes the Tool Gateway.
@@ -102,7 +102,7 @@ browser:
 3. **TTS** â€” `text_to_speech` èµ°ç½‘å…³çš„ OpenAI Audio ç«¯ç‚¹  
 4. **æµè§ˆå™¨** â€” `browser_navigate` ç­‰èµ°ç½‘å…³çš„ Browser Use ç«¯ç‚¹  
 
-ç½‘å…³ä½¿ç”¨ Nous Portal å‡­æ®è®¤è¯ï¼ˆåœ¨ `zed model` å®ŒæˆåŽå†™å…¥ `~/.zed/auth.json`ï¼‰ã€‚
+ç½‘å…³ä½¿ç”¨ Zed Portal å‡­æ®è®¤è¯ï¼ˆåœ¨ `zed model` å®ŒæˆåŽå†™å…¥ `~/.zed/auth.json`ï¼‰ã€‚
 
 ### ä¼˜å…ˆçº§
 
@@ -141,7 +141,7 @@ zed status
 
 ```
 â—† Nous Tool Gateway
-  Nous Portal   âœ“ managed tools available
+  Zed Portal   âœ“ managed tools available
   Web tools       âœ“ active via Nous subscription
   Image gen       âœ“ active via Nous subscription
   TTS             âœ“ active via Nous subscription
@@ -156,7 +156,7 @@ zed status
 è‹¥ä½¿ç”¨è‡ªå»ºæˆ–è‡ªå®šä¹‰ç½‘å…³ï¼Œå¯åœ¨ `~/.zed/.env` ä¸­ç”¨çŽ¯å¢ƒå˜é‡è¦†ç›–ç«¯ç‚¹ï¼š
 
 ```bash
-TOOL_GATEWAY_DOMAIN=nousresearch.com     # ç½‘å…³è·¯ç”±åŸºç¡€åŸŸå
+TOOL_GATEWAY_DOMAIN=zedteam.com     # ç½‘å…³è·¯ç”±åŸºç¡€åŸŸå
 TOOL_GATEWAY_SCHEME=https                 # http æˆ– httpsï¼ˆé»˜è®¤ httpsï¼‰
 TOOL_GATEWAY_USER_TOKEN=your-token        # é‰´æƒ Tokenï¼ˆé€šå¸¸ç”±ç¨‹åºè‡ªåŠ¨å¡«å……ï¼‰
 FIRECRAWL_GATEWAY_URL=https://...         # å•ç‹¬è¦†ç›– Firecrawl ç«¯ç‚¹
@@ -176,7 +176,7 @@ FIRECRAWL_GATEWAY_URL=https://...         # å•ç‹¬è¦†ç›– Firecr
 
 ### è®¢é˜…åˆ°æœŸä¼šæ€Žæ ·ï¼Ÿ
 
-ç»ç½‘å…³è·¯ç”±çš„å·¥å…·ä¼šåœæ­¢å·¥ä½œï¼Œç›´åˆ°ä½  [ç»­è®¢](https://portal.nousresearch.com/manage-subscription) æˆ–é€šè¿‡ `zed tools` æ”¹å›žç›´è¿ž Keyã€‚
+ç»ç½‘å…³è·¯ç”±çš„å·¥å…·ä¼šåœæ­¢å·¥ä½œï¼Œç›´åˆ°ä½  [ç»­è®¢](https://portal.zedteam.com/manage-subscription) æˆ–é€šè¿‡ `zed tools` æ”¹å›žç›´è¿ž Keyã€‚
 
 ### ä¸Žã€Œæ¶ˆæ¯ç½‘å…³ã€ï¼ˆå„èŠå¤©å¹³å°ï¼‰æ˜¯å¦å†²çªï¼Ÿ
 

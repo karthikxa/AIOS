@@ -1,4 +1,4 @@
-# OuLiPo
+﻿# OuLiPo
 
 *Ouvroir de Littérature Potentielle*, founded 1960 by Raymond Queneau and François Le Lionnais. Members: Perec, Calvino, Roubaud, Mathews, Garréta. "Rats who construct the labyrinth from which they plan to escape" (Queneau). Constraint as generative engine.
 

@@ -10,7 +10,7 @@ Modules
 config           — paths, constants, env overrides
 threat_scanner   — block prompt-injection before files enter the prompt
 memory_store     — SQLite memories + sessions (create/list/load/save/delete)
-skills_store     — scan ~/.hermes/skills/, build index, skill_view()
+skills_store     — scan ~/.zed/skills/, build index, skill_view()
 prompt_builder   — assemble the 8-layer system prompt before every turn
 tools            — tool schemas + executors (web_search, files, code, memory, ...)
 conversation_loop — the multi-turn AIAgent loop that streams tokens back

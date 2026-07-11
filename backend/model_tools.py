@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Model Tools Module
 
@@ -34,6 +34,10 @@ from toolsets import resolve_toolset, validate_toolset
 
 logger = logging.getLogger(__name__)
 
+# Tracks platform-bundle names already flagged in disabled_toolsets so the
+# advisory (#33924) is logged once per name, not on every tool recompute.
+_WARNED_DISABLED_BUNDLES: set = set()
+
 
 # =============================================================================
 # Async Bridging  (single source of truth -- used by registry.dispatch too)
@@ -66,7 +70,7 @@ def _get_worker_loop():
     gets its own long-lived loop stored in thread-local storage.  This
     prevents the "Event loop is closed" errors that occurred when
     asyncio.run() was used per-call: asyncio.run() creates a loop, runs
-    the coroutine, then *closes* the loop â€” but cached httpx/AsyncOpenAI
+    the coroutine, then *closes* the loop — but cached httpx/AsyncOpenAI
     clients remain bound to that now-dead loop and raise RuntimeError
     during garbage collection or subsequent use.
 
@@ -107,10 +111,10 @@ def _run_async(coro):
         loop = None
 
     if loop and loop.is_running():
-        # Inside an async context (gateway, RL env) â€” run in a fresh thread
+        # Inside an async context (gateway, RL env) — run in a fresh thread
         # with its own event loop we own a reference to, so on timeout we
         # can cancel the task inside that loop (ThreadPoolExecutor.cancel()
-        # only works on not-yet-started futures â€” it's a no-op on a running
+        # only works on not-yet-started futures — it's a no-op on a running
         # worker, which previously leaked the thread on every 300 s timeout).
         import concurrent.futures
 
@@ -140,7 +144,11 @@ def _run_async(coro):
                 worker_loop.close()
 
         pool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-        future = pool.submit(_run_in_worker)
+        # Carry the active profile + approval/sudo callbacks into the worker so
+        # async tools resolve get_zed_home() under the active profile.
+        from tools.thread_context import propagate_context_to_thread
+
+        future = pool.submit(propagate_context_to_thread(_run_in_worker))
         try:
             return future.result(timeout=300)
         except concurrent.futures.TimeoutError:
@@ -151,7 +159,7 @@ def _run_async(coro):
                     for t in asyncio.all_tasks(worker_loop):
                         worker_loop.call_soon_threadsafe(t.cancel)
                 except RuntimeError:
-                    # Loop already closed â€” nothing to cancel.
+                    # Loop already closed — nothing to cancel.
                     pass
             raise
         finally:
@@ -164,7 +172,7 @@ def _run_async(coro):
     # delegate_task), use a per-thread persistent loop.  This avoids
     # contention with the main thread's shared loop while keeping cached
     # httpx/AsyncOpenAI clients bound to a live loop for the thread's
-    # lifetime â€” preventing "Event loop is closed" on GC cleanup.
+    # lifetime — preventing "Event loop is closed" on GC cleanup.
     if threading.current_thread() is not threading.main_thread():
         worker_loop = _get_worker_loop()
         return worker_loop.run_until_complete(coro)
@@ -183,7 +191,7 @@ discover_builtin_tools()
 # a module-level side effect.  It was removed because discover_mcp_tools()
 # internally uses a blocking future.result(timeout=120) wait, and the
 # gateway lazy-imports this module from inside the asyncio event loop on
-# the first user message â€” freezing Discord/Telegram heartbeats for up to
+# the first user message — freezing Discord/Telegram heartbeats for up to
 # 120s whenever any configured MCP server was slow or unreachable (#16856).
 #
 # Each entry point now runs discovery explicitly at its own startup:
@@ -221,7 +229,6 @@ _LEGACY_TOOLSET_MAP = {
     "web_tools": ["web_search", "web_extract"],
     "terminal_tools": ["terminal"],
     "vision_tools": ["vision_analyze"],
-    "moa_tools": ["mixture_of_agents"],
     "image_tools": ["image_generate"],
     "skills_tools": ["skills_list", "skill_view", "skill_manage"],
     "browser_tools": [
@@ -323,7 +330,7 @@ def get_tool_definitions(
             # consistent state even on a cache hit.
             global _last_resolved_tool_names
             _last_resolved_tool_names = [t["function"]["name"] for t in cached]
-            # Return a shallow copy of the list but share the dict references â€”
+            # Return a shallow copy of the list but share the dict references —
             # schemas are treated as read-only by all known callers.
             return list(cached)
 
@@ -383,14 +390,14 @@ def _compute_tool_definitions(
                 resolved = resolve_toolset(toolset_name)
                 tools_to_include.update(resolved)
                 if not quiet_mode:
-                    print(f"âœ… Enabled toolset '{toolset_name}': {', '.join(resolved) if resolved else 'no tools'}")
+                    print(f"✅ Enabled toolset '{toolset_name}': {', '.join(resolved) if resolved else 'no tools'}")
             elif toolset_name in _LEGACY_TOOLSET_MAP:
                 legacy_tools = _LEGACY_TOOLSET_MAP[toolset_name]
                 tools_to_include.update(legacy_tools)
                 if not quiet_mode:
-                    print(f"âœ… Enabled legacy toolset '{toolset_name}': {', '.join(legacy_tools)}")
+                    print(f"✅ Enabled legacy toolset '{toolset_name}': {', '.join(legacy_tools)}")
             elif not quiet_mode:
-                print(f"âš ï¸  Unknown toolset: {toolset_name}")
+                print(f"⚠️  Unknown toolset: {toolset_name}")
     else:
         # Default: start with everything
         from toolsets import get_all_toolsets
@@ -404,20 +411,44 @@ def _compute_tool_definitions(
     if disabled_toolsets:
         for toolset_name in disabled_toolsets:
             if validate_toolset(toolset_name):
-                resolved = resolve_toolset(toolset_name)
-                tools_to_include.difference_update(resolved)
+                from toolsets import bundle_non_core_tools, get_toolset
+                if toolset_name.startswith("zed-") or (get_toolset(toolset_name) or {}).get("posture"):
+                    # Platform bundles (zed-*) include _ZED_CORE_TOOLS, and
+                    # posture toolsets (`posture: True`, e.g. `coding`) re-list
+                    # those same core tools without owning them, so subtracting
+                    # the whole toolset would strip core tools shared by other
+                    # enabled toolsets and empty the tool list (#33924, #57315).
+                    # Subtract only the non-core delta; keep core.
+                    to_remove = bundle_non_core_tools(toolset_name)
+                    tools_to_include.difference_update(to_remove)
+                    resolved = sorted(to_remove)
+                    if (not quiet_mode and toolset_name.startswith("zed-")
+                            and toolset_name not in _WARNED_DISABLED_BUNDLES):
+                        _WARNED_DISABLED_BUNDLES.add(toolset_name)
+                        logger.info(
+                            "agent.disabled_toolsets contains platform-bundle "
+                            "name '%s'; core tools are preserved and only its "
+                            "platform-specific tools (%s) are removed. Bundle "
+                            "names usually belong in `toolsets:`, not "
+                            "`disabled_toolsets` (#33924).",
+                            toolset_name,
+                            ", ".join(resolved) if resolved else "none",
+                        )
+                else:
+                    resolved = resolve_toolset(toolset_name)
+                    tools_to_include.difference_update(resolved)
                 if not quiet_mode:
-                    print(f"ðŸš« Disabled toolset '{toolset_name}': {', '.join(resolved) if resolved else 'no tools'}")
+                    print(f"🚫 Disabled toolset '{toolset_name}': {', '.join(resolved) if resolved else 'no tools'}")
             elif toolset_name in _LEGACY_TOOLSET_MAP:
                 legacy_tools = _LEGACY_TOOLSET_MAP[toolset_name]
                 tools_to_include.difference_update(legacy_tools)
                 if not quiet_mode:
-                    print(f"ðŸš« Disabled legacy toolset '{toolset_name}': {', '.join(legacy_tools)}")
+                    print(f"🚫 Disabled legacy toolset '{toolset_name}': {', '.join(legacy_tools)}")
             elif not quiet_mode:
-                print(f"âš ï¸  Unknown toolset: {toolset_name}")
+                print(f"⚠️  Unknown toolset: {toolset_name}")
 
     # Plugin-registered tools are now resolved through the normal toolset
-    # path â€” validate_toolset() / resolve_toolset() / get_all_toolsets()
+    # path — validate_toolset() / resolve_toolset() / get_all_toolsets()
     # all check the tool registry for plugin-provided toolsets.  No bypass
     # needed; plugins respect enabled_toolsets / disabled_toolsets like any
     # other toolset.
@@ -434,7 +465,7 @@ def _compute_tool_definitions(
 
     # The set of tool names that actually passed check_fn filtering.
     # Use this (not tools_to_include) for any downstream schema that references
-    # other tools by name â€” otherwise the model sees tools mentioned in
+    # other tools by name — otherwise the model sees tools mentioned in
     # descriptions that don't actually exist, and hallucinates calls to them.
     available_tool_names = {t["function"]["name"] for t in filtered_tools}
 
@@ -503,9 +534,9 @@ def _compute_tool_definitions(
     if not quiet_mode:
         if filtered_tools:
             tool_names = [t["function"]["name"] for t in filtered_tools]
-            print(f"ðŸ› ï¸  Final tool selection ({len(filtered_tools)} tools): {', '.join(tool_names)}")
+            print(f"🛠️  Final tool selection ({len(filtered_tools)} tools): {', '.join(tool_names)}")
         else:
-            print("ðŸ› ï¸  No tools selected (all filtered out or unavailable)")
+            print("🛠️  No tools selected (all filtered out or unavailable)")
 
     global _last_resolved_tool_names
     _last_resolved_tool_names = [t["function"]["name"] for t in filtered_tools]
@@ -513,23 +544,23 @@ def _compute_tool_definitions(
     # Sanitize schemas for broad backend compatibility. llama.cpp's
     # json-schema-to-grammar converter (used by its OAI server to build
     # GBNF tool-call parsers) rejects some shapes that cloud providers
-    # silently accept â€” bare "type": "object" with no properties,
+    # silently accept — bare "type": "object" with no properties,
     # string-valued schema nodes from malformed MCP servers, etc. This
     # is a no-op for schemas that are already well-formed.
     try:
         from tools.schema_sanitizer import sanitize_tool_schemas
         filtered_tools = sanitize_tool_schemas(filtered_tools)
-    except Exception as e:  # pragma: no cover â€” defensive
+    except Exception as e:  # pragma: no cover — defensive
         logger.warning("Schema sanitization skipped: %s", e)
 
-    # â”€â”€ Tool Search (progressive disclosure) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── Tool Search (progressive disclosure) ────────────────────────────
     # Conditionally replace MCP + plugin (non-core) tools with three bridge
     # tools (tool_search / tool_describe / tool_call) when the deferrable
     # surface exceeds the configured threshold (default 10% of context
     # window). Core Zed tools (toolsets._ZED_CORE_TOOLS) are NEVER
     # deferred. See tools/tool_search.py for full design notes.
     #
-    # This is deliberately the last step before returning â€” sanitization
+    # This is deliberately the last step before returning — sanitization
     # has already normalized schemas, and the assembly is idempotent in
     # case some caller invokes get_tool_definitions twice.
     try:
@@ -544,12 +575,12 @@ def _compute_tool_definitions(
             )
             if assembly.activated and not quiet_mode:
                 print(
-                    f"ðŸ”Ž Tool Search: {assembly.deferred_count} MCP/plugin tools deferred "
+                    f"🔎 Tool Search: {assembly.deferred_count} MCP/plugin tools deferred "
                     f"(~{assembly.deferred_tokens} tokens) behind tool_search/describe/call. "
                     f"Threshold ~{assembly.threshold_tokens} tokens."
                 )
             filtered_tools = assembly.tool_defs
-    except Exception as e:  # pragma: no cover â€” never break tool loading
+    except Exception as e:  # pragma: no cover — never break tool loading
         logger.warning("Tool search assembly skipped: %s", e)
 
     return filtered_tools
@@ -558,7 +589,7 @@ def _compute_tool_definitions(
 def _resolve_active_context_length() -> int:
     """Look up the active model's context length for the tool-search gate.
 
-    Returns 0 when the model can't be resolved â€” ``should_activate`` falls
+    Returns 0 when the model can't be resolved — ``should_activate`` falls
     back to a fixed token cutoff in that case.
     """
     try:
@@ -571,7 +602,13 @@ def _resolve_active_context_length() -> int:
         if not model_id:
             return 0
         from agent.model_metadata import get_model_context_length
-        return int(get_model_context_length(model_id) or 0)
+        # Honor explicit `model.context_length` in config.yaml — short-circuits
+        # the OpenRouter /models probe at get_model_context_length step 0, so
+        # non-OpenRouter providers don't pay the ~2-3s OpenRouter fetch at every
+        # CLI startup.  See issue #46620.
+        raw_ctx = model_cfg.get("context_length")
+        config_ctx = raw_ctx if isinstance(raw_ctx, int) and raw_ctx > 0 else None
+        return int(get_model_context_length(model_id, config_context_length=config_ctx) or 0)
     except Exception as e:
         logger.debug("Could not resolve active context length: %s", e)
         return 0
@@ -601,8 +638,8 @@ _READ_SEARCH_TOOLS = {"read_file", "search_files"}
 #
 # This helper strips structural framing tokens (XML role tags, CDATA,
 # markdown code fences) and caps the message at a sane upper bound before it
-# becomes part of the conversation. It's defense-in-depth â€” the json layer
-# already prevents framing escape â€” but cheap and worth having.
+# becomes part of the conversation. It's defense-in-depth — the json layer
+# already prevents framing escape — but cheap and worth having.
 #
 # Ported from ironclaw#1639.
 _TOOL_ERROR_ROLE_TAG_RE = re.compile(
@@ -674,7 +711,7 @@ def coerce_tool_args(tool_name: str, args: Dict[str, Any]) -> Dict[str, Any]:
         # Strings still go through _coerce_value first so JSON-encoded
         # arrays (``'["a","b"]'``) get parsed and nullable ``"null"``
         # becomes ``None`` rather than ``["null"]``.
-        # ``None`` itself is preserved â€” we don't know whether the model
+        # ``None`` itself is preserved — we don't know whether the model
         # meant "omit" or "empty list", and tools with sensible defaults
         # (e.g. read_file's normalize_read_pagination) already handle it.
         if expected == "array" and value is not None and not isinstance(value, (list, tuple)):
@@ -682,7 +719,7 @@ def coerce_tool_args(tool_name: str, args: Dict[str, Any]) -> Dict[str, Any]:
                 coerced = _coerce_value(value, expected, schema=prop_schema)
                 if coerced is not value:
                     # _coerce_value handled it (JSON-parsed list or
-                    # nullable "null" â†’ None).
+                    # nullable "null" → None).
                     args[key] = coerced
                     continue
                 # If the string looks like a JSON array but _coerce_value
@@ -690,7 +727,7 @@ def coerce_tool_args(tool_name: str, args: Dict[str, Any]) -> Dict[str, Any]:
                 if value.strip().startswith("["):
                     logger.warning(
                         "coerce_tool_args: %s.%s looks like a JSON array string "
-                        "but could not be parsed â€” model may have emitted a "
+                        "but could not be parsed — model may have emitted a "
                         "JSON-encoded string instead of a native array. "
                         "Falling back to single-element list.",
                         tool_name, key,
@@ -709,14 +746,126 @@ def coerce_tool_args(tool_name: str, args: Dict[str, Any]) -> Dict[str, Any]:
             continue
 
         if not isinstance(value, str):
+            # Recurse into already-native containers so JSON-encoded
+            # *elements* (array items) and *sub-fields* (nested object
+            # properties) get normalized too — e.g. ``todos: ['{"id":...}']``
+            # or ``tasks: [{"goal": "..."}]`` where an element was emitted as
+            # a JSON string. The top-level coercion above only repairs the
+            # outermost value.
+            if expected == "array" and isinstance(value, (list, tuple)):
+                args[key] = _normalize_json_strings_for_schema(value, prop_schema)
+            elif expected == "object" and isinstance(value, dict):
+                args[key] = _normalize_json_strings_for_schema(value, prop_schema)
             continue
         if not expected and not _schema_allows_null(prop_schema):
             continue
         coerced = _coerce_value(value, expected, schema=prop_schema)
         if coerced is not value:
             args[key] = coerced
+            # If we just JSON-parsed a string into a container, recurse so
+            # nested JSON-encoded elements/fields get normalized as well.
+            if isinstance(coerced, (list, tuple, dict)):
+                args[key] = _normalize_json_strings_for_schema(coerced, prop_schema)
 
     return args
+
+
+def _schema_accepts_kind(schema: Any, kind: str) -> bool:
+    """Return True when *schema* permits a value of JSON type *kind*.
+
+    Looks at ``type`` (string or list) and recurses through
+    ``anyOf``/``oneOf``/``allOf`` branches — matching the JSON-Schema shapes
+    open-weight models emit against. ``kind`` is ``"array"`` or ``"object"``.
+    """
+    if not isinstance(schema, dict):
+        return False
+    t = schema.get("type")
+    if t == kind or (isinstance(t, list) and kind in t):
+        return True
+    for union_key in ("anyOf", "oneOf", "allOf"):
+        branches = schema.get(union_key)
+        if isinstance(branches, list) and any(
+            _schema_accepts_kind(b, kind) for b in branches
+        ):
+            return True
+    return False
+
+
+def _normalize_json_strings_for_schema(value: Any, schema: Any) -> Any:
+    """Recursively parse JSON-encoded string values that a schema expects to
+    be arrays or objects, including nested array items and object properties.
+
+    Open-weight models (DeepSeek, Qwen, GLM, and others) sometimes emit a
+    structured field — or an *element* of a structured field — as a
+    JSON-encoded string instead of a native value. The top-level
+    :func:`coerce_tool_args` pass repairs the outermost value; this helper
+    walks the rest of the tree so cases like::
+
+        {"todos": ["{\\"id\\": \\"1\\", \\"content\\": \\"x\\"}"]}
+
+    (a list whose elements are JSON strings) and nested object sub-fields are
+    repaired too. Parsing is schema-guided: a string is only parsed when the
+    matching schema position actually expects an array or object, so
+    legitimate JSON-looking string fields (``type: string``) are preserved.
+
+    Ported from cline/cline#11803, adapted to zed-agent's coercion layer.
+    Returns the original value object when nothing changed (identity preserved
+    so callers can cheaply detect no-ops).
+    """
+    if not isinstance(schema, dict):
+        return value
+
+    # Parse a JSON-encoded string into the container the schema expects.
+    if isinstance(value, str):
+        trimmed = value.strip()
+        expects_array = _schema_accepts_kind(schema, "array")
+        expects_object = _schema_accepts_kind(schema, "object")
+        if (expects_array and trimmed.startswith("[")) or (
+            expects_object and trimmed.startswith("{")
+        ):
+            try:
+                parsed = json.loads(trimmed)
+            except (ValueError, TypeError):
+                return value
+            if isinstance(parsed, list) and expects_array:
+                value = parsed
+            elif isinstance(parsed, dict) and expects_object:
+                value = parsed
+            else:
+                return value
+        else:
+            return value
+
+    # Recurse into list items using the ``items`` schema.
+    if isinstance(value, list):
+        items_schema = schema.get("items")
+        if not isinstance(items_schema, dict):
+            return value
+        changed = False
+        out = []
+        for item in value:
+            nxt = _normalize_json_strings_for_schema(item, items_schema)
+            changed = changed or (nxt is not item)
+            out.append(nxt)
+        return out if changed else value
+
+    # Recurse into object properties using each property's schema.
+    if isinstance(value, dict):
+        props = schema.get("properties")
+        if not isinstance(props, dict):
+            return value
+        changed = False
+        out = dict(value)
+        for k, prop_schema in props.items():
+            if k not in value or not isinstance(prop_schema, dict):
+                continue
+            nxt = _normalize_json_strings_for_schema(value[k], prop_schema)
+            if nxt is not value[k]:
+                out[k] = nxt
+                changed = True
+        return out if changed else value
+
+    return value
 
 
 def _coerce_value(value: str, expected_type, schema: dict | None = None):
@@ -728,7 +877,7 @@ def _coerce_value(value: str, expected_type, schema: dict | None = None):
         return None
 
     if isinstance(expected_type, list):
-        # Union type â€” try each in order, return first successful coercion
+        # Union type — try each in order, return first successful coercion
         for t in expected_type:
             result = _coerce_value(value, t, schema=schema)
             if result is not value:
@@ -796,7 +945,7 @@ def _coerce_json(value: str, expected_python_type: type):
         )
         return parsed
     logger.warning(
-        "coerce_tool_args: JSON-parsed value is %s, expected %s â€” skipping coercion",
+        "coerce_tool_args: JSON-parsed value is %s, expected %s — skipping coercion",
         type(parsed).__name__,
         expected_python_type.__name__,
     )
@@ -809,14 +958,14 @@ def _coerce_number(value: str, integer_only: bool = False):
         f = float(value)
     except (ValueError, OverflowError):
         return value
-    # Guard against inf/nan â€” not JSON-serializable, keep original string
+    # Guard against inf/nan — not JSON-serializable, keep original string
     if f != f or f == float("inf") or f == float("-inf"):
         return value
     # If it looks like an integer (no fractional part), return int
     if f == int(f):
         return int(f)
     if integer_only:
-        # Schema wants an integer but value has decimals â€” keep as string
+        # Schema wants an integer but value has decimals — keep as string
         return value
     return f
 
@@ -859,7 +1008,7 @@ def _emit_post_tool_call_hook(
 ) -> None:
     """Emit the ``post_tool_call`` observer hook.
 
-    No-ops cheaply when no plugin has registered for ``post_tool_call`` â€”
+    No-ops cheaply when no plugin has registered for ``post_tool_call`` —
     the ``has_hook`` gate skips both the result-field derivation and the
     payload dispatch so the no-listener path costs one dict lookup.  When
     ``status`` is not supplied, the ok/error fields are derived from the
@@ -933,14 +1082,14 @@ def handle_function_call(
     Returns:
         Function result as a JSON string.
     """
-    # Coerce string arguments to their schema-declared types (e.g. "42"â†’42)
+    # Coerce string arguments to their schema-declared types (e.g. "42"→42)
     function_args = coerce_tool_args(function_name, function_args)
     if not isinstance(function_args, dict):
         function_args = {}
     _tool_middleware_trace = list(tool_request_middleware_trace or [])
 
-    # â”€â”€ Tool Search bridge dispatch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    # tool_search and tool_describe are pure catalog reads â€” handle them
+    # ── Tool Search bridge dispatch ──────────────────────────────────
+    # tool_search and tool_describe are pure catalog reads — handle them
     # inline. tool_call is unwrapped to the underlying tool so that every
     # downstream hook (pre/post, edit approval, guardrails) sees the real
     # tool name, not the bridge.
@@ -1039,21 +1188,22 @@ def handle_function_call(
         if function_name in _AGENT_LOOP_TOOLS:
             return json.dumps({"error": f"{function_name} must be handled by the agent loop"})
 
-        # Check plugin hooks for a block directive (unless caller already
-        # checked â€” e.g. run_agent._invoke_tool passes skip=True to
+        # Check plugin hooks for a block/approve directive (unless caller
+        # already checked — e.g. run_agent._invoke_tool passes skip=True to
         # avoid double-firing the hook).
         #
         # Single-fire contract: pre_tool_call fires exactly once per tool
-        # execution. get_pre_tool_call_block_message() internally calls
-        # invoke_hook("pre_tool_call", ...) and returns the first block
-        # directive (if any), so observer plugins see the hook on that same
-        # pass. When skip=True, the caller already fired it â€” do nothing
-        # here.
+        # execution. resolve_pre_tool_block() internally calls
+        # invoke_hook("pre_tool_call", ...) once and returns the block message
+        # for a `block` directive OR for an `approve` directive whose human
+        # gate denied/timed-out/errored (fail-closed). Observer plugins see
+        # the hook on that same pass. When skip=True, the caller already
+        # fired it — do nothing here.
         if not skip_pre_tool_call_hook:
             block_message: Optional[str] = None
             try:
-                from zed_cli.plugins import get_pre_tool_call_block_message
-                block_message = get_pre_tool_call_block_message(
+                from zed_cli.plugins import resolve_pre_tool_block
+                block_message = resolve_pre_tool_block(
                     function_name,
                     function_args,
                     task_id=task_id or "",

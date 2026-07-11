@@ -1,4 +1,4 @@
-"""Stateful scrubber for reasoning/thinking blocks in streamed assistant text.
+﻿"""Stateful scrubber for reasoning/thinking blocks in streamed assistant text.
 
 ``run_agent._strip_think_blocks`` is regex-based and correct for a complete
 string, but when it runs *per-delta* in ``_fire_stream_delta`` it destroys

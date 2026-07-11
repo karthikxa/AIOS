@@ -64,7 +64,7 @@ npx hyperframes doctor                      # è¯Šæ–­çŽ¯å¢ƒé—®é
 
 æ¸²æŸ“å‚æ•°ï¼š`--quality draft|standard|high` Â· `--fps 24|30|60` Â· `--format mp4|webm` Â· `--docker`ï¼ˆå¯å¤çŽ°ï¼‰Â· `--strict`ã€‚
 
-å®Œæ•´ CLI å‚è€ƒï¼š[references/cli.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/cli.md)ã€‚
+å®Œæ•´ CLI å‚è€ƒï¼š[references/cli.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/cli.md)ã€‚
 
 ## åˆå§‹è®¾ç½®ï¼ˆä¸€æ¬¡æ€§ï¼‰
 
@@ -78,7 +78,7 @@ bash "$(dirname "$(find ~/.zed/skills -path '*/hyperframes/SKILL.md' 2>/dev/null
 3. é€šè¿‡ Puppeteer é¢„ç¼“å­˜ `chrome-headless-shell` â€” **å¿…éœ€**ï¼Œç”¨äºŽé€šè¿‡ Chrome çš„ `HeadlessExperimental.beginFrame` æ•èŽ·è·¯å¾„å®žçŽ°æœ€é«˜è´¨é‡æ¸²æŸ“ã€‚
 4. è¿è¡Œ `npx hyperframes doctor` å¹¶æŠ¥å‘Šç»“æžœã€‚
 
-è‹¥è®¾ç½®å¤±è´¥ï¼Œè¯·å‚é˜… [references/troubleshooting.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/troubleshooting.md)ã€‚
+è‹¥è®¾ç½®å¤±è´¥ï¼Œè¯·å‚é˜… [references/troubleshooting.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/troubleshooting.md)ã€‚
 
 ## æ“ä½œæµç¨‹
 
@@ -115,7 +115,7 @@ npx hyperframes init my-video --non-interactive
 
 åªæœ‰åœ¨ä¸»å¸§çœ‹èµ·æ¥æ­£ç¡®ä¹‹åŽï¼Œæ‰æ·»åŠ  `gsap.from()` å…¥åœºåŠ¨ç”»ï¼ˆ**å‘** CSS ä½ç½®åŠ¨ç”»ï¼‰å’Œ `gsap.to()` é€€åœºåŠ¨ç”»ï¼ˆ**ä»Ž** CSS ä½ç½®åŠ¨ç”»ï¼‰ã€‚
 
-å®Œæ•´çš„ data å±žæ€§ schema å’Œåˆæˆè§„åˆ™è§ [references/composition.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/composition.md)ã€‚
+å®Œæ•´çš„ data å±žæ€§ schema å’Œåˆæˆè§„åˆ™è§ [references/composition.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/composition.md)ã€‚
 
 ### 4. ä½¿ç”¨ GSAP åˆ¶ä½œåŠ¨ç”»
 
@@ -126,7 +126,7 @@ npx hyperframes init my-video --non-interactive
 - å…·æœ‰ç¡®å®šæ€§ â€” ç¦æ­¢ `Math.random()`ã€`Date.now()` æˆ–æŒ‚é’Ÿé€»è¾‘ã€‚å¦‚éœ€ä¼ªéšæœºæ•°ï¼Œä½¿ç”¨å¸¦ç§å­çš„ PRNGã€‚
 - åŒæ­¥æž„å»º â€” æ—¶é—´è½´æž„å»ºè¿‡ç¨‹ä¸­ç¦æ­¢ `async`/`await`ã€`setTimeout` æˆ– Promiseã€‚
 
-æ ¸å¿ƒ GSAP APIï¼ˆtweenã€easeã€staggerã€timelineï¼‰è§ [references/gsap.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/gsap.md)ã€‚
+æ ¸å¿ƒ GSAP APIï¼ˆtweenã€easeã€staggerã€timelineï¼‰è§ [references/gsap.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/gsap.md)ã€‚
 
 ### 5. åœºæ™¯é—´è½¬åœº
 
@@ -162,11 +162,11 @@ npx hyperframes render --quality high --output final.mp4     # æœ€ç»ˆäº
 
 ### 8. ç½‘ç«™è½¬è§†é¢‘ï¼ˆè‹¥ç”¨æˆ·æä¾› URLï¼‰
 
-ä½¿ç”¨ [references/website-to-video.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/website-to-video.md) ä¸­çš„ 7 æ­¥æ•èŽ·è½¬è§†é¢‘å·¥ä½œæµï¼šæ•èŽ· â†’ DESIGN.md â†’ SCRIPT.md â†’ åˆ†é•œ â†’ åˆæˆ â†’ æ¸²æŸ“ â†’ äº¤ä»˜ã€‚
+ä½¿ç”¨ [references/website-to-video.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/website-to-video.md) ä¸­çš„ 7 æ­¥æ•èŽ·è½¬è§†é¢‘å·¥ä½œæµï¼šæ•èŽ· â†’ DESIGN.md â†’ SCRIPT.md â†’ åˆ†é•œ â†’ åˆæˆ â†’ æ¸²æŸ“ â†’ äº¤ä»˜ã€‚
 
 ## å¸¸è§é™·é˜±
 
-- **`HeadlessExperimental.beginFrame' wasn't found`** â€” Chromium 147+ ç§»é™¤äº†æ­¤åè®®ã€‚ç¡®ä¿ä½¿ç”¨ `hyperframes@>=0.4.2`ï¼ˆè‡ªåŠ¨æ£€æµ‹å¹¶å›žé€€åˆ°æˆªå›¾æ¨¡å¼ï¼‰ã€‚åº”æ€¥æ–¹æ¡ˆï¼š`export PRODUCER_FORCE_SCREENSHOT=true`ã€‚å‚è§ [hyperframes#294](https://github.com/heygen-com/hyperframes/issues/294) å’Œ [references/troubleshooting.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/troubleshooting.md)ã€‚
+- **`HeadlessExperimental.beginFrame' wasn't found`** â€” Chromium 147+ ç§»é™¤äº†æ­¤åè®®ã€‚ç¡®ä¿ä½¿ç”¨ `hyperframes@>=0.4.2`ï¼ˆè‡ªåŠ¨æ£€æµ‹å¹¶å›žé€€åˆ°æˆªå›¾æ¨¡å¼ï¼‰ã€‚åº”æ€¥æ–¹æ¡ˆï¼š`export PRODUCER_FORCE_SCREENSHOT=true`ã€‚å‚è§ [hyperframes#294](https://github.com/heygen-com/hyperframes/issues/294) å’Œ [references/troubleshooting.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/troubleshooting.md)ã€‚
 - **ç³»ç»Ÿ Chromeï¼ˆéž `chrome-headless-shell`ï¼‰** â€” æ¸²æŸ“ä¼šæŒ‚èµ· 120 ç§’åŽè¶…æ—¶ã€‚è¿è¡Œ `npx puppeteer browsers install chrome-headless-shell`ï¼ˆsetup.sh å·²å¤„ç†æ­¤æ­¥éª¤ï¼‰ã€‚`hyperframes doctor` ä¼šæŠ¥å‘Šå°†ä½¿ç”¨å“ªä¸ªäºŒè¿›åˆ¶æ–‡ä»¶ã€‚
 - **ä»»ä½•åœ°æ–¹å‡ºçŽ° `repeat: -1`** â€” ä¼šç ´åæ•èŽ·å¼•æ“Žã€‚å§‹ç»ˆè®¡ç®—æœ‰é™çš„ repeat æ¬¡æ•°ã€‚
 - **åœ¨ç¨åŽå…¥åœºçš„ clip å…ƒç´ ä¸Šä½¿ç”¨ `gsap.set()`** â€” é¡µé¢åŠ è½½æ—¶è¯¥å…ƒç´ ä¸å­˜åœ¨ã€‚æ”¹ä¸ºåœ¨æ—¶é—´è½´å†…ä½¿ç”¨ `tl.set(selector, vars, timePosition)`ï¼Œä½ç½®åœ¨è¯¥ clip çš„ `data-start` å¤„æˆ–ä¹‹åŽã€‚
@@ -197,9 +197,9 @@ npx hyperframes render --quality high --output final.mp4     # æœ€ç»ˆäº
 
 ## å‚è€ƒèµ„æ–™
 
-- [composition.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/composition.md) â€” data å±žæ€§ã€æ—¶é—´è½´å¥‘çº¦ã€ä¸å¯è¿åçš„è§„åˆ™ã€æŽ’ç‰ˆ/èµ„æºè§„åˆ™
-- [cli.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/cli.md) â€” æ‰€æœ‰ CLI å‘½ä»¤ï¼ˆinitã€captureã€lintã€validateã€inspectã€previewã€renderã€transcribeã€ttsã€doctorã€browserã€infoã€upgradeã€benchmarkï¼‰
-- [gsap.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/gsap.md) â€” HyperFrames çš„ GSAP æ ¸å¿ƒ APIï¼ˆtweenã€easeã€staggerã€timelineã€matchMediaï¼‰
-- [features.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/features.md) â€” å­—å¹•ã€TTSã€éŸ³é¢‘å“åº”ã€æ ‡è®°é«˜äº®ã€è½¬åœºï¼ˆæŒ‰éœ€åŠ è½½ï¼‰
-- [website-to-video.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/website-to-video.md) â€” 7 æ­¥æ•èŽ·è½¬è§†é¢‘å·¥ä½œæµ
-- [troubleshooting.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/troubleshooting.md) â€” OpenClaw ä¿®å¤ã€çŽ¯å¢ƒå˜é‡ã€å¸¸è§æ¸²æŸ“é”™è¯¯
+- [composition.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/composition.md) â€” data å±žæ€§ã€æ—¶é—´è½´å¥‘çº¦ã€ä¸å¯è¿åçš„è§„åˆ™ã€æŽ’ç‰ˆ/èµ„æºè§„åˆ™
+- [cli.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/cli.md) â€” æ‰€æœ‰ CLI å‘½ä»¤ï¼ˆinitã€captureã€lintã€validateã€inspectã€previewã€renderã€transcribeã€ttsã€doctorã€browserã€infoã€upgradeã€benchmarkï¼‰
+- [gsap.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/gsap.md) â€” HyperFrames çš„ GSAP æ ¸å¿ƒ APIï¼ˆtweenã€easeã€staggerã€timelineã€matchMediaï¼‰
+- [features.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/features.md) â€” å­—å¹•ã€TTSã€éŸ³é¢‘å“åº”ã€æ ‡è®°é«˜äº®ã€è½¬åœºï¼ˆæŒ‰éœ€åŠ è½½ï¼‰
+- [website-to-video.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/website-to-video.md) â€” 7 æ­¥æ•èŽ·è½¬è§†é¢‘å·¥ä½œæµ
+- [troubleshooting.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/troubleshooting.md) â€” OpenClaw ä¿®å¤ã€çŽ¯å¢ƒå˜é‡ã€å¸¸è§æ¸²æŸ“é”™è¯¯

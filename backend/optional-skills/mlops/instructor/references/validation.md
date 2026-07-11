@@ -1,4 +1,4 @@
-# Advanced Validation Patterns
+﻿# Advanced Validation Patterns
 
 Complete guide to validation in Instructor using Pydantic.
 

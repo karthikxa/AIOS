@@ -1,4 +1,4 @@
-# Tokenization Algorithms Deep Dive
+﻿# Tokenization Algorithms Deep Dive
 
 Comprehensive explanation of BPE, WordPiece, and Unigram algorithms.
 

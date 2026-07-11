@@ -535,7 +535,7 @@ def run_whatsapp_cloud_setup() -> int:
     print("        Requires Meta's business verification process â€”")
     print("        Business Manager â†’ Security Center â†’ Start Verification.")
     print()
-    print("  Docs: https://zed-agent.nousresearch.com/docs/user-guide/")
+    print("  Docs: https://zed-agent.zedteam.com/docs/user-guide/")
     print("        messaging/whatsapp-cloud")
     print()
     return 0

@@ -15,17 +15,17 @@ description: "åœ¨ Linuxã€macOSã€WSL2ã€åŽŸç”Ÿ Windows æ
 åŸºäºŽ git çš„å®‰è£…æ–¹å¼ï¼Œè·Ÿè¸ª `main` åˆ†æ”¯ï¼Œå¯ç«‹å³èŽ·å–æœ€æ–°å˜æ›´ï¼š
 
 ```bash
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 ```
 
 ### Windowsï¼ˆåŽŸç”Ÿï¼ŒPowerShellï¼‰
 
-åŽŸç”Ÿ Windows æ— éœ€ WSL å³å¯è¿è¡Œ Zedâ€”â€”CLIã€gatewayã€TUI å’Œå·¥å…·å‡å¯åŽŸç”Ÿè¿è¡Œã€‚ï¼ˆåŽŸç”Ÿå®‰è£…ä¸Ž WSL2 å®‰è£…å¯å¹²å‡€å…±å­˜ï¼›å”¯ä¸€ä»…é™ WSL2 çš„åŠŸèƒ½è§ä¸‹æ–¹åŠŸèƒ½è¯´æ˜Žã€‚ï¼‰é‡åˆ° bug è¯·[æäº¤ issue](https://github.com/NousResearch/zed-agent/issues)ã€‚
+åŽŸç”Ÿ Windows æ— éœ€ WSL å³å¯è¿è¡Œ Zedâ€”â€”CLIã€gatewayã€TUI å’Œå·¥å…·å‡å¯åŽŸç”Ÿè¿è¡Œã€‚ï¼ˆåŽŸç”Ÿå®‰è£…ä¸Ž WSL2 å®‰è£…å¯å¹²å‡€å…±å­˜ï¼›å”¯ä¸€ä»…é™ WSL2 çš„åŠŸèƒ½è§ä¸‹æ–¹åŠŸèƒ½è¯´æ˜Žã€‚ï¼‰é‡åˆ° bug è¯·[æäº¤ issue](https://github.com/zedteam/zed-agent/issues)ã€‚
 
 æ‰“å¼€ PowerShell å¹¶è¿è¡Œï¼š
 
 ```powershell
-iex (irm https://zed-agent.nousresearch.com/install.ps1)
+iex (irm https://zed-agent.zedteam.com/install.ps1)
 ```
 
 å®‰è£…ç¨‹åºå¤„ç†**ä¸€åˆ‡**ï¼š`uv`ã€Python 3.11ã€Node.js 22ã€`ripgrep`ã€`ffmpeg`ï¼Œ**ä»¥åŠä¸€ä¸ªä¾¿æºå¼ Git Bash**ï¼ˆPortableGitâ€”â€”ä¸€ä¸ªè‡ªåŒ…å«çš„ Git-for-Windows å‘è¡Œç‰ˆï¼Œé™„å¸¦ `bash.exe` å’Œ Zed ç”¨äºŽ shell å‘½ä»¤çš„å®Œæ•´ POSIX å·¥å…·é“¾ï¼›åœ¨ 32 ä½ Windows ä¸Šå®‰è£…ç¨‹åºä¼šå›žé€€åˆ° MinGitï¼ŒåŽè€…ç¼ºå°‘ bashï¼Œç»ˆç«¯å·¥å…·å’Œ agent æµè§ˆå™¨åŠŸèƒ½å°†è¢«ç¦ç”¨ï¼‰ã€‚å®ƒå°†ä»“åº“å…‹éš†åˆ° `%LOCALAPPDATA%\zed\zed-agent`ï¼Œåˆ›å»ºè™šæ‹ŸçŽ¯å¢ƒï¼Œå¹¶å°† `zed` æ·»åŠ åˆ°**ç”¨æˆ· PATH**ã€‚å®‰è£…å®ŒæˆåŽè¯·é‡å¯ç»ˆç«¯ï¼ˆæˆ–æ‰“å¼€æ–°çš„ PowerShell çª—å£ï¼‰ä»¥ä½¿ PATH ç”Ÿæ•ˆã€‚
@@ -48,7 +48,7 @@ iex (irm https://zed-agent.nousresearch.com/install.ps1)
 Zed çŽ°åœ¨ä¹Ÿæä¾› Termux æ„ŸçŸ¥çš„å®‰è£…è·¯å¾„ï¼š
 
 ```bash
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 ```
 
 å®‰è£…ç¨‹åºä¼šè‡ªåŠ¨æ£€æµ‹ Termux å¹¶åˆ‡æ¢åˆ°ç»è¿‡æµ‹è¯•çš„ Android æµç¨‹ï¼š
@@ -110,7 +110,7 @@ zed config set     # è®¾ç½®å•ä¸ªé…ç½®é¡¹
 zed setup          # æˆ–è¿è¡Œå®Œæ•´çš„è®¾ç½®å‘å¯¼ä¸€æ¬¡æ€§é…ç½®æ‰€æœ‰å†…å®¹
 ```
 
-:::tip æœ€å¿«è·¯å¾„ï¼šNous Portal
+:::tip æœ€å¿«è·¯å¾„ï¼šZed Portal
 ä¸€ä¸ªè®¢é˜…æ¶µç›– 300+ ä¸ªæ¨¡åž‹ä»¥åŠ [Tool Gateway](/user-guide/features/tool-gateway)ï¼ˆç½‘ç»œæœç´¢ã€å›¾åƒç”Ÿæˆã€TTSã€äº‘ç«¯æµè§ˆå™¨ï¼‰ã€‚æ— éœ€é€ä¸€ç®¡ç†å„å·¥å…·çš„å¯†é’¥ï¼š
 
 ```bash
@@ -167,13 +167,13 @@ zed setup --portal
 2. **ä»¥éžç‰¹æƒæœåŠ¡ç”¨æˆ·èº«ä»½**ï¼Œè¿è¡Œå¸¸è§„å®‰è£…ç¨‹åºã€‚å®ƒä¼šæ£€æµ‹åˆ°ç¼ºå°‘ sudoï¼Œè·³è¿‡ `--with-deps`ï¼Œå¹¶å°† Chromium å®‰è£…åˆ°ç”¨æˆ·æœ¬åœ°çš„ Playwright ç¼“å­˜ä¸­ï¼š
 
    ```bash
-   curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+   curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
    ```
 
    å¦‚æžœæƒ³å®Œå…¨è·³è¿‡ Playwright æ­¥éª¤â€”â€”ä¾‹å¦‚åœ¨æ— å¤´çŽ¯å¢ƒä¸­è¿è¡Œä¸”ä¸éœ€è¦æµè§ˆå™¨è‡ªåŠ¨åŒ–â€”â€”ä¼ å…¥ `--skip-browser`ï¼š
 
    ```bash
-   curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash -s -- --skip-browser
+   curl -fsSL https://zed-agent.zedteam.com/install.sh | bash -s -- --skip-browser
    ```
 
 3. **ä½¿ `zed` å¯¹æœåŠ¡ç”¨æˆ·çš„ shell å¯ç”¨ã€‚** å®‰è£…ç¨‹åºå°†å¯åŠ¨å™¨å†™å…¥ `~/.local/bin/zed`ã€‚ç³»ç»ŸæœåŠ¡è´¦æˆ·é€šå¸¸å…·æœ‰ä¸åŒ…å« `~/.local/bin` çš„æœ€å° PATHã€‚å¯ä»¥å°†å…¶æ·»åŠ åˆ°ç”¨æˆ·çŽ¯å¢ƒï¼Œæˆ–å°†å¯åŠ¨å™¨ç¬¦å·é“¾æŽ¥åˆ°ç³»ç»Ÿä½ç½®ï¼š

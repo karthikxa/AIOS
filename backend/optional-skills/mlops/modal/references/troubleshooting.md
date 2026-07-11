@@ -1,4 +1,4 @@
-# Modal Troubleshooting Guide
+﻿# Modal Troubleshooting Guide
 
 ## Installation Issues
 

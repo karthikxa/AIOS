@@ -1,4 +1,4 @@
-# TensorRT-LLM Optimization Guide
+﻿# TensorRT-LLM Optimization Guide
 
 Comprehensive guide to optimizing LLM inference with TensorRT-LLM.
 

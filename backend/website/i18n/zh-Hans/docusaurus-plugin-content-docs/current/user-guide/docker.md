@@ -21,7 +21,7 @@ Docker ä¸Ž Zed Agent çš„äº¤é›†æœ‰ä¸¤ç§æˆªç„¶ä�
 mkdir -p ~/.zed
 docker run -it --rm \
   -v ~/.zed:/opt/data \
-  nousresearch/zed-agent setup
+  zedteam/zed-agent setup
 ```
 
 è¿™å°†è¿›å…¥è®¾ç½®å‘å¯¼ï¼Œå‘å¯¼ä¼šæç¤ºä½ è¾“å…¥ API å¯†é’¥å¹¶å°†å…¶å†™å…¥ `~/.zed/.env`ã€‚ä½ åªéœ€æ‰§è¡Œä¸€æ¬¡ã€‚å¼ºçƒˆå»ºè®®æ­¤æ—¶ä¸º gateway é…ç½®ä¸€ä¸ªèŠå¤©ç³»ç»Ÿã€‚
@@ -36,7 +36,7 @@ docker run -d \
   --restart unless-stopped \
   -v ~/.zed:/opt/data \
   -p 8642:8642 \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 ç«¯å£ 8642 æš´éœ² gateway çš„ [OpenAI å…¼å®¹ API æœåŠ¡å™¨](./features/api-server.md)å’Œå¥åº·æ£€æŸ¥ç«¯ç‚¹ã€‚å¦‚æžœä½ åªä½¿ç”¨èŠå¤©å¹³å°ï¼ˆTelegramã€Discord ç­‰ï¼‰ï¼Œè¯¥ç«¯å£æ˜¯å¯é€‰çš„ï¼›ä½†å¦‚æžœä½ å¸Œæœ› dashboard æˆ–å¤–éƒ¨å·¥å…·è®¿é—® gatewayï¼Œåˆ™å¿…é¡»å¼€æ”¾ã€‚
@@ -53,7 +53,7 @@ docker run -d \
   -e API_SERVER_HOST=0.0.0.0 \
   -e API_SERVER_KEY="$(openssl rand -hex 32)" \
   -e API_SERVER_CORS_ORIGINS='*' \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 åœ¨é¢å‘äº’è”ç½‘çš„æœºå™¨ä¸Šå¼€æ”¾ä»»ä½•ç«¯å£éƒ½å­˜åœ¨å®‰å…¨é£Žé™©ã€‚é™¤éžä½ äº†è§£ç›¸å…³é£Žé™©ï¼Œå¦åˆ™ä¸åº”è¿™æ ·åšã€‚
@@ -69,7 +69,7 @@ docker run -d \
   -v ~/.zed:/opt/data \
   -p 8642:8642 \
   -e ZED_DASHBOARD=1 \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 å…¥å£ç‚¹åœ¨ `exec` ä¸»å‘½ä»¤ä¹‹å‰ï¼Œä»¥éž root ç”¨æˆ· `zed` åœ¨åŽå°å¯åŠ¨ `zed dashboard`ã€‚Dashboard è¾“å‡ºåœ¨ `docker logs` ä¸­ä»¥ `[dashboard]` ä¸ºå‰ç¼€ï¼Œä¾¿äºŽä¸Ž gateway æ—¥å¿—åŒºåˆ†ã€‚
@@ -118,7 +118,7 @@ dashboard è¿›ç¨‹å´©æºƒï¼Œs6-overlay ä¼šåœ¨çŸ­æš‚é
 ```sh
 docker run -it --rm \
   -v ~/.zed:/opt/data \
-  nousresearch/zed-agent
+  zedteam/zed-agent
 ```
 
 æˆ–è€…ï¼Œå¦‚æžœä½ å·²é€šè¿‡ Docker Desktop ç­‰æ–¹å¼åœ¨è¿è¡Œä¸­çš„å®¹å™¨å†…æ‰“å¼€äº†ç»ˆç«¯ï¼Œç›´æŽ¥è¿è¡Œï¼š
@@ -161,7 +161,7 @@ docker run -d \
   --restart unless-stopped \
   -v ~/.zed-work:/opt/data \
   -p 8642:8642 \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 
 # ä¸ªäºº profile
 docker run -d \
@@ -169,7 +169,7 @@ docker run -d \
   --restart unless-stopped \
   -v ~/.zed-personal:/opt/data \
   -p 8643:8642 \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 åœ¨ Docker ä¸­ä½¿ç”¨ç‹¬ç«‹å®¹å™¨è€Œéž profile çš„åŽŸå› ï¼š
@@ -185,7 +185,7 @@ docker run -d \
 ```yaml
 services:
   zed-work:
-    image: nousresearch/zed-agent:latest
+    image: zedteam/zed-agent:latest
     container_name: zed-work
     restart: unless-stopped
     command: gateway run
@@ -195,7 +195,7 @@ services:
       - ~/.zed-work:/opt/data
 
   zed-personal:
-    image: nousresearch/zed-agent:latest
+    image: zedteam/zed-agent:latest
     container_name: zed-personal
     restart: unless-stopped
     command: gateway run
@@ -214,7 +214,7 @@ docker run -it --rm \
   -v ~/.zed:/opt/data \
   -e ANTHROPIC_API_KEY="sk-ant-..." \
   -e OPENAI_API_KEY="sk-..." \
-  nousresearch/zed-agent
+  zedteam/zed-agent
 ```
 
 ç›´æŽ¥ä¼ å…¥çš„ `-e` æ ‡å¿—ä¼šè¦†ç›– `.env` ä¸­çš„å€¼ã€‚è¿™å¯¹äºŽä¸å¸Œæœ›å°†å¯†é’¥å†™å…¥ç£ç›˜çš„ CI/CD æˆ–å¯†é’¥ç®¡ç†å™¨é›†æˆéžå¸¸æœ‰ç”¨ã€‚
@@ -230,7 +230,7 @@ docker run -it --rm \
 ```yaml
 services:
   zed:
-    image: nousresearch/zed-agent:latest
+    image: zedteam/zed-agent:latest
     container_name: zed
     restart: unless-stopped
     command: gateway run
@@ -274,7 +274,7 @@ docker run -d \
   --restart unless-stopped \
   --memory=4g --cpus=2 \
   -v ~/.zed:/opt/data \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 ## Dockerfile è¯´æ˜Ž
@@ -334,13 +334,13 @@ zed profile delete coder            # æ‹†é™¤ s6 æ§½
 æ‹‰å–æœ€æ–°é•œåƒå¹¶é‡å»ºå®¹å™¨ã€‚ä½ çš„æ•°æ®ç›®å½•ä¸å—å½±å“ã€‚
 
 ```sh
-docker pull nousresearch/zed-agent:latest
+docker pull zedteam/zed-agent:latest
 docker rm -f zed
 docker run -d \
   --name zed \
   --restart unless-stopped \
   -v ~/.zed:/opt/data \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 æˆ–ä½¿ç”¨ Docker Composeï¼š
@@ -374,10 +374,10 @@ SSH å’Œ Modal åŽç«¯ä¹Ÿä¼šè¿›è¡Œç›¸åŒçš„å�
 
 ### æŒä¹…å®‰è£…â€”â€”æž„å»ºæ´¾ç”Ÿé•œåƒ
 
-å½“å·¥å…·å¿…é¡»åœ¨æ¯æ¬¡å®¹å™¨å¯åŠ¨æ—¶ç«‹å³å¯ç”¨ä¸”æ— éœ€é‡æ–°å®‰è£…å»¶è¿Ÿæ—¶ï¼Œæž„å»ºä¸€ä¸ªç»§æ‰¿è‡ª `nousresearch/zed-agent` å¹¶åœ¨å±‚ä¸­å®‰è£…è¯¥å·¥å…·çš„æ–°é•œåƒï¼š
+å½“å·¥å…·å¿…é¡»åœ¨æ¯æ¬¡å®¹å™¨å¯åŠ¨æ—¶ç«‹å³å¯ç”¨ä¸”æ— éœ€é‡æ–°å®‰è£…å»¶è¿Ÿæ—¶ï¼Œæž„å»ºä¸€ä¸ªç»§æ‰¿è‡ª `zedteam/zed-agent` å¹¶åœ¨å±‚ä¸­å®‰è£…è¯¥å·¥å…·çš„æ–°é•œåƒï¼š
 
 ```dockerfile
-FROM nousresearch/zed-agent:latest
+FROM zedteam/zed-agent:latest
 
 USER root
 RUN apt-get update \
@@ -398,7 +398,7 @@ docker run -d \
   my-zed:latest gateway run
 ```
 
-å…¥å£ç‚¹è„šæœ¬å’Œ `/opt/data` è¯­ä¹‰åŽŸæ ·ç»§æ‰¿ï¼Œæœ¬é¡µå…¶ä½™å†…å®¹ä»ç„¶é€‚ç”¨ã€‚æ‹‰å–æ›´æ–°çš„ä¸Šæ¸¸ `nousresearch/zed-agent` æ—¶è®°å¾—é‡æ–°æž„å»ºé•œåƒã€‚
+å…¥å£ç‚¹è„šæœ¬å’Œ `/opt/data` è¯­ä¹‰åŽŸæ ·ç»§æ‰¿ï¼Œæœ¬é¡µå…¶ä½™å†…å®¹ä»ç„¶é€‚ç”¨ã€‚æ‹‰å–æ›´æ–°çš„ä¸Šæ¸¸ `zedteam/zed-agent` æ—¶è®°å¾—é‡æ–°æž„å»ºé•œåƒã€‚
 
 ### å¤æ‚å·¥å…·æˆ–å¤šæœåŠ¡æ ˆâ€”â€”è¿è¡Œ sidecar å®¹å™¨
 
@@ -407,7 +407,7 @@ docker run -d \
 ```yaml
 services:
   zed:
-    image: nousresearch/zed-agent:latest
+    image: zedteam/zed-agent:latest
     container_name: zed
     restart: unless-stopped
     command: gateway run
@@ -434,7 +434,7 @@ networks:
 
 ### å¹¿æ³›æœ‰ç”¨çš„å·¥å…·â€”â€”æäº¤ issue æˆ– pull request
 
-å¦‚æžœæŸä¸ªå·¥å…·å¯èƒ½å¯¹å¤§å¤šæ•° Zed Agent ç”¨æˆ·æœ‰ç”¨ï¼Œè€ƒè™‘å°†å…¶è´¡çŒ®åˆ°ä¸Šæ¸¸ï¼Œè€Œä¸æ˜¯åœ¨ç§æœ‰æ´¾ç”Ÿé•œåƒä¸­ç»´æŠ¤ã€‚åœ¨ [zed-agent ä»“åº“](https://github.com/NousResearch/zed-agent)æäº¤ issue æˆ– pull requestï¼Œæè¿°è¯¥å·¥å…·åŠå…¶ä½¿ç”¨åœºæ™¯ã€‚è¢«çº³å…¥å®˜æ–¹é•œåƒçš„å·¥å…·æƒ åŠæ‰€æœ‰ç”¨æˆ·ï¼Œå¹¶é¿å…äº†ç»´æŠ¤ä¸‹æ¸¸ fork çš„å¼€é”€ã€‚
+å¦‚æžœæŸä¸ªå·¥å…·å¯èƒ½å¯¹å¤§å¤šæ•° Zed Agent ç”¨æˆ·æœ‰ç”¨ï¼Œè€ƒè™‘å°†å…¶è´¡çŒ®åˆ°ä¸Šæ¸¸ï¼Œè€Œä¸æ˜¯åœ¨ç§æœ‰æ´¾ç”Ÿé•œåƒä¸­ç»´æŠ¤ã€‚åœ¨ [zed-agent ä»“åº“](https://github.com/zedteam/zed-agent)æäº¤ issue æˆ– pull requestï¼Œæè¿°è¯¥å·¥å…·åŠå…¶ä½¿ç”¨åœºæ™¯ã€‚è¢«çº³å…¥å®˜æ–¹é•œåƒçš„å·¥å…·æƒ åŠæ‰€æœ‰ç”¨æˆ·ï¼Œå¹¶é¿å…äº†ç»´æŠ¤ä¸‹æ¸¸ fork çš„å¼€é”€ã€‚
 
 ## è¿žæŽ¥æœ¬åœ°æŽ¨ç†æœåŠ¡å™¨ï¼ˆvLLMã€Ollama ç­‰ï¼‰
 
@@ -465,7 +465,7 @@ services:
             - capabilities: [gpu]
 
   zed:
-    image: nousresearch/zed-agent:latest
+    image: zedteam/zed-agent:latest
     container_name: zed
     restart: unless-stopped
     command: gateway run
@@ -509,7 +509,7 @@ docker run -d \
   --name zed \
   -v ~/.zed:/opt/data \
   -p 8642:8642 \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 ```yaml
@@ -528,7 +528,7 @@ docker run -d \
   --name zed \
   --network host \
   -v ~/.zed:/opt/data \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 ```yaml
@@ -594,7 +594,7 @@ docker run -d \
   --name zed \
   --shm-size=1g \
   -v ~/.zed:/opt/data \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 ### ç½‘ç»œé—®é¢˜åŽ gateway æ— æ³•é‡è¿ž
@@ -609,6 +609,6 @@ docker restart zed
 
 ```sh
 docker logs --tail 50 zed          # æœ€è¿‘æ—¥å¿—
-docker run -it --rm nousresearch/zed-agent:latest version     # éªŒè¯ç‰ˆæœ¬
+docker run -it --rm zedteam/zed-agent:latest version     # éªŒè¯ç‰ˆæœ¬
 docker stats zed                    # èµ„æºä½¿ç”¨æƒ…å†µ
 ```

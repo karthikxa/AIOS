@@ -64,7 +64,7 @@ npx hyperframes doctor                      # diagnose environment issues
 
 Render flags: `--quality draft|standard|high` Â· `--fps 24|30|60` Â· `--format mp4|webm` Â· `--docker` (reproducible) Â· `--strict`.
 
-Full CLI reference: [references/cli.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/cli.md).
+Full CLI reference: [references/cli.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/cli.md).
 
 ## Setup (one-time)
 
@@ -78,7 +78,7 @@ The script:
 3. Pre-caches `chrome-headless-shell` via Puppeteer â€” **required** for best-quality rendering via Chrome's `HeadlessExperimental.beginFrame` capture path.
 4. Runs `npx hyperframes doctor` and reports the result.
 
-See [references/troubleshooting.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/troubleshooting.md) if setup fails.
+See [references/troubleshooting.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/troubleshooting.md) if setup fails.
 
 ## Procedure
 
@@ -115,7 +115,7 @@ Write the static HTML+CSS for the **hero frame first** â€” no GSAP yet. The
 
 Only after the hero frame looks right, add `gsap.from()` entrances (animate **to** the CSS position) and `gsap.to()` exits (animate **from** it).
 
-See [references/composition.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/composition.md) for the full data-attribute schema and composition rules.
+See [references/composition.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/composition.md) for the full data-attribute schema and composition rules.
 
 ### 4. Animate with GSAP
 
@@ -126,7 +126,7 @@ Every composition must:
 - Be deterministic â€” no `Math.random()`, `Date.now()`, or wall-clock logic. Use a seeded PRNG if you need pseudo-randomness.
 - Build synchronously â€” no `async`/`await`, `setTimeout`, or Promises around timeline construction.
 
-See [references/gsap.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/gsap.md) for the core GSAP API (tweens, eases, stagger, timelines).
+See [references/gsap.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/gsap.md) for the core GSAP API (tweens, eases, stagger, timelines).
 
 ### 5. Transitions between scenes
 
@@ -162,11 +162,11 @@ npx hyperframes render --quality high --output final.mp4     # final delivery
 
 ### 8. Website-to-video (if the user gives a URL)
 
-Use the 7-step capture-to-video workflow in [references/website-to-video.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/website-to-video.md): capture â†’ DESIGN.md â†’ SCRIPT.md â†’ storyboard â†’ composition â†’ render â†’ deliver.
+Use the 7-step capture-to-video workflow in [references/website-to-video.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/website-to-video.md): capture â†’ DESIGN.md â†’ SCRIPT.md â†’ storyboard â†’ composition â†’ render â†’ deliver.
 
 ## Pitfalls
 
-- **`HeadlessExperimental.beginFrame' wasn't found`** â€” Chromium 147+ removed this protocol. Ensure you're on `hyperframes@>=0.4.2` (auto-detects and falls back to screenshot mode). Escape hatch: `export PRODUCER_FORCE_SCREENSHOT=true`. See [hyperframes#294](https://github.com/heygen-com/hyperframes/issues/294) and [references/troubleshooting.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/troubleshooting.md).
+- **`HeadlessExperimental.beginFrame' wasn't found`** â€” Chromium 147+ removed this protocol. Ensure you're on `hyperframes@>=0.4.2` (auto-detects and falls back to screenshot mode). Escape hatch: `export PRODUCER_FORCE_SCREENSHOT=true`. See [hyperframes#294](https://github.com/heygen-com/hyperframes/issues/294) and [references/troubleshooting.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/troubleshooting.md).
 - **System Chrome (not `chrome-headless-shell`)** â€” renders hang for 120s then timeout. Run `npx puppeteer browsers install chrome-headless-shell` (setup.sh does this). `hyperframes doctor` reports which binary will be used.
 - **`repeat: -1` anywhere** â€” breaks the capture engine. Always compute a finite repeat count.
 - **`gsap.set()` on clip elements that enter later** â€” the element doesn't exist at page load. Use `tl.set(selector, vars, timePosition)` inside the timeline instead, at or after the clip's `data-start`.
@@ -197,9 +197,9 @@ If `hyperframes render` fails, run `npx hyperframes doctor` and attach its outpu
 
 ## References
 
-- [composition.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/composition.md) â€” data attributes, timeline contract, non-negotiable rules, typography/asset rules
-- [cli.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/cli.md) â€” every CLI command (init, capture, lint, validate, inspect, preview, render, transcribe, tts, doctor, browser, info, upgrade, benchmark)
-- [gsap.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/gsap.md) â€” GSAP core API for HyperFrames (tweens, eases, stagger, timelines, matchMedia)
-- [features.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/features.md) â€” captions, TTS, audio-reactive, marker highlighting, transitions (load on demand)
-- [website-to-video.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/website-to-video.md) â€” 7-step capture-to-video workflow
-- [troubleshooting.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/hyperframes/references/troubleshooting.md) â€” OpenClaw fix, env vars, common render errors
+- [composition.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/composition.md) â€” data attributes, timeline contract, non-negotiable rules, typography/asset rules
+- [cli.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/cli.md) â€” every CLI command (init, capture, lint, validate, inspect, preview, render, transcribe, tts, doctor, browser, info, upgrade, benchmark)
+- [gsap.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/gsap.md) â€” GSAP core API for HyperFrames (tweens, eases, stagger, timelines, matchMedia)
+- [features.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/features.md) â€” captions, TTS, audio-reactive, marker highlighting, transitions (load on demand)
+- [website-to-video.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/website-to-video.md) â€” 7-step capture-to-video workflow
+- [troubleshooting.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/hyperframes/references/troubleshooting.md) â€” OpenClaw fix, env vars, common render errors

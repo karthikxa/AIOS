@@ -15,19 +15,19 @@ Zed isn't just a CLI tool. You can import `AIAgent` directly and use it programm
 Install Zed directly from the repository:
 
 ```bash
-pip install git+https://github.com/NousResearch/zed-agent.git
+pip install git+https://github.com/zedteam/zed-agent.git
 ```
 
 Or with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-uv pip install git+https://github.com/NousResearch/zed-agent.git
+uv pip install git+https://github.com/zedteam/zed-agent.git
 ```
 
 You can also pin it in your `requirements.txt`:
 
 ```text
-zed-agent @ git+https://github.com/NousResearch/zed-agent.git
+zed-agent @ git+https://github.com/zedteam/zed-agent.git
 ```
 
 :::tip

@@ -1,6 +1,6 @@
 """Central configuration for the Zed Pro agent.
 
-All paths resolve to ``C:\\Users\\<user>\\.hermes`` (the established Zed home
+All paths resolve to ``C:\\Users\\<user>\\.zed`` (the established Zed home
 on this machine) unless the ``ZED_HOME`` env var overrides it. This matches
 the existing zed-agent server, which uses the same folder for sessions,
 memories, and skills.
@@ -12,8 +12,8 @@ import os
 from pathlib import Path
 
 # ── Zed home ──────────────────────────────────────────────────────────────────
-# Mirrors server.py's resolution: ZED_HOME env var, else ~/.hermes.
-ZED_HOME: Path = Path(os.environ.get("ZED_HOME", str(Path.home() / ".hermes")))
+# Mirrors server.py's resolution: ZED_HOME env var, else ~/.zed.
+ZED_HOME: Path = Path(os.environ.get("ZED_HOME", str(Path.home() / ".zed")))
 ZED_HOME.mkdir(parents=True, exist_ok=True)
 
 # ── File locations ────────────────────────────────────────────────────────────

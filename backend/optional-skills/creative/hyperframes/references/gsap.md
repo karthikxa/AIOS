@@ -1,4 +1,4 @@
-# GSAP for HyperFrames
+﻿# GSAP for HyperFrames
 
 GSAP is the animation engine for all HyperFrames compositions. Load from CDN inside the composition:
 

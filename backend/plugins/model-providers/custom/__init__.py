@@ -1,4 +1,4 @@
-"""Custom / Ollama (local) provider profile.
+﻿"""Custom / Ollama (local) provider profile.
 
 Covers any endpoint registered as provider="custom", including local
 Ollama instances. Key quirks:

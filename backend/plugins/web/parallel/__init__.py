@@ -1,4 +1,4 @@
-"""Parallel.ai web search + extract plugin — bundled, auto-loaded.
+﻿"""Parallel.ai web search + extract plugin — bundled, auto-loaded.
 
 First plugin in this repo to expose an async :meth:`extract` — Parallel's
 SDK is async-native (``AsyncParallel.beta.extract``). The web_extract_tool

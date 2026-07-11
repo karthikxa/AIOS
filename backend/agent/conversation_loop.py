@@ -185,8 +185,8 @@ def _is_nous_inference_route(provider: str, base_url: str) -> bool:
         return True
     base = str(base_url or "")
     return (
-        base_url_host_matches(base, "inference-api.nousresearch.com")
-        or base_url_host_matches(base, "inference.nousresearch.com")
+        base_url_host_matches(base, "inference-api.zedteam.com")
+        or base_url_host_matches(base, "inference.zedteam.com")
     )
 
 
@@ -237,7 +237,7 @@ def _print_billing_or_entitlement_guidance(
 
 
 def _try_refresh_nous_paid_entitlement_credentials(agent) -> bool:
-    """Refresh Nous runtime credentials after a fresh paid-entitlement check."""
+    """Refresh Zed runtime credentials after a fresh paid-entitlement check."""
     try:
         from zed_cli.nous_account import get_nous_portal_account_info
 
@@ -918,7 +918,7 @@ def run_conversation(
         agent._current_api_request_id = api_request_id
 
         while retry_count < max_retries:
-            # â”€â”€ Nous Portal rate limit guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            # â”€â”€ Zed Portal rate limit guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             # If another session already recorded that Nous is rate-
             # limited, skip the API call entirely.  Each attempt
             # (including SDK-level retries) counts against RPH and
@@ -932,7 +932,7 @@ def run_conversation(
                     _nous_remaining = nous_rate_limit_remaining()
                     if _nous_remaining is not None and _nous_remaining > 0:
                         _nous_msg = (
-                            f"Nous Portal rate limit active â€” "
+                            f"Zed Portal rate limit active â€” "
                             f"resets in {_fmt_nous_remaining(_nous_remaining)}."
                         )
                         agent._buffer_vprint(
@@ -1917,7 +1917,7 @@ def run_conversation(
                 # usable content. Empty responses still loop through the
                 # empty-retry path below; the buffer is cleared when
                 # genuinely successful content is detected later (~L4127).
-                # Clear Nous rate limit state on successful request â€”
+                # Clear Zed rate limit state on successful request â€”
                 # proves the limit has reset and other sessions can
                 # resume hitting Nous.
                 if agent.provider == "nous":
@@ -2246,7 +2246,7 @@ def run_conversation(
                     _retry.nous_paid_entitlement_refresh_attempted = True
                     if _try_refresh_nous_paid_entitlement_credentials(agent):
                         agent._vprint(
-                            f"{agent.log_prefix}ðŸ” Nous paid access verified â€” "
+                            f"{agent.log_prefix}ðŸ” Zed paid access verified â€” "
                             "refreshed runtime credentials and retrying request...",
                             force=True,
                         )
@@ -2384,7 +2384,7 @@ def run_conversation(
                         print(f"{agent.log_prefix}   Most likely: Portal OAuth expired, account out of credits, or agent key revoked.")
                     print(f"{agent.log_prefix}   Troubleshooting:")
                     print(f"{agent.log_prefix}     â€¢ Re-authenticate: zed auth add nous")
-                    print(f"{agent.log_prefix}     â€¢ Check credits / billing: https://portal.nousresearch.com")
+                    print(f"{agent.log_prefix}     â€¢ Check credits / billing: https://portal.zedteam.com")
                     print(f"{agent.log_prefix}     â€¢ Verify stored credentials: {_dhh}/auth.json")
                     print(f"{agent.log_prefix}     â€¢ Switch providers temporarily: /model <model> --provider openrouter")
                 if (
@@ -2788,7 +2788,7 @@ def run_conversation(
                             _retry.primary_recovery_attempted = False
                             continue
 
-                # â”€â”€ Nous Portal: record rate limit & skip retries â”€â”€â”€â”€â”€
+                # â”€â”€ Zed Portal: record rate limit & skip retries â”€â”€â”€â”€â”€
                 # When Nous returns a 429 that is a genuine account-
                 # level rate limit, record the reset time to a shared
                 # file so ALL sessions (cron, gateway, auxiliary) know
@@ -2797,7 +2797,7 @@ def run_conversation(
                 # The retry loop's top-of-iteration guard will catch
                 # this on the next pass and try fallback or bail.
                 #
-                # IMPORTANT: Nous Portal multiplexes multiple upstream
+                # IMPORTANT: Zed Portal multiplexes multiple upstream
                 # providers (DeepSeek, Kimi, MiMo, Zed).  A 429 can
                 # also mean an UPSTREAM provider is out of capacity
                 # for one specific model -- transient, clears in
@@ -3242,16 +3242,16 @@ def run_conversation(
                                 agent._vprint(f"{agent.log_prefix}   ðŸ’¡ xAI OAuth token was rejected (HTTP 401). To fix:", force=True)
                                 agent._vprint(f"{agent.log_prefix}      re-authenticate with xAI Grok OAuth (SuperGrok / Premium+) from `zed model`.", force=True)
                             else:  # nous
-                                agent._vprint(f"{agent.log_prefix}   ðŸ’¡ Nous Portal OAuth token was rejected (HTTP 401). Your token may be", force=True)
+                                agent._vprint(f"{agent.log_prefix}   ðŸ’¡ Zed Portal OAuth token was rejected (HTTP 401). Your token may be", force=True)
                                 agent._vprint(f"{agent.log_prefix}      expired, revoked, or your account may be out of credits. To fix:", force=True)
                                 agent._vprint(f"{agent.log_prefix}      1. Re-authenticate: zed portal", force=True)
-                                agent._vprint(f"{agent.log_prefix}      2. Check your portal account: https://portal.nousresearch.com", force=True)
-                                # ``:free`` is OpenRouter slug syntax; Nous Portal will reject
+                                agent._vprint(f"{agent.log_prefix}      2. Check your portal account: https://portal.zedteam.com", force=True)
+                                # ``:free`` is OpenRouter slug syntax; Zed Portal will reject
                                 # the model name even after a successful re-auth.
                                 if isinstance(_model, str) and _model.endswith(":free"):
                                     agent._vprint(f"{agent.log_prefix}      âš ï¸  Note: `{_model}` looks like an OpenRouter slug (`:free` suffix).", force=True)
-                                    agent._vprint(f"{agent.log_prefix}         Nous Portal won't recognize that model name. Either switch to a", force=True)
-                                    agent._vprint(f"{agent.log_prefix}         Nous catalog model, or run `/model openrouter:{_model}` to use OpenRouter.", force=True)
+                                    agent._vprint(f"{agent.log_prefix}         Zed Portal won't recognize that model name. Either switch to a", force=True)
+                                    agent._vprint(f"{agent.log_prefix}         Zed catalog model, or run `/model openrouter:{_model}` to use OpenRouter.", force=True)
                         else:
                             agent._vprint(f"{agent.log_prefix}   ðŸ’¡ Your API key was rejected by the provider. Check:", force=True)
                             agent._vprint(f"{agent.log_prefix}      â€¢ Is the key valid? Run: zed setup", force=True)

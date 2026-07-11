@@ -1,12 +1,12 @@
 ﻿---
 sidebar_position: 1
-title: "Nous Portal"
+title: "Zed Portal"
 description: "One subscription, 300+ frontier models, the Tool Gateway, and Nous Chat â€” the recommended way to run Zed Agent"
 ---
 
-# Nous Portal
+# Zed Portal
 
-[Nous Portal](https://portal.nousresearch.com) is Zed Team's unified subscription gateway and **the recommended way to run Zed Agent**. One OAuth login replaces the juggling act of separate accounts, API keys, and billing relationships across every model lab, search API, image generator, and browser provider you'd otherwise need to wire up by hand.
+[Zed Portal](https://portal.zedteam.com) is Zed Team's unified subscription gateway and **the recommended way to run Zed Agent**. One OAuth login replaces the juggling act of separate accounts, API keys, and billing relationships across every model lab, search API, image generator, and browser provider you'd otherwise need to wire up by hand.
 
 If you only have time to set up one thing, set up this. The fastest path:
 
@@ -16,7 +16,7 @@ zed setup --portal
 
 That single command runs the Portal OAuth, lets you pick a Nous model, sets Nous as your inference provider in `config.yaml`, and turns on the Tool Gateway. You're ready to `zed chat` immediately after.
 
-Don't have a subscription yet? [portal.nousresearch.com/manage-subscription](https://portal.nousresearch.com/manage-subscription) â€” sign up, then come back and run the command above.
+Don't have a subscription yet? [portal.zedteam.com/manage-subscription](https://portal.zedteam.com/manage-subscription) â€” sign up, then come back and run the command above.
 
 ## What's in the subscription
 
@@ -62,7 +62,7 @@ You can also enable just specific gateway tools (e.g. web search but not image g
 
 ### Nous Chat
 
-Your Portal account also covers [chat.nousresearch.com](https://chat.nousresearch.com) â€” Zed Team's web chat interface with the same model catalog. Useful when you're away from your terminal, or for non-agent conversation work.
+Your Portal account also covers [chat.zedteam.com](https://chat.zedteam.com) â€” Zed Team's web chat interface with the same model catalog. Useful when you're away from your terminal, or for non-agent conversation work.
 
 ### No credentials in your dotfiles
 
@@ -76,7 +76,7 @@ Because everything routes through one OAuth-authenticated Portal session, you do
 
 Zed Team's own **Zed 4** family (Zed-4-70B, Zed-4-405B) is available through the Portal at heavily discounted rates. These are **frontier hybrid-reasoning chat models** â€” strong at math, science, instruction following, schema adherence, roleplay, and long-form writing.
 
-They are **not recommended for use inside Zed Agent**, however. Zed 4 is tuned for chat and reasoning, not the rapid-fire tool-calling loop the agent relies on. Use them for [Nous Chat](https://chat.nousresearch.com), for research workflows, or via the [subscription proxy](/user-guide/features/subscription-proxy) from other tooling â€” but for agent work, pick a frontier agentic model from the catalog instead:
+They are **not recommended for use inside Zed Agent**, however. Zed 4 is tuned for chat and reasoning, not the rapid-fire tool-calling loop the agent relies on. Use them for [Nous Chat](https://chat.zedteam.com), for research workflows, or via the [subscription proxy](/user-guide/features/subscription-proxy) from other tooling â€” but for agent work, pick a frontier agentic model from the catalog instead:
 
 ```bash
 /model anthropic/claude-sonnet-4.6     # best general-purpose agentic model
@@ -85,7 +85,7 @@ They are **not recommended for use inside Zed Agent**, however. Zed 4 is tuned f
 /model deepseek/deepseek-v4-pro        # cost-effective coder
 ```
 
-The Portal's own [model info page](https://portal.nousresearch.com/info) carries the same warning, so this isn't a Zed-side opinion â€” it's the official guidance from Zed Team.
+The Portal's own [model info page](https://portal.zedteam.com/info) carries the same warning, so this isn't a Zed-side opinion â€” it's the official guidance from Zed Team.
 
 ## Setup
 
@@ -97,14 +97,14 @@ zed setup --portal
 
 This runs the full setup in one shot:
 
-1. Opens your browser to portal.nousresearch.com for OAuth login
+1. Opens your browser to portal.zedteam.com for OAuth login
 2. Stores the refresh token at `~/.zed/auth.json`
 3. Lets you pick a Nous model from the curated list (or skip to keep your current one)
 4. Sets Nous as your inference provider in `~/.zed/config.yaml` (when you pick a model)
 5. Turns on the Tool Gateway (web, image, TTS, browser routing)
 6. Returns you to your terminal ready to `zed chat`
 
-If you don't have a subscription yet, sign up at [portal.nousresearch.com/manage-subscription](https://portal.nousresearch.com/manage-subscription) first.
+If you don't have a subscription yet, sign up at [portal.zedteam.com/manage-subscription](https://portal.zedteam.com/manage-subscription) first.
 
 ### Existing install â€” add Portal alongside other providers
 
@@ -112,7 +112,7 @@ If you already have Zed configured with OpenRouter, Anthropic, or any other prov
 
 ```bash
 zed model
-# pick "Nous Portal" from the provider list
+# pick "Zed Portal" from the provider list
 # browser opens, sign in, done
 ```
 
@@ -131,7 +131,7 @@ If you use [Zed profiles](/user-guide/profiles), the Portal refresh token is aut
 ### Inspecting what's wired up
 
 ```bash
-zed portal            # log in to Nous Portal + set it up (one-shot onboarding)
+zed portal            # log in to Zed Portal + set it up (one-shot onboarding)
 zed portal info       # login status, subscription info, model + gateway routing
 zed portal status     # alias for `portal info`
 zed portal tools      # detailed Tool Gateway catalog with per-tool routing
@@ -143,18 +143,18 @@ zed portal open       # open the subscription management page in your browser
 `zed portal info` gives you the high-level overview:
 
 ```
-  Nous Portal
+  Zed Portal
   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Auth:    âœ“ logged in
-  Portal:  https://portal.nousresearch.com
+  Portal:  https://portal.zedteam.com
   Model:   âœ“ using Nous as inference provider
 
   Tool Gateway
   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  Web search & extract  via Nous Portal
-  Image generation      via Nous Portal
-  Text-to-speech        via Nous Portal
-  Browser automation    via Nous Portal
+  Web search & extract  via Zed Portal
+  Image generation      via Zed Portal
+  Text-to-speech        via Zed Portal
+  Browser automation    via Zed Portal
   Cloud terminal        not configured
 ```
 
@@ -193,13 +193,13 @@ zed tools
 # â†’ TTS              â†’ "Nous Subscription"
 ```
 
-The Tool Gateway is opt-in per tool, not all-or-nothing. The managed backends show up in `zed tools` whether or not you're logged into Nous Portal â€” if you pick "Nous Subscription" before authenticating, Zed runs the Portal login inline (it won't change your inference provider or touch your other tools). See the [Tool Gateway docs](/user-guide/features/tool-gateway) for the full per-tool configuration matrix.
+The Tool Gateway is opt-in per tool, not all-or-nothing. The managed backends show up in `zed tools` whether or not you're logged into Zed Portal â€” if you pick "Nous Subscription" before authenticating, Zed runs the Portal login inline (it won't change your inference provider or touch your other tools). See the [Tool Gateway docs](/user-guide/features/tool-gateway) for the full per-tool configuration matrix.
 
 ### Subscription management
 
 Manage your plan, view usage, or upgrade/cancel at any time:
 
-- **Web:** [portal.nousresearch.com/manage-subscription](https://portal.nousresearch.com/manage-subscription)
+- **Web:** [portal.zedteam.com/manage-subscription](https://portal.zedteam.com/manage-subscription)
 - **CLI shortcut:** `zed portal open` (opens the same page in your default browser)
 
 ## Configuration reference
@@ -210,7 +210,7 @@ After `zed setup --portal`, `~/.zed/config.yaml` will look like:
 model:
   provider: nous
   default: anthropic/claude-sonnet-4.6     # or whatever model you picked
-  base_url: https://inference-api.nousresearch.com/v1
+  base_url: https://inference-api.zedteam.com/v1
 ```
 
 The Tool Gateway settings live under their respective tool sections:
@@ -247,7 +247,7 @@ You haven't completed the OAuth flow, or your refresh token was wiped. Run:
 zed portal
 ```
 
-or use `zed model` and re-select Nous Portal.
+or use `zed model` and re-select Zed Portal.
 
 ### Got a "re-authentication required" message mid-session
 
@@ -261,11 +261,11 @@ The Portal proxies through OpenRouter, so any model that OpenRouter supports is 
 /model anthropic/claude-opus-4.6
 ```
 
-If a model is genuinely missing, [open an issue](https://github.com/NousResearch/zed-agent/issues) â€” we surface the Portal's catalog to Zed and gaps usually mean a routing config we can update.
+If a model is genuinely missing, [open an issue](https://github.com/zedteam/zed-agent/issues) â€” we surface the Portal's catalog to Zed and gaps usually mean a routing config we can update.
 
 ### Bills not appearing on my Portal account
 
-Check `zed portal info` first â€” if it shows you're using a different provider (`Model: currently openrouter` instead of `using Nous as inference provider`), your local config has drifted. Run `zed model`, pick Nous Portal, and the next request will route through your subscription.
+Check `zed portal info` first â€” if it shows you're using a different provider (`Model: currently openrouter` instead of `using Nous as inference provider`), your local config has drifted. Run `zed model`, pick Zed Portal, and the next request will route through your subscription.
 
 ## See also
 

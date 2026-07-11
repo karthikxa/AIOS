@@ -1,4 +1,4 @@
-"""Google OAuth plugin — token state, tool registration, and route wiring.
+﻿"""Google OAuth plugin — token state, tool registration, and route wiring.
 
 Exports:
   - ``_google_tokens`` / ``set_tokens`` / ``is_connected`` — shared in-memory state

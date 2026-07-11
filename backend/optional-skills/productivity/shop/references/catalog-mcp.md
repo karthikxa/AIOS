@@ -1,4 +1,4 @@
-# Direct Global Catalog MCP
+﻿# Direct Global Catalog MCP
 
 Use this reference when the CLI cannot be installed or when you need to inspect the raw request shape. Product search must use Shopify Global Catalog MCP.
 

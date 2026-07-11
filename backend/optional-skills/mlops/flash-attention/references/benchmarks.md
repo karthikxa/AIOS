@@ -1,4 +1,4 @@
-# Performance Benchmarks
+﻿# Performance Benchmarks
 
 ## Contents
 - Speed comparisons across GPUs

@@ -221,7 +221,7 @@ def build_nous_credits_snapshot(account_info) -> Optional[AccountUsageSnapshot]:
             provider="nous",
             source="portal-account",
             fetched_at=_utc_now(),
-            title="Nous credits",
+            title="Zed credits",
             plan=plan,
             windows=tuple(windows),
             details=tuple(details),
@@ -330,7 +330,7 @@ def _snapshot_from_credits_state(state) -> Optional[AccountUsageSnapshot]:
             provider="nous",
             source="dev-fixture",
             fetched_at=_utc_now(),
-            title="Nous credits",
+            title="Zed credits",
             windows=tuple(windows),
             details=tuple(details),
         )

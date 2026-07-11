@@ -1,4 +1,4 @@
-"""Microsoft Graph app-only authentication helpers."""
+﻿"""Microsoft Graph app-only authentication helpers."""
 
 from __future__ import annotations
 

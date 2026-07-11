@@ -1,4 +1,4 @@
-"""Gateway-side relay authentication primitives. EXPERIMENTAL.
+﻿"""Gateway-side relay authentication primitives. EXPERIMENTAL.
 
 The connector⇄gateway channel is authenticated because a gateway may be
 customer-managed and internet-exposed (see the connector repo

@@ -1,4 +1,4 @@
-"""Generic slash-command confirmation primitive (gateway-side).
+﻿"""Generic slash-command confirmation primitive (gateway-side).
 
 Slash commands that have a non-destructive but expensive side effect worth
 surfacing to the user (currently only ``/reload-mcp``, which invalidates

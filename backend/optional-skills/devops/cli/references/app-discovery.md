@@ -1,4 +1,4 @@
-# Discovering Apps
+﻿# Discovering Apps
 
 ## List All Apps
 

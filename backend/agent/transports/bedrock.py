@@ -1,4 +1,4 @@
-"""AWS Bedrock Converse API transport.
+﻿"""AWS Bedrock Converse API transport.
 
 Delegates to the existing adapter functions in agent/bedrock_adapter.py.
 Bedrock uses its own boto3 client (not the OpenAI SDK), so the transport

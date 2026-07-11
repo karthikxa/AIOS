@@ -1,4 +1,4 @@
-"""security-guidance plugin — fast pattern-matched security warnings on file writes.
+﻿"""security-guidance plugin — fast pattern-matched security warnings on file writes.
 
 Wires one behaviour:
 

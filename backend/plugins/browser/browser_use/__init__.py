@@ -1,4 +1,4 @@
-"""Browser Use cloud browser plugin — bundled, auto-loaded.
+﻿"""Browser Use cloud browser plugin — bundled, auto-loaded.
 
 Mirrors the ``plugins/web/<vendor>/`` layout: ``provider.py`` holds the
 provider class; ``__init__.py::register`` instantiates and registers it.

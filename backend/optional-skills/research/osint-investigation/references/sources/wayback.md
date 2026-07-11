@@ -1,4 +1,4 @@
-# Wayback Machine — Internet Archive CDX
+﻿# Wayback Machine — Internet Archive CDX
 
 ## 1. Summary
 

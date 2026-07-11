@@ -1,4 +1,4 @@
-# Authentication & Setup
+﻿# Authentication & Setup
 
 ## Install the CLI
 

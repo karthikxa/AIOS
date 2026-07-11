@@ -1,4 +1,4 @@
-"""Per-platform slash command access control.
+﻿"""Per-platform slash command access control.
 
 This module sits beside the existing per-platform allowlist (``allow_from``)
 and adds a second axis: of the users who are *allowed to talk to the

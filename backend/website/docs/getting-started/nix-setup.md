@@ -35,11 +35,11 @@ No clone needed. Nix fetches, builds, and runs everything:
 
 ```bash
 # Run directly (builds on first use, cached after)
-nix run github:NousResearch/zed-agent -- setup
-nix run github:NousResearch/zed-agent -- chat
+nix run github:zedteam/zed-agent -- setup
+nix run github:zedteam/zed-agent -- chat
 
 # Or install persistently
-nix profile install github:NousResearch/zed-agent
+nix profile install github:zedteam/zed-agent
 zed setup
 zed chat
 ```
@@ -50,13 +50,13 @@ After `nix profile install`, `zed`, `zed-agent`, and `zed-acp` are on your PATH.
 The default package doesn't include messaging platform libraries â€” they were moved to on-demand installation, which can't work in Nix's read-only environment. If you plan to connect the agent to Discord, Telegram, or Slack, install the `messaging` variant:
 
 ```bash
-nix profile install github:NousResearch/zed-agent#messaging
+nix profile install github:zedteam/zed-agent#messaging
 ```
 
 For all optional extras (voice, all providers, all platforms):
 
 ```bash
-nix profile install github:NousResearch/zed-agent#full
+nix profile install github:zedteam/zed-agent#full
 ```
 
 The `full` variant adds ~700 MB to the closure. If you only need messaging platforms, `#messaging` adds just ~33 MB.
@@ -66,7 +66,7 @@ The `full` variant adds ~700 MB to the closure. If you only need messaging platf
 <summary><strong>Building from a local clone</strong></summary>
 
 ```bash
-git clone https://github.com/NousResearch/zed-agent.git
+git clone https://github.com/zedteam/zed-agent.git
 cd zed-agent
 nix build
 ./result/bin/zed setup
@@ -91,7 +91,7 @@ This module requires NixOS. For non-NixOS systems (macOS, other Linux distros), 
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    zed-agent.url = "github:NousResearch/zed-agent";
+    zed-agent.url = "github:zedteam/zed-agent";
   };
 
   outputs = { nixpkgs, zed-agent, ... }: {
@@ -730,7 +730,7 @@ External flakes can override the package directly:
 
 ```nix
 {
-  inputs.zed-agent.url = "github:NousResearch/zed-agent";
+  inputs.zed-agent.url = "github:zedteam/zed-agent";
   outputs = { zed-agent, nixpkgs, ... }: {
     nixpkgs.overlays = [ zed-agent.overlays.default ];
     # Then:

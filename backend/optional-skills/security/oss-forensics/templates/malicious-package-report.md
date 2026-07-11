@@ -1,4 +1,4 @@
-# Malicious Package Investigation Report
+﻿# Malicious Package Investigation Report
 
 ---
 

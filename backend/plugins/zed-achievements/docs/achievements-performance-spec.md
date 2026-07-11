@@ -15,9 +15,9 @@ Observed on this machine/repo:
 - ~83 sessions
 - ~7,125 messages
 - ~3,623 tool calls
-- `evaluate_all()` ~13â€“16s per call
-- `/achievements` ~13â€“15s per call
-- `/overview` ~12â€“15s per call
+- `evaluate_all()` ~13–16s per call
+- `/achievements` ~13–15s per call
+- `/overview` ~12–15s per call
 - Overlap between endpoints increases perceived wait.
 
 Given current product direction, `/overview` and cross-tab top-banner slots are not needed.
@@ -93,15 +93,15 @@ Rules:
 
 ### Phase 1
 - In-memory cache + persisted snapshot file.
-- TTL: 60â€“180 seconds (configurable).
+- TTL: 60–180 seconds (configurable).
 - Single-flight dedupe for scan requests.
 - Persist plugin data under:
-  - `~/.zed/plugins/zed-achievements/scan_snapshot.json`
+  - `~/.Zed/plugins/zed-achievements/scan_snapshot.json`
 
 ### Phase 2
 - Incremental scan checkpoints with per-session fingerprints.
 - Persist checkpoint data under:
-  - `~/.zed/plugins/zed-achievements/scan_checkpoint.json`
+  - `~/.Zed/plugins/zed-achievements/scan_checkpoint.json`
 - Checkpoint stores, per session:
   - `session_id`
   - fingerprint (`updated_at`, message_count, or hash)
@@ -120,7 +120,7 @@ Rules:
 
 - Achievements tab requests `/achievements` once on mount.
 - No slot-based summary fetches.
-- If response says `is_stale=true`, UI may display â€œUpdating in backgroundâ€.
+- If response says `is_stale=true`, UI may display “Updating in background”.
 - Avoid duplicate mount-triggered calls and cancel stale requests on navigation.
 
 ---
@@ -166,7 +166,7 @@ Expose minimal diagnostics in `/scan-status`.
 ## 12) Persistence Files (Explicit)
 
 Plugin state directory:
-- `~/.zed/plugins/zed-achievements/`
+- `~/.Zed/plugins/zed-achievements/`
 
 Files:
 - `state.json` (existing): unlock tracking

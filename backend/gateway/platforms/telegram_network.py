@@ -1,4 +1,4 @@
-"""Telegram-specific network helpers.
+﻿"""Telegram-specific network helpers.
 
 Provides a hostname-preserving fallback transport for networks where
 api.telegram.org resolves to an endpoint that is unreachable from the current

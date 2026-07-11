@@ -68,7 +68,7 @@ zed memory setup        # select "honcho" â€” runs the Honcho-specific post
 
 The legacy `zed honcho setup` command still works (it now redirects to `zed memory setup`), but is only registered after Honcho is selected as the active memory provider.
 
-**Config:** `$ZED_HOME/honcho.json` (profile-local) or `~/.honcho/config.json` (global). Resolution order: `$ZED_HOME/honcho.json` > `~/.zed/honcho.json` > `~/.honcho/config.json`. See the [config reference](https://github.com/NousResearch/zed-agent/blob/main/plugins/memory/honcho/README.md) and the [Honcho integration guide](https://docs.honcho.dev/v3/guides/integrations/zed).
+**Config:** `$ZED_HOME/honcho.json` (profile-local) or `~/.honcho/config.json` (global). Resolution order: `$ZED_HOME/honcho.json` > `~/.zed/honcho.json` > `~/.honcho/config.json`. See the [config reference](https://github.com/zedteam/zed-agent/blob/main/plugins/memory/honcho/README.md) and the [Honcho integration guide](https://docs.honcho.dev/v3/guides/integrations/zed).
 
 <details>
 <summary>Full config reference</summary>
@@ -270,7 +270,7 @@ Off-gateway these keys do nothing. `zed memory setup` only prompts for them when
 
 </details>
 
-See the [config reference](https://github.com/NousResearch/zed-agent/blob/main/plugins/memory/honcho/README.md) and [Honcho integration guide](https://docs.honcho.dev/v3/guides/integrations/zed).
+See the [config reference](https://github.com/zedteam/zed-agent/blob/main/plugins/memory/honcho/README.md) and [Honcho integration guide](https://docs.honcho.dev/v3/guides/integrations/zed).
 
 
 ---
@@ -386,7 +386,7 @@ The setup wizard installs dependencies automatically and only installs what's ne
 | `retain_assistant_prefix` | `Assistant` | Label used before assistant turns in auto-retained transcripts |
 | `recall_tags` | â€” | Tags to filter on recall |
 
-See [plugin README](https://github.com/NousResearch/zed-agent/blob/main/plugins/memory/hindsight/README.md) for the full configuration reference.
+See [plugin README](https://github.com/zedteam/zed-agent/blob/main/plugins/memory/hindsight/README.md) for the full configuration reference.
 
 ---
 

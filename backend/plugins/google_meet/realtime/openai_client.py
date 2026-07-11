@@ -1,4 +1,4 @@
-"""OpenAI Realtime API WebSocket client + file-queue speaker.
+﻿"""OpenAI Realtime API WebSocket client + file-queue speaker.
 
 This module is the "output" side of the v2 voice bridge: it takes text,
 sends it to the OpenAI Realtime API, receives audio deltas back, and

@@ -1,4 +1,4 @@
-"""QQ Bot chunked upload flow.
+﻿"""QQ Bot chunked upload flow.
 
 The QQ v2 API caps inline base64 uploads (``file_data`` / ``url``) at ~10 MB.
 For files between 10 MB and ~100 MB we have to use the three-step chunked

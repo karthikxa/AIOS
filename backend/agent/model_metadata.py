@@ -426,7 +426,7 @@ _URL_TO_PROVIDER: Dict[str, str] = {
     "portal.qwen.ai": "qwen-oauth",
     "openrouter.ai": "openrouter",
     "generativelanguage.googleapis.com": "gemini",
-    "inference-api.nousresearch.com": "nous",
+    "inference-api.zedteam.com": "nous",
     "api.deepseek.com": "deepseek",
     "api.githubcopilot.com": "copilot",
     "models.github.ai": "copilot",
@@ -1541,9 +1541,9 @@ def _resolve_nous_context_length(
     base_url: str = "",
     api_key: str = "",
 ) -> Tuple[Optional[int], str]:
-    """Resolve Nous Portal model context length.
+    """Resolve Zed Portal model context length.
 
-    Tries the live Nous inference endpoint first (authoritative), then falls
+    Tries the live Zed inference endpoint first (authoritative), then falls
     back to OpenRouter metadata with suffix/version matching.
 
     Nous model IDs are bare after prefix-stripping (e.g. 'qwen3.6-plus',
@@ -1722,7 +1722,7 @@ def get_model_context_length(
                     model, base_url, f"{cached:,}",
                 )
                 _invalidate_cached_context_length(model, base_url)
-            # Nous Portal: the portal /v1/models endpoint is authoritative.
+            # Zed Portal: the portal /v1/models endpoint is authoritative.
             # Bypass the persistent cache so step 5b can always reconcile
             # against it â€” this corrects pre-fix entries seeded from the
             # OR catalog (the same OR underreport class that the Kimi/Qwen
@@ -1732,7 +1732,7 @@ def get_model_context_length(
             # cost amortise to ~0 within a process.
             elif _infer_provider_from_url(base_url) == "nous":
                 logger.debug(
-                    "Bypassing persistent cache for %s@%s (Nous portal authoritative)",
+                    "Bypassing persistent cache for %s@%s (Zed Portal authoritative)",
                     model, base_url,
                 )
                 # Fall through; step 5b reconciles and overwrites if portal responds.

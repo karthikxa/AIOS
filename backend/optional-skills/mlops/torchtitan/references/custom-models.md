@@ -1,4 +1,4 @@
-# Adding Custom Models to TorchTitan
+﻿# Adding Custom Models to TorchTitan
 
 This guide explains how to add a new model to TorchTitan following the established patterns.
 

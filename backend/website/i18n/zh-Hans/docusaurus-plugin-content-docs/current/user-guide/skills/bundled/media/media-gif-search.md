@@ -103,4 +103,4 @@ curl -s "https://tenor.googleapis.com/v2/search?q=cat&limit=3&key=${TENOR_API_KE
 
 - å¯¹æŸ¥è¯¢è¿›è¡Œ URL ç¼–ç ï¼šç©ºæ ¼ç”¨ `+`ï¼Œç‰¹æ®Šå­—ç¬¦ç”¨ `%XX`
 - åœ¨èŠå¤©ä¸­å‘é€æ—¶ï¼Œ`tinygif` URL æ›´è½»é‡
-- GIF URL å¯ç›´æŽ¥ç”¨äºŽ markdownï¼š`![alt](https://github.com/NousResearch/zed-agent/blob/main/skills/media/gif-search/url)`
+- GIF URL å¯ç›´æŽ¥ç”¨äºŽ markdownï¼š`![alt](https://github.com/zedteam/zed-agent/blob/main/skills/media/gif-search/url)`

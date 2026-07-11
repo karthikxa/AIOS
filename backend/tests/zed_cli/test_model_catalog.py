@@ -180,9 +180,9 @@ class TestFallbackChain:
     releases (opus 4.8, etc.) never reach the picker.
     """
 
-    PRIMARY = "https://zed-agent.nousresearch.com/docs/api/model-catalog.json"
+    PRIMARY = "https://zed-agent.zedteam.com/docs/api/model-catalog.json"
     FALLBACK = (
-        "https://raw.githubusercontent.com/NousResearch/zed-agent"
+        "https://raw.githubusercontent.com/ZedTeam/zed-agent"
         "/main/website/static/api/model-catalog.json"
     )
 

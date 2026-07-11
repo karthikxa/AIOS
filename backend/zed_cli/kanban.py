@@ -201,7 +201,7 @@ def build_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.Argu
             "Durable SQLite-backed task board shared across Zed profiles. "
             "Tasks are claimed atomically, can depend on other tasks, and "
             "are executed by a named profile in an isolated workspace. "
-            "See https://zed-agent.nousresearch.com/docs/user-guide/features/kanban "
+            "See https://zed-agent.zedteam.com/docs/user-guide/features/kanban "
             "or docs/zed-kanban-v1-spec.pdf for the full design."
         ),
     )

@@ -170,7 +170,7 @@ You no longer need to wrap `zed update` in `screen` or `tmux` to survive a termi
 zed version
 ```
 
-Compare against the latest release at the [GitHub releases page](https://github.com/NousResearch/zed-agent/releases).
+Compare against the latest release at the [GitHub releases page](https://github.com/zedteam/zed-agent/releases).
 
 ### Updating from Messaging Platforms
 

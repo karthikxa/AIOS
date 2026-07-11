@@ -1,4 +1,4 @@
-# Stable Diffusion Troubleshooting Guide
+﻿# Stable Diffusion Troubleshooting Guide
 
 ## Installation Issues
 

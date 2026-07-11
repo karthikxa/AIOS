@@ -12,7 +12,7 @@ Curator æ˜¯é’ˆå¯¹ **agent åˆ›å»ºçš„æŠ€èƒ½**çš„å
 
 é»˜è®¤æƒ…å†µä¸‹ï¼ˆ`prune_builtins: true`ï¼‰ï¼ŒCurator åœ¨ `archive_after_days` å¤©æœªä½¿ç”¨åŽï¼Œå¯ä»¥å½’æ¡£**æœªä½¿ç”¨çš„æ†ç»‘å†…ç½®æŠ€èƒ½**ï¼ˆéšä»“åº“é™„å¸¦ï¼‰ï¼Œä¸Žå®ƒä¸»è¦ç®¡ç†çš„ agent è‡ªåˆ›æŠ€èƒ½ä¸€å¹¶å¤„ç†ã€‚é€šè¿‡ [agentskills.io](https://agentskills.io) å®‰è£…çš„ hub æŠ€èƒ½å§‹ç»ˆä¸å—å½±å“ã€‚è®¾ç½® `curator.prune_builtins: false` å¯æ¢å¤æ—§çš„â€œä»… agent è‡ªåˆ›â€è¡Œä¸ºï¼Œæ­¤æ—¶æ†ç»‘æŠ€èƒ½ç»ä¸ä¼šè¢«è§¦ç¢°ã€‚Curator ä¹Ÿ**ç»ä¸è‡ªåŠ¨åˆ é™¤**â€”â€”æœ€åçš„ç»“æžœæ˜¯å½’æ¡£åˆ° `~/.zed/skills/.archive/`ï¼Œè¿™æ˜¯å¯æ¢å¤çš„ã€‚
 
-è·Ÿè¸ª [issue #7816](https://github.com/NousResearch/zed-agent/issues/7816)ã€‚
+è·Ÿè¸ª [issue #7816](https://github.com/zedteam/zed-agent/issues/7816)ã€‚
 
 ## è¿è¡Œæ–¹å¼
 
@@ -245,4 +245,4 @@ Curator åœ¨ `min_idle_hours` æœªç»è¿‡æ—¶ä¹Ÿä¼šæ‹’ç
 - [æŠ€èƒ½ç³»ç»Ÿ](/user-guide/features/skills)â€”â€”æŠ€èƒ½çš„æ€»ä½“å·¥ä½œåŽŸç†åŠåˆ›å»ºæŠ€èƒ½çš„è‡ªæˆ‘æ”¹è¿›å¾ªçŽ¯
 - [å†…å­˜](/user-guide/features/memory)â€”â€”ç»´æŠ¤é•¿æœŸè®°å¿†çš„å¹¶è¡ŒåŽå°å®¡æŸ¥
 - [æ†ç»‘æŠ€èƒ½ç›®å½•](/reference/skills-catalog)
-- [Issue #7816](https://github.com/NousResearch/zed-agent/issues/7816)â€”â€”åŽŸå§‹ææ¡ˆä¸Žè®¾è®¡è®¨è®º
+- [Issue #7816](https://github.com/zedteam/zed-agent/issues/7816)â€”â€”åŽŸå§‹ææ¡ˆä¸Žè®¾è®¡è®¨è®º

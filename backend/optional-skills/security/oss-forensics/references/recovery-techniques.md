@@ -1,4 +1,4 @@
-# Deleted Content Recovery Techniques
+﻿# Deleted Content Recovery Techniques
 
 ## Key Insight: GitHub Never Fully Deletes Force-Pushed Commits
 

@@ -1,4 +1,4 @@
-# slime Troubleshooting Guide
+﻿# slime Troubleshooting Guide
 
 ## Common Issues and Solutions
 

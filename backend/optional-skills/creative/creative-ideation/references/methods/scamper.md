@@ -1,4 +1,4 @@
-# SCAMPER
+﻿# SCAMPER
 
 Bob Eberle, 1971, building on Alex Osborn's brainstorming checklist (1953). Seven systematic transformations of an existing thing.
 

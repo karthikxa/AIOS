@@ -1,4 +1,4 @@
-# Routing Heuristics
+﻿# Routing Heuristics
 
 Decision tree for picking a method. Read top to bottom; first match wins.
 

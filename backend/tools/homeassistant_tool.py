@@ -1,4 +1,4 @@
-"""Home Assistant tool for controlling smart home devices via REST API.
+﻿"""Home Assistant tool for controlling smart home devices via REST API.
 
 Registers four LLM-callable tools:
 - ``ha_list_entities`` -- list/filter entities by domain or area

@@ -1,4 +1,4 @@
-# NeuroSkill Metric Definitions & Interpretation Guide
+﻿# NeuroSkill Metric Definitions & Interpretation Guide
 
 > **⚠️ Research Use Only:** All metrics are experimental and derived from
 > consumer-grade hardware (Muse 2/S). They are not FDA/CE-cleared and must not

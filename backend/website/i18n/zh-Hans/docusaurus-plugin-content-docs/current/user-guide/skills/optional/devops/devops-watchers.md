@@ -81,7 +81,7 @@ python $ZED_HOME/skills/devops/watchers/scripts/watch_rss.py \
 
 ```bash
 python $ZED_HOME/skills/devops/watchers/scripts/watch_github.py \
-  --name zed-issues --repo NousResearch/zed-agent --scope issues
+  --name zed-issues --repo zedteam/zed-agent --scope issues
 ```
 
 è½®è¯¢ä»»æ„ JSON APIï¼š

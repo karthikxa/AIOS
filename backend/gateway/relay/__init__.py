@@ -208,8 +208,8 @@ def self_provision_relay() -> bool:
     """Boot-time relay self-provision: mint relay creds in-process, no human, no disk.
 
     Fires when relay is configured (``relay_url()`` set) and NO per-gateway secret
-    is already present, AND the agent can resolve its own Nous access token. In
-    that case the runtime resolves the agent's own Nous access token (the same
+    is already present, AND the agent can resolve its own Zed access token. In
+    that case the runtime resolves the agent's own Zed access token (the same
     ``resolve_nous_access_token()`` the enroll CLI / dashboard register use),
     POSTs ``/relay/provision`` asserting its own endpoint + route keys, and sets
     ``GATEWAY_RELAY_ID`` / ``GATEWAY_RELAY_SECRET`` / ``GATEWAY_RELAY_DELIVERY_KEY``
@@ -263,7 +263,7 @@ def self_provision_relay() -> bool:
     except Exception as exc:  # noqa: BLE001 - boot must survive a token failure
         # No resolvable NAS identity (e.g. a self-hosted box that hasn't enrolled)
         # -> nothing to provision with; skip quietly and let the gateway boot.
-        logger.warning("relay self-provision skipped: could not resolve Nous token (%s)", exc)
+        logger.warning("relay self-provision skipped: could not resolve Zed token (%s)", exc)
         return False
 
     platform, bot_id = relay_platform_identity()

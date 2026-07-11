@@ -1,4 +1,4 @@
-# Formatting Standards Reference
+﻿# Formatting Standards Reference
 
 | Element | Format |
 |---------|--------|

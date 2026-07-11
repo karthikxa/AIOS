@@ -1,12 +1,12 @@
 ﻿---
 sidebar_position: 1
-title: "é€šè¿‡ Nous Portal è¿è¡Œ Zed Agent"
+title: "é€šè¿‡ Zed Portal è¿è¡Œ Zed Agent"
 description: "å®Œæ•´æ“ä½œæŒ‡å—ï¼šè®¢é˜…ã€é…ç½®ã€åˆ‡æ¢æ¨¡åž‹ã€å¯ç”¨ gateway å·¥å…·å¹¶éªŒè¯è·¯ç”±"
 ---
 
-# é€šè¿‡ Nous Portal è¿è¡Œ Zed Agent
+# é€šè¿‡ Zed Portal è¿è¡Œ Zed Agent
 
-æœ¬æŒ‡å—å¸¦ä½ ä»Žå¤´åˆ°å°¾å®Œæˆåœ¨ [Nous Portal](https://portal.nousresearch.com) è®¢é˜…ä¸‹è¿è¡Œ Zed Agent çš„å…¨è¿‡ç¨‹â€”â€”ä»Žæ³¨å†Œè´¦å·åˆ°éªŒè¯æ¯ä¸ªå·¥å…·çš„è·¯ç”±æ˜¯å¦æ­£ç¡®ã€‚å¦‚æžœä½ åªæƒ³äº†è§£ Portal çš„æ¦‚è¿°åŠè®¢é˜…å†…å®¹ï¼Œè¯·å‚é˜… [Nous Portal é›†æˆé¡µé¢](/integrations/nous-portal)ã€‚æœ¬é¡µæ˜¯æ“ä½œæ­¥éª¤è„šæœ¬ã€‚
+æœ¬æŒ‡å—å¸¦ä½ ä»Žå¤´åˆ°å°¾å®Œæˆåœ¨ [Zed Portal](https://portal.zedteam.com) è®¢é˜…ä¸‹è¿è¡Œ Zed Agent çš„å…¨è¿‡ç¨‹â€”â€”ä»Žæ³¨å†Œè´¦å·åˆ°éªŒè¯æ¯ä¸ªå·¥å…·çš„è·¯ç”±æ˜¯å¦æ­£ç¡®ã€‚å¦‚æžœä½ åªæƒ³äº†è§£ Portal çš„æ¦‚è¿°åŠè®¢é˜…å†…å®¹ï¼Œè¯·å‚é˜… [Zed Portal é›†æˆé¡µé¢](/integrations/nous-portal)ã€‚æœ¬é¡µæ˜¯æ“ä½œæ­¥éª¤è„šæœ¬ã€‚
 
 ## å‰ææ¡ä»¶
 
@@ -18,7 +18,7 @@ description: "å®Œæ•´æ“ä½œæŒ‡å—ï¼šè®¢é˜…ã€
 
 ## 1. èŽ·å–è®¢é˜…
 
-æ‰“å¼€ [portal.nousresearch.com/manage-subscription](https://portal.nousresearch.com/manage-subscription)ï¼Œæ³¨å†Œå¹¶é€‰æ‹©ä¸€ä¸ªå¥—é¤ã€‚
+æ‰“å¼€ [portal.zedteam.com/manage-subscription](https://portal.zedteam.com/manage-subscription)ï¼Œæ³¨å†Œå¹¶é€‰æ‹©ä¸€ä¸ªå¥—é¤ã€‚
 
 å·²è®¢é˜…ï¼Ÿè·³è‡³ç¬¬ 2 æ­¥ã€‚
 
@@ -30,7 +30,7 @@ zed setup --portal
 
 è¿™æ¡å‘½ä»¤ä¼šå®Œæˆäº”ä»¶äº‹ï¼š
 
-1. æ‰“å¼€æµè§ˆå™¨è·³è½¬è‡³ portal.nousresearch.com è¿›è¡Œ OAuth ç™»å½•
+1. æ‰“å¼€æµè§ˆå™¨è·³è½¬è‡³ portal.zedteam.com è¿›è¡Œ OAuth ç™»å½•
 2. å°† refresh token å­˜å‚¨è‡³ `~/.zed/auth.json`
 3. åœ¨ `~/.zed/config.yaml` ä¸­è®¾ç½® `model.provider: nous`
 4. é€‰æ‹©ä¸€ä¸ªé»˜è®¤çš„ agentic æ¨¡åž‹ï¼ˆ`anthropic/claude-sonnet-4.6` æˆ–ç±»ä¼¼æ¨¡åž‹ï¼‰
@@ -63,21 +63,21 @@ zed portal info
 ä½ åº”è¯¥çœ‹åˆ°ï¼š
 
 ```
-  Nous Portal
+  Zed Portal
   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Auth:    âœ“ logged in
-  Portal:  https://portal.nousresearch.com
+  Portal:  https://portal.zedteam.com
   Model:   âœ“ using Nous as inference provider
 
   Tool Gateway
   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  Web search & extract  via Nous Portal
-  Image generation      via Nous Portal
-  Text-to-speech        via Nous Portal
-  Browser automation    via Nous Portal
+  Web search & extract  via Zed Portal
+  Image generation      via Zed Portal
+  Text-to-speech        via Zed Portal
+  Browser automation    via Zed Portal
 ```
 
-å¦‚æžœä»»ä½•ä¸€è¡Œæ˜¾ç¤ºçš„ä¸æ˜¯"via Nous Portal"ï¼Œæˆ–è€… auth è¡Œæ˜¾ç¤º"not logged in"ï¼Œè¯·è·³è‡³ä¸‹æ–¹çš„[æ•…éšœæŽ’æŸ¥](#troubleshooting)ã€‚
+å¦‚æžœä»»ä½•ä¸€è¡Œæ˜¾ç¤ºçš„ä¸æ˜¯"via Zed Portal"ï¼Œæˆ–è€… auth è¡Œæ˜¾ç¤º"not logged in"ï¼Œè¯·è·³è‡³ä¸‹æ–¹çš„[æ•…éšœæŽ’æŸ¥](#troubleshooting)ã€‚
 
 ## 4. è¿è¡Œç¬¬ä¸€æ¬¡å¯¹è¯
 
@@ -120,9 +120,9 @@ zed config set model.default anthropic/claude-sonnet-4.6
 
 ### ä¸è¦åœ¨ agent ä»»åŠ¡ä¸­ä½¿ç”¨ Zed-4
 
-Zed-4-70B å’Œ Zed-4-405B åœ¨ Portal ä¸Šä»¥å¤§å¹…æŠ˜æ‰£æä¾›ï¼Œä½†å®ƒä»¬æ˜¯**å¯¹è¯/æŽ¨ç†æ¨¡åž‹**ï¼Œå¹¶éžé’ˆå¯¹å·¥å…·è°ƒç”¨ä¼˜åŒ–çš„æ¨¡åž‹ã€‚å®ƒä»¬åœ¨å¤šæ­¥éª¤ agent å¾ªçŽ¯ä¸­è¡¨çŽ°ä¸ä½³ã€‚è¯·é€šè¿‡ [Nous Chat](https://chat.nousresearch.com) å°†å®ƒä»¬ç”¨äºŽå¯¹è¯/ç ”ç©¶å·¥ä½œï¼Œæˆ–é€šè¿‡[è®¢é˜…ä»£ç†](/user-guide/features/subscription-proxy)ä»Žéž agent å·¥å…·ä¸­ä½¿ç”¨ã€‚å¯¹äºŽ Zed Agent æœ¬èº«ï¼Œè¯·åšæŒä½¿ç”¨ä¸Šè¿°å‰æ²¿ agentic æ¨¡åž‹ã€‚
+Zed-4-70B å’Œ Zed-4-405B åœ¨ Portal ä¸Šä»¥å¤§å¹…æŠ˜æ‰£æä¾›ï¼Œä½†å®ƒä»¬æ˜¯**å¯¹è¯/æŽ¨ç†æ¨¡åž‹**ï¼Œå¹¶éžé’ˆå¯¹å·¥å…·è°ƒç”¨ä¼˜åŒ–çš„æ¨¡åž‹ã€‚å®ƒä»¬åœ¨å¤šæ­¥éª¤ agent å¾ªçŽ¯ä¸­è¡¨çŽ°ä¸ä½³ã€‚è¯·é€šè¿‡ [Nous Chat](https://chat.zedteam.com) å°†å®ƒä»¬ç”¨äºŽå¯¹è¯/ç ”ç©¶å·¥ä½œï¼Œæˆ–é€šè¿‡[è®¢é˜…ä»£ç†](/user-guide/features/subscription-proxy)ä»Žéž agent å·¥å…·ä¸­ä½¿ç”¨ã€‚å¯¹äºŽ Zed Agent æœ¬èº«ï¼Œè¯·åšæŒä½¿ç”¨ä¸Šè¿°å‰æ²¿ agentic æ¨¡åž‹ã€‚
 
-Portal çš„[ä¿¡æ¯é¡µé¢](https://portal.nousresearch.com/info)ä¹Ÿæœ‰æ­¤è¯´æ˜Žâ€”â€”è¿™æ˜¯ Nous å®˜æ–¹æŒ‡å¯¼ï¼Œå¹¶éžä»…ä»£è¡¨ Zed ä¸€æ–¹çš„æ„è§ã€‚
+Portal çš„[ä¿¡æ¯é¡µé¢](https://portal.zedteam.com/info)ä¹Ÿæœ‰æ­¤è¯´æ˜Žâ€”â€”è¿™æ˜¯ Nous å®˜æ–¹æŒ‡å¯¼ï¼Œå¹¶éžä»…ä»£è¡¨ Zed ä¸€æ–¹çš„æ„è§ã€‚
 
 ## 6. ï¼ˆå¯é€‰ï¼‰è‡ªå®šä¹‰ Tool Gateway è·¯ç”±
 
@@ -142,7 +142,7 @@ zed tools
 zed portal tools
 ```
 
-ä½ å°†çœ‹åˆ°æ¯ä¸ªå·¥å…·çš„è·¯ç”±æƒ…å†µâ€”â€”é€šè¿‡è®¢é˜…è·¯ç”±çš„å·¥å…·æ˜¾ç¤º `via Nous Portal`ï¼Œä½¿ç”¨ä½ è‡ªå·±å¯†é’¥çš„å·¥å…·æ˜¾ç¤ºåˆä½œæ–¹åç§°ï¼ˆ`browserbase`ã€`firecrawl` ç­‰ï¼‰ã€‚
+ä½ å°†çœ‹åˆ°æ¯ä¸ªå·¥å…·çš„è·¯ç”±æƒ…å†µâ€”â€”é€šè¿‡è®¢é˜…è·¯ç”±çš„å·¥å…·æ˜¾ç¤º `via Zed Portal`ï¼Œä½¿ç”¨ä½ è‡ªå·±å¯†é’¥çš„å·¥å…·æ˜¾ç¤ºåˆä½œæ–¹åç§°ï¼ˆ`browserbase`ã€`firecrawl` ç­‰ï¼‰ã€‚
 
 ## 7. ï¼ˆå¯é€‰ï¼‰å¯ç”¨è¯­éŸ³æ¨¡å¼
 
@@ -197,12 +197,12 @@ zed config set model.provider nous
 
 ```bash
 zed model
-# é€‰æ‹© Nous Portal
+# é€‰æ‹© Zed Portal
 ```
 
 ä½¿ç”¨ `zed portal info` é‡æ–°éªŒè¯ã€‚
 
-### Tool Gateway å·¥å…·æ˜¾ç¤ºåˆä½œæ–¹åç§°è€Œéž"via Nous Portal"
+### Tool Gateway å·¥å…·æ˜¾ç¤ºåˆä½œæ–¹åç§°è€Œéž"via Zed Portal"
 
 æŒ‰å·¥å…·çš„é…ç½®è¦†ç›–äº† gateway è®¾ç½®ã€‚è¿è¡Œï¼š
 
@@ -232,7 +232,7 @@ Portal ç›®å½•é•œåƒäº† OpenRouter çš„æ¨¡åž‹åˆ—
 /model openai/o1-2025-12-17
 ```
 
-å¦‚æžœæŸä¸ªæ¨¡åž‹ç¡®å®žä¸å¯ç”¨ï¼Œè¯·[æäº¤ issue](https://github.com/NousResearch/zed-agent/issues)â€”â€”å¤§å¤šæ•°ç¼ºå¤±æ˜¯æˆ‘ä»¬å¯ä»¥æ›´æ–°çš„è·¯ç”±é…ç½®é—®é¢˜ã€‚
+å¦‚æžœæŸä¸ªæ¨¡åž‹ç¡®å®žä¸å¯ç”¨ï¼Œè¯·[æäº¤ issue](https://github.com/zedteam/zed-agent/issues)â€”â€”å¤§å¤šæ•°ç¼ºå¤±æ˜¯æˆ‘ä»¬å¯ä»¥æ›´æ–°çš„è·¯ç”±é…ç½®é—®é¢˜ã€‚
 
 ### è´¦å•æœªå‡ºçŽ°åœ¨æˆ‘çš„ Portal è´¦å·ä¸­
 
@@ -265,7 +265,7 @@ zed auth remove nous       # æ¸…é™¤æœ¬åœ° refresh token
 
 ## å¦è¯·å‚é˜…
 
-- **[Nous Portal é›†æˆé¡µé¢](/integrations/nous-portal)** â€” è®¢é˜…å†…å®¹æ¦‚è¿°
+- **[Zed Portal é›†æˆé¡µé¢](/integrations/nous-portal)** â€” è®¢é˜…å†…å®¹æ¦‚è¿°
 - **[Tool Gateway](/user-guide/features/tool-gateway)** â€” æ¯ä¸ª gateway è·¯ç”±å·¥å…·çš„å®Œæ•´è¯´æ˜Ž
 - **[è®¢é˜…ä»£ç†](/user-guide/features/subscription-proxy)** â€” åœ¨éž Zed å·¥å…·ä¸­ä½¿ç”¨ä½ çš„ Portal è®¢é˜…
 - **[è¯­éŸ³æ¨¡å¼](/user-guide/features/voice-mode)** â€” åœ¨ Portal è®¢é˜…ä¸Šé…ç½®è¯­éŸ³å¯¹è¯

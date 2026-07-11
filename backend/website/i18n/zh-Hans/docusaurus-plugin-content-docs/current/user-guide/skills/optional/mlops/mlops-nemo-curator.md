@@ -390,8 +390,8 @@ cluster.close()
 
 ## å‚è€ƒèµ„æ–™
 
-- **[è¿‡æ»¤æŒ‡å—](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/nemo-curator/references/filtering.md)** - 30+ è´¨é‡è¿‡æ»¤å™¨ä¸Žå¯å‘å¼è§„åˆ™
-- **[åŽ»é‡æŒ‡å—](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/nemo-curator/references/deduplication.md)** - ç²¾ç¡®ã€æ¨¡ç³Šã€è¯­ä¹‰åŽ»é‡æ–¹æ³•
+- **[è¿‡æ»¤æŒ‡å—](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/nemo-curator/references/filtering.md)** - 30+ è´¨é‡è¿‡æ»¤å™¨ä¸Žå¯å‘å¼è§„åˆ™
+- **[åŽ»é‡æŒ‡å—](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/nemo-curator/references/deduplication.md)** - ç²¾ç¡®ã€æ¨¡ç³Šã€è¯­ä¹‰åŽ»é‡æ–¹æ³•
 
 ## èµ„æº
 

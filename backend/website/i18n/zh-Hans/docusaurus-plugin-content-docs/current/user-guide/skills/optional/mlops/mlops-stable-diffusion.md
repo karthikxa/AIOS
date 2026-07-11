@@ -531,8 +531,8 @@ image = pipe(prompt, num_inference_steps=20).images[0]
 
 ## å‚è€ƒèµ„æ–™
 
-- **[é«˜çº§ç”¨æ³•](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/stable-diffusion/references/advanced-usage.md)** - è‡ªå®šä¹‰ pipelineã€å¾®è°ƒã€éƒ¨ç½²
-- **[æ•…éšœæŽ’æŸ¥](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/stable-diffusion/references/troubleshooting.md)** - å¸¸è§é—®é¢˜ä¸Žè§£å†³æ–¹æ¡ˆ
+- **[é«˜çº§ç”¨æ³•](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/stable-diffusion/references/advanced-usage.md)** - è‡ªå®šä¹‰ pipelineã€å¾®è°ƒã€éƒ¨ç½²
+- **[æ•…éšœæŽ’æŸ¥](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/stable-diffusion/references/troubleshooting.md)** - å¸¸è§é—®é¢˜ä¸Žè§£å†³æ–¹æ¡ˆ
 
 ## èµ„æº
 

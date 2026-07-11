@@ -1,4 +1,4 @@
-"""Feishu Drive Tools -- document comment operations via Feishu/Lark API.
+﻿"""Feishu Drive Tools -- document comment operations via Feishu/Lark API.
 
 Provides tools for listing, replying to, and adding document comments.
 Uses the same lazy-import + BaseRequest pattern as feishu_comment.py.

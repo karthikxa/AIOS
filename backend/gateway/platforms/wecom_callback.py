@@ -1,4 +1,4 @@
-"""WeCom callback-mode adapter for self-built enterprise applications.
+﻿"""WeCom callback-mode adapter for self-built enterprise applications.
 
 Unlike the bot/websocket adapter in ``wecom.py``, this handles the standard
 WeCom callback flow: WeCom POSTs encrypted XML to an HTTP endpoint, the

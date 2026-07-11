@@ -1,4 +1,4 @@
-﻿"""
+"""
 Timezone-aware clock for Zed.
 
 Provides a single ``now()`` helper that returns a timezone-aware datetime
@@ -9,7 +9,7 @@ Resolution order:
   2. ``timezone`` key in ``~/.zed/config.yaml``
   3. Falls back to the server's local time (``datetime.now().astimezone()``)
 
-Invalid timezone values log a warning and fall back safely â€” Zed never
+Invalid timezone values log a warning and fall back safely — Zed never
 crashes due to a bad timezone string.
 """
 
@@ -24,10 +24,10 @@ logger = logging.getLogger(__name__)
 try:
     from zoneinfo import ZoneInfo
 except ImportError:
-    # Python 3.8 fallback (shouldn't be needed â€” Zed requires 3.9+)
+    # Python 3.8 fallback (shouldn't be needed — Zed requires 3.9+)
     from backports.zoneinfo import ZoneInfo  # type: ignore[no-redef]
 
-# Cached state â€” resolved once, reused on every call.
+# Cached state — resolved once, reused on every call.
 # Call reset_cache() to force re-resolution (e.g. after config changes).
 _cached_tz: Optional[ZoneInfo] = None
 _cached_tz_name: Optional[str] = None
@@ -40,18 +40,29 @@ def _resolve_timezone_name() -> str:
     This does file I/O when falling through to config.yaml, so callers
     should cache the result rather than calling on every ``now()``.
     """
-    # 1. Environment variable (highest priority â€” set by Supervisor, etc.)
+    # 1. Environment variable (highest priority — set by Supervisor, etc.)
     tz_env = os.getenv("ZED_TIMEZONE", "").strip()
     if tz_env:
         return tz_env
 
     # 2. config.yaml ``timezone`` key
     try:
-        import yaml
-        config_path = get_config_path()
-        if config_path.exists():
-            with open(config_path, encoding="utf-8") as f:
-                cfg = yaml.safe_load(f) or {}
+        # Prefer the shared cached raw-config reader (mtime/size-keyed cache +
+        # libyaml C loader) — a direct yaml.safe_load of a large config.yaml
+        # costs ~100ms+ and this used to run inside the FIRST system prompt
+        # build, on the time-to-first-token critical path.
+        try:
+            from zed_cli.config import read_raw_config
+            cfg = read_raw_config() or {}
+        except Exception:
+            import yaml
+            config_path = get_config_path()
+            if config_path.exists():
+                with open(config_path, encoding="utf-8") as f:
+                    cfg = yaml.safe_load(f) or {}
+            else:
+                cfg = {}
+        if cfg:
             # Managed scope: an administrator can pin ``timezone`` too. Overlay
             # via the shared helper (fail-open) since this reads config.yaml directly.
             try:
@@ -118,7 +129,7 @@ def now() -> datetime:
     tz = get_timezone()
     if tz is not None:
         return datetime.now(tz)
-    # No timezone configured â€” use server-local (still tz-aware)
+    # No timezone configured — use server-local (still tz-aware)
     return datetime.now().astimezone()
 
 

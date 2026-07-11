@@ -1,4 +1,4 @@
-"""Progressive subdirectory hint discovery.
+﻿"""Progressive subdirectory hint discovery.
 
 As the agent navigates into subdirectories via tool calls (read_file, terminal,
 search_files, etc.), this module discovers and loads project context files

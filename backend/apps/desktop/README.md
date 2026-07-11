@@ -1,13 +1,13 @@
 ﻿# Zed Desktop â˜¤
 
 <p align="center">
-  <a href="https://github.com/NousResearch/zed-agent/releases"><img src="https://img.shields.io/badge/Download-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-FFD700?style=for-the-badge" alt="Download"></a>
-  <a href="https://zed-agent.nousresearch.com/docs/"><img src="https://img.shields.io/badge/Docs-zed--agent.nousresearch.com-FFD700?style=for-the-badge" alt="Documentation"></a>
-  <a href="https://discord.gg/NousResearch"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
-  <a href="https://github.com/NousResearch/zed-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
+  <a href="https://github.com/zedteam/zed-agent/releases"><img src="https://img.shields.io/badge/Download-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-FFD700?style=for-the-badge" alt="Download"></a>
+  <a href="https://zed-agent.zedteam.com/docs/"><img src="https://img.shields.io/badge/Docs-zed--agent.zedteam.com-FFD700?style=for-the-badge" alt="Documentation"></a>
+  <a href="https://discord.gg/zedteam"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://github.com/zedteam/zed-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
 </p>
 
-**The native desktop app for [Zed Agent](../../README.md) â€” the self-improving AI agent from [Zed Team](https://nousresearch.com).** Same agent, same skills, same memory as the CLI and gateway, in a polished native window â€” chat with streaming tool output, side-by-side previews, a file browser, voice, and settings, no terminal required. Available for **macOS, Windows, and Linux**.
+**The native desktop app for [Zed Agent](../../README.md) â€” the self-improving AI agent from [Zed Team](https://zedteam.com).** Same agent, same skills, same memory as the CLI and gateway, in a polished native window â€” chat with streaming tool output, side-by-side previews, a file browser, voice, and settings, no terminal required. Available for **macOS, Windows, and Linux**.
 
 <table>
 <tr><td><b>Chat with the full agent</b></td><td>Streaming responses, live tool activity, structured tool summaries, and the same conversation history as every other Zed surface.</td></tr>
@@ -34,7 +34,7 @@ It builds and launches the GUI against your existing install â€” same confi
 
 ### Prebuilt installers
 
-Prebuilt installers are built and distributed via [the Zed Desktop website.](https://zed-agent.nousresearch.com/).
+Prebuilt installers are built and distributed via [the Zed Desktop website.](https://zed-agent.zedteam.com/).
 
 ---
 
@@ -110,7 +110,7 @@ rm "$HOME/.zed/zed-agent/.zed-bootstrap-complete"
 # Rebuild a broken Python venv
 rm -rf "$HOME/.zed/zed-agent/venv"
 # Reset a stuck macOS microphone prompt (macOS only)
-tccutil reset Microphone com.nousresearch.zed
+tccutil reset Microphone com.zedteam.zed
 ```
 
 **Windows (PowerShell):**
@@ -128,9 +128,9 @@ Remove-Item -Recurse -Force "$env:LOCALAPPDATA\zed\zed-agent\venv"
 
 ## Community
 
-- ðŸ’¬ [Discord](https://discord.gg/NousResearch)
-- ðŸ“– [Documentation](https://zed-agent.nousresearch.com/docs/)
-- ðŸ› [Issues](https://github.com/NousResearch/zed-agent/issues)
+- ðŸ’¬ [Discord](https://discord.gg/zedteam)
+- ðŸ“– [Documentation](https://zed-agent.zedteam.com/docs/)
+- ðŸ› [Issues](https://github.com/zedteam/zed-agent/issues)
 
 ---
 
@@ -138,4 +138,4 @@ Remove-Item -Recurse -Force "$env:LOCALAPPDATA\zed\zed-agent\venv"
 
 MIT â€” see [LICENSE](../../LICENSE).
 
-Built by [Zed Team](https://nousresearch.com).
+Built by [Zed Team](https://zedteam.com).

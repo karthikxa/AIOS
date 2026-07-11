@@ -195,9 +195,9 @@ outputs = llm.generate(
 
 ## å‚è€ƒæ–‡æ¡£
 
-- **[ä¼˜åŒ–æŒ‡å—](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/tensorrt-llm/references/optimization.md)** â€” é‡åŒ–ã€æ‰¹å¤„ç†ã€KV cache è°ƒä¼˜
-- **[å¤š GPU é…ç½®](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/tensorrt-llm/references/multi-gpu.md)** â€” å¼ é‡/æµæ°´çº¿å¹¶è¡Œã€å¤šèŠ‚ç‚¹
-- **[æœåŠ¡æŒ‡å—](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/tensorrt-llm/references/serving.md)** â€” ç”Ÿäº§éƒ¨ç½²ã€ç›‘æŽ§ã€è‡ªåŠ¨æ‰©ç¼©å®¹
+- **[ä¼˜åŒ–æŒ‡å—](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/tensorrt-llm/references/optimization.md)** â€” é‡åŒ–ã€æ‰¹å¤„ç†ã€KV cache è°ƒä¼˜
+- **[å¤š GPU é…ç½®](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/tensorrt-llm/references/multi-gpu.md)** â€” å¼ é‡/æµæ°´çº¿å¹¶è¡Œã€å¤šèŠ‚ç‚¹
+- **[æœåŠ¡æŒ‡å—](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/tensorrt-llm/references/serving.md)** â€” ç”Ÿäº§éƒ¨ç½²ã€ç›‘æŽ§ã€è‡ªåŠ¨æ‰©ç¼©å®¹
 
 ## èµ„æº
 

@@ -53,9 +53,9 @@ IGNORED_PATTERNS = [
 IGNORED_EMAILS = {
     "noreply@anthropic.com",
     "noreply@github.com",
-    "noreply@nousresearch.com",
+    "noreply@zedteam.com",
     "cursoragent@cursor.com",
-    "zed@nousresearch.com",
+    "zed@zedteam.com",
     "zed-audit@example.com",
     "zed@habibilabs.dev",
     "omx@oh-my-codex.dev",
@@ -100,7 +100,7 @@ def gh_pr_list():
         result = subprocess.run(
             [
                 "gh", "pr", "list",
-                "--repo", "NousResearch/zed-agent",
+                "--repo", "ZedTeam/zed-agent",
                 "--state", "merged",
                 "--json", "number,title,body,author,mergedAt",
                 "--limit", "300",

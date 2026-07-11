@@ -1,4 +1,4 @@
-"""Tavily web search + content extraction — plugin form.
+﻿"""Tavily web search + content extraction — plugin form.
 
 Subclasses :class:`agent.web_search_provider.WebSearchProvider`. Two
 capabilities advertised:

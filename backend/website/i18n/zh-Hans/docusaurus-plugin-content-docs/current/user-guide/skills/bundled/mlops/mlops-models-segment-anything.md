@@ -92,7 +92,7 @@ import numpy as np
 from segment_anything import sam_model_registry, SamPredictor
 
 # åŠ è½½æ¨¡åž‹
-sam = sam_model_registry["vit_h"](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/models/segment-anything/checkpoint="sam_vit_h_4b8939.pth")
+sam = sam_model_registry["vit_h"](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/models/segment-anything/checkpoint="sam_vit_h_4b8939.pth")
 sam.to(device="cuda")
 
 # åˆ›å»ºé¢„æµ‹å™¨
@@ -478,7 +478,7 @@ decoded_mask = mask_utils.decode(rle)
 
 ```python
 # åœ¨ VRAM æœ‰é™æ—¶ä½¿ç”¨è¾ƒå°æ¨¡åž‹
-sam = sam_model_registry["vit_b"](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/models/segment-anything/checkpoint="sam_vit_b_01ec64.pth")
+sam = sam_model_registry["vit_b"](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/models/segment-anything/checkpoint="sam_vit_b_01ec64.pth")
 
 # æ‰¹é‡å¤„ç†å›¾åƒ
 # åœ¨å¤§æ‰¹é‡ä¹‹é—´æ¸…ç©º CUDA ç¼“å­˜
@@ -513,8 +513,8 @@ mask_generator = SamAutomaticMaskGenerator(
 
 ## å‚è€ƒèµ„æ–™
 
-- **[é«˜çº§ç”¨æ³•](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/models/segment-anything/references/advanced-usage.md)** - æ‰¹å¤„ç†ã€å¾®è°ƒã€é›†æˆ
-- **[æ•…éšœæŽ’æŸ¥](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/models/segment-anything/references/troubleshooting.md)** - å¸¸è§é—®é¢˜ä¸Žè§£å†³æ–¹æ¡ˆ
+- **[é«˜çº§ç”¨æ³•](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/models/segment-anything/references/advanced-usage.md)** - æ‰¹å¤„ç†ã€å¾®è°ƒã€é›†æˆ
+- **[æ•…éšœæŽ’æŸ¥](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/models/segment-anything/references/troubleshooting.md)** - å¸¸è§é—®é¢˜ä¸Žè§£å†³æ–¹æ¡ˆ
 
 ## èµ„æº
 

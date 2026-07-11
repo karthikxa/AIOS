@@ -1,4 +1,4 @@
-# Safety, Security, And Legal
+﻿# Safety, Security, And Legal
 
 ## Scope
 

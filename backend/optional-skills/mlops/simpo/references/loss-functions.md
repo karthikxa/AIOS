@@ -1,4 +1,4 @@
-# Loss Functions
+﻿# Loss Functions
 
 Complete guide to SimPO loss functions and mathematical formulations.
 

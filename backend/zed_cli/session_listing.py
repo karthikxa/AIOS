@@ -1,4 +1,4 @@
-"""Shared session-listing helpers for CLI and gateway slash surfaces."""
+﻿"""Shared session-listing helpers for CLI and gateway slash surfaces."""
 
 from __future__ import annotations
 

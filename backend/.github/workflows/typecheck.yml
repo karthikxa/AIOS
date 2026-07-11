@@ -1,4 +1,4 @@
-# .github/workflows/typecheck.yml
+﻿# .github/workflows/typecheck.yml
 name: Typecheck
 
 on:

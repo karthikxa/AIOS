@@ -100,7 +100,7 @@ The `metadata` mount option above is important â€” without it, files on `/m
 Once you have a WSL2 shell open:
 
 ```bash
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 source ~/.bashrc
 zed
 ```

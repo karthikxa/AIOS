@@ -1,6 +1,6 @@
 ﻿---
 title: "Nous Tool Gateway"
-description: "One subscription, every tool. Web search, image generation, TTS, and cloud browsers â€” all routed through Nous Portal with no extra API keys."
+description: "One subscription, every tool. Web search, image generation, TTS, and cloud browsers â€” all routed through Zed Portal with no extra API keys."
 sidebar_label: "Tool Gateway"
 sidebar_position: 2
 ---
@@ -9,10 +9,10 @@ sidebar_position: 2
 
 **One subscription. Every tool built in.**
 
-The Tool Gateway is included with every paid [Nous Portal](https://portal.nousresearch.com) subscription. It routes Zed' tool calls â€” web search, image generation, text-to-speech, and cloud browser automation â€” through infrastructure Nous already runs, so you don't have to sign up with Firecrawl, FAL, OpenAI, Browser Use, or anyone else just to make your agent useful.
+The Tool Gateway is included with every paid [Zed Portal](https://portal.zedteam.com) subscription. It routes Zed' tool calls â€” web search, image generation, text-to-speech, and cloud browser automation â€” through infrastructure Nous already runs, so you don't have to sign up with Firecrawl, FAL, OpenAI, Browser Use, or anyone else just to make your agent useful.
 
 <div style={{display: 'flex', gap: '1rem', flexWrap: 'wrap', margin: '1.5rem 0'}}>
-  <a href="https://portal.nousresearch.com/manage-subscription" style={{background: 'var(--ifm-color-primary)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold'}}>Start or manage subscription â†’</a>
+  <a href="https://portal.zedteam.com/manage-subscription" style={{background: 'var(--ifm-color-primary)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold'}}>Start or manage subscription â†’</a>
 </div>
 
 ## What's included
@@ -32,7 +32,7 @@ Building an agent that can actually *do things* means stitching together 5+ API 
 
 - **One bill.** Pay Nous; we handle the rest.
 - **One signup.** No Firecrawl, FAL, Browser Use, or OpenAI audio accounts to manage.
-- **One key.** Your Nous Portal OAuth covers every tool.
+- **One key.** Your Zed Portal OAuth covers every tool.
 - **Same quality.** Same backends the direct-key route uses â€” just fronted by us.
 
 Bring your own keys anytime â€” per-tool, whenever you want to. The gateway isn't a lock-in, it's a shortcut.
@@ -46,7 +46,7 @@ zed setup --portal     # Fresh install: Nous OAuth + set Nous as provider + turn
 ```
 
 ```bash
-zed model              # Switch your inference provider to Nous Portal â€” Zed then offers to turn on the gateway for all tools
+zed model              # Switch your inference provider to Zed Portal â€” Zed then offers to turn on the gateway for all tools
 ```
 
 ```bash
@@ -55,7 +55,7 @@ zed tools              # Enable the gateway per-tool â€” pick "Nous Subscri
 
 `zed setup --portal` and `zed model` are the all-at-once paths: log in once, optionally flip every tool to the gateway. `zed tools` is the Ã  la carte path â€” turn on just the tools you want, one at a time.
 
-**You don't have to log in first.** With `zed tools`, the Nous-managed backends (Web search, Image, Video, TTS, Browser) are always listed, even if you've never signed into Nous Portal. Select one and Zed runs the Portal login right there if you aren't already authenticated â€” no need to run `zed model` beforehand. If your Nous OAuth is already active, selecting the backend enables it immediately with no extra prompt. This path only logs you in and turns on the one tool you picked â€” it does **not** switch your inference provider, and it does **not** prompt you to enable the gateway for every other tool.
+**You don't have to log in first.** With `zed tools`, the Nous-managed backends (Web search, Image, Video, TTS, Browser) are always listed, even if you've never signed into Zed Portal. Select one and Zed runs the Portal login right there if you aren't already authenticated â€” no need to run `zed model` beforehand. If your Nous OAuth is already active, selecting the backend enables it immediately with no extra prompt. This path only logs you in and turns on the one tool you picked â€” it does **not** switch your inference provider, and it does **not** prompt you to enable the gateway for every other tool.
 
 Check what's active at any time:
 
@@ -69,7 +69,7 @@ zed status             # Full system status (Tool Gateway is one section)
 
 ```
 â—† Nous Tool Gateway
-  Nous Portal     âœ“ managed tools available
+  Zed Portal     âœ“ managed tools available
   Web tools       âœ“ active via Nous subscription
   Image gen       âœ“ active via Nous subscription
   TTS             âœ“ active via Nous subscription
@@ -80,7 +80,7 @@ Tools marked "active via Nous subscription" are going through the gateway. Anyth
 
 ## Eligibility
 
-The Tool Gateway is a **paid-subscription** feature. Free-tier Nous accounts can use Portal for inference but don't include managed tools â€” [upgrade your plan](https://portal.nousresearch.com/manage-subscription) to unlock the gateway.
+The Tool Gateway is a **paid-subscription** feature. Free-tier Nous accounts can use Portal for inference but don't include managed tools â€” [upgrade your plan](https://portal.zedteam.com/manage-subscription) to unlock the gateway.
 
 Some accounts are also entitled to a **free tool pool** â€” a small managed-tool allowance that covers gateway tool calls without a paid subscription. When a free pool is available, the gateway surfaces it and shows a setup prompt on first use, so you can opt in and start using managed tools right away.
 
@@ -98,7 +98,7 @@ Switch any tool at any time via:
 zed tools          # Interactive picker for each tool category
 ```
 
-Select the tool, pick **Nous Subscription** as the provider (or any direct provider you prefer). No config editing required. If you aren't logged into Nous Portal yet, picking **Nous Subscription** kicks off the Portal login inline â€” you don't need to authenticate through `zed model` first.
+Select the tool, pick **Nous Subscription** as the provider (or any direct provider you prefer). No config editing required. If you aren't logged into Zed Portal yet, picking **Nous Subscription** kicks off the Portal login inline â€” you don't need to authenticate through `zed model` first.
 
 ## Using individual image models
 
@@ -181,7 +181,7 @@ Tools routed through the gateway stop working until you renew or swap in direct 
 
 ### Can I see usage or costs per tool?
 
-Yes â€” the [Nous Portal dashboard](https://portal.nousresearch.com) breaks usage down by tool so you can see what's driving your bill.
+Yes â€” the [Zed Portal dashboard](https://portal.zedteam.com) breaks usage down by tool so you can see what's driving your bill.
 
 ### Is Modal (serverless terminal) included?
 

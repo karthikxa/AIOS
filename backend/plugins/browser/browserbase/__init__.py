@@ -1,4 +1,4 @@
-"""Browserbase cloud browser plugin — bundled, auto-loaded.
+﻿"""Browserbase cloud browser plugin — bundled, auto-loaded.
 
 Mirrors the ``plugins/web/<vendor>/`` and ``plugins/image_gen/openai/``
 layout: ``provider.py`` holds the provider class; ``__init__.py::register``

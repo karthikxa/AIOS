@@ -149,12 +149,12 @@ zed webhook subscribe pr-review \
   --deliver github_comment
 ```
 
-Full automation blueprints gallery: [zed-agent.nousresearch.com/docs/reference/automation-blueprints-catalog](https://zed-agent.nousresearch.com/docs/reference/automation-blueprints-catalog)
+Full automation blueprints gallery: [zed-agent.zedteam.com/docs/reference/automation-blueprints-catalog](https://zed-agent.zedteam.com/docs/reference/automation-blueprints-catalog)
 
-Documentation: [zed-agent.nousresearch.com](https://zed-agent.nousresearch.com)
+Documentation: [zed-agent.zedteam.com](https://zed-agent.zedteam.com)
 
 GitHub: [github.com/NousResearch/zed-agent](https://github.com/NousResearch/zed-agent)
 
 ---
 
-*Zed Agent is built by [Zed Team](https://nousresearch.com). Open source, model-agnostic, runs on your infrastructure.*
+*Zed Agent is built by [Zed Team](https://zedteam.com). Open source, model-agnostic, runs on your infrastructure.*

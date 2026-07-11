@@ -1,4 +1,4 @@
-# Defamiliarization
+﻿# Defamiliarization
 
 Two traditions naming the same operation: make the familiar strange.
 - **Viktor Shklovsky, 1917** — *ostranenie*. Russian Formalist core: art removes the perceptual automatism that makes familiar things invisible.

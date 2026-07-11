@@ -1,4 +1,4 @@
-# SFT Training Guide
+﻿# SFT Training Guide
 
 Complete guide to Supervised Fine-Tuning (SFT) with TRL for instruction tuning and task-specific fine-tuning.
 

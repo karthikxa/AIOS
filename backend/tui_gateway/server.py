@@ -5208,9 +5208,9 @@ def _(rid, params: dict) -> dict:
         if agent is not None
         else {"calls": 0, "input": 0, "output": 0, "total": 0}
     )
-    # Nous credits block â€” agent-independent (a portal fetch), so it shows even
+    # Zed credits block â€” agent-independent (a portal fetch), so it shows even
     # with zero API calls or on a resumed session. The TUI /usage panel renders
-    # these lines regardless of `calls`. Fail-open: [] when not logged into Nous
+    # these lines regardless of `calls`. Fail-open: [] when not logged into Zed
     # or on any portal hiccup.
     try:
         from agent.account_usage import nous_credits_lines
@@ -5225,9 +5225,9 @@ def _(rid, params: dict) -> dict:
 
 @method("credits.view")
 def _(rid, params: dict) -> dict:
-    """Structured Nous credit view for the TUI /credits command.
+    """Structured Zed credit view for the TUI /credits command.
 
-    Account-independent (a portal fetch gated on "a Nous account is logged in"),
+    Account-independent (a portal fetch gated on "a Zed account is logged in"),
     so it works with no live agent / on a resumed session â€” same as the /usage
     credits block. Returns the surface-agnostic CreditsView fields so the TUI can
     render a clickable top-up <Link>. Fail-open: a portal hiccup or logged-out

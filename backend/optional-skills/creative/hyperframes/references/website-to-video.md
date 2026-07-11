@@ -1,4 +1,4 @@
-# Website to Video
+﻿# Website to Video
 
 Capture a website, produce a professional video from it. Use when the user provides a URL and wants a video — social ad, product tour, 30-second promo, etc.
 

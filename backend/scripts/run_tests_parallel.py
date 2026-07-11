@@ -60,7 +60,7 @@ _DEFAULT_ROOTS = ["tests"]
 #   tests/integration/ â€” historical; legacy --ignore flags
 #   tests/docker/      â€” .github/workflows/docker-publish.yml ::
 #                        build-amd64 job (runs against the freshly-loaded
-#                        nousresearch/zed-agent:test image, via
+#                        zedteam/zed-agent:test image, via
 #                        ``ZED_TEST_IMAGE`` so the fixture skips
 #                        rebuild). The full pytest-shard runner can't
 #                        host these because the session-scoped

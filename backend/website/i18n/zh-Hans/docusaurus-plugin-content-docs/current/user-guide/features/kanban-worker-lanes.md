@@ -7,7 +7,7 @@
 - **è¿ç»´äººå‘˜**ï¼šé€‰æ‹©å°†å“ªäº›é€šé“æŽ¥å…¥çœ‹æ¿ï¼ˆåˆ›å»ºå“ªäº› profileï¼Œä½¿ç”¨å“ªäº› assigneeï¼‰ã€‚
 - **æ’ä»¶/é›†æˆä½œè€…**ï¼šå¸Œæœ›æ·»åŠ æ–°çš„é€šé“å½¢æ€ï¼ˆå°è£… Codex / Claude Code / OpenCode çš„ CLI workerã€å®¹å™¨åŒ–å®¡æŸ¥ workerã€é€šè¿‡ API æ‹‰å–ä»»åŠ¡çš„éž Zed æœåŠ¡ï¼‰ã€‚
 
-å¦‚æžœä½ ç¼–å†™çš„æ˜¯ worker ä»£ç æœ¬èº«â€”â€”å³è¿è¡Œåœ¨é€šé“*å†…éƒ¨*çš„ agentâ€”â€”è¯·å‚é˜… [`kanban-worker`](https://github.com/NousResearch/zed-agent/blob/main/skills/devops/kanban-worker/SKILL.md) skillï¼Œå…¶ä¸­åŒ…å«æ›´æ·±å…¥çš„æ“ä½œç»†èŠ‚ã€‚
+å¦‚æžœä½ ç¼–å†™çš„æ˜¯ worker ä»£ç æœ¬èº«â€”â€”å³è¿è¡Œåœ¨é€šé“*å†…éƒ¨*çš„ agentâ€”â€”è¯·å‚é˜… [`kanban-worker`](https://github.com/zedteam/zed-agent/blob/main/skills/devops/kanban-worker/SKILL.md) skillï¼Œå…¶ä¸­åŒ…å«æ›´æ·±å…¥çš„æ“ä½œç»†èŠ‚ã€‚
 
 ## å±‚çº§ç»“æž„
 
@@ -64,7 +64,7 @@ kanban å†…æ ¸å¼ºåˆ¶è¦æ±‚æ¯æ¬¡è¿è¡Œæ°å¥
 - **å…ˆå°†ç»“æž„åŒ–å…ƒæ•°æ®å†™å…¥ `kanban_comment`**ï¼Œå› ä¸º `kanban_block` åªæºå¸¦äººç±»å¯è¯»çš„ `reason`ã€‚Comment æ˜¯æŒä¹…çš„æ³¨è§£é€šé“â€”â€”æ‰€æœ‰ä¸Žå®¡è®¡ç›¸å…³çš„å­—æ®µï¼ˆchanged_filesã€tests_runã€diff_path æˆ– PR urlã€å†³ç­–è®°å½•ï¼‰éƒ½åº”æ”¾åœ¨è¿™é‡Œã€‚
 - **Reviewer æ‰¹å‡†å¹¶è§£é™¤é˜»å¡ž**ï¼Œè¿™å°†é‡æ–°ç”Ÿæˆ worker å¹¶é™„å¸¦ comment çº¿ç¨‹ç”¨äºŽåŽç»­è·Ÿè¿›ï¼›æˆ–é€šè¿‡å¦ä¸€æ¡ comment è¦æ±‚ä¿®æ”¹ï¼Œä¸‹ä¸€æ¬¡ worker è¿è¡Œæ—¶å°†é€šè¿‡ `kanban_show` çš„ä¸Šä¸‹æ–‡çœ‹åˆ°è¿™äº›å†…å®¹ã€‚
 
-[`kanban-worker`](https://github.com/NousResearch/zed-agent/blob/main/skills/devops/kanban-worker/SKILL.md) skill ä¸­æœ‰ `kanban_complete`ï¼ˆçœŸæ­£ç»ˆæ€çš„ä»»åŠ¡â€”â€”æ‹¼å†™ä¿®å¤ã€æ–‡æ¡£å˜æ›´ã€ç ”ç©¶æŠ¥å‘Šï¼‰å’Œ `review-required` block æ¨¡å¼çš„å®Œæ•´ç¤ºä¾‹ã€‚
+[`kanban-worker`](https://github.com/zedteam/zed-agent/blob/main/skills/devops/kanban-worker/SKILL.md) skill ä¸­æœ‰ `kanban_complete`ï¼ˆçœŸæ­£ç»ˆæ€çš„ä»»åŠ¡â€”â€”æ‹¼å†™ä¿®å¤ã€æ–‡æ¡£å˜æ›´ã€ç ”ç©¶æŠ¥å‘Šï¼‰å’Œ `review-required` block æ¨¡å¼çš„å®Œæ•´ç¤ºä¾‹ã€‚
 
 ## æ—¥å¿—ä¸Žå®¡è®¡è¿½è¸ª
 
@@ -80,9 +80,9 @@ kanban å†…æ ¸å¼ºåˆ¶è¦æ±‚æ¯æ¬¡è¿è¡Œæ°å¥
 
 ### Zed profile é€šé“ï¼ˆé»˜è®¤ï¼‰
 
-å½“å‰æ‰€æœ‰ kanban worker é‡‡ç”¨çš„å½¢æ€ï¼šassignee æ˜¯ profile åç§°ï¼Œè°ƒåº¦å™¨ç”Ÿæˆ `zed -p <profile>`ï¼Œworker è‡ªåŠ¨åŠ è½½ [`kanban-worker`](https://github.com/NousResearch/zed-agent/blob/main/skills/devops/kanban-worker/SKILL.md) skill ä»¥åŠ `KANBAN_GUIDANCE` ç³»ç»Ÿæç¤ºå—ï¼Œå¹¶ä½¿ç”¨ `kanban_*` å·¥å…·ç»ˆæ­¢è¿è¡Œã€‚é™¤å®šä¹‰ profile å¤–æ— éœ€ä»»ä½•é¢å¤–é…ç½®ã€‚
+å½“å‰æ‰€æœ‰ kanban worker é‡‡ç”¨çš„å½¢æ€ï¼šassignee æ˜¯ profile åç§°ï¼Œè°ƒåº¦å™¨ç”Ÿæˆ `zed -p <profile>`ï¼Œworker è‡ªåŠ¨åŠ è½½ [`kanban-worker`](https://github.com/zedteam/zed-agent/blob/main/skills/devops/kanban-worker/SKILL.md) skill ä»¥åŠ `KANBAN_GUIDANCE` ç³»ç»Ÿæç¤ºå—ï¼Œå¹¶ä½¿ç”¨ `kanban_*` å·¥å…·ç»ˆæ­¢è¿è¡Œã€‚é™¤å®šä¹‰ profile å¤–æ— éœ€ä»»ä½•é¢å¤–é…ç½®ã€‚
 
-ä¸ºä½ çš„ fleet åˆ›å»º profile æ—¶ï¼Œé€‰æ‹©ä¸Žä½ å¸Œæœ› orchestrator è·¯ç”±åˆ°çš„*è§’è‰²*ç›¸åŒ¹é…çš„åç§°ã€‚orchestratorï¼ˆå¦‚æžœå­˜åœ¨ï¼‰é€šè¿‡ `zed profile list` å‘çŽ°ä½ çš„ profile åç§°â€”â€”ç³»ç»Ÿä¸å‡è®¾å›ºå®šçš„åå•ï¼ˆorchestrator ä¾§çš„å¥‘çº¦è¯·å‚é˜… [`kanban-orchestrator`](https://github.com/NousResearch/zed-agent/blob/main/skills/devops/kanban-orchestrator/SKILL.md) skillï¼‰ã€‚
+ä¸ºä½ çš„ fleet åˆ›å»º profile æ—¶ï¼Œé€‰æ‹©ä¸Žä½ å¸Œæœ› orchestrator è·¯ç”±åˆ°çš„*è§’è‰²*ç›¸åŒ¹é…çš„åç§°ã€‚orchestratorï¼ˆå¦‚æžœå­˜åœ¨ï¼‰é€šè¿‡ `zed profile list` å‘çŽ°ä½ çš„ profile åç§°â€”â€”ç³»ç»Ÿä¸å‡è®¾å›ºå®šçš„åå•ï¼ˆorchestrator ä¾§çš„å¥‘çº¦è¯·å‚é˜… [`kanban-orchestrator`](https://github.com/zedteam/zed-agent/blob/main/skills/devops/kanban-orchestrator/SKILL.md) skillï¼‰ã€‚
 
 ### Orchestrator profile é€šé“
 
@@ -94,7 +94,7 @@ profile é€šé“çš„ç‰¹åŒ–å½¢æ€ï¼šorchestrator æ˜�
 
 å¦‚æžœä½ è€ƒè™‘æ·»åŠ  CLI é€šé“ï¼Œè¯·æäº¤ä¸€ä¸ª issueï¼Œæè¿°å…·ä½“çš„ CLI ä»¥åŠä½ å¸Œæœ›å®žçŽ°çš„å·¥ä½œæµã€‚ä¸Šè¿°å¥‘çº¦æ˜¯ä»»ä½•æ­¤ç±»é€šé“å¿…é¡»æ»¡è¶³çš„çº¦æŸï¼›å®žçŽ°å½¢æ€ï¼ˆæ¯ä¸ª CLI ä¸€ä¸ªæ’ä»¶ï¼Œè¿˜æ˜¯é€šè¿‡é…ç½®å‚æ•°åŒ–çš„é€šç”¨ CLI è¿è¡Œå™¨æ’ä»¶ï¼‰å°šæœªç¡®å®šã€‚
 
-ç›¸å…³åŽ†å² issue ä¸º [#19931](https://github.com/NousResearch/zed-agent/issues/19931)ï¼Œä»¥åŠå·²å…³é—­æœªåˆå¹¶çš„ Codex ä¸“é¡¹ PR [#19924](https://github.com/NousResearch/zed-agent/pull/19924)â€”â€”è¿™äº›æè¿°äº†åŽŸå§‹æž¶æž„ææ¡ˆï¼Œä½†æœªè½åœ°è¿è¡Œå™¨ã€‚
+ç›¸å…³åŽ†å² issue ä¸º [#19931](https://github.com/zedteam/zed-agent/issues/19931)ï¼Œä»¥åŠå·²å…³é—­æœªåˆå¹¶çš„ Codex ä¸“é¡¹ PR [#19924](https://github.com/zedteam/zed-agent/pull/19924)â€”â€”è¿™äº›æè¿°äº†åŽŸå§‹æž¶æž„ææ¡ˆï¼Œä½†æœªè½åœ°è¿è¡Œå™¨ã€‚
 
 ## è°ƒåº¦å™¨å¤„ç†çš„å¤±è´¥æ¨¡å¼
 
@@ -110,5 +110,5 @@ profile é€šé“çš„ç‰¹åŒ–å½¢æ€ï¼šorchestrator æ˜�
 
 - [Kanban æ¦‚è§ˆ](./kanban) â€” é¢å‘ç”¨æˆ·çš„ä»‹ç»ã€‚
 - [Kanban æ•™ç¨‹](./kanban-tutorial) â€” å¼€å¯ä»ªè¡¨æ¿çš„å®Œæ•´æ¼”ç»ƒã€‚
-- [`kanban-worker`](https://github.com/NousResearch/zed-agent/blob/main/skills/devops/kanban-worker/SKILL.md) â€” worker è¿›ç¨‹åŠ è½½çš„ skillã€‚
-- [`kanban-orchestrator`](https://github.com/NousResearch/zed-agent/blob/main/skills/devops/kanban-orchestrator/SKILL.md) â€” orchestrator ä¾§ã€‚
+- [`kanban-worker`](https://github.com/zedteam/zed-agent/blob/main/skills/devops/kanban-worker/SKILL.md) â€” worker è¿›ç¨‹åŠ è½½çš„ skillã€‚
+- [`kanban-orchestrator`](https://github.com/zedteam/zed-agent/blob/main/skills/devops/kanban-orchestrator/SKILL.md) â€” orchestrator ä¾§ã€‚

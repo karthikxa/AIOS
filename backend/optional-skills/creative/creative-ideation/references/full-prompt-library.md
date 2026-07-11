@@ -1,4 +1,4 @@
-# Constraint Library
+﻿# Constraint Library
 
 Constraint-dispatch library — voice and approach inspired by [wttdotm.com/prompts.html](https://wttdotm.com/prompts.html). Adapted and expanded.
 

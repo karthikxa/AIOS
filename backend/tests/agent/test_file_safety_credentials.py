@@ -1,6 +1,6 @@
 ﻿"""Tests for ZED_HOME credential-file read blocking in file_safety.
 
-Regression for https://github.com/NousResearch/zed-agent/issues/17656 â€”
+Regression for https://github.com/ZedTeam/zed-agent/issues/17656 â€”
 ``read_file`` was previously only sandboxed against ``ZED_HOME`` itself,
 which left ``auth.json`` and ``.anthropic_oauth.json`` (plaintext provider
 keys + OAuth tokens) readable by the agent. A prompt-injection reaching

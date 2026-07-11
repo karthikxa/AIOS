@@ -1,4 +1,4 @@
-"""Message and tool-payload sanitization helpers.
+﻿"""Message and tool-payload sanitization helpers.
 
 Pure functions extracted from ``run_agent.py`` so the AIAgent module can
 stay focused on the conversation loop.  These walk OpenAI-format message

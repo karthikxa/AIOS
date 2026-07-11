@@ -22,8 +22,8 @@ Zed Agent æ”¯æŒåœ¨ CLI å’Œæ¶ˆæ¯å¹³å°ä¸Šè¿›è
 `~/.zed/` ç›®å½•å’Œé»˜è®¤çš„ `config.yaml` ä¼šåœ¨é¦–æ¬¡è¿è¡Œ `zed` æ—¶è‡ªåŠ¨åˆ›å»ºã€‚åªéœ€æ‰‹åŠ¨åˆ›å»º `~/.zed/.env` æ¥å­˜æ”¾ API å¯†é’¥ã€‚
 :::
 
-:::tip Nous Portal åŒæ—¶è¦†ç›–ä¸¤é¡¹
-ä»˜è´¹çš„ [Nous Portal](/user-guide/features/tool-gateway) è®¢é˜…é€šè¿‡ Tool Gateway åŒæ—¶æä¾› LLMï¼ˆç¬¬ 2 æ­¥ï¼‰**å’Œ** OpenAI TTS â€” æ— éœ€å•ç‹¬çš„ OpenAI å¯†é’¥ã€‚å…¨æ–°å®‰è£…æ—¶ï¼Œ`zed setup --portal` å¯ä¸€æ¬¡æ€§å®Œæˆä¸¤é¡¹é…ç½®ã€‚
+:::tip Zed Portal åŒæ—¶è¦†ç›–ä¸¤é¡¹
+ä»˜è´¹çš„ [Zed Portal](/user-guide/features/tool-gateway) è®¢é˜…é€šè¿‡ Tool Gateway åŒæ—¶æä¾› LLMï¼ˆç¬¬ 2 æ­¥ï¼‰**å’Œ** OpenAI TTS â€” æ— éœ€å•ç‹¬çš„ OpenAI å¯†é’¥ã€‚å…¨æ–°å®‰è£…æ—¶ï¼Œ`zed setup --portal` å¯ä¸€æ¬¡æ€§å®Œæˆä¸¤é¡¹é…ç½®ã€‚
 :::
 
 ## æ¦‚è§ˆ

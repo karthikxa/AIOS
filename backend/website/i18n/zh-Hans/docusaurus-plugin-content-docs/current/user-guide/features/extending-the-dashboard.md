@@ -681,7 +681,7 @@ Shell åªä¸ºä¸Šè¿°æ’æ§½æ¸²æŸ“ `<PluginSlot name="..."
 - å¤šä¸ªæ’ä»¶å¯ä»¥å£°æ˜ŽåŒä¸€ä¸ªé¡µé¢çº§æ’æ§½ã€‚å®ƒä»¬æŒ‰æ³¨å†Œé¡ºåºå †å æ¸²æŸ“ã€‚
 - æ— æ’ä»¶æ³¨å†Œæ—¶é›¶å¼€é”€ï¼šå†…ç½®é¡µé¢ä¸Žä¹‹å‰å®Œå…¨ç›¸åŒåœ°æ¸²æŸ“ã€‚
 
-å‚è€ƒæ’ä»¶ï¼ˆ[`zed-example-plugins`](https://github.com/NousResearch/zed-example-plugins/tree/main/example-dashboard) ä¸­çš„ `example-dashboard`ï¼‰æä¾›äº†ä¸€ä¸ªå‘ `sessions:top` æ³¨å…¥æ¨ªå¹…çš„å®žæ—¶æ¼”ç¤ºâ€”â€”å®‰è£…å®ƒå¯ç«¯åˆ°ç«¯äº†è§£è¯¥æ¨¡å¼ã€‚
+å‚è€ƒæ’ä»¶ï¼ˆ[`zed-example-plugins`](https://github.com/zedteam/zed-example-plugins/tree/main/example-dashboard) ä¸­çš„ `example-dashboard`ï¼‰æä¾›äº†ä¸€ä¸ªå‘ `sessions:top` æ³¨å…¥æ¨ªå¹…çš„å®žæ—¶æ¼”ç¤ºâ€”â€”å®‰è£…å®ƒå¯ç«¯åˆ°ç«¯äº†è§£è¯¥æ¨¡å¼ã€‚
 
 ### ä»…æ’æ§½æ’ä»¶ï¼ˆ`tab.hidden`ï¼‰
 
@@ -818,7 +818,7 @@ curl http://127.0.0.1:9119/api/dashboard/plugins/rescan
 
 ## ä¸»é¢˜ + æ’ä»¶ç»„åˆæ¼”ç¤º
 
-[`strike-freedom-cockpit`](https://github.com/NousResearch/zed-example-plugins/tree/main/strike-freedom-cockpit) æ’ä»¶ï¼ˆä¼´éšä»“åº“ `zed-example-plugins`ï¼‰æ˜¯ä¸€ä¸ªå®Œæ•´çš„æ¢è‚¤æ¼”ç¤ºã€‚å®ƒå°†ä¸»é¢˜ YAML ä¸Žä»…æ’æ§½æ’ä»¶é…å¯¹ï¼Œåœ¨ä¸ fork dashboard çš„æƒ…å†µä¸‹ç”Ÿæˆé©¾é©¶èˆ±é£Žæ ¼çš„ HUDã€‚
+[`strike-freedom-cockpit`](https://github.com/zedteam/zed-example-plugins/tree/main/strike-freedom-cockpit) æ’ä»¶ï¼ˆä¼´éšä»“åº“ `zed-example-plugins`ï¼‰æ˜¯ä¸€ä¸ªå®Œæ•´çš„æ¢è‚¤æ¼”ç¤ºã€‚å®ƒå°†ä¸»é¢˜ YAML ä¸Žä»…æ’æ§½æ’ä»¶é…å¯¹ï¼Œåœ¨ä¸ fork dashboard çš„æƒ…å†µä¸‹ç”Ÿæˆé©¾é©¶èˆ±é£Žæ ¼çš„ HUDã€‚
 
 **æ¼”ç¤ºå†…å®¹ï¼š**
 
@@ -832,7 +832,7 @@ curl http://127.0.0.1:9119/api/dashboard/plugins/rescan
 **å®‰è£…ï¼š**
 
 ```bash
-git clone https://github.com/NousResearch/zed-example-plugins.git
+git clone https://github.com/zedteam/zed-example-plugins.git
 
 # Theme
 cp zed-example-plugins/strike-freedom-cockpit/theme/strike-freedom.yaml \

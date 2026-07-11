@@ -1,4 +1,4 @@
-"""Security checks for user-configured MCP server entries.
+﻿"""Security checks for user-configured MCP server entries.
 
 MCP stdio transports intentionally support arbitrary local commands so users can
 run custom servers. This module does not try to sandbox that capability. It only

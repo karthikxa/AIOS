@@ -1023,7 +1023,7 @@ class TestWebServerEndpoints:
         assert data["name"] == "zed-update"
         assert data["pid"] is None
         assert data["error"] == "docker_update_unsupported"
-        assert "docker pull nousresearch/zed-agent:latest" in data["message"]
+        assert "docker pull zedteam/zed-agent:latest" in data["message"]
         assert spawned is False
 
         status = self.client.get("/api/actions/zed-update/status")
@@ -1032,7 +1032,7 @@ class TestWebServerEndpoints:
         assert status_data["running"] is False
         assert status_data["exit_code"] == 1
         assert status_data["pid"] is None
-        assert any("docker pull nousresearch/zed-agent:latest" in line for line in status_data["lines"])
+        assert any("docker pull zedteam/zed-agent:latest" in line for line in status_data["lines"])
 
     def test_update_zed_returns_managed_runtime_guidance_without_spawning(self, monkeypatch):
         import zed_cli.web_server as web_server
@@ -1637,7 +1637,7 @@ class TestWebServerEndpoints:
         assert "personal WeChat" in weixin["description"]
         assert "Official Account" not in f"{weixin['name']} {weixin['description']}"
         assert weixin["docs_url"] == (
-            "https://zed-agent.nousresearch.com/docs/user-guide/messaging/weixin/"
+            "https://zed-agent.zedteam.com/docs/user-guide/messaging/weixin/"
         )
 
         fields = {field["key"]: field for field in weixin["env_vars"]}

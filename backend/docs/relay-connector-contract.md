@@ -7,7 +7,7 @@
 
 This document is the formal interface between the **Zed gateway** (Python,
 `gateway/relay/`) and the **connector** (Node/TypeScript,
-`NousResearch/gateway-gateway`). The connector implementer's first action is to
+`zedteam/gateway-gateway`). The connector implementer's first action is to
 read this file.
 
 The gateway runs a generic `RelayAdapter` that dials **out** to the connector,

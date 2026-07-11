@@ -1,4 +1,4 @@
-# Pólya's Heuristics
+﻿# Pólya's Heuristics
 
 George Pólya, *How to Solve It* (Princeton UP, 1945). Four-phase problem-solving framework + dictionary of heuristic moves. Written for math but applies to any well-defined "find X such that..." problem.
 

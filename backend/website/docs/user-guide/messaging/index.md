@@ -11,7 +11,7 @@ Chat with Zed from Telegram, Discord, Slack, WhatsApp, Signal, SMS, Email, Home 
 For the full voice feature set â€” including CLI microphone mode, spoken replies in messaging, and Discord voice-channel conversations â€” see [Voice Mode](/user-guide/features/voice-mode) and [Use Voice Mode with Zed](/guides/use-voice-mode-with-zed).
 
 :::tip
-Bots need both a model provider and tool providers (TTS, web). A [Nous Portal](/integrations/nous-portal) subscription bundles all of them.
+Bots need both a model provider and tool providers (TTS, web). A [Zed Portal](/integrations/nous-portal) subscription bundles all of them.
 :::
 
 ## Platform Comparison

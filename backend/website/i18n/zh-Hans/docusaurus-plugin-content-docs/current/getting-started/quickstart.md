@@ -61,7 +61,7 @@ PyPI å‘å¸ƒç‰ˆæœ¬è·Ÿè¸ªå¸¦æ ‡ç­¾çš„ç‰ˆæœ
 
 ```bash
 # Linux / macOS / WSL2 / Android (Termux)
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 ```
 
 :::tip Android / Termux
@@ -88,7 +88,7 @@ source ~/.bashrc   # æˆ– source ~/.zshrc
 zed model
 ```
 
-:::tip æœ€ç®€è·¯å¾„ï¼šNous Portal
+:::tip æœ€ç®€è·¯å¾„ï¼šZed Portal
 ä¸€ä¸ªè®¢é˜…æ¶µç›– 300+ ä¸ªæ¨¡åž‹ï¼Œä»¥åŠ [Tool Gateway](../user-guide/features/tool-gateway.md)ï¼ˆç½‘é¡µæœç´¢ã€å›¾åƒç”Ÿæˆã€TTSã€äº‘ç«¯æµè§ˆå™¨ï¼‰ã€‚å…¨æ–°å®‰è£…æ—¶ï¼š
 
 ```bash
@@ -102,7 +102,7 @@ zed setup --portal
 
 | Provider | è¯´æ˜Ž | é…ç½®æ–¹å¼ |
 |----------|-----------|---------------|
-| **Nous Portal** | è®¢é˜…åˆ¶ï¼Œé›¶é…ç½® | é€šè¿‡ `zed model` è¿›è¡Œ OAuth ç™»å½• |
+| **Zed Portal** | è®¢é˜…åˆ¶ï¼Œé›¶é…ç½® | é€šè¿‡ `zed model` è¿›è¡Œ OAuth ç™»å½• |
 | **OpenAI Codex** | ChatGPT OAuthï¼Œä½¿ç”¨ Codex æ¨¡åž‹ | é€šè¿‡ `zed model` è¿›è¡Œè®¾å¤‡ç è®¤è¯ |
 | **Anthropic** | ç›´æŽ¥ä½¿ç”¨ Claude æ¨¡åž‹â€”â€”Max è®¡åˆ’ + é¢å¤–ç”¨é‡ç§¯åˆ†ï¼ˆOAuthï¼‰ï¼Œæˆ–æŒ‰ token ä»˜è´¹çš„ API key | `zed model` â†’ OAuth ç™»å½•ï¼ˆéœ€è¦ Max + é¢å¤–ç§¯åˆ†ï¼‰ï¼Œæˆ– Anthropic API key |
 | **OpenRouter** | è·¨å¤šä¸ª provider çš„å¤šæ¨¡åž‹è·¯ç”± | è¾“å…¥ API key |

@@ -1,4 +1,4 @@
-"""Minimal LSP JSON-RPC 2.0 framer over async streams.
+﻿"""Minimal LSP JSON-RPC 2.0 framer over async streams.
 
 LSP wire format:
 

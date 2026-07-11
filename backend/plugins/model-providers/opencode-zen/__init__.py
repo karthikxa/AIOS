@@ -1,4 +1,4 @@
-"""OpenCode provider profiles (Zen + Go).
+﻿"""OpenCode provider profiles (Zen + Go).
 
 Both use per-model api_mode routing:
   - OpenCode Zen: Claude → anthropic_messages, GPT-5/Codex → codex_responses,

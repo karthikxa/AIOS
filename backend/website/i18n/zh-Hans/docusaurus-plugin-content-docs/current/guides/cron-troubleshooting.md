@@ -214,7 +214,7 @@ zed skills list                  # ç¡®è®¤å·²å®‰è£…çš„ skill
 
 1. ä½¿ç”¨ `zed cron run <job_id>` è¿è¡Œä»»åŠ¡ï¼ˆåœ¨ä¸‹æ¬¡ gateway tick æ—¶è§¦å‘ï¼‰ï¼Œè§‚å¯ŸèŠå¤©è¾“å‡ºä¸­çš„é”™è¯¯
 2. æŸ¥çœ‹ `~/.zed/logs/agent.log` ä¸­çš„è°ƒåº¦å™¨æ¶ˆæ¯å’Œ `~/.zed/logs/errors.log` ä¸­çš„è­¦å‘Š
-3. åœ¨ [github.com/NousResearch/zed-agent](https://github.com/NousResearch/zed-agent) æäº¤ issueï¼Œå¹¶é™„ä¸Šï¼š
+3. åœ¨ [github.com/zedteam/zed-agent](https://github.com/zedteam/zed-agent) æäº¤ issueï¼Œå¹¶é™„ä¸Šï¼š
    - ä»»åŠ¡ ID å’Œè°ƒåº¦è¡¨è¾¾å¼
    - æŠ•é€’ç›®æ ‡
    - é¢„æœŸè¡Œä¸ºä¸Žå®žé™…è¡Œä¸º

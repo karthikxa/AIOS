@@ -1,4 +1,4 @@
-# Pataphysics
+﻿# Pataphysics
 
 Alfred Jarry, *Gestes et opinions du docteur Faustroll, pataphysicien* (1898/1911). The science of imaginary solutions and particular cases.
 

@@ -362,13 +362,13 @@ vllm serve MODEL --speculative-model DRAFT_MODEL
 
 ## é«˜çº§ä¸»é¢˜
 
-**æœåŠ¡å™¨éƒ¨ç½²æ¨¡å¼**ï¼šå‚è§ [references/server-deployment.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/inference/vllm/references/server-deployment.md)ï¼Œäº†è§£ Dockerã€Kubernetes å’Œè´Ÿè½½å‡è¡¡é…ç½®ã€‚
+**æœåŠ¡å™¨éƒ¨ç½²æ¨¡å¼**ï¼šå‚è§ [references/server-deployment.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/inference/vllm/references/server-deployment.md)ï¼Œäº†è§£ Dockerã€Kubernetes å’Œè´Ÿè½½å‡è¡¡é…ç½®ã€‚
 
-**æ€§èƒ½ä¼˜åŒ–**ï¼šå‚è§ [references/optimization.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/inference/vllm/references/optimization.md)ï¼Œäº†è§£ PagedAttention è°ƒä¼˜ã€continuous batching è¯¦æƒ…åŠåŸºå‡†æµ‹è¯•ç»“æžœã€‚
+**æ€§èƒ½ä¼˜åŒ–**ï¼šå‚è§ [references/optimization.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/inference/vllm/references/optimization.md)ï¼Œäº†è§£ PagedAttention è°ƒä¼˜ã€continuous batching è¯¦æƒ…åŠåŸºå‡†æµ‹è¯•ç»“æžœã€‚
 
-**é‡åŒ–æŒ‡å—**ï¼šå‚è§ [references/quantization.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/inference/vllm/references/quantization.md)ï¼Œäº†è§£ AWQ/GPTQ/FP8 é…ç½®ã€æ¨¡åž‹å‡†å¤‡åŠç²¾åº¦å¯¹æ¯”ã€‚
+**é‡åŒ–æŒ‡å—**ï¼šå‚è§ [references/quantization.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/inference/vllm/references/quantization.md)ï¼Œäº†è§£ AWQ/GPTQ/FP8 é…ç½®ã€æ¨¡åž‹å‡†å¤‡åŠç²¾åº¦å¯¹æ¯”ã€‚
 
-**æ•…éšœæŽ’æŸ¥**ï¼šå‚è§ [references/troubleshooting.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/inference/vllm/references/troubleshooting.md)ï¼Œäº†è§£è¯¦ç»†é”™è¯¯ä¿¡æ¯ã€è°ƒè¯•æ­¥éª¤åŠæ€§èƒ½è¯Šæ–­ã€‚
+**æ•…éšœæŽ’æŸ¥**ï¼šå‚è§ [references/troubleshooting.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/inference/vllm/references/troubleshooting.md)ï¼Œäº†è§£è¯¦ç»†é”™è¯¯ä¿¡æ¯ã€è°ƒè¯•æ­¥éª¤åŠæ€§èƒ½è¯Šæ–­ã€‚
 
 ## ç¡¬ä»¶è¦æ±‚
 

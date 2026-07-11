@@ -1,4 +1,4 @@
-# Provider Configuration
+﻿# Provider Configuration
 
 Guide to using Instructor with different LLM providers.
 

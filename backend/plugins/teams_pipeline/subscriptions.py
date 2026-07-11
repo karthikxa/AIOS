@@ -1,4 +1,4 @@
-"""Microsoft Graph subscription helpers for the Teams pipeline plugin."""
+﻿"""Microsoft Graph subscription helpers for the Teams pipeline plugin."""
 
 from __future__ import annotations
 

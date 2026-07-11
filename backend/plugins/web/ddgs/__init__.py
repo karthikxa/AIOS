@@ -1,4 +1,4 @@
-"""DuckDuckGo search plugin — bundled, auto-loaded.
+﻿"""DuckDuckGo search plugin — bundled, auto-loaded.
 
 Backed by the community ``ddgs`` Python package which scrapes DDG's HTML
 results page. No API key required, but the package itself must be installed

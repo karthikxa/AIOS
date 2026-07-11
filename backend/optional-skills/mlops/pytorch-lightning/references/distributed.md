@@ -1,4 +1,4 @@
-# PyTorch Lightning Distributed Training
+﻿# PyTorch Lightning Distributed Training
 
 ## Distributed Strategies
 

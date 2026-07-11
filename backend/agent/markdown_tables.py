@@ -1,4 +1,4 @@
-"""CJK/wide-character-aware re-alignment of model-emitted markdown tables.
+﻿"""CJK/wide-character-aware re-alignment of model-emitted markdown tables.
 
 Models pad markdown tables assuming each character occupies one terminal
 cell. CJK glyphs and most emoji render as two cells, so the model's

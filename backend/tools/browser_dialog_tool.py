@@ -1,4 +1,4 @@
-"""Agent-facing tool: respond to a native JS dialog captured by the CDP supervisor.
+﻿"""Agent-facing tool: respond to a native JS dialog captured by the CDP supervisor.
 
 This tool is response-only — the agent first reads ``pending_dialogs`` from
 ``browser_snapshot`` output, then calls ``browser_dialog(action=...)`` to

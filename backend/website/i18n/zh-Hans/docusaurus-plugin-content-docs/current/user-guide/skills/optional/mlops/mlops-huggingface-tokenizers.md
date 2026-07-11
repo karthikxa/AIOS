@@ -521,10 +521,10 @@ with Pool(8) as pool:
 
 ## å‚è€ƒèµ„æ–™
 
-- **[è®­ç»ƒæŒ‡å—](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/huggingface-tokenizers/references/training.md)** â€” è®­ç»ƒè‡ªå®šä¹‰ tokenizerã€é…ç½®è®­ç»ƒå™¨ã€å¤„ç†å¤§åž‹æ•°æ®é›†
-- **[ç®—æ³•æ·±åº¦è§£æž](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/huggingface-tokenizers/references/algorithms.md)** â€” BPEã€WordPieceã€Unigram è¯¦ç»†è¯´æ˜Ž
-- **[æµæ°´çº¿ç»„ä»¶](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/huggingface-tokenizers/references/pipeline.md)** â€” å½’ä¸€åŒ–å™¨ã€é¢„åˆ†è¯å™¨ã€åŽå¤„ç†å™¨ã€è§£ç å™¨
-- **[Transformers é›†æˆ](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/huggingface-tokenizers/references/integration.md)** â€” AutoTokenizerã€PreTrainedTokenizerFastã€ç‰¹æ®Š token
+- **[è®­ç»ƒæŒ‡å—](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/huggingface-tokenizers/references/training.md)** â€” è®­ç»ƒè‡ªå®šä¹‰ tokenizerã€é…ç½®è®­ç»ƒå™¨ã€å¤„ç†å¤§åž‹æ•°æ®é›†
+- **[ç®—æ³•æ·±åº¦è§£æž](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/huggingface-tokenizers/references/algorithms.md)** â€” BPEã€WordPieceã€Unigram è¯¦ç»†è¯´æ˜Ž
+- **[æµæ°´çº¿ç»„ä»¶](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/huggingface-tokenizers/references/pipeline.md)** â€” å½’ä¸€åŒ–å™¨ã€é¢„åˆ†è¯å™¨ã€åŽå¤„ç†å™¨ã€è§£ç å™¨
+- **[Transformers é›†æˆ](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/huggingface-tokenizers/references/integration.md)** â€” AutoTokenizerã€PreTrainedTokenizerFastã€ç‰¹æ®Š token
 
 ## èµ„æº
 

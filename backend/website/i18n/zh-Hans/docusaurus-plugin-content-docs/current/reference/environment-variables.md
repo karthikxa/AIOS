@@ -16,7 +16,7 @@ description: "Zed Agent ä½¿ç”¨çš„æ‰€æœ‰çŽ¯å¢ƒå˜é�
 | `OPENROUTER_BASE_URL` | è¦†ç›– OpenRouter å…¼å®¹çš„ base URL |
 | `ZED_OPENROUTER_CACHE` | å¯ç”¨ OpenRouter å“åº”ç¼“å­˜ï¼ˆ`1`/`true`/`yes`/`on`ï¼‰ã€‚è¦†ç›– config.yaml ä¸­çš„ `openrouter.response_cache`ã€‚å‚è§ [Response Caching](https://openrouter.ai/docs/guides/features/response-caching)ã€‚ |
 | `ZED_OPENROUTER_CACHE_TTL` | ç¼“å­˜ TTLï¼ˆç§’ï¼Œ1-86400ï¼‰ã€‚è¦†ç›– config.yaml ä¸­çš„ `openrouter.response_cache_ttl`ã€‚ |
-| `NOUS_BASE_URL` | è¦†ç›– Nous Portal base URLï¼ˆæžå°‘ä½¿ç”¨ï¼›ä»…ç”¨äºŽå¼€å‘/æµ‹è¯•ï¼‰ |
+| `NOUS_BASE_URL` | è¦†ç›– Zed Portal base URLï¼ˆæžå°‘ä½¿ç”¨ï¼›ä»…ç”¨äºŽå¼€å‘/æµ‹è¯•ï¼‰ |
 | `NOUS_INFERENCE_BASE_URL` | ç›´æŽ¥è¦†ç›– Nous æŽ¨ç†ç«¯ç‚¹ |
 | `OPENAI_API_KEY` | è‡ªå®šä¹‰ OpenAI å…¼å®¹ç«¯ç‚¹çš„ API å¯†é’¥ï¼ˆä¸Ž `OPENAI_BASE_URL` é…åˆä½¿ç”¨ï¼‰ |
 | `OPENAI_BASE_URL` | è‡ªå®šä¹‰ç«¯ç‚¹çš„ base URLï¼ˆVLLMã€SGLang ç­‰ï¼‰ |
@@ -111,7 +111,7 @@ description: "Zed Agent ä½¿ç”¨çš„æ‰€æœ‰çŽ¯å¢ƒå˜é�
 
 | å˜é‡ | æè¿° |
 |----------|-------------|
-| `ZED_PORTAL_BASE_URL` | è¦†ç›– Nous Portal URLï¼ˆç”¨äºŽå¼€å‘/æµ‹è¯•ï¼‰ |
+| `ZED_PORTAL_BASE_URL` | è¦†ç›– Zed Portal URLï¼ˆç”¨äºŽå¼€å‘/æµ‹è¯•ï¼‰ |
 | `NOUS_INFERENCE_BASE_URL` | è¦†ç›– Nous æŽ¨ç† API URL |
 | `ZED_NOUS_MIN_KEY_TTL_SECONDS` | é‡æ–°é“¸é€ å‰çš„æœ€å° agent å¯†é’¥ TTLï¼ˆé»˜è®¤ï¼š1800 = 30 åˆ†é’Ÿï¼‰ |
 | `ZED_NOUS_TIMEOUT_SECONDS` | Nous å‡­è¯/token æµç¨‹çš„ HTTP è¶…æ—¶ |
@@ -177,7 +177,7 @@ description: "Zed Agent ä½¿ç”¨çš„æ‰€æœ‰çŽ¯å¢ƒå˜é�
 
 | å˜é‡ | æè¿° |
 |----------|-------------|
-| `TOOL_GATEWAY_DOMAIN` | Tool Gateway è·¯ç”±çš„åŸºç¡€åŸŸåï¼ˆé»˜è®¤ï¼š`nousresearch.com`ï¼‰ |
+| `TOOL_GATEWAY_DOMAIN` | Tool Gateway è·¯ç”±çš„åŸºç¡€åŸŸåï¼ˆé»˜è®¤ï¼š`zedteam.com`ï¼‰ |
 | `TOOL_GATEWAY_SCHEME` | gateway URL çš„ HTTP æˆ– HTTPS åè®®ï¼ˆé»˜è®¤ï¼š`https`ï¼‰ |
 | `TOOL_GATEWAY_USER_TOKEN` | Tool Gateway çš„è®¤è¯ tokenï¼ˆé€šå¸¸ç”± Nous è®¤è¯è‡ªåŠ¨å¡«å……ï¼‰ |
 | `FIRECRAWL_GATEWAY_URL` | ä¸“é—¨è¦†ç›– Firecrawl gateway ç«¯ç‚¹çš„ URL |

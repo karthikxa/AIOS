@@ -1,4 +1,4 @@
-# Compression Progress
+﻿# Compression Progress
 
 Jürgen Schmidhuber, *Formal Theory of Creativity* (1990–2010). Beauty = compressibility given prior knowledge. Interestingness = the *change* in compressibility as you learn. A worthwhile project is one that, on completion, would compress your model of the world.
 

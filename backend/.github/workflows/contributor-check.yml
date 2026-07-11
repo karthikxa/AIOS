@@ -1,4 +1,4 @@
-name: Contributor Attribution Check
+﻿name: Contributor Attribution Check
 
 on:
   # No paths filter — the job must always run so the required check

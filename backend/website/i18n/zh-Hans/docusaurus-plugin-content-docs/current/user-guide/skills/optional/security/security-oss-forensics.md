@@ -99,7 +99,7 @@ GitHub ä»“åº“çš„ä¾›åº”é“¾è°ƒæŸ¥ã€è¯æ®
 - å€¼
 - æ¥æºï¼ˆç”¨æˆ·æä¾›ã€æŽ¨æ–­å¾—å‡ºï¼‰
 
-**å‚è€ƒ**ï¼šIOC åˆ†ç±»æ³•è§ [evidence-types.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/references/evidence-types.md)ã€‚
+**å‚è€ƒ**ï¼šIOC åˆ†ç±»æ³•è§ [evidence-types.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/references/evidence-types.md)ã€‚
 
 ---
 
@@ -145,7 +145,7 @@ git log --show-signature --format="%H %ai %aN" > ../signature_check.txt 2>&1
 - å·²éªŒè¯è´¡çŒ®è€…çš„æœªç­¾åæäº¤ â†’ ç±»åž‹ï¼š`git`
 - å¯ç–‘äºŒè¿›åˆ¶æ–‡ä»¶æ·»åŠ  â†’ ç±»åž‹ï¼š`git`
 
-**å‚è€ƒ**ï¼šè®¿é—®å¼ºåˆ¶æŽ¨é€æäº¤çš„æ–¹æ³•è§ [recovery-techniques.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/references/recovery-techniques.md)ã€‚
+**å‚è€ƒ**ï¼šè®¿é—®å¼ºåˆ¶æŽ¨é€æäº¤çš„æ–¹æ³•è§ [recovery-techniques.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/references/recovery-techniques.md)ã€‚
 
 ---
 
@@ -185,7 +185,7 @@ curl -s "https://api.github.com/repos/OWNER/REPO/commits/SHA" | jq .sha
 - è´¡çŒ®è€…å‡ºçŽ°åœ¨å½’æ¡£äº‹ä»¶ä¸­ä½†ä¸åœ¨è´¡çŒ®è€…åˆ—è¡¨ä¸­ â†’ æƒé™æ’¤é”€è¯æ®
 - æäº¤å‡ºçŽ°åœ¨å½’æ¡£ PushEvent ä¸­ä½†ä¸åœ¨ API æäº¤åˆ—è¡¨ä¸­ â†’ å¼ºåˆ¶æŽ¨é€/åˆ é™¤è¯æ®
 
-**å‚è€ƒ**ï¼šGH äº‹ä»¶ç±»åž‹è§ [evidence-types.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/references/evidence-types.md)ã€‚
+**å‚è€ƒ**ï¼šGH äº‹ä»¶ç±»åž‹è§ [evidence-types.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/references/evidence-types.md)ã€‚
 
 ---
 
@@ -222,7 +222,7 @@ curl -s "https://web.archive.org/cdx/search/cdx?url=github.com/OWNER/REPO/wiki/*
 - æ˜¾ç¤ºå˜æ›´çš„åŽ†å² README ç‰ˆæœ¬
 - å­˜åœ¨äºŽå½’æ¡£ä¸­ä½†åœ¨å½“å‰ GitHub çŠ¶æ€ä¸­ç¼ºå¤±çš„å†…å®¹è¯æ®
 
-**å‚è€ƒ**ï¼šCDX API å‚æ•°è§ [github-archive-guide.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/references/github-archive-guide.md)ã€‚
+**å‚è€ƒ**ï¼šCDX API å‚æ•°è§ [github-archive-guide.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/references/github-archive-guide.md)ã€‚
 
 ---
 
@@ -271,7 +271,7 @@ LIMIT 200
 - å¯ç–‘ CI/CD è‡ªåŠ¨åŒ–çš„ WorkflowRunEvent
 - åœ¨ git æ—¥å¿—å‡ºçŽ°"ç©ºç™½"ä¹‹å‰çš„ PushEventï¼ˆåŽ†å²é‡å†™è¯æ®ï¼‰
 
-**å‚è€ƒ**ï¼šæ‰€æœ‰ 12 ç§äº‹ä»¶ç±»åž‹åŠæŸ¥è¯¢æ¨¡å¼è§ [github-archive-guide.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/references/github-archive-guide.md)ã€‚
+**å‚è€ƒ**ï¼šæ‰€æœ‰ 12 ç§äº‹ä»¶ç±»åž‹åŠæŸ¥è¯¢æ¨¡å¼è§ [github-archive-guide.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/references/github-archive-guide.md)ã€‚
 
 ---
 
@@ -284,7 +284,7 @@ LIMIT 200
 - å¯¹æ¯ä¸ªåŸŸå/IPï¼šæ£€æŸ¥è¢«åŠ¨ DNSã€WHOIS è®°å½•ï¼ˆé€šè¿‡ `web_extract` è®¿é—®å…¬å¼€ WHOIS æœåŠ¡ï¼‰
 - å¯¹æ¯ä¸ªåŒ…åï¼šæ£€æŸ¥ npm/PyPI ä¸­æ˜¯å¦æœ‰åŒ¹é…çš„æ¶æ„åŒ…æŠ¥å‘Š
 - å¯¹æ¯ä¸ª actor ç”¨æˆ·åï¼šæ£€æŸ¥ GitHub ä¸ªäººèµ„æ–™ã€è´¡çŒ®åŽ†å²ã€è´¦æˆ·æ³¨å†Œæ—¶é—´
-- ä½¿ç”¨ 3 ç§æ–¹æ³•æ¢å¤å¼ºåˆ¶æŽ¨é€çš„æäº¤ï¼ˆè§ [recovery-techniques.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/references/recovery-techniques.md)ï¼‰
+- ä½¿ç”¨ 3 ç§æ–¹æ³•æ¢å¤å¼ºåˆ¶æŽ¨é€çš„æäº¤ï¼ˆè§ [recovery-techniques.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/references/recovery-techniques.md)ï¼‰
 
 ---
 
@@ -311,7 +311,7 @@ LIMIT 200
 - æŒ‡æ˜Žå“ªäº›è¯æ®å¯ä»¥æŽ¨ç¿»å®ƒ
 - åœ¨éªŒè¯ä¹‹å‰æ ‡æ³¨ `[HYPOTHESIS]`
 
-**å¸¸è§å‡è®¾æ¨¡æ¿**ï¼ˆè§ [investigation-templates.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/references/investigation-templates.md)ï¼‰ï¼š
+**å¸¸è§å‡è®¾æ¨¡æ¿**ï¼ˆè§ [investigation-templates.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/references/investigation-templates.md)ï¼‰ï¼š
 - ç»´æŠ¤è€…è´¦æˆ·è¢«æ”»é™·ï¼šåˆæ³•è´¦æˆ·åœ¨è¢«æŽ¥ç®¡åŽç”¨äºŽæ³¨å…¥æ¶æ„ä»£ç 
 - ä¾èµ–æ··æ·†ï¼šåŒ…åæŠ¢æ³¨ä»¥æ‹¦æˆªå®‰è£…
 - CI/CD æ³¨å…¥ï¼šæ¶æ„ workflow å˜æ›´ä»¥åœ¨æž„å»ºæœŸé—´è¿è¡Œä»£ç 
@@ -343,7 +343,7 @@ LIMIT 200
 
 ## é˜¶æ®µ 6ï¼šæœ€ç»ˆæŠ¥å‘Šç”Ÿæˆ
 
-ä½¿ç”¨ [forensic-report.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/templates/forensic-report.md) ä¸­çš„æ¨¡æ¿å¡«å†™ `investigation-report.md`ã€‚
+ä½¿ç”¨ [forensic-report.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/templates/forensic-report.md) ä¸­çš„æ¨¡æ¿å¡«å†™ `investigation-report.md`ã€‚
 
 **å¿…å¡«ç« èŠ‚**ï¼š
 - æ‰§è¡Œæ‘˜è¦ï¼šä¸€æ®µå¼ç»“è®ºï¼ˆå·²è¢«æ”»é™· / å¹²å‡€ / ä¸ç¡®å®šï¼‰ï¼Œå«ç½®ä¿¡åº¦ç­‰çº§
@@ -413,9 +413,9 @@ GitHub REST API å¼ºåˆ¶æ‰§è¡Œé€ŸçŽ‡é™åˆ¶ï¼Œå¦�
 
 ## å‚è€ƒèµ„æ–™
 
-- [github-archive-guide.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/references/github-archive-guide.md) â€” BigQuery æŸ¥è¯¢ã€CDX APIã€12 ç§äº‹ä»¶ç±»åž‹
-- [evidence-types.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/references/evidence-types.md) â€” IOC åˆ†ç±»æ³•ã€è¯æ®æ¥æºç±»åž‹ã€è§‚å¯Ÿç±»åž‹
-- [recovery-techniques.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/references/recovery-techniques.md) â€” æ¢å¤å·²åˆ é™¤çš„æäº¤ã€PRã€issues
-- [investigation-templates.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/references/investigation-templates.md) â€” æŒ‰æ”»å‡»ç±»åž‹é¢„ç½®çš„å‡è®¾æ¨¡æ¿
-- [evidence-store.py](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/scripts/evidence-store.py) â€” ç”¨äºŽç®¡ç†è¯æ® JSON åº“çš„ CLI å·¥å…·
-- [forensic-report.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/security/oss-forensics/templates/forensic-report.md) â€” ç»“æž„åŒ–æŠ¥å‘Šæ¨¡æ¿
+- [github-archive-guide.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/references/github-archive-guide.md) â€” BigQuery æŸ¥è¯¢ã€CDX APIã€12 ç§äº‹ä»¶ç±»åž‹
+- [evidence-types.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/references/evidence-types.md) â€” IOC åˆ†ç±»æ³•ã€è¯æ®æ¥æºç±»åž‹ã€è§‚å¯Ÿç±»åž‹
+- [recovery-techniques.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/references/recovery-techniques.md) â€” æ¢å¤å·²åˆ é™¤çš„æäº¤ã€PRã€issues
+- [investigation-templates.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/references/investigation-templates.md) â€” æŒ‰æ”»å‡»ç±»åž‹é¢„ç½®çš„å‡è®¾æ¨¡æ¿
+- [evidence-store.py](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/scripts/evidence-store.py) â€” ç”¨äºŽç®¡ç†è¯æ® JSON åº“çš„ CLI å·¥å…·
+- [forensic-report.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/security/oss-forensics/templates/forensic-report.md) â€” ç»“æž„åŒ–æŠ¥å‘Šæ¨¡æ¿

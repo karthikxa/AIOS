@@ -1,4 +1,4 @@
-# Megatron Integration with Accelerate
+﻿# Megatron Integration with Accelerate
 
 ## Overview
 

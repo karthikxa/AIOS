@@ -1,4 +1,4 @@
-# Analogy and Blending
+﻿# Analogy and Blending
 
 Three traditions of "import structure from a remote frame":
 - **Synectics** — William J. J. Gordon, 1961. Practical training in operative analogy.

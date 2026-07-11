@@ -1,4 +1,4 @@
-# Anti-Slop Rules
+﻿# Anti-Slop Rules
 
 Apply to every output this skill produces. Slop is what the model produces when averaging over its training distribution. Anti-slop is the discipline of forcing outputs off that average.
 

@@ -1,4 +1,4 @@
-# Quality Filtering Guide
+﻿# Quality Filtering Guide
 
 Complete guide to NeMo Curator's 30+ quality filters.
 

@@ -1,12 +1,12 @@
 ﻿---
 sidebar_position: 1
-title: "Run Zed Agent with Nous Portal"
+title: "Run Zed Agent with Zed Portal"
 description: "Start-to-finish walkthrough: subscribe, set up, switch models, enable gateway tools, and verify routing"
 ---
 
-# Run Zed Agent with Nous Portal
+# Run Zed Agent with Zed Portal
 
-This guide walks you through running Zed Agent on a [Nous Portal](https://portal.nousresearch.com) subscription end to end â€” from signing up to verifying that every tool routes correctly. If you just want the overview of what the Portal is and what's in the subscription, see the [Nous Portal integration page](/integrations/nous-portal). This page is the task script.
+This guide walks you through running Zed Agent on a [Zed Portal](https://portal.zedteam.com) subscription end to end â€” from signing up to verifying that every tool routes correctly. If you just want the overview of what the Portal is and what's in the subscription, see the [Zed Portal integration page](/integrations/nous-portal). This page is the task script.
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ You do **not** need: an OpenAI key, an Anthropic key, a Firecrawl account, a FAL
 
 ## 1. Get a subscription
 
-Open [portal.nousresearch.com/manage-subscription](https://portal.nousresearch.com/manage-subscription), sign up, and pick a plan.
+Open [portal.zedteam.com/manage-subscription](https://portal.zedteam.com/manage-subscription), sign up, and pick a plan.
 
 Already subscribed? Skip to step 2.
 
@@ -30,7 +30,7 @@ zed setup --portal
 
 This single command does five things:
 
-1. Opens your browser to portal.nousresearch.com for OAuth login
+1. Opens your browser to portal.zedteam.com for OAuth login
 2. Stores the refresh token at `~/.zed/auth.json`
 3. Sets `model.provider: nous` in `~/.zed/config.yaml`
 4. Picks a default agentic model (`anthropic/claude-sonnet-4.6` or similar)
@@ -63,21 +63,21 @@ zed portal info
 You should see:
 
 ```
-  Nous Portal
+  Zed Portal
   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Auth:    âœ“ logged in
-  Portal:  https://portal.nousresearch.com
+  Portal:  https://portal.zedteam.com
   Model:   âœ“ using Nous as inference provider
 
   Tool Gateway
   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  Web search & extract  via Nous Portal
-  Image generation      via Nous Portal
-  Text-to-speech        via Nous Portal
-  Browser automation    via Nous Portal
+  Web search & extract  via Zed Portal
+  Image generation      via Zed Portal
+  Text-to-speech        via Zed Portal
+  Browser automation    via Zed Portal
 ```
 
-If any line shows something other than "via Nous Portal" or the auth line says "not logged in", jump to [Troubleshooting](#troubleshooting) below.
+If any line shows something other than "via Zed Portal" or the auth line says "not logged in", jump to [Troubleshooting](#troubleshooting) below.
 
 ## 4. Run your first conversation
 
@@ -120,9 +120,9 @@ zed config set model.default anthropic/claude-sonnet-4.6
 
 ### Don't pick Zed-4 for agent work
 
-Zed-4-70B and Zed-4-405B are available on the Portal at deep discounts, but they're **chat/reasoning models**, not tool-call-tuned. They will struggle with multi-step agent loops. Use them via [Nous Chat](https://chat.nousresearch.com) for conversation/research work, or through the [subscription proxy](/user-guide/features/subscription-proxy) from non-agent tools. For Zed Agent itself, stick to the frontier agentic models above.
+Zed-4-70B and Zed-4-405B are available on the Portal at deep discounts, but they're **chat/reasoning models**, not tool-call-tuned. They will struggle with multi-step agent loops. Use them via [Nous Chat](https://chat.zedteam.com) for conversation/research work, or through the [subscription proxy](/user-guide/features/subscription-proxy) from non-agent tools. For Zed Agent itself, stick to the frontier agentic models above.
 
-The Portal's own [info page](https://portal.nousresearch.com/info) carries this warning too â€” it's the official Nous guidance, not just a Zed-side opinion.
+The Portal's own [info page](https://portal.zedteam.com/info) carries this warning too â€” it's the official Nous guidance, not just a Zed-side opinion.
 
 ## 6. (Optional) Customize Tool Gateway routing
 
@@ -136,7 +136,7 @@ zed tools
 # â†’ TTS              â†’ "Nous Subscription"     (recommended)
 ```
 
-These rows appear in `zed tools` even before you've logged into Nous Portal â€” if you pick "Nous Subscription" without an active session, Zed runs the Portal login inline (without changing your inference provider or your other tools).
+These rows appear in `zed tools` even before you've logged into Zed Portal â€” if you pick "Nous Subscription" without an active session, Zed runs the Portal login inline (without changing your inference provider or your other tools).
 
 Verify your mix with:
 
@@ -144,7 +144,7 @@ Verify your mix with:
 zed portal tools
 ```
 
-You'll see per-tool routing â€” `via Nous Portal` for the ones routed through the subscription, and the partner name (`browserbase`, `firecrawl`, etc.) for the ones using your own keys.
+You'll see per-tool routing â€” `via Zed Portal` for the ones routed through the subscription, and the partner name (`browserbase`, `firecrawl`, etc.) for the ones using your own keys.
 
 ## 7. (Optional) Enable voice mode
 
@@ -200,12 +200,12 @@ Or interactively:
 
 ```bash
 zed model
-# pick Nous Portal
+# pick Zed Portal
 ```
 
 Re-verify with `zed portal info`.
 
-### Tool Gateway tools showing partner names instead of "via Nous Portal"
+### Tool Gateway tools showing partner names instead of "via Zed Portal"
 
 Per-tool config is overriding the gateway. Run:
 
@@ -235,7 +235,7 @@ The Portal catalog mirrors OpenRouter's model list (300+). If a model is missing
 /model openai/o1-2025-12-17
 ```
 
-If a model is genuinely unavailable, [open an issue](https://github.com/NousResearch/zed-agent/issues) â€” most gaps are routing config we can update.
+If a model is genuinely unavailable, [open an issue](https://github.com/zedteam/zed-agent/issues) â€” most gaps are routing config we can update.
 
 ### Billing not appearing on my Portal account
 
@@ -268,7 +268,7 @@ That's the deal. If you're using more than two of those backends anyway, the sub
 
 ## See also
 
-- **[Nous Portal integration page](/integrations/nous-portal)** â€” Overview of what's in the subscription
+- **[Zed Portal integration page](/integrations/nous-portal)** â€” Overview of what's in the subscription
 - **[Tool Gateway](/user-guide/features/tool-gateway)** â€” Full details on every gateway-routed tool
 - **[Subscription proxy](/user-guide/features/subscription-proxy)** â€” Use your Portal subscription from non-Zed tools
 - **[Voice mode](/user-guide/features/voice-mode)** â€” Set up voice conversations on the Portal subscription

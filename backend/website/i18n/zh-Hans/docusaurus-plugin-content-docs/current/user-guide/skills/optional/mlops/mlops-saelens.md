@@ -369,9 +369,9 @@ cfg = LanguageModelSAERunnerConfig(
 
 | æ–‡ä»¶ | å†…å®¹ |
 |------|----------|
-| [references/README.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/saelens/references/README.md) | æ¦‚è¿°ä¸Žå¿«é€Ÿå…¥é—¨æŒ‡å— |
-| [references/api.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/saelens/references/api.md) | SAEã€TrainingSAEã€é…ç½®çš„å®Œæ•´ API å‚è€ƒ |
-| [references/tutorials.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/saelens/references/tutorials.md) | è®­ç»ƒã€åˆ†æžã€å¼•å¯¼çš„åˆ†æ­¥æ•™ç¨‹ |
+| [references/README.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/saelens/references/README.md) | æ¦‚è¿°ä¸Žå¿«é€Ÿå…¥é—¨æŒ‡å— |
+| [references/api.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/saelens/references/api.md) | SAEã€TrainingSAEã€é…ç½®çš„å®Œæ•´ API å‚è€ƒ |
+| [references/tutorials.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/saelens/references/tutorials.md) | è®­ç»ƒã€åˆ†æžã€å¼•å¯¼çš„åˆ†æ­¥æ•™ç¨‹ |
 
 ## å¤–éƒ¨èµ„æº
 

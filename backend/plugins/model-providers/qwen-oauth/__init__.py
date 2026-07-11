@@ -1,4 +1,4 @@
-"""Qwen Portal provider profile."""
+﻿"""Qwen Portal provider profile."""
 
 import copy
 from typing import Any

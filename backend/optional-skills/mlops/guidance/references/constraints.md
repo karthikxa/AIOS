@@ -1,4 +1,4 @@
-# Comprehensive Constraint Patterns
+﻿# Comprehensive Constraint Patterns
 
 Guide to regex constraints, grammar-based generation, and token healing in Guidance.
 

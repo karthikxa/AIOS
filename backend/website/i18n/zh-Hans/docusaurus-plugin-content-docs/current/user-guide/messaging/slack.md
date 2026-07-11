@@ -213,7 +213,7 @@ sudo zed gateway install --system   # ä»… Linuxï¼šå¼€æœºå¯åŠ
 
 æ¯ä¸ª Zed å‘½ä»¤ï¼ˆ`/btw`ã€`/stop`ã€`/new`ã€`/model`ã€`/help`â€¦â€¦ï¼‰éƒ½æ˜¯åŽŸç”Ÿ Slack æ–œæ å‘½ä»¤â€”â€”ä¸Žå®ƒä»¬åœ¨ Telegram å’Œ Discord ä¸Šçš„å·¥ä½œæ–¹å¼å®Œå…¨ç›¸åŒã€‚åœ¨ Slack ä¸­è¾“å…¥ `/`ï¼Œè‡ªåŠ¨è¡¥å…¨é€‰æ‹©å™¨ä¼šåˆ—å‡ºæ¯ä¸ª Zed å‘½ä»¤åŠå…¶æè¿°ã€‚
 
-åº•å±‚å®žçŽ°ï¼šZed é™„å¸¦ä¸€ä¸ªç”Ÿæˆçš„ Slack åº”ç”¨ manifestï¼ˆè§ç¬¬ä¸€æ­¥ï¼Œæ–¹å¼ Aï¼‰ï¼Œå®ƒå°† [`COMMAND_REGISTRY`](https://github.com/NousResearch/zed-agent/blob/main/zed_cli/commands.py) ä¸­çš„æ¯ä¸ªå‘½ä»¤å£°æ˜Žä¸ºæ–œæ å‘½ä»¤ã€‚åœ¨ Socket Mode ä¸‹ï¼Œæ— è®º manifest çš„ `url` å­—æ®µå¦‚ä½•ï¼ŒSlack éƒ½ä¼šé€šè¿‡ WebSocket è·¯ç”±å‘½ä»¤äº‹ä»¶ã€‚
+åº•å±‚å®žçŽ°ï¼šZed é™„å¸¦ä¸€ä¸ªç”Ÿæˆçš„ Slack åº”ç”¨ manifestï¼ˆè§ç¬¬ä¸€æ­¥ï¼Œæ–¹å¼ Aï¼‰ï¼Œå®ƒå°† [`COMMAND_REGISTRY`](https://github.com/zedteam/zed-agent/blob/main/zed_cli/commands.py) ä¸­çš„æ¯ä¸ªå‘½ä»¤å£°æ˜Žä¸ºæ–œæ å‘½ä»¤ã€‚åœ¨ Socket Mode ä¸‹ï¼Œæ— è®º manifest çš„ `url` å­—æ®µå¦‚ä½•ï¼ŒSlack éƒ½ä¼šé€šè¿‡ WebSocket è·¯ç”±å‘½ä»¤äº‹ä»¶ã€‚
 
 ### æ›´æ–°åŽåˆ·æ–°æ–œæ å‘½ä»¤
 

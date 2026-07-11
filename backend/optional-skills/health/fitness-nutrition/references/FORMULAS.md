@@ -1,4 +1,4 @@
-# Formulas Reference
+﻿# Formulas Reference
 
 Scientific references for all calculators used in the fitness-nutrition skill.
 

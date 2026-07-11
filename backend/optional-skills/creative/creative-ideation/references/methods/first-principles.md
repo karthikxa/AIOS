@@ -1,4 +1,4 @@
-# First Principles
+﻿# First Principles
 
 Aristotle's *protai archai*. Decompose a problem to assumptions you trust, then rebuild without inheriting anything by default. Often paired with "5 Whys" excavation of why each assumption is in place.
 

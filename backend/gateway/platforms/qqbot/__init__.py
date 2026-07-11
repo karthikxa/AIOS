@@ -1,4 +1,4 @@
-"""
+﻿"""
 QQBot platform package.
 
 Re-exports the main adapter symbols from ``adapter.py`` (the original

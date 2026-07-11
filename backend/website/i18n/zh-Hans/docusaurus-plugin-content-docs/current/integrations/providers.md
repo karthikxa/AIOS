@@ -14,7 +14,7 @@ sidebar_position: 1
 
 | æä¾›å•† | é…ç½®æ–¹å¼ |
 |----------|-------|
-| **Nous Portal** | `zed model`ï¼ˆOAuthï¼Œè®¢é˜…åˆ¶ï¼‰ |
+| **Zed Portal** | `zed model`ï¼ˆOAuthï¼Œè®¢é˜…åˆ¶ï¼‰ |
 | **OpenAI Codex** | `zed model`ï¼ˆChatGPT OAuthï¼Œä½¿ç”¨ Codex æ¨¡åž‹ï¼‰ |
 | **GitHub Copilot** | `zed model`ï¼ˆOAuth è®¾å¤‡ç æµç¨‹ï¼Œ`COPILOT_GITHUB_TOKEN`ã€`GH_TOKEN` æˆ– `gh auth token`ï¼‰ |
 | **GitHub Copilot ACP** | `zed model`ï¼ˆåœ¨æœ¬åœ°ç”Ÿæˆ `copilot --acp --stdio` å­è¿›ç¨‹ï¼‰ |
@@ -51,19 +51,19 @@ sidebar_position: 1
 :::
 
 
-### Nous Portal
+### Zed Portal
 
-[Nous Portal](https://portal.nousresearch.com) æ˜¯ Zed Team çš„ç»Ÿä¸€è®¢é˜…ç½‘å…³ï¼Œä¹Ÿæ˜¯**è¿è¡Œ Zed Agent çš„æŽ¨èæ–¹å¼**ã€‚ä¸€æ¬¡ OAuth ç™»å½•å³å¯è®¿é—® 300+ å‰æ²¿æ™ºèƒ½ä½“æ¨¡åž‹ï¼ˆClaudeã€GPTã€Geminiã€DeepSeekã€Qwenã€Kimiã€GLMã€MiniMaxã€Grok ç­‰ï¼‰ï¼Œä»¥åŠ [Tool Gateway](/user-guide/features/tool-gateway)ï¼ˆç½‘é¡µæœç´¢ã€å›¾åƒç”Ÿæˆã€TTSã€æµè§ˆå™¨è‡ªåŠ¨åŒ–ï¼‰å’Œ [Nous Chat](https://chat.nousresearch.com)â€”â€”è´¹ç”¨ä»Žä½ çš„ Nous è®¢é˜…ä¸­æ‰£é™¤ï¼Œæ— éœ€å•ç‹¬ç®¡ç†å„æä¾›å•†è´¦æˆ·ã€‚
+[Zed Portal](https://portal.zedteam.com) æ˜¯ Zed Team çš„ç»Ÿä¸€è®¢é˜…ç½‘å…³ï¼Œä¹Ÿæ˜¯**è¿è¡Œ Zed Agent çš„æŽ¨èæ–¹å¼**ã€‚ä¸€æ¬¡ OAuth ç™»å½•å³å¯è®¿é—® 300+ å‰æ²¿æ™ºèƒ½ä½“æ¨¡åž‹ï¼ˆClaudeã€GPTã€Geminiã€DeepSeekã€Qwenã€Kimiã€GLMã€MiniMaxã€Grok ç­‰ï¼‰ï¼Œä»¥åŠ [Tool Gateway](/user-guide/features/tool-gateway)ï¼ˆç½‘é¡µæœç´¢ã€å›¾åƒç”Ÿæˆã€TTSã€æµè§ˆå™¨è‡ªåŠ¨åŒ–ï¼‰å’Œ [Nous Chat](https://chat.zedteam.com)â€”â€”è´¹ç”¨ä»Žä½ çš„ Nous è®¢é˜…ä¸­æ‰£é™¤ï¼Œæ— éœ€å•ç‹¬ç®¡ç†å„æä¾›å•†è´¦æˆ·ã€‚
 
 ```bash
 zed setup --portal     # å…¨æ–°å®‰è£…â€”â€”ä¸€æ¡å‘½ä»¤å®Œæˆ OAuth + æä¾›å•† + ç½‘å…³é…ç½®
-zed model              # å·²æœ‰å®‰è£…â€”â€”ä»Žåˆ—è¡¨ä¸­é€‰æ‹©"Nous Portal"
+zed model              # å·²æœ‰å®‰è£…â€”â€”ä»Žåˆ—è¡¨ä¸­é€‰æ‹©"Zed Portal"
 zed portal info        # éšæ—¶æŸ¥çœ‹ç™»å½•çŠ¶æ€å’Œè·¯ç”±ä¿¡æ¯
 ```
 
-è¿˜æ²¡æœ‰è®¢é˜…ï¼Ÿå‰å¾€ [portal.nousresearch.com/manage-subscription](https://portal.nousresearch.com/manage-subscription) è´­ä¹°ã€‚
+è¿˜æ²¡æœ‰è®¢é˜…ï¼Ÿå‰å¾€ [portal.zedteam.com/manage-subscription](https://portal.zedteam.com/manage-subscription) è´­ä¹°ã€‚
 
-**å®Œæ•´è¯¦æƒ…ï¼š** å‚è§ä¸“å±žçš„ [Nous Portal é›†æˆé¡µé¢](/integrations/nous-portal)ï¼ˆè®¢é˜…å†…å®¹ã€æ¨¡åž‹ç›®å½•ã€æ•…éšœæŽ’æŸ¥ï¼‰ä»¥åŠåˆ†æ­¥æŒ‡å—[ä½¿ç”¨ Nous Portal è¿è¡Œ Zed Agent](/guides/run-zed-with-nous-portal)ã€‚
+**å®Œæ•´è¯¦æƒ…ï¼š** å‚è§ä¸“å±žçš„ [Zed Portal é›†æˆé¡µé¢](/integrations/nous-portal)ï¼ˆè®¢é˜…å†…å®¹ã€æ¨¡åž‹ç›®å½•ã€æ•…éšœæŽ’æŸ¥ï¼‰ä»¥åŠåˆ†æ­¥æŒ‡å—[ä½¿ç”¨ Zed Portal è¿è¡Œ Zed Agent](/guides/run-zed-with-nous-portal)ã€‚
 
 
 :::info Codex è¯´æ˜Ž
@@ -73,11 +73,11 @@ OpenAI Codex æä¾›å•†é€šè¿‡è®¾å¤‡ç ï¼ˆdevice 
 :::
 
 :::warning
-å³ä½¿ä½¿ç”¨ Nous Portalã€Codex æˆ–è‡ªå®šä¹‰ç«¯ç‚¹ï¼ŒæŸäº›å·¥å…·ï¼ˆè§†è§‰ã€ç½‘é¡µæ‘˜è¦ã€MoAï¼‰ä»ä¼šä½¿ç”¨å•ç‹¬çš„"è¾…åŠ©"æ¨¡åž‹ã€‚é»˜è®¤æƒ…å†µä¸‹ï¼ˆ`auxiliary.*.provider: "auto"`ï¼‰ï¼ŒZed å°†è¿™äº›ä»»åŠ¡è·¯ç”±åˆ°ä½ çš„**ä¸»èŠå¤©æ¨¡åž‹**â€”â€”å³ä½ åœ¨ `zed model` ä¸­é€‰æ‹©çš„åŒä¸€æ¨¡åž‹ã€‚ä½ å¯ä»¥å•ç‹¬è¦†ç›–æ¯ä¸ªä»»åŠ¡ï¼Œå°†å…¶è·¯ç”±åˆ°æ›´ä¾¿å®œ/æ›´å¿«çš„æ¨¡åž‹ï¼ˆä¾‹å¦‚ OpenRouter ä¸Šçš„ Gemini Flashï¼‰â€”â€”å‚è§[è¾…åŠ©æ¨¡åž‹](/user-guide/configuration#auxiliary-models)ã€‚
+å³ä½¿ä½¿ç”¨ Zed Portalã€Codex æˆ–è‡ªå®šä¹‰ç«¯ç‚¹ï¼ŒæŸäº›å·¥å…·ï¼ˆè§†è§‰ã€ç½‘é¡µæ‘˜è¦ã€MoAï¼‰ä»ä¼šä½¿ç”¨å•ç‹¬çš„"è¾…åŠ©"æ¨¡åž‹ã€‚é»˜è®¤æƒ…å†µä¸‹ï¼ˆ`auxiliary.*.provider: "auto"`ï¼‰ï¼ŒZed å°†è¿™äº›ä»»åŠ¡è·¯ç”±åˆ°ä½ çš„**ä¸»èŠå¤©æ¨¡åž‹**â€”â€”å³ä½ åœ¨ `zed model` ä¸­é€‰æ‹©çš„åŒä¸€æ¨¡åž‹ã€‚ä½ å¯ä»¥å•ç‹¬è¦†ç›–æ¯ä¸ªä»»åŠ¡ï¼Œå°†å…¶è·¯ç”±åˆ°æ›´ä¾¿å®œ/æ›´å¿«çš„æ¨¡åž‹ï¼ˆä¾‹å¦‚ OpenRouter ä¸Šçš„ Gemini Flashï¼‰â€”â€”å‚è§[è¾…åŠ©æ¨¡åž‹](/user-guide/configuration#auxiliary-models)ã€‚
 :::
 
 :::tip Nous Tool Gateway
-ä»˜è´¹ Nous Portal è®¢é˜…è€…è¿˜å¯è®¿é—® **[Tool Gateway](/user-guide/features/tool-gateway)**â€”â€”ç½‘é¡µæœç´¢ã€å›¾åƒç”Ÿæˆã€TTS å’Œæµè§ˆå™¨è‡ªåŠ¨åŒ–ï¼Œå‡é€šè¿‡ä½ çš„è®¢é˜…è·¯ç”±ã€‚æ— éœ€é¢å¤– API keyã€‚å…¨æ–°å®‰è£…æ—¶ï¼Œ`zed setup --portal` ä¸€æ¡å‘½ä»¤å³å¯å®Œæˆç™»å½•ã€è®¾ç½® Nous ä¸ºæä¾›å•†å¹¶å¼€å¯ç½‘å…³ã€‚çŽ°æœ‰ç”¨æˆ·å¯é€šè¿‡ `zed model` æˆ– `zed tools` æŒ‰å·¥å…·å¯ç”¨ã€‚éšæ—¶ä½¿ç”¨ `zed portal info` æŸ¥çœ‹è·¯ç”±çŠ¶æ€ã€‚
+ä»˜è´¹ Zed Portal è®¢é˜…è€…è¿˜å¯è®¿é—® **[Tool Gateway](/user-guide/features/tool-gateway)**â€”â€”ç½‘é¡µæœç´¢ã€å›¾åƒç”Ÿæˆã€TTS å’Œæµè§ˆå™¨è‡ªåŠ¨åŒ–ï¼Œå‡é€šè¿‡ä½ çš„è®¢é˜…è·¯ç”±ã€‚æ— éœ€é¢å¤– API keyã€‚å…¨æ–°å®‰è£…æ—¶ï¼Œ`zed setup --portal` ä¸€æ¡å‘½ä»¤å³å¯å®Œæˆç™»å½•ã€è®¾ç½® Nous ä¸ºæä¾›å•†å¹¶å¼€å¯ç½‘å…³ã€‚çŽ°æœ‰ç”¨æˆ·å¯é€šè¿‡ `zed model` æˆ– `zed tools` æŒ‰å·¥å…·å¯ç”¨ã€‚éšæ—¶ä½¿ç”¨ `zed portal info` æŸ¥çœ‹è·¯ç”±çŠ¶æ€ã€‚
 :::
 
 ### æ¨¡åž‹ç®¡ç†çš„ä¸¤ä¸ªå‘½ä»¤
@@ -1162,7 +1162,7 @@ Zed ä½¿ç”¨å¤šæºè§£æžé“¾æ¥æ£€æµ‹æ¨¡åž�
 4. **ç«¯ç‚¹ `/models`** â€” æŸ¥è¯¢æœåŠ¡å™¨ APIï¼ˆæœ¬åœ°/è‡ªå®šä¹‰ç«¯ç‚¹ï¼‰
 5. **Anthropic `/v1/models`** â€” æŸ¥è¯¢ Anthropic API èŽ·å– `max_input_tokens`ï¼ˆä»… API key ç”¨æˆ·ï¼‰
 6. **OpenRouter API** â€” æ¥è‡ª OpenRouter çš„å®žæ—¶æ¨¡åž‹å…ƒæ•°æ®
-7. **Nous Portal** â€” å°† Nous æ¨¡åž‹ ID åŽç¼€åŒ¹é…åˆ° OpenRouter å…ƒæ•°æ®
+7. **Zed Portal** â€” å°† Nous æ¨¡åž‹ ID åŽç¼€åŒ¹é…åˆ° OpenRouter å…ƒæ•°æ®
 8. **[models.dev](https://models.dev)** â€” ç¤¾åŒºç»´æŠ¤çš„æ³¨å†Œè¡¨ï¼ŒåŒ…å« 100+ æä¾›å•† 3800+ æ¨¡åž‹çš„æä¾›å•†ç‰¹å®šä¸Šä¸‹æ–‡é•¿åº¦
 9. **å›žé€€é»˜è®¤å€¼** â€” å¹¿æ³›çš„æ¨¡åž‹ç³»åˆ—æ¨¡å¼ï¼ˆé»˜è®¤ 128Kï¼‰
 
@@ -1364,7 +1364,7 @@ model:
 
 | ä½¿ç”¨åœºæ™¯ | æŽ¨èæ–¹æ¡ˆ |
 |----------|-------------|
-| **åªæƒ³è®©å®ƒå·¥ä½œ** | OpenRouterï¼ˆé»˜è®¤ï¼‰æˆ– Nous Portal |
+| **åªæƒ³è®©å®ƒå·¥ä½œ** | OpenRouterï¼ˆé»˜è®¤ï¼‰æˆ– Zed Portal |
 | **æœ¬åœ°æ¨¡åž‹ï¼Œç®€å•é…ç½®** | Ollama |
 | **ç”Ÿäº§ GPU æœåŠ¡** | vLLM æˆ– SGLang |
 | **Mac / æ—  GPU** | Ollama æˆ– llama.cpp |

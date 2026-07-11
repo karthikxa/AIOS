@@ -1,11 +1,11 @@
-# ============================================================================
+﻿# ============================================================================
 # Zed Agent Installer for Windows
 # ============================================================================
 # Installation script for Windows (PowerShell).
 # Uses uv for fast Python provisioning and package management.
 #
 # Usage:
-#   iex (irm https://zed-agent.nousresearch.com/install.ps1)
+#   iex (irm https://zed-agent.zedteam.com/install.ps1)
 #
 # Or download and run with options:
 #   .\install.ps1 -NoVenv -SkipSetup
@@ -92,8 +92,8 @@ try {
 # Configuration
 # ============================================================================
 
-$RepoUrlSsh = "git@github.com:NousResearch/zed-agent.git"
-$RepoUrlHttps = "https://github.com/NousResearch/zed-agent.git"
+$RepoUrlSsh = "git@github.com:zedteam/zed-agent.git"
+$RepoUrlHttps = "https://github.com/zedteam/zed-agent.git"
 $PythonVersion = "3.11"
 $NodeVersion = "22"
 
@@ -160,7 +160,7 @@ function Write-Banner {
     Write-Host "+---------------------------------------------------------+" -ForegroundColor Magenta
     Write-Host "|             * Zed Agent Installer                    |" -ForegroundColor Magenta
     Write-Host "+---------------------------------------------------------+" -ForegroundColor Magenta
-    Write-Host "|  An open source AI agent by Nous Research.              |" -ForegroundColor Magenta
+    Write-Host "|  An open source AI agent by Zed Team.              |" -ForegroundColor Magenta
     Write-Host "+---------------------------------------------------------+" -ForegroundColor Magenta
     Write-Host ""
 }
@@ -1375,13 +1375,13 @@ function Install-Repository {
                 # for.  GitHub supports archive URLs for commits, tags, and
                 # branches; we honour Commit > Tag > Branch.
                 if ($Commit) {
-                    $zipUrl = "https://github.com/NousResearch/zed-agent/archive/$Commit.zip"
+                    $zipUrl = "https://github.com/zedteam/zed-agent/archive/$Commit.zip"
                     $zipLabel = $Commit
                 } elseif ($Tag) {
-                    $zipUrl = "https://github.com/NousResearch/zed-agent/archive/refs/tags/$Tag.zip"
+                    $zipUrl = "https://github.com/zedteam/zed-agent/archive/refs/tags/$Tag.zip"
                     $zipLabel = $Tag
                 } else {
-                    $zipUrl = "https://github.com/NousResearch/zed-agent/archive/refs/heads/$Branch.zip"
+                    $zipUrl = "https://github.com/zedteam/zed-agent/archive/refs/heads/$Branch.zip"
                     $zipLabel = $Branch
                 }
                 $zipPath = "$env:TEMP\zed-agent-$zipLabel.zip"
@@ -3242,7 +3242,7 @@ try {
     Write-Err "Installation failed: $_"
     Write-Host ""
     Write-Info "If the error is unclear, try downloading and running the script directly:"
-    Write-Host "  Invoke-WebRequest -Uri 'https://zed-agent.nousresearch.com/install.ps1' -OutFile install.ps1" -ForegroundColor Yellow
+    Write-Host "  Invoke-WebRequest -Uri 'https://zed-agent.zedteam.com/install.ps1' -OutFile install.ps1" -ForegroundColor Yellow
     Write-Host "  .\install.ps1" -ForegroundColor Yellow
     Write-Host ""
 }

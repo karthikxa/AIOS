@@ -33,7 +33,7 @@ High-level categories:
 For the authoritative code-derived registry, see [Built-in Tools Reference](/reference/tools-reference) and [Toolsets Reference](/reference/toolsets-reference).
 
 :::tip Nous Tool Gateway
-Paid [Nous Portal](https://portal.nousresearch.com) subscribers can use web search, image generation, TTS, and browser automation through the **[Tool Gateway](tool-gateway.md)** â€” no separate API keys needed. Run `zed model` to enable it, or configure individual tools with `zed tools`.
+Paid [Zed Portal](https://portal.zedteam.com) subscribers can use web search, image generation, TTS, and browser automation through the **[Tool Gateway](tool-gateway.md)** â€” no separate API keys needed. Run `zed model` to enable it, or configure individual tools with `zed tools`.
 :::
 
 ## Using Toolsets

@@ -1,4 +1,4 @@
-"""Helpers for translating OpenAI-style tool schemas to Moonshot's schema subset.
+﻿"""Helpers for translating OpenAI-style tool schemas to Moonshot's schema subset.
 
 Moonshot (Kimi) accepts a stricter subset of JSON Schema than standard OpenAI
 tool calling.  Requests that violate it fail with HTTP 400:

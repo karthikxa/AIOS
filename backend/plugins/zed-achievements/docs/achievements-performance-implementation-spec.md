@@ -48,7 +48,7 @@ Responsibilities:
 - expose age and staleness checks
 
 Storage path:
-- `~/.zed/plugins/zed-achievements/scan_snapshot.json`
+- `~/.Zed/plugins/zed-achievements/scan_snapshot.json`
 
 Methods (conceptual):
 - `get()` -> snapshot | null
@@ -125,7 +125,7 @@ Compatibility guidance:
 - Add metadata keys without breaking old callers.
 
 Checkpoint file (new):
-- `~/.zed/plugins/zed-achievements/scan_checkpoint.json`
+- `~/.Zed/plugins/zed-achievements/scan_checkpoint.json`
 
 Suggested checkpoint shape:
 ```json
@@ -204,9 +204,9 @@ Notes:
 - frontend request hygiene: `dashboard/dist/index.js` (or source if available)
 - plugin metadata: `dashboard/manifest.json`
 - persisted runtime files:
-  - `~/.zed/plugins/zed-achievements/state.json` (existing unlock state)
-  - `~/.zed/plugins/zed-achievements/scan_snapshot.json` (new)
-  - `~/.zed/plugins/zed-achievements/scan_checkpoint.json` (new)
+  - `~/.Zed/plugins/zed-achievements/state.json` (existing unlock state)
+  - `~/.Zed/plugins/zed-achievements/scan_snapshot.json` (new)
+  - `~/.Zed/plugins/zed-achievements/scan_checkpoint.json` (new)
 
 ---
 

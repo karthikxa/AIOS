@@ -1,4 +1,4 @@
-"""Async/sync bridging helpers.
+﻿"""Async/sync bridging helpers.
 
 The codebase has ~30 sites that schedule a coroutine onto an event loop from a
 worker thread via :func:`asyncio.run_coroutine_threadsafe`.  That function can

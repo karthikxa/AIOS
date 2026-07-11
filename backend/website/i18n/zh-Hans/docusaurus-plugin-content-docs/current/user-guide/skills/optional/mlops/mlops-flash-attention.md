@@ -359,9 +359,9 @@ Flash Attention ä½¿ç”¨ float16/bfloat16 ä»¥æå‡é€Ÿåº¦�
 
 ## é«˜çº§ä¸»é¢˜
 
-**ä¸Ž HuggingFace Transformers é›†æˆ**ï¼šå‚è§ [references/transformers-integration.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/flash-attention/references/transformers-integration.md)ï¼Œäº†è§£å¦‚ä½•åœ¨ BERTã€GPTã€Llama æ¨¡åž‹ä¸­å¯ç”¨ Flash Attentionã€‚
+**ä¸Ž HuggingFace Transformers é›†æˆ**ï¼šå‚è§ [references/transformers-integration.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/flash-attention/references/transformers-integration.md)ï¼Œäº†è§£å¦‚ä½•åœ¨ BERTã€GPTã€Llama æ¨¡åž‹ä¸­å¯ç”¨ Flash Attentionã€‚
 
-**æ€§èƒ½åŸºå‡†æµ‹è¯•**ï¼šå‚è§ [references/benchmarks.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/flash-attention/references/benchmarks.md)ï¼ŒæŸ¥çœ‹è·¨ GPU å’Œåºåˆ—é•¿åº¦çš„è¯¦ç»†é€Ÿåº¦ä¸Žå†…å­˜å¯¹æ¯”ã€‚
+**æ€§èƒ½åŸºå‡†æµ‹è¯•**ï¼šå‚è§ [references/benchmarks.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/flash-attention/references/benchmarks.md)ï¼ŒæŸ¥çœ‹è·¨ GPU å’Œåºåˆ—é•¿åº¦çš„è¯¦ç»†é€Ÿåº¦ä¸Žå†…å­˜å¯¹æ¯”ã€‚
 
 ## ç¡¬ä»¶è¦æ±‚
 

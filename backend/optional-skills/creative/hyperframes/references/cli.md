@@ -1,4 +1,4 @@
-# HyperFrames CLI
+﻿# HyperFrames CLI
 
 Everything runs through `npx hyperframes` (or the globally-installed `hyperframes` after `npm install -g hyperframes`). Requires Node.js >= 22 and FFmpeg.
 

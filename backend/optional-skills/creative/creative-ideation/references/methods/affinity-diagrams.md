@@ -1,4 +1,4 @@
-# Affinity Diagrams
+﻿# Affinity Diagrams
 
 Jiro Kawakita, *Hassōhō* (1967). The KJ method (Kawakita's initials, Japanese order). Bottom-up procedure for finding structure in qualitative items without imposing it beforehand.
 

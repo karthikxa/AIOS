@@ -1,4 +1,4 @@
-"""StepFun provider profile."""
+﻿"""StepFun provider profile."""
 
 from providers import register_provider
 from providers.base import ProviderProfile

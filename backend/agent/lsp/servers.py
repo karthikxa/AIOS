@@ -1,4 +1,4 @@
-"""Server registry — per-language LSP server definitions.
+﻿"""Server registry — per-language LSP server definitions.
 
 Each :class:`ServerDef` knows how to:
 

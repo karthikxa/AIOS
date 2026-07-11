@@ -1,4 +1,4 @@
-name: uv.lock check
+﻿name: uv.lock check
 
 # Verify uv.lock is in sync with pyproject.toml.  Blocking check — PRs
 # that modify pyproject.toml without regenerating uv.lock (or vice versa)

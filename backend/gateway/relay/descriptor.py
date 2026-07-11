@@ -1,4 +1,4 @@
-"""CapabilityDescriptor — the relay handshake payload. EXPERIMENTAL.
+﻿"""CapabilityDescriptor — the relay handshake payload. EXPERIMENTAL.
 
 The connector hands a ``CapabilityDescriptor`` to the gateway's ``RelayAdapter``
 at handshake time; it tells the adapter which platform it is fronting and which

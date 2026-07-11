@@ -1,4 +1,4 @@
-"""QQ Bot inline keyboards + approval / update-prompt senders.
+﻿"""QQ Bot inline keyboards + approval / update-prompt senders.
 
 QQ Bot v2 supports attaching inline keyboards to outbound messages. When a
 user clicks a button, the platform dispatches an ``INTERACTION_CREATE``

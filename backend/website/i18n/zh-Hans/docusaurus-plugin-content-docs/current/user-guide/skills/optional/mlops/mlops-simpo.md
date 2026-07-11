@@ -208,11 +208,11 @@ gradient_checkpointing: true
 
 ## è¿›é˜¶ä¸»é¢˜
 
-**æŸå¤±å‡½æ•°**ï¼šå‚è§ [references/loss-functions.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/simpo/references/loss-functions.md)ï¼Œäº†è§£ sigmoid ä¸Ž hinge æŸå¤±ã€æ•°å­¦å…¬å¼åŠå„è‡ªé€‚ç”¨åœºæ™¯ã€‚
+**æŸå¤±å‡½æ•°**ï¼šå‚è§ [references/loss-functions.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/simpo/references/loss-functions.md)ï¼Œäº†è§£ sigmoid ä¸Ž hinge æŸå¤±ã€æ•°å­¦å…¬å¼åŠå„è‡ªé€‚ç”¨åœºæ™¯ã€‚
 
-**è¶…å‚æ•°è°ƒä¼˜**ï¼šå‚è§ [references/hyperparameters.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/simpo/references/hyperparameters.md)ï¼Œäº†è§£ betaã€gammaã€å­¦ä¹ çŽ‡é€‰æ‹©æŒ‡å—åŠé’ˆå¯¹ä¸åŒæ¨¡åž‹è§„æ¨¡çš„å»ºè®®ã€‚
+**è¶…å‚æ•°è°ƒä¼˜**ï¼šå‚è§ [references/hyperparameters.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/simpo/references/hyperparameters.md)ï¼Œäº†è§£ betaã€gammaã€å­¦ä¹ çŽ‡é€‰æ‹©æŒ‡å—åŠé’ˆå¯¹ä¸åŒæ¨¡åž‹è§„æ¨¡çš„å»ºè®®ã€‚
 
-**æ•°æ®é›†å‡†å¤‡**ï¼šå‚è§ [references/datasets.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/simpo/references/datasets.md)ï¼Œäº†è§£åå¥½æ•°æ®æ ¼å¼ã€è´¨é‡è¿‡æ»¤åŠè‡ªå®šä¹‰æ•°æ®é›†åˆ›å»ºæ–¹æ³•ã€‚
+**æ•°æ®é›†å‡†å¤‡**ï¼šå‚è§ [references/datasets.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/simpo/references/datasets.md)ï¼Œäº†è§£åå¥½æ•°æ®æ ¼å¼ã€è´¨é‡è¿‡æ»¤åŠè‡ªå®šä¹‰æ•°æ®é›†åˆ›å»ºæ–¹æ³•ã€‚
 
 ## ç¡¬ä»¶è¦æ±‚
 

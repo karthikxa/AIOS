@@ -22,7 +22,7 @@ Cron jobs can:
 All of this is available to Zed itself through the `cronjob` tool, so you can create, pause, edit, and remove jobs by asking in plain language â€” no CLI required.
 
 :::tip
-Cron jobs use whatever provider `zed model` selected. `zed setup --portal` is the lowest-friction option for unattended runs since OAuth refresh is automatic. See [Nous Portal](/integrations/nous-portal).
+Cron jobs use whatever provider `zed model` selected. `zed setup --portal` is the lowest-friction option for unattended runs since OAuth refresh is automatic. See [Zed Portal](/integrations/nous-portal).
 :::
 
 :::warning
@@ -623,7 +623,7 @@ The same pattern works for any data source you can query from a script â€” 
 Zed's own `~/.zed/state.db` is an internal schema that changes between releases. Don't query it from a pre-run gate â€” point at your own database or feed instead.
 :::
 
-Credit: this recipe set was prompted by @iankar8's exploration in [#2654](https://github.com/NousResearch/zed-agent/pull/2654), which proposed adding sql/file/command triggers as a parallel mechanism. The `script` + `wakeAgent` gate already covers all three cases at $0, so the work landed as documentation instead.
+Credit: this recipe set was prompted by @iankar8's exploration in [#2654](https://github.com/zedteam/zed-agent/pull/2654), which proposed adding sql/file/command triggers as a parallel mechanism. The `script` + `wakeAgent` gate already covers all three cases at $0, so the work landed as documentation instead.
 
 ### Chaining jobs: `context_from`
 

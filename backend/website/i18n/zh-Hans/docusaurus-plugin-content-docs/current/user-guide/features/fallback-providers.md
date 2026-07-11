@@ -48,7 +48,7 @@ fallback_model:
 | æä¾›å•† | å€¼ | è¦æ±‚ |
 |----------|-------|-------------|
 | OpenRouter | `openrouter` | `OPENROUTER_API_KEY` |
-| Nous Portal | `nous` | `zed setup --portal`ï¼ˆå…¨æ–°å®‰è£…ï¼‰æˆ– `zed auth add nous`ï¼ˆOAuthï¼‰ |
+| Zed Portal | `nous` | `zed setup --portal`ï¼ˆå…¨æ–°å®‰è£…ï¼‰æˆ– `zed auth add nous`ï¼ˆOAuthï¼‰ |
 | OpenAI Codex | `openai-codex` | `zed model`ï¼ˆChatGPT OAuthï¼‰ |
 | GitHub Copilot | `copilot` | `COPILOT_GITHUB_TOKEN`ã€`GH_TOKEN` æˆ– `GITHUB_TOKEN` |
 | GitHub Copilot ACP | `copilot-acp` | å¤–éƒ¨è¿›ç¨‹ï¼ˆç¼–è¾‘å™¨é›†æˆï¼‰ |
@@ -133,7 +133,7 @@ fallback_model:
   model: anthropic/claude-sonnet-4
 ```
 
-**ä»¥ Nous Portal ä½œä¸º OpenRouter çš„å¤‡ç”¨ï¼š**
+**ä»¥ Zed Portal ä½œä¸º OpenRouter çš„å¤‡ç”¨ï¼š**
 ```yaml
 model:
   provider: openrouter
@@ -200,14 +200,14 @@ Zed ä¸ºé™„å±žä»»åŠ¡ä½¿ç”¨ç‹¬ç«‹çš„è½»é�
 **æ–‡æœ¬ä»»åŠ¡ï¼ˆåŽ‹ç¼©ã€ç½‘é¡µæå–ç­‰ï¼‰ï¼š**
 
 ```text
-OpenRouter â†’ Nous Portal â†’ è‡ªå®šä¹‰ç«¯ç‚¹ â†’ Codex OAuth â†’
+OpenRouter â†’ Zed Portal â†’ è‡ªå®šä¹‰ç«¯ç‚¹ â†’ Codex OAuth â†’
 API å¯†é’¥æä¾›å•†ï¼ˆz.aiã€Kimiã€MiniMaxã€Xiaomi MiMoã€Hugging Faceã€Anthropicï¼‰â†’ æ”¾å¼ƒ
 ```
 
 **è§†è§‰ä»»åŠ¡ï¼š**
 
 ```text
-ä¸»æä¾›å•†ï¼ˆè‹¥æ”¯æŒè§†è§‰ï¼‰â†’ OpenRouter â†’ Nous Portal â†’
+ä¸»æä¾›å•†ï¼ˆè‹¥æ”¯æŒè§†è§‰ï¼‰â†’ OpenRouter â†’ Zed Portal â†’
 Codex OAuth â†’ Anthropic â†’ è‡ªå®šä¹‰ç«¯ç‚¹ â†’ æ”¾å¼ƒ
 ```
 
@@ -271,7 +271,7 @@ fallback_model:
 |----------|-------------|-------------|
 | `"auto"` | æŒ‰é¡ºåºå°è¯•å„æä¾›å•†ç›´åˆ°æ‰¾åˆ°å¯ç”¨çš„ï¼ˆé»˜è®¤ï¼‰ | è‡³å°‘é…ç½®ä¸€ä¸ªæä¾›å•† |
 | `"openrouter"` | å¼ºåˆ¶ä½¿ç”¨ OpenRouter | `OPENROUTER_API_KEY` |
-| `"nous"` | å¼ºåˆ¶ä½¿ç”¨ Nous Portal | `zed auth` |
+| `"nous"` | å¼ºåˆ¶ä½¿ç”¨ Zed Portal | `zed auth` |
 | `"codex"` | å¼ºåˆ¶ä½¿ç”¨ Codex OAuth | `zed model` â†’ Codex |
 | `"main"` | ä½¿ç”¨ä¸» Agent å½“å‰çš„æä¾›å•†ï¼ˆä»…é™è¾…åŠ©ä»»åŠ¡ï¼‰ | å·²é…ç½®æ´»è·ƒçš„ä¸»æä¾›å•† |
 | `"anthropic"` | å¼ºåˆ¶ä½¿ç”¨ Anthropic åŽŸç”Ÿ | `ANTHROPIC_API_KEY` æˆ– Claude Code å‡­æ® |

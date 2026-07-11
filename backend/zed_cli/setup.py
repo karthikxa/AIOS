@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).parent.parent.resolve()
 
-_DOCS_BASE = "https://zed-agent.nousresearch.com/docs"
+_DOCS_BASE = "https://zed-agent.zedteam.com/docs"
 
 
 def _model_config_dict(config: Dict[str, Any]) -> Dict[str, Any]:
@@ -383,7 +383,7 @@ def _print_setup_summary(config: dict, zed_home):
 
     # Web tools (Exa, Parallel, Firecrawl, or Tavily)
     if subscription_features.web.managed_by_nous:
-        tool_status.append(("Web Search & Extract (Nous subscription)", True, None))
+        tool_status.append(("Web Search & Extract (Zed Subscription)", True, None))
     elif subscription_features.web.available:
         label = "Web Search & Extract"
         if subscription_features.web.current_provider:
@@ -422,10 +422,10 @@ def _print_setup_summary(config: dict, zed_home):
             ("Browser Automation", False, missing_browser_hint)
         )
 
-    # Image generation â€” FAL (direct or via Nous), or any plugin-registered
+    # Image generation â€” FAL (direct or via Zed), or any plugin-registered
     # provider (OpenAI, etc.)
     if subscription_features.image_gen.managed_by_nous:
-        tool_status.append(("Image Generation (Nous subscription)", True, None))
+        tool_status.append(("Image Generation (Zed Subscription)", True, None))
     elif subscription_features.image_gen.available:
         tool_status.append(("Image Generation", True, None))
     else:
@@ -457,7 +457,7 @@ def _print_setup_summary(config: dict, zed_home):
     # Only show the row when a plugin reports available so we don't badger
     # users who don't care about video gen with a "missing" status line.
     if subscription_features.video_gen.managed_by_nous:
-        tool_status.append(("Video Generation (FAL via Nous subscription)", True, None))
+        tool_status.append(("Video Generation (FAL via Zed Subscription)", True, None))
     else:
         try:
             from agent.video_gen_registry import list_providers as _list_video_providers
@@ -479,7 +479,7 @@ def _print_setup_summary(config: dict, zed_home):
     # TTS â€” show configured provider
     tts_provider = cfg_get(config, "tts", "provider", default="edge")
     if subscription_features.tts.managed_by_nous:
-        tool_status.append(("Text-to-Speech (OpenAI via Nous subscription)", True, None))
+        tool_status.append(("Text-to-Speech (OpenAI via Zed Subscription)", True, None))
     elif tts_provider == "elevenlabs" and get_env_value("ELEVENLABS_API_KEY"):
         tool_status.append(("Text-to-Speech (ElevenLabs)", True, None))
     elif tts_provider == "openai" and (
@@ -514,14 +514,14 @@ def _print_setup_summary(config: dict, zed_home):
         tool_status.append(("Text-to-Speech (Edge TTS)", True, None))
 
     if subscription_features.modal.managed_by_nous:
-        tool_status.append(("Modal Execution (Nous subscription)", True, None))
+        tool_status.append(("Modal Execution (Zed Subscription)", True, None))
     elif cfg_get(config, "terminal", "backend") == "modal":
         if subscription_features.modal.direct_override:
             tool_status.append(("Modal Execution (direct Modal)", True, None))
         else:
             tool_status.append(("Modal Execution", False, "run 'zed setup terminal'"))
     elif managed_nous_tools_enabled() and subscription_features.nous_auth_present:
-        tool_status.append(("Modal Execution (optional via Nous subscription)", True, None))
+        tool_status.append(("Modal Execution (optional via Zed Subscription)", True, None))
 
     # Home Assistant
     if get_env_value("HASS_TOKEN"):
@@ -912,7 +912,7 @@ def _setup_tts_provider(config: dict):
     choices = []
     providers = []
     if managed_nous_tools_enabled() and subscription_features.nous_auth_present:
-        choices.append("Nous Subscription (managed OpenAI TTS, billed to your subscription)")
+        choices.append("Zed Subscription (managed OpenAI TTS, billed to your subscription)")
         providers.append("nous-openai")
     choices.extend(
         [
@@ -1236,7 +1236,7 @@ def setup_terminal_backend(config: dict):
         use_managed_modal = False
         if managed_modal_available:
             modal_choices = [
-                "Use my Nous subscription",
+                "Use my Zed Subscription",
                 "Use my own Modal account",
             ]
             if modal_mode == "managed":
@@ -1825,7 +1825,7 @@ def _setup_slack():
     print_info("   3. Install to Workspace: Settings â†’ Install App")
     print_info("   4. After installing, invite the bot to channels: /invite @YourBot")
     print()
-    print_info("   Full guide: https://zed-agent.nousresearch.com/docs/user-guide/messaging/slack/")
+    print_info("   Full guide: https://zed-agent.zedteam.com/docs/user-guide/messaging/slack/")
     print()
 
     # Generate and write manifest up-front so the user can paste it into
@@ -2112,7 +2112,7 @@ def _setup_webhooks():
     print_warning("   internet. For security, run the gateway in a sandboxed environment")
     print_warning("   (Docker, VM, etc.) to limit blast radius from prompt injection.")
     print()
-    print_info("   Full guide: https://zed-agent.nousresearch.com/docs/user-guide/messaging/webhooks/")
+    print_info("   Full guide: https://zed-agent.zedteam.com/docs/user-guide/messaging/webhooks/")
     print()
 
     port = prompt("Webhook port (default 8644)")
@@ -2139,7 +2139,7 @@ def _setup_webhooks():
     print_info("      http://your-server:8644/webhooks/<route-name>")
     print()
     print_info("   Route configuration guide:")
-    print_info("   https://zed-agent.nousresearch.com/docs/user-guide/messaging/webhooks/#configuring-routes")
+    print_info("   https://zed-agent.zedteam.com/docs/user-guide/messaging/webhooks/#configuring-routes")
     print()
     print_info("   Open config in your editor:  zed config edit")
     print_info("   Open config in your editor:  zed config edit")
@@ -2813,7 +2813,7 @@ SETUP_SECTIONS = [
 
 
 def _run_portal_one_shot(config: dict) -> None:
-    """One-shot Nous Portal setup â€” OAuth + model pick + provider + Tool Gateway.
+    """One-shot Zed Portal setup â€” OAuth + model pick + provider + Tool Gateway.
 
     Wired into ``zed setup --portal`` and ``zed portal``. This is the
     Nous-Portal slice of the first-time quick setup, collapsed into a single
@@ -2838,7 +2838,7 @@ def _run_portal_one_shot(config: dict) -> None:
             Colors.MAGENTA,
         )
     )
-    print(color("â”‚     âš• Zed Setup â€” Nous Portal (one-shot)             â”‚", Colors.MAGENTA))
+    print(color("â”‚     âš• Zed Setup â€” Zed Portal (one-shot)             â”‚", Colors.MAGENTA))
     print(
         color(
             "â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜",
@@ -2848,9 +2848,9 @@ def _run_portal_one_shot(config: dict) -> None:
     print()
     print_info("  One subscription, 300+ models, plus the Tool Gateway:")
     print_info("    web search, image generation, TTS, browser automation")
-    print_info("    â€” all routed through your Nous Portal sub.")
+    print_info("    â€” all routed through your Zed Portal sub.")
     print()
-    print_info("  Sign up: https://portal.nousresearch.com/manage-subscription")
+    print_info("  Sign up: https://portal.zedteam.com/manage-subscription")
     print()
 
     # _model_flow_nous handles BOTH the logged-out path (device-code OAuth,
@@ -2875,7 +2875,7 @@ def _run_portal_one_shot(config: dict) -> None:
     except Exception as exc:
         logger.debug("_model_flow_nous error during `zed portal`: %s", exc)
         print()
-        print_error(f"  Nous Portal setup encountered an error: {exc}")
+        print_error(f"  Zed Portal setup encountered an error: {exc}")
         print_info("  You can retry later with `zed portal`.")
         return
 
@@ -2951,7 +2951,7 @@ def run_setup_wizard(args):
         )
         return
 
-    # --portal: one-shot Nous Portal setup. Skips the rest of the wizard.
+    # --portal: one-shot Zed Portal setup. Skips the rest of the wizard.
     if bool(getattr(args, "portal", False)):
         _run_portal_one_shot(config)
         return
@@ -3071,7 +3071,7 @@ def run_setup_wizard(args):
         setup_mode = prompt_choice(
             "How would you like to set up Zed?",
             [
-                "Quick Setup (Nous Portal) â€” free OAuth login, no API keys, model + tools (recommended)",
+                "Quick Setup (Zed Portal) â€” free OAuth login, no API keys, model + tools (recommended)",
                 "Full setup â€” configure every provider, tool & option yourself (bring your own keys)",
             ],
             0,
@@ -3128,9 +3128,9 @@ def run_setup_wizard(args):
 
 
 def _run_first_time_quick_setup(config: dict, zed_home, is_existing: bool):
-    """Streamlined first-time setup via Nous Portal: OAuth, model, terminal & messaging.
+    """Streamlined first-time setup via Zed Portal: OAuth, model, terminal & messaging.
 
-    Routes straight to the Nous Portal provider â€” runs the device-code OAuth
+    Routes straight to the Zed Portal provider â€” runs the device-code OAuth
     login, picks a Nous model, then configures the terminal backend and (optionally)
     a messaging platform. Applies sensible defaults for everything else (agent
     settings, tools); the user can customize later via ``zed setup <section>``
@@ -3138,25 +3138,25 @@ def _run_first_time_quick_setup(config: dict, zed_home, is_existing: bool):
     """
     from zed_cli.config import load_config
 
-    # Step 1: Nous Portal â€” OAuth login + model selection.
+    # Step 1: Zed Portal â€” OAuth login + model selection.
     # _model_flow_nous() handles both the logged-out path (device-code OAuth,
     # which selects a model internally) and the already-logged-in path (curated
     # Nous model picker). Provider is set to "nous" by the login/model save.
     print()
-    print_header("Nous Portal")
+    print_header("Zed Portal")
     print_info("One subscription, 300+ models, plus the Tool Gateway:")
     print_info("  web search, image generation, TTS, browser automation.")
-    print_info("Sign up: https://portal.nousresearch.com/manage-subscription")
+    print_info("Sign up: https://portal.zedteam.com/manage-subscription")
     print()
     try:
         from zed_cli.main import _model_flow_nous
         _model_flow_nous(config)
     except (KeyboardInterrupt, EOFError):
         print()
-        print_info("Nous Portal setup cancelled.")
+        print_info("Zed Portal setup cancelled.")
     except Exception as exc:
         logger.debug("_model_flow_nous error during quick setup: %s", exc)
-        print_warning(f"Nous Portal setup encountered an error: {exc}")
+        print_warning(f"Zed Portal setup encountered an error: {exc}")
         print_info("You can try again later with: zed model")
 
     # Re-sync the wizard's config dict from disk â€” _model_flow_nous (and the

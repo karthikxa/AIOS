@@ -34,13 +34,13 @@ result before hitting Enter.
 mkdir -p ~/.zed
 docker run -it --rm \
   -v ~/.zed:/opt/data \
-  nousresearch/zed-agent setup
+  zedteam/zed-agent setup
 ```
 
 This drops you into the setup wizard, which will prompt you for your API keys and write them to `~/.zed/.env`. You only need to do this once. It is highly recommended to set up a chat system for the gateway to work with at this point.
 
 :::tip
-Inside the container, run `zed setup --portal` once â€” the refresh token persists in the mounted `~/.zed` volume. See [Nous Portal](/integrations/nous-portal).
+Inside the container, run `zed setup --portal` once â€” the refresh token persists in the mounted `~/.zed` volume. See [Zed Portal](/integrations/nous-portal).
 :::
 
 ## Running in gateway mode
@@ -53,7 +53,7 @@ docker run -d \
   --restart unless-stopped \
   -v ~/.zed:/opt/data \
   -p 8642:8642 \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 Port 8642 exposes the gateway's [OpenAI-compatible API server](./features/api-server.md) and health endpoint. It's optional if you only use chat platforms (Telegram, Discord, etc.), but required if you want the dashboard or external tools to reach the gateway.
@@ -82,7 +82,7 @@ docker run -d \
   -e API_SERVER_HOST=0.0.0.0 \
   -e API_SERVER_KEY="$(openssl rand -hex 32)" \
   -e API_SERVER_CORS_ORIGINS='*' \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 Opening any port on an internet facing machine is a security risk. You should not do it unless you understand the risks.
@@ -99,7 +99,7 @@ docker run -d \
   -p 8642:8642 \
   -p 9119:9119 \
   -e ZED_DASHBOARD=1 \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 The dashboard is supervised by s6 â€” if it crashes, `s6-supervise` restarts it automatically after a short backoff. Dashboard stdout/stderr is forwarded to `docker logs <container>` (no prefix; the gateway's own output now lives in a per-profile s6-log file â€” see [Where the logs go](#where-the-logs-go) below â€” so the two streams don't clash).
@@ -121,7 +121,7 @@ The dashboard's auth gate engages automatically when both of the following are t
 There are three bundled ways to satisfy the second condition:
 
 - **Username/password** â€” the simplest for a self-hosted / on-prem / homelab container on a trusted network or behind a VPN: set `ZED_DASHBOARD_BASIC_AUTH_USERNAME` + `ZED_DASHBOARD_BASIC_AUTH_PASSWORD` (and `ZED_DASHBOARD_BASIC_AUTH_SECRET` for restart-stable sessions). Not suitable for direct public-internet exposure.
-- **OAuth (Nous Portal)** â€” for hosted/public deploys: the `dashboard_auth/nous` provider activates whenever `ZED_DASHBOARD_OAUTH_CLIENT_ID` is set.
+- **OAuth (Zed Portal)** â€” for hosted/public deploys: the `dashboard_auth/nous` provider activates whenever `ZED_DASHBOARD_OAUTH_CLIENT_ID` is set.
 - **Self-hosted OIDC** â€” to authenticate against your own identity provider via standard OpenID Connect: the `dashboard_auth/self_hosted` provider activates when `ZED_DASHBOARD_OIDC_ISSUER` + `ZED_DASHBOARD_OIDC_CLIENT_ID` are set.
 
 Whichever you choose, the gate redirects callers to a login page before they can reach any protected route. See [Web Dashboard â†’ Authentication](features/web-dashboard.md#authentication-gated-mode) for all three providers.
@@ -141,7 +141,7 @@ To open an interactive chat session against a running data directory:
 ```sh
 docker run -it --rm \
   -v ~/.zed:/opt/data \
-  nousresearch/zed-agent
+  zedteam/zed-agent
 ```
 
 Or if you have already opened a terminal in your running container (via Docker Desktop for instance), just run:
@@ -267,7 +267,7 @@ In those cases, declare one service per profile with distinct `container_name`, 
 ```yaml
 services:
   zed-work:
-    image: nousresearch/zed-agent:latest
+    image: zedteam/zed-agent:latest
     container_name: zed-work
     restart: unless-stopped
     command: gateway run
@@ -277,7 +277,7 @@ services:
       - ~/.zed-work:/opt/data
 
   zed-personal:
-    image: nousresearch/zed-agent:latest
+    image: zedteam/zed-agent:latest
     container_name: zed-personal
     restart: unless-stopped
     command: gateway run
@@ -314,7 +314,7 @@ docker run -it --rm \
   -v ~/.zed:/opt/data \
   -e ANTHROPIC_API_KEY="sk-ant-..." \
   -e OPENAI_API_KEY="sk-..." \
-  nousresearch/zed-agent
+  zedteam/zed-agent
 ```
 
 Direct `-e` flags override values from `.env`. This is useful for CI/CD or secrets-manager integrations where you don't want keys on disk.
@@ -330,7 +330,7 @@ For persistent deployment with both the gateway and dashboard, a `docker-compose
 ```yaml
 services:
   zed:
-    image: nousresearch/zed-agent:latest
+    image: zedteam/zed-agent:latest
     container_name: zed
     restart: unless-stopped
     command: gateway run
@@ -385,7 +385,7 @@ ctl.!default {
 Then build a small derived image with the ALSA PulseAudio plugin installed:
 
 ```dockerfile title="Dockerfile.audio"
-FROM nousresearch/zed-agent:latest
+FROM zedteam/zed-agent:latest
 
 USER root
 RUN apt-get update \
@@ -452,7 +452,7 @@ docker run -d \
   --restart unless-stopped \
   --memory=4g --cpus=2 \
   -v ~/.zed:/opt/data \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 ## What the Dockerfile does
@@ -520,13 +520,13 @@ When a migration is needed, Zed writes timestamped backups next to
 `config.yaml` and `.env` first.
 
 ```sh
-docker pull nousresearch/zed-agent:latest
+docker pull zedteam/zed-agent:latest
 docker rm -f zed
 docker run -d \
   --name zed \
   --restart unless-stopped \
   -v ~/.zed:/opt/data \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 Or with Docker Compose:
@@ -563,10 +563,10 @@ This is a good fit for tools that are quick to install and used occasionally. Fo
 
 ### Durable installs â€” build a derived image
 
-When a tool must be available immediately on every container start with no re-install delay, build a new image that inherits from `nousresearch/zed-agent` and installs the tool in a layer:
+When a tool must be available immediately on every container start with no re-install delay, build a new image that inherits from `zedteam/zed-agent` and installs the tool in a layer:
 
 ```dockerfile
-FROM nousresearch/zed-agent:latest
+FROM zedteam/zed-agent:latest
 
 USER root
 RUN apt-get update \
@@ -587,7 +587,7 @@ docker run -d \
   my-zed:latest gateway run
 ```
 
-The entrypoint script and `/opt/data` semantics are inherited unchanged, so the rest of this page still applies. Remember to rebuild the image when pulling a newer upstream `nousresearch/zed-agent`.
+The entrypoint script and `/opt/data` semantics are inherited unchanged, so the rest of this page still applies. Remember to rebuild the image when pulling a newer upstream `zedteam/zed-agent`.
 
 ### Complex tools or multi-service stacks â€” run a sidecar container
 
@@ -596,7 +596,7 @@ For tools that bring their own service (a database, a web server, a queue, a hea
 ```yaml
 services:
   zed:
-    image: nousresearch/zed-agent:latest
+    image: zedteam/zed-agent:latest
     container_name: zed
     restart: unless-stopped
     command: gateway run
@@ -623,7 +623,7 @@ From inside the Zed container, the sidecar is reachable at `http://my-tool:<port
 
 ### Broadly useful tools â€” open an issue or pull request
 
-If a tool is likely to be useful to most Zed Agent users, consider contributing it upstream rather than carrying it in a private derived image. Open an issue or pull request on the [zed-agent repository](https://github.com/NousResearch/zed-agent) describing the tool and its use case. Tools that get bundled into the official image benefit every user and avoid the maintenance overhead of a downstream fork.
+If a tool is likely to be useful to most Zed Agent users, consider contributing it upstream rather than carrying it in a private derived image. Open an issue or pull request on the [zed-agent repository](https://github.com/zedteam/zed-agent) describing the tool and its use case. Tools that get bundled into the official image benefit every user and avoid the maintenance overhead of a downstream fork.
 
 ## Connecting to local inference servers (vLLM, Ollama, etc.)
 
@@ -654,7 +654,7 @@ services:
             - capabilities: [gpu]
 
   zed:
-    image: nousresearch/zed-agent:latest
+    image: zedteam/zed-agent:latest
     container_name: zed
     restart: unless-stopped
     command: gateway run
@@ -698,7 +698,7 @@ docker run -d \
   --name zed \
   -v ~/.zed:/opt/data \
   -p 8642:8642 \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 ```yaml
@@ -717,7 +717,7 @@ docker run -d \
   --name zed \
   --network host \
   -v ~/.zed:/opt/data \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 ```yaml
@@ -781,7 +781,7 @@ docker run -d \
   --name zed \
   -e PUID=1000 -e PGID=10 \
   -v /volume1/docker/zed:/opt/data \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 `docker exec zed <cmd>` automatically drops to UID 10000 too â€” see [`docker exec` automatically drops to the `zed` user](#docker-exec-automatically-drops-to-the-zed-user) for details and the per-invocation opt-out.
@@ -795,7 +795,7 @@ docker run -d \
   --name zed \
   --shm-size=1g \
   -v ~/.zed:/opt/data \
-  nousresearch/zed-agent gateway run
+  zedteam/zed-agent gateway run
 ```
 
 ### Gateway not reconnecting after network issues
@@ -810,6 +810,6 @@ docker restart zed
 
 ```sh
 docker logs --tail 50 zed          # Recent logs
-docker run -it --rm nousresearch/zed-agent:latest version     # Verify version
+docker run -it --rm zedteam/zed-agent:latest version     # Verify version
 docker stats zed                    # Resource usage
 ```

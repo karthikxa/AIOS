@@ -1,4 +1,4 @@
-"""Hybrid keyword/BM25 retrieval for the memory store.
+﻿"""Hybrid keyword/BM25 retrieval for the memory store.
 
 Ported from KIK memory_agent.py — combines FTS5 full-text search with
 Jaccard similarity reranking and trust-weighted scoring.

@@ -1,4 +1,4 @@
-# Production-Ready Examples
+﻿# Production-Ready Examples
 
 Real-world examples of using Outlines for structured generation in production systems.
 

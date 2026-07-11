@@ -1,4 +1,4 @@
-"""Stdlib document-to-text extraction for ``read_file``.
+﻿"""Stdlib document-to-text extraction for ``read_file``.
 
 Supports Jupyter notebooks, DOCX, and XLSX without adding hard dependencies.
 Malformed documents raise :class:`ExtractionError`; callers can then fall back to

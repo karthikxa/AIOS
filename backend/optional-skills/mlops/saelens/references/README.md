@@ -1,4 +1,4 @@
-# SAELens Reference Documentation
+﻿# SAELens Reference Documentation
 
 This directory contains comprehensive reference materials for SAELens.
 

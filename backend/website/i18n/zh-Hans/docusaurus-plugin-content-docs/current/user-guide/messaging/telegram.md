@@ -207,7 +207,7 @@ TELEGRAM_WEBHOOK_SECRET="$(openssl rand -hex 32)"  # å¿…å¡«
 | å˜é‡ | æ˜¯å¦å¿…å¡« | è¯´æ˜Ž |
 |----------|----------|-------------|
 | `TELEGRAM_WEBHOOK_URL` | æ˜¯ | Telegram å‘é€æ›´æ–°çš„å…¬å¼€ HTTPS URLã€‚URL è·¯å¾„ä¼šè‡ªåŠ¨æå–ï¼ˆä¾‹å¦‚ä¸Šä¾‹ä¸­çš„ `/telegram`ï¼‰ã€‚ |
-| `TELEGRAM_WEBHOOK_SECRET` | **æ˜¯**ï¼ˆè®¾ç½® `TELEGRAM_WEBHOOK_URL` æ—¶ï¼‰ | Telegram åœ¨æ¯ä¸ª webhook è¯·æ±‚ä¸­å›žæ˜¾çš„å¯†é’¥ tokenï¼Œç”¨äºŽéªŒè¯ã€‚gateway åœ¨æ²¡æœ‰è¯¥å¯†é’¥æ—¶æ‹’ç»å¯åŠ¨â€”â€”å‚è§ [GHSA-3vpc-7q5r-276h](https://github.com/NousResearch/zed-agent/security/advisories/GHSA-3vpc-7q5r-276h)ã€‚ä½¿ç”¨ `openssl rand -hex 32` ç”Ÿæˆã€‚ |
+| `TELEGRAM_WEBHOOK_SECRET` | **æ˜¯**ï¼ˆè®¾ç½® `TELEGRAM_WEBHOOK_URL` æ—¶ï¼‰ | Telegram åœ¨æ¯ä¸ª webhook è¯·æ±‚ä¸­å›žæ˜¾çš„å¯†é’¥ tokenï¼Œç”¨äºŽéªŒè¯ã€‚gateway åœ¨æ²¡æœ‰è¯¥å¯†é’¥æ—¶æ‹’ç»å¯åŠ¨â€”â€”å‚è§ [GHSA-3vpc-7q5r-276h](https://github.com/zedteam/zed-agent/security/advisories/GHSA-3vpc-7q5r-276h)ã€‚ä½¿ç”¨ `openssl rand -hex 32` ç”Ÿæˆã€‚ |
 | `TELEGRAM_WEBHOOK_PORT` | å¦ | webhook æœåŠ¡å™¨ç›‘å¬çš„æœ¬åœ°ç«¯å£ï¼ˆé»˜è®¤ï¼š`8443`ï¼‰ã€‚ |
 
 è®¾ç½® `TELEGRAM_WEBHOOK_URL` åŽï¼Œgateway ä¼šå¯åŠ¨ HTTP webhook æœåŠ¡å™¨è€Œéžè½®è¯¢ã€‚æœªè®¾ç½®æ—¶ä½¿ç”¨è½®è¯¢æ¨¡å¼â€”â€”ä¸Žä¹‹å‰ç‰ˆæœ¬è¡Œä¸ºæ— å˜åŒ–ã€‚

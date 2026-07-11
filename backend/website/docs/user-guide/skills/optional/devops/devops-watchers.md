@@ -81,7 +81,7 @@ Watch a GitHub repo (set `GITHUB_TOKEN` in `~/.zed/.env` to avoid the 60 req/hr 
 
 ```bash
 python $ZED_HOME/skills/devops/watchers/scripts/watch_github.py \
-  --name zed-issues --repo NousResearch/zed-agent --scope issues
+  --name zed-issues --repo zedteam/zed-agent --scope issues
 ```
 
 Poll an arbitrary JSON API:

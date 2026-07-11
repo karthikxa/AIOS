@@ -1,4 +1,4 @@
-"""Shared path validation helpers for tool implementations.
+﻿"""Shared path validation helpers for tool implementations.
 
 Extracts the ``resolve() + relative_to()`` and ``..`` traversal check
 patterns previously duplicated across skill_manager_tool, skills_tool,

@@ -1,4 +1,4 @@
-# TRIZ — Theory of Inventive Problem Solving
+﻿# TRIZ — Theory of Inventive Problem Solving
 
 Genrich Altshuller, 1946–. Soviet engineering invention method derived from analysis of hundreds of thousands of patents. 40 inventive principles + contradiction matrix + Ideal Final Result. Used by Samsung, Intel, Boeing, P&G.
 

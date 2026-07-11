@@ -1,4 +1,4 @@
-# Volume Generation
+﻿# Volume Generation
 
 Three traditions for producing many ideas fast:
 - **Crazy 8s** — Google Ventures Sprint method. Codified in *Sprint* (Knapp et al., 2016).

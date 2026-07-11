@@ -1,4 +1,4 @@
-﻿"""Helpers for Nous subscription managed-tool capabilities."""
+﻿"""Helpers for Zed Subscription managed-tool capabilities."""
 
 from __future__ import annotations
 
@@ -373,7 +373,7 @@ def get_nous_subscription_features(
     web_extract_backend = str(web_cfg.get("extract_backend") or "").strip().lower()
     tts_provider = str(tts_cfg.get("provider") or "edge").strip().lower()
     # STT default is "local" (faster-whisper) per DEFAULT_CONFIG, which
-    # requires `pip install faster-whisper`. For Nous subscribers we'd
+    # requires `pip install faster-whisper`. For Zed Subscribers we'd
     # rather route through the managed OpenAI audio gateway â€” see
     # apply_nous_managed_defaults below.
     stt_provider = str(stt_cfg.get("provider") or "local").strip().lower()
@@ -651,7 +651,7 @@ def get_nous_subscription_features(
             managed_by_nous=image_managed,
             direct_override=image_active and not image_managed,
             toolset_enabled=image_tool_enabled,
-            current_provider="FAL" if direct_fal else ("Nous Subscription" if image_managed else ""),
+            current_provider="FAL" if direct_fal else ("Zed Subscription" if image_managed else ""),
             explicit_configured=direct_fal,
         ),
         "video_gen": NousFeatureState(
@@ -663,7 +663,7 @@ def get_nous_subscription_features(
             managed_by_nous=video_managed,
             direct_override=video_active and not video_managed,
             toolset_enabled=video_tool_enabled,
-            current_provider="FAL" if direct_fal_video else ("Nous Subscription" if video_managed else ""),
+            current_provider="FAL" if direct_fal_video else ("Zed Subscription" if video_managed else ""),
             explicit_configured=direct_fal_video,
         ),
         "tts": NousFeatureState(
@@ -787,7 +787,7 @@ def apply_nous_managed_defaults(
         changed.add("tts")
 
     # STT: same pattern as TTS. The DEFAULT_CONFIG seed is "local"
-    # (requires `pip install faster-whisper`); for Nous subscribers we
+    # (requires `pip install faster-whisper`); for Zed Subscribers we
     # flip it to "openai" so the managed audio gateway handles transcription
     # via the same auth as TTS. Skipped when the user has explicitly
     # configured STT, has direct credentials for a non-managed provider,
@@ -913,7 +913,7 @@ def get_gateway_eligible_tools(
     - has_direct: tools where the user has their own API keys
     - already_managed: tools already routed through the gateway
 
-    All lists are empty when the user is not a paid Nous subscriber or
+    All lists are empty when the user is not a paid Zed Subscriber or
     is not using Nous as their provider.
     """
     # Fetch entitlement once: it gates the offer (paid access OR a live free tool
@@ -1083,7 +1083,7 @@ def prompt_enable_tool_gateway(
         and account_info.tool_access is not None
         and account_info.tool_access.enabled
     )
-    source_label = "free tool pool" if pool_only else "Nous subscription"
+    source_label = "free tool pool" if pool_only else "Zed Subscription"
 
     # Per-tool checklist: unconfigured tools first (pre-checked for new users),
     # then tools where the user already has their own key (left unchecked so we
@@ -1100,7 +1100,7 @@ def prompt_enable_tool_gateway(
         title = "Your free Nous tool pool â€” pick the tools to enable:"
     else:
         title = (
-            "Your Nous subscription includes the Tool Gateway â€” "
+            "Your Zed Subscription includes the Tool Gateway â€” "
             "pick the tools to enable:"
         )
 
@@ -1125,27 +1125,27 @@ def prompt_enable_tool_gateway(
 
 
 # ---------------------------------------------------------------------------
-# Inline Nous Portal login for the Tool Gateway picker (`zed tools`)
+# Inline Zed Portal login for the Tool Gateway picker (`zed tools`)
 # ---------------------------------------------------------------------------
 
 
 def ensure_nous_portal_access(
     *,
-    capability: str = "the Nous Tool Gateway",
+    capability: str = "the Zed Tool Gateway",
     coverage_category: Optional[str] = None,
 ) -> bool:
-    """Make sure the user is entitled to the Nous Tool Gateway, logging in if
+    """Make sure the user is entitled to the Zed Tool Gateway, logging in if
     needed.
 
-    Used by ``zed tools`` when a user selects a Nous-managed Tool Gateway
-    backend (e.g. "Firecrawl (Nous Portal)").  Unlike ``zed model``'s Nous
+    Used by ``zed tools`` when a user selects a Zed-managed Tool Gateway
+    backend (e.g. "Firecrawl (Zed Portal)").  Unlike ``zed model``'s Nous
     login, this:
 
     - does NOT change the inference provider (``model.provider`` is untouched),
     - does NOT run model selection, and
     - does NOT offer the bulk "enable for all tools" Tool Gateway prompt.
 
-    It only performs the Nous Portal device-code OAuth (when the user isn't
+    It only performs the Zed Portal device-code OAuth (when the user isn't
     already logged in) and refreshes entitlement, so the caller can enable the
     single tool the user picked.
 
@@ -1198,7 +1198,7 @@ def ensure_nous_portal_access(
 
 
 def _run_nous_portal_login_only(*, capability: str) -> bool:
-    """Run the Nous Portal device-code OAuth and persist credentials only.
+    """Run the Zed Portal device-code OAuth and persist credentials only.
 
     No model selection, no provider switch, no Tool Gateway bulk prompt.
     Returns ``True`` on a successful login, ``False`` if the user declined or
@@ -1217,18 +1217,18 @@ def _run_nous_portal_login_only(*, capability: str) -> bool:
             _write_shared_nous_state,
         )
     except Exception as exc:  # pragma: no cover - defensive
-        print(f"  Could not start Nous Portal login: {exc}")
+        print(f"  Could not start Zed Portal login: {exc}")
         return False
 
     print()
-    print(f"  {capability} requires a Nous Portal login.")
+    print(f"  {capability} requires a Zed Portal login.")
     try:
-        proceed = input("  Log in to Nous Portal now? [Y/n]: ").strip().lower()
+        proceed = input("  Log in to Zed Portal now? [Y/n]: ").strip().lower()
     except (EOFError, KeyboardInterrupt):
         print()
         return False
     if proceed not in {"", "y", "yes"}:
-        print("  Skipped Nous Portal login.")
+        print("  Skipped Zed Portal login.")
         return False
 
     try:
@@ -1265,7 +1265,7 @@ def _run_nous_portal_login_only(*, capability: str) -> bool:
 
         _write_shared_nous_state(auth_state)
         _sync_nous_pool_from_auth_store()
-        print("  Nous Portal login successful.")
+        print("  Zed Portal login successful.")
         return True
     except KeyboardInterrupt:
         print("\n  Login cancelled.")
@@ -1275,5 +1275,5 @@ def _run_nous_portal_login_only(*, capability: str) -> bool:
         # it already printed billing guidance.
         return False
     except Exception as exc:
-        print(f"  Nous Portal login failed: {exc}")
+        print(f"  Zed Portal login failed: {exc}")
         return False

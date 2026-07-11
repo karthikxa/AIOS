@@ -1,4 +1,4 @@
-"""Kilo Code provider profile."""
+﻿"""Kilo Code provider profile."""
 
 from providers import register_provider
 from providers.base import ProviderProfile

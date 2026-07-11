@@ -366,7 +366,7 @@ echo "HINDSIGHT_API_KEY=your-key" >> ~/.zed/.env
 | `retain_assistant_prefix` | `Assistant` | è‡ªåŠ¨ä¿ç•™çš„å¯¹è¯è®°å½•ä¸­åŠ©æ‰‹è½®æ¬¡å‰çš„æ ‡ç­¾ |
 | `recall_tags` | â€” | å¬å›žæ—¶ç”¨äºŽè¿‡æ»¤çš„æ ‡ç­¾ |
 
-å®Œæ•´é…ç½®å‚è€ƒå‚è§[æ’ä»¶ README](https://github.com/NousResearch/zed-agent/blob/main/plugins/memory/hindsight/README.md)ã€‚
+å®Œæ•´é…ç½®å‚è€ƒå‚è§[æ’ä»¶ README](https://github.com/zedteam/zed-agent/blob/main/plugins/memory/hindsight/README.md)ã€‚
 
 ---
 

@@ -1,4 +1,4 @@
-# NeuroSkill WebSocket & HTTP API Reference
+﻿# NeuroSkill WebSocket & HTTP API Reference
 
 NeuroSkill runs a local server (default port **8375**) discoverable via mDNS
 (`_skill._tcp`). It exposes both WebSocket and HTTP endpoints.

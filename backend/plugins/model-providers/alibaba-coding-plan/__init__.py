@@ -1,4 +1,4 @@
-"""Alibaba Cloud Coding Plan provider profile.
+﻿"""Alibaba Cloud Coding Plan provider profile.
 
 Separate from the standard `alibaba` profile because it hits a different
 endpoint (coding-intl.dashscope.aliyuncs.com) with a dedicated API key tier.

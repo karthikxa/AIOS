@@ -1,4 +1,4 @@
-# ADMET Reference Guide
+﻿# ADMET Reference Guide
 
 Comprehensive reference for Absorption, Distribution, Metabolism, Excretion, and Toxicity (ADMET) analysis in drug discovery.
 

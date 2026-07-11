@@ -1,4 +1,4 @@
-# CLIP Applications Guide
+﻿# CLIP Applications Guide
 
 Practical applications and use cases for CLIP.
 

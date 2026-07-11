@@ -1,4 +1,4 @@
-# GRPO (Group Relative Policy Optimization) — Deep Guide
+﻿# GRPO (Group Relative Policy Optimization) — Deep Guide
 
 Expert-level patterns, critical insights, and production-ready workflows for fine-tuning language models with custom reward functions using TRL's `GRPOTrainer`. This is the deep reference for the GRPO workflow summarized in the main skill.
 

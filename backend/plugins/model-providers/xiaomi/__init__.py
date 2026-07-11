@@ -1,4 +1,4 @@
-"""Xiaomi MiMo provider profile."""
+﻿"""Xiaomi MiMo provider profile."""
 
 from providers import register_provider
 from providers.base import ProviderProfile

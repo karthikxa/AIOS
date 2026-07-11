@@ -1,4 +1,4 @@
-# Composition Authoring
+﻿# Composition Authoring
 
 HTML structure, data attributes, timeline contract, and non-negotiable rules.
 

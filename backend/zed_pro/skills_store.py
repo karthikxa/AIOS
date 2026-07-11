@@ -1,4 +1,4 @@
-"""Skills store -- auto-discover SKILL.md files under ~/.hermes/skills/.
+"""Skills store -- auto-discover SKILL.md files under ~/.zed/skills/.
 
 Compact index (names + one-line descriptions) is cached to a JSON snapshot
 file so the prompt stays small. Full skill content is loaded on demand via
@@ -66,7 +66,7 @@ def _parse_skill_file(path: Path) -> Optional[Dict[str, str]]:
 # ---------------------------------------------------------------------------
 
 def scan_skills() -> List[Dict[str, str]]:
-    """Walk ~/.hermes/skills/ for SKILL.md files, return list of skill dicts."""
+    """Walk ~/.zed/skills/ for SKILL.md files, return list of skill dicts."""
     if not SKILLS_DIR.is_dir():
         return []
     skills: List[Dict[str, str]] = []

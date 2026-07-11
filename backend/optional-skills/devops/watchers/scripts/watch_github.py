@@ -6,7 +6,7 @@ Usage (via cron with --no-agent):
     zed cron create zed-issues \\
       --schedule "*/5 * * * *" --no-agent \\
       --script "$ZED_HOME/skills/devops/watchers/scripts/watch_github.py" \\
-      --script-args "--name zed-issues --repo NousResearch/zed-agent --scope issues"
+      --script-args "--name zed-issues --repo ZedTeam/zed-agent --scope issues"
 
 Set GITHUB_TOKEN (or GH_TOKEN) in the Zed .env file
 (``${ZED_HOME:-~/.zed}/.env``) to avoid the 60 req/hr

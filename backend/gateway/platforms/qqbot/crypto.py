@@ -1,4 +1,4 @@
-"""AES-256-GCM utilities for QQBot scan-to-configure credential decryption."""
+﻿"""AES-256-GCM utilities for QQBot scan-to-configure credential decryption."""
 
 from __future__ import annotations
 

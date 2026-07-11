@@ -1,4 +1,4 @@
-# Comprehensive JSON Generation Guide
+﻿# Comprehensive JSON Generation Guide
 
 Complete guide to JSON generation with Outlines using Pydantic models and JSON schemas.
 

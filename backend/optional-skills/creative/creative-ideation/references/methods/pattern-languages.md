@@ -1,4 +1,4 @@
-# Pattern Languages
+﻿# Pattern Languages
 
 Christopher Alexander et al., *A Pattern Language* (1977). 253 patterns for designing buildings, towns, rooms — structured as a generative grammar with explicit cross-references. Spawned the Gang of Four software design patterns (1994) and many domain adaptations.
 

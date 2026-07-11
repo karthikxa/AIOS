@@ -1,4 +1,4 @@
-# Infrastructure Patterns
+﻿# Infrastructure Patterns
 
 Reusable shapes and line styles for infrastructure / systems-integration diagrams (smart cities, IoT networks, industrial systems, multi-domain architectures).
 

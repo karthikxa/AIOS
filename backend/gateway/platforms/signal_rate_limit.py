@@ -1,4 +1,4 @@
-"""
+﻿"""
 Signal attachment rate-limit scheduler.
 
 Process-wide token-bucket simulator that mirrors the per-account

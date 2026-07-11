@@ -140,6 +140,6 @@ ZED_COMPUTER_USE_BACKEND=noop   # records calls, no side effects
 
 ## å¦è¯·å‚é˜…
 
-- [é€šç”¨æŠ€èƒ½ï¼š`macos-computer-use`](https://github.com/NousResearch/zed-agent/blob/main/skills/apple/macos-computer-use/SKILL.md)
+- [é€šç”¨æŠ€èƒ½ï¼š`macos-computer-use`](https://github.com/zedteam/zed-agent/blob/main/skills/apple/macos-computer-use/SKILL.md)
 - [cua-driver æºç ï¼ˆtrycua/cuaï¼‰](https://github.com/trycua/cua)
 - è·¨å¹³å° Web ä»»åŠ¡è¯·å‚é˜…[æµè§ˆå™¨è‡ªåŠ¨åŒ–](./browser.md)ã€‚

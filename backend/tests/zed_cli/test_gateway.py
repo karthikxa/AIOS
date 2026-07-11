@@ -283,7 +283,7 @@ def test_running_under_gateway_supervisor_markers(monkeypatch):
     _clear_supervisor_markers(monkeypatch)
     assert gateway._running_under_gateway_supervisor() is False
 
-    monkeypatch.setenv("XPC_SERVICE_NAME", "org.nousresearch.zed.gateway")
+    monkeypatch.setenv("XPC_SERVICE_NAME", "org.zedteam.zed.gateway")
     assert gateway._running_under_gateway_supervisor() is True
 
     monkeypatch.setenv("XPC_SERVICE_NAME", "0")

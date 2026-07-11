@@ -1,4 +1,4 @@
-# Premortem and Inversion
+﻿# Premortem and Inversion
 
 Two methods for failure-oriented ideation:
 - **Premortem** — Gary Klein, *HBR* September 2007. Imagine the project has already failed catastrophically; work backwards to causes.

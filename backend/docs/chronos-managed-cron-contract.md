@@ -40,7 +40,7 @@ agent verifies the NAS JWT â†’ store CAS claim â†’ run_one_job â†�
 
 | Hop | Who calls whom | Auth mechanism | Verified by |
 |---|---|---|---|
-| 1 | agent â†’ NAS (`provision`/`cancel`/`list`) | the agent's existing **Nous Portal access token** (Bearer) | NAS (its normal agent-token path) |
+| 1 | agent â†’ NAS (`provision`/`cancel`/`list`) | the agent's existing **Zed Portal access token** (Bearer) | NAS (its normal agent-token path) |
 | 2 | scheduler â†’ NAS (`relay`) | the scheduler's request **signature** | NAS (the signature path it already has) |
 | 3 | NAS â†’ agent (`/api/cron/fire`) | a **short-lived NAS-minted JWT** (`aud=agent:{instance_id}`, `purpose=cron_fire`) | agent (PyJWT against NAS JWKS) |
 
@@ -59,7 +59,7 @@ already performs.
 
 Arm (or re-arm, idempotently) exactly one one-shot for a job.
 
-- **Auth:** `Authorization: Bearer <agent Nous access token>`. NAS validates via
+- **Auth:** `Authorization: Bearer <agent Zed access token>`. NAS validates via
   its normal agent-token path and scopes the row to the calling agent/org.
 - **Request body:**
   ```json
@@ -184,7 +184,7 @@ credentials. For hosted agents NAS sets these at provision time:
 | `cron.chronos.expected_audience` | this agent's JWT `aud` (`agent:{instance_id}`) |
 | `cron.chronos.nas_jwks_url` | NAS JWKS for verifying the fire JWT |
 
-If `callback_url` / `portal_url` is blank or the agent has no Nous login,
+If `callback_url` / `portal_url` is blank or the agent has no Zed login,
 `is_available()` returns False and the resolver falls back to the built-in
 in-process ticker â€” cron never loses its trigger.
 

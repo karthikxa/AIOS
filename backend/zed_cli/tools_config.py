@@ -249,7 +249,7 @@ TOOL_CATEGORIES = {
                 "tts_provider": "edge",
             },
             {
-                "name": "Nous Subscription",
+                "name": "Zed Subscription",
                 "badge": "subscription",
                 "tag": "Managed OpenAI TTS billed to your subscription",
                 "env_vars": [],
@@ -329,14 +329,14 @@ TOOL_CATEGORIES = {
         # plugins.web.<vendor>.provider via _plugin_web_search_providers()
         # in _visible_providers(). Only non-provider UX setup-flow rows
         # for the firecrawl backend are listed here:
-        #   - "Nous Subscription" â€” managed Firecrawl billed via Nous
+        #   - "Zed Subscription" â€” managed Firecrawl billed via Zed
         #     subscription (requires_nous_auth + override_env_vars).
         #   - "Firecrawl Self-Hosted" â€” points firecrawl at a private
         #     Docker instance via FIRECRAWL_API_URL only.
         # See PR #25182 for the migration rationale.
         "providers": [
             {
-                "name": "Nous Subscription",
+                "name": "Zed Subscription",
                 "badge": "subscription",
                 "tag": "Managed Firecrawl billed to your subscription",
                 "web_backend": "firecrawl",
@@ -364,14 +364,14 @@ TOOL_CATEGORIES = {
         # ``plugins.image_gen.<vendor>`` package via
         # ``_plugin_image_gen_providers()`` in ``_visible_providers``.
         # Only non-provider UX setup-flow rows remain here:
-        #   - "Nous Subscription" â€” managed FAL billed via the Nous
+        #   - "Zed Subscription" â€” managed FAL billed via the Nous
         #     subscription (requires_nous_auth + override_env_vars).
         #     Uses the fal plugin as the underlying backend but has a
         #     distinct setup UX.
         # Mirrors the shape browser/video_gen ship today.
         "providers": [
             {
-                "name": "Nous Subscription",
+                "name": "Zed Subscription",
                 "badge": "subscription",
                 "tag": "Managed FAL image generation billed to your subscription",
                 "env_vars": [],
@@ -385,13 +385,13 @@ TOOL_CATEGORIES = {
     "video_gen": {
         "name": "Video Generation",
         "icon": "ðŸŽ¬",
-        # "Nous Subscription" row mirrors the image_gen pattern â€” managed
-        # FAL video generation billed via the Nous Portal.  Plugin-backed
+        # "Zed Subscription" row mirrors the image_gen pattern â€” managed
+        # FAL video generation billed via the Zed Portal.  Plugin-backed
         # provider rows (FAL BYOK, xAI, â€¦) are injected at runtime by
         # ``_plugin_video_gen_providers()`` in ``_visible_providers``.
         "providers": [
             {
-                "name": "Nous Subscription",
+                "name": "Zed Subscription",
                 "badge": "subscription",
                 "tag": "Managed FAL video generation billed to your subscription",
                 "env_vars": [],
@@ -399,7 +399,7 @@ TOOL_CATEGORIES = {
                 "managed_nous_feature": "video_gen",
                 "override_env_vars": ["FAL_KEY"],
                 # The underlying plugin backend â€” when the user picks
-                # "Nous Subscription" we set video_gen.provider = "fal"
+                # "Zed Subscription" we set video_gen.provider = "fal"
                 # and video_gen.use_gateway = True so the FAL plugin
                 # routes through the managed queue gateway.
                 "video_gen_plugin_name": "fal",
@@ -448,10 +448,10 @@ TOOL_CATEGORIES = {
         # non-provider UX setup-flow rows remain here. "Local Browser" is
         # listed FIRST so it is the default-highlighted (index 0) choice on a
         # fresh install â€” pressing Enter must land on the free, no-key local
-        # backend, never on the paid Nous Subscription gateway row:
+        # backend, never on the paid Zed Subscription gateway row:
         #   - "Local Browser" â€” non-cloud option, no CloudBrowserProvider.
-        #   - "Nous Subscription (Browser Use cloud)" â€” managed Browser Use
-        #     billed via Nous subscription (requires_nous_auth +
+        #   - "Zed Subscription (Browser Use cloud)" â€” managed Browser Use
+        #     billed via Zed Subscription (requires_nous_auth +
         #     override_env_vars). Uses the browser-use plugin as the
         #     underlying backend but has a distinct setup UX.
         #   - "Camofox" â€” anti-detection local Firefox; short-circuits the
@@ -466,7 +466,7 @@ TOOL_CATEGORIES = {
                 "post_setup": "agent_browser",
             },
             {
-                "name": "Nous Subscription (Browser Use cloud)",
+                "name": "Zed Subscription (Browser Use cloud)",
                 "badge": "subscription",
                 "tag": "Managed Browser Use billed to your subscription",
                 "env_vars": [],
@@ -896,7 +896,7 @@ def _run_post_setup(post_setup_key: str):
                 "    Pull the latest image to get the bundled Chromium:"
             )
             _print_info(
-                "      docker pull ghcr.io/nousresearch/zed-agent:latest"
+                "      docker pull ghcr.io/zedteam/zed-agent:latest"
             )
             return
 
@@ -1861,7 +1861,7 @@ def _plugin_video_gen_providers() -> list[dict]:
 # PR #25182 â€” this helper is the sole source of truth for the category's
 # provider rows. The hardcoded entries that used to drive the category
 # were deleted in the same PR; only the two non-provider UX rows
-# ("Nous Subscription" managed-gateway entry, "Firecrawl Self-Hosted")
+# ("Zed Subscription" managed-gateway entry, "Firecrawl Self-Hosted")
 # remain in TOOL_CATEGORIES because they describe alternative *setup
 # flows* for the firecrawl backend rather than distinct providers.
 def _plugin_web_search_providers() -> list[dict]:
@@ -1918,7 +1918,7 @@ def _plugin_web_search_providers() -> list[dict]:
 # for those three in the "Browser Automation" picker. The hardcoded
 # ``TOOL_CATEGORIES["browser"]`` entries that drove the category before
 # were deleted in the same PR; only non-provider UX setup-flow rows remain
-# ("Nous Subscription", "Local Browser", "Camofox") â€” see the comment block
+# ("Zed Subscription", "Local Browser", "Camofox") â€” see the comment block
 # in ``TOOL_CATEGORIES["browser"]`` for why each one stays hardcoded.
 def _plugin_browser_providers() -> list[dict]:
     """Build picker-row dicts from plugin-registered cloud browser providers.
@@ -2031,9 +2031,9 @@ def _visible_providers(
 ) -> list[dict]:
     """Return provider entries visible for the current auth/config state.
 
-    Nous-managed Tool Gateway rows (``managed_nous_feature``) are always
+    Zed-managed Tool Gateway rows (``managed_nous_feature``) are always
     shown â€” even to logged-out / unentitled users â€” so the picker advertises
-    that the capability exists.  Selecting one drives an inline Nous Portal
+    that the capability exists.  Selecting one drives an inline Zed Portal
     login + entitlement check (see ``_configure_provider``); the row only
     *activates* the gateway once paid access is confirmed.
     """
@@ -2052,7 +2052,7 @@ def _visible_providers(
     )
     visible = []
     for provider in cat.get("providers", []):
-        # Nous-managed Tool Gateway rows stay visible regardless of auth â€”
+        # Zed-managed Tool Gateway rows stay visible regardless of auth â€”
         # selecting one drives an inline Portal login. A `requires_nous_auth`
         # row that is NOT a managed gateway feature (pure pre-auth UX) is
         # still hidden until the user is logged in.
@@ -2073,7 +2073,7 @@ def _visible_providers(
         visible.append(provider)
 
     # Inject plugin-registered image_gen backends (OpenAI today, more
-    # later) so the picker lists them alongside FAL / Nous Subscription.
+    # later) so the picker lists them alongside FAL / Zed Subscription.
     if cat.get("name") == "Image Generation":
         visible.extend(_plugin_image_gen_providers())
 
@@ -2085,14 +2085,14 @@ def _visible_providers(
     # Inject plugin-registered web search backends. After PR #25182, this
     # is the SOLE source of provider rows for the Web Search & Extract
     # category â€” the per-provider hardcoded entries were deleted. The two
-    # remaining hardcoded rows ("Nous Subscription", "Firecrawl
+    # remaining hardcoded rows ("Zed Subscription", "Firecrawl
     # Self-Hosted") are non-provider UX setup-flow rows for firecrawl.
     if cat.get("name") == "Web Search & Extract":
         visible.extend(_plugin_web_search_providers())
 
     # Inject plugin-registered cloud browser backends. After PR #25214,
     # Browserbase / Browser Use / Firecrawl are the plugin-supplied rows;
-    # the hardcoded "Nous Subscription" / "Local Browser" / "Camofox" rows
+    # the hardcoded "Zed Subscription" / "Local Browser" / "Camofox" rows
     # stay because they're non-provider UX setup flows (subscription auth,
     # local fallback, and the REST-API anti-detection backend respectively).
     if cat.get("name") == "Browser Automation":
@@ -2114,10 +2114,10 @@ def _hidden_nous_gateway_message(
     *,
     force_fresh: bool = False,
 ) -> str:
-    """Deprecated: Nous Tool Gateway rows are no longer hidden.
+    """Deprecated: Zed Tool Gateway rows are no longer hidden.
 
     Previously this returned a "log in / upgrade" banner shown above a
-    category when its Nous-managed rows were filtered out for unentitled
+    category when its Zed-managed rows were filtered out for unentitled
     users. Those rows are now always listed (see ``_visible_providers``), and
     the login + entitlement guidance happens inline when the user selects one
     (``ensure_nous_portal_access``). Kept as a no-op so call sites stay simple;
@@ -2240,7 +2240,7 @@ def _configure_tool_category(
     hidden_nous_message = _hidden_nous_gateway_message(
         cat,
         config,
-        f"the Nous Subscription provider for {name}",
+        f"the Zed Subscription provider for {name}",
         force_fresh=force_fresh,
     )
 
@@ -2307,17 +2307,17 @@ def _configure_tool_category(
                     configured = ""
                 else:
                     configured = " [configured]"
-            # Mark Nous-managed entries. Logged-in paid subscribers get the
-            # "included" star; everyone else gets a "via Nous Portal" hint so
+            # Mark Zed-managed entries. Logged-in paid subscribers get the
+            # "included" star; everyone else gets a "via Zed Portal" hint so
             # it's clear selecting the row triggers a Portal login. The rows
             # are always shown now (see _visible_providers) â€” selecting one
             # drives an inline login + entitlement check.
             sub_marker = ""
             if p.get("managed_nous_feature"):
                 if _nous_logged_in:
-                    sub_marker = "  â˜… Included with your Nous subscription"
+                    sub_marker = "  â˜… Included with your Zed Subscription"
                 else:
-                    sub_marker = "  â˜… via Nous Portal (login on select)"
+                    sub_marker = "  â˜… via Zed Portal (login on select)"
             provider_choices.append(f"{p['name']}{badge}{tag}{configured}{sub_marker}")
 
         # Add skip option
@@ -2732,7 +2732,7 @@ def _write_provider_config(provider: dict, config: dict, *, managed_feature) -> 
     This is the pure, non-interactive core of :func:`_configure_provider` â€”
     it writes ``tts.provider`` / ``browser.cloud_provider`` / ``web.backend``
     and the ``use_gateway`` flags based on the provider's markers, but does
-    NOT prompt for env vars, run post-setup hooks, gate on Nous auth, or run
+    NOT prompt for env vars, run post-setup hooks, gate on Zed auth, or run
     interactive model pickers. Both the CLI configurator and the desktop GUI
     ``PUT .../provider`` endpoint call through here so there is one code path.
     """
@@ -2778,7 +2778,7 @@ def apply_provider_selection(ts_key: str, provider_name: str, config: dict) -> N
     rows the GUI/CLI picker shows via :func:`_visible_providers`) and writes
     the corresponding backend/provider config keys. Unlike
     :func:`_configure_provider`, this does NOT prompt for API keys, run
-    post-setup hooks, gate on Nous Portal auth, or run interactive model
+    post-setup hooks, gate on Zed Portal auth, or run interactive model
     pickers â€” those are handled separately (env endpoints, post-setup
     endpoints, the model picker) in the desktop GUI.
 
@@ -2837,7 +2837,7 @@ def _configure_provider(
     env_vars = provider.get("env_vars", [])
     managed_feature = provider.get("managed_nous_feature")
 
-    # Nous-managed Tool Gateway backends are always listed (see
+    # Zed-managed Tool Gateway backends are always listed (see
     # _visible_providers), but only *activate* once the user has paid Nous
     # Portal access. Selecting one runs an inline Portal login when needed â€”
     # auth + entitlement only, no inference-provider switch and no bulk
@@ -2849,11 +2849,11 @@ def _configure_provider(
         )
 
         if not ensure_nous_portal_access(
-            capability=f"{provider.get('name', 'the Nous Tool Gateway')}",
+            capability=f"{provider.get('name', 'the Zed Tool Gateway')}",
             coverage_category=MANAGED_FEATURE_COVERAGE_CATEGORY.get(managed_feature),
         ):
             _print_warning(
-                "  Not enabled â€” Nous Portal access is required for this backend."
+                "  Not enabled â€” Zed Portal access is required for this backend."
             )
             return
 
@@ -2868,10 +2868,10 @@ def _configure_provider(
         if not features.nous_auth_present or not entitled:
             message = format_nous_portal_entitlement_message(
                 features.account_info,
-                capability=f"{provider.get('name', 'Nous Subscription')}",
+                capability=f"{provider.get('name', 'Zed Subscription')}",
             )
             _print_warning(
-                f"  {message or 'Nous Subscription is only available after logging into Nous Portal.'}"
+                f"  {message or 'Zed Subscription is only available after logging into Zed Portal.'}"
             )
             return
 
@@ -2903,7 +2903,7 @@ def _configure_provider(
             _run_post_setup(provider["post_setup"])
         _print_success(f"  {provider['name']} - no configuration needed!")
         if managed_feature:
-            _print_info("  Requests for this tool will be billed to your Nous subscription.")
+            _print_info("  Requests for this tool will be billed to your Zed Subscription.")
         # Plugin-registered image_gen provider: write image_gen.provider
         # and route model selection to the plugin's own catalog.
         plugin_name = provider.get("image_gen_plugin_name")
@@ -2931,7 +2931,7 @@ def _configure_provider(
     # Prompt for each required env var
     all_configured = True
     # If this BYOK provider lives in a category that ALSO has a
-    # Nous-managed sibling, show a single dim hint so users know
+    # Zed-managed sibling, show a single dim hint so users know
     # they can avoid the key entirely via a Portal subscription.
     # Suppressed when the user is already authed to Nous.
     _show_portal_hint = False
@@ -2955,7 +2955,7 @@ def _configure_provider(
             _show_portal_hint = False
 
     if _show_portal_hint:
-        _print_info("  Available through Nous Portal subscription.")
+        _print_info("  Available through Zed Portal subscription.")
 
     for var in env_vars:
         existing = get_env_value(var["key"])
@@ -3149,7 +3149,7 @@ def _configure_tool_category_for_reconfig(
     hidden_nous_message = _hidden_nous_gateway_message(
         cat,
         config,
-        f"the Nous Subscription provider for {name}",
+        f"the Zed Subscription provider for {name}",
         force_fresh=force_fresh,
     )
 
@@ -3208,7 +3208,7 @@ def _reconfigure_provider(
     env_vars = provider.get("env_vars", [])
     managed_feature = provider.get("managed_nous_feature")
 
-    # Same inline Nous Portal login + entitlement gate as _configure_provider:
+    # Same inline Zed Portal login + entitlement gate as _configure_provider:
     # managed Tool Gateway backends only activate with paid Portal access.
     if managed_feature:
         from zed_cli.nous_subscription import (
@@ -3217,11 +3217,11 @@ def _reconfigure_provider(
         )
 
         if not ensure_nous_portal_access(
-            capability=f"{provider.get('name', 'the Nous Tool Gateway')}",
+            capability=f"{provider.get('name', 'the Zed Tool Gateway')}",
             coverage_category=MANAGED_FEATURE_COVERAGE_CATEGORY.get(managed_feature),
         ):
             _print_warning(
-                "  Not enabled â€” Nous Portal access is required for this backend."
+                "  Not enabled â€” Zed Portal access is required for this backend."
             )
             return
 
@@ -3235,10 +3235,10 @@ def _reconfigure_provider(
         if not features.nous_auth_present or not entitled:
             message = format_nous_portal_entitlement_message(
                 features.account_info,
-                capability=f"{provider.get('name', 'Nous Subscription')}",
+                capability=f"{provider.get('name', 'Zed Subscription')}",
             )
             _print_warning(
-                f"  {message or 'Nous Subscription is only available after logging into Nous Portal.'}"
+                f"  {message or 'Zed Subscription is only available after logging into Zed Portal.'}"
             )
             return
 
@@ -3285,7 +3285,7 @@ def _reconfigure_provider(
             _run_post_setup(provider["post_setup"])
         _print_success(f"  {provider['name']} - no configuration needed!")
         if managed_feature:
-            _print_info("  Requests for this tool will be billed to your Nous subscription.")
+            _print_info("  Requests for this tool will be billed to your Zed Subscription.")
         plugin_name = provider.get("image_gen_plugin_name")
         if plugin_name:
             _select_plugin_image_gen_provider(plugin_name, config)
@@ -3411,7 +3411,7 @@ def tools_command(args=None, first_install: bool = False, config: dict = None):
     print(color("âš• Zed Tool Configuration", Colors.CYAN, Colors.BOLD))
     print(color("  Enable or disable tools per platform.", Colors.DIM))
     print(color("  Tools that need API keys will be configured when enabled.", Colors.DIM))
-    print(color("  Guide: https://zed-agent.nousresearch.com/docs/user-guide/features/tools", Colors.DIM))
+    print(color("  Guide: https://zed-agent.zedteam.com/docs/user-guide/features/tools", Colors.DIM))
     print()
 
     # â”€â”€ First-time install: linear flow, no platform menu â”€â”€
@@ -3451,7 +3451,7 @@ def tools_command(args=None, first_install: bool = False, config: dict = None):
             )
             for ts_key in sorted(auto_configured):
                 label = next((l for k, l, _ in CONFIGURABLE_TOOLSETS if k == ts_key), ts_key)
-                print(color(f"  âœ“ {label}: using your Nous subscription defaults", Colors.GREEN))
+                print(color(f"  âœ“ {label}: using your Zed Subscription defaults", Colors.GREEN))
 
             # Walk through ALL selected tools that have provider options or
             # need API keys.  This ensures browser (Local vs Browserbase),

@@ -46,13 +46,13 @@ Zed çš„å·®å¼‚åŒ–ç‰¹æ€§ï¼š
 
 **æ­¤ skill å¸®åŠ©ä½ é«˜æ•ˆä½¿ç”¨ Zed Agent** â€” åŒ…æ‹¬è®¾ç½®ã€é…ç½®åŠŸèƒ½ã€ç”Ÿæˆé¢å¤–çš„ agent å®žä¾‹ã€æŽ’æŸ¥é—®é¢˜ã€æ‰¾åˆ°æ­£ç¡®çš„å‘½ä»¤å’Œè®¾ç½®ï¼Œä»¥åŠåœ¨éœ€è¦æ‰©å±•æˆ–è´¡çŒ®æ—¶ç†è§£ç³»ç»Ÿçš„å·¥ä½œåŽŸç†ã€‚
 
-**æ–‡æ¡£ï¼š** https://zed-agent.nousresearch.com/docs/
+**æ–‡æ¡£ï¼š** https://zed-agent.zedteam.com/docs/
 
 ## å¿«é€Ÿå¼€å§‹
 
 ```bash
 # å®‰è£…
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 
 # äº¤äº’å¼èŠå¤©ï¼ˆé»˜è®¤ï¼‰
 zed
@@ -170,7 +170,7 @@ zed gateway setup        Configure platforms
 
 æ”¯æŒçš„å¹³å°ï¼šTelegramã€Discordã€Slackã€WhatsAppã€Signalã€Emailã€SMSã€Matrixã€Mattermostã€Home Assistantã€DingTalkã€Feishuã€WeComã€BlueBubblesï¼ˆiMessageï¼‰ã€Weixinï¼ˆWeChatï¼‰ã€API Serverã€Webhooksã€‚Open WebUI é€šè¿‡ API Server é€‚é…å™¨è¿žæŽ¥ã€‚
 
-å¹³å°æ–‡æ¡£ï¼šhttps://zed-agent.nousresearch.com/docs/user-guide/messaging/
+å¹³å°æ–‡æ¡£ï¼šhttps://zed-agent.zedteam.com/docs/user-guide/messaging/
 
 ### ä¼šè¯
 
@@ -247,7 +247,7 @@ zed uninstall            Uninstall Zed
 
 ## æ–œæ å‘½ä»¤ï¼ˆä¼šè¯å†…ï¼‰
 
-åœ¨äº¤äº’å¼èŠå¤©ä¼šè¯ä¸­è¾“å…¥è¿™äº›å‘½ä»¤ã€‚æ–°å‘½ä»¤ä¼šä¸å®šæœŸä¸Šçº¿ï¼›å¦‚æžœä»¥ä¸‹å†…å®¹çœ‹èµ·æ¥è¿‡æ—¶ï¼Œè¯·åœ¨ä¼šè¯å†…è¿è¡Œ `/help` èŽ·å–æƒå¨åˆ—è¡¨ï¼Œæˆ–æŸ¥çœ‹[å®žæ—¶æ–œæ å‘½ä»¤å‚è€ƒ](https://zed-agent.nousresearch.com/docs/reference/slash-commands)ã€‚å‘½ä»¤æ³¨å†Œè¡¨çš„æƒå¨æ¥æºæ˜¯ `zed_cli/commands.py` â€” æ¯ä¸ªæ¶ˆè´¹æ–¹ï¼ˆè‡ªåŠ¨è¡¥å…¨ã€Telegram èœå•ã€Slack æ˜ å°„ã€`/help`ï¼‰å‡ä»Žä¸­æ´¾ç”Ÿã€‚
+åœ¨äº¤äº’å¼èŠå¤©ä¼šè¯ä¸­è¾“å…¥è¿™äº›å‘½ä»¤ã€‚æ–°å‘½ä»¤ä¼šä¸å®šæœŸä¸Šçº¿ï¼›å¦‚æžœä»¥ä¸‹å†…å®¹çœ‹èµ·æ¥è¿‡æ—¶ï¼Œè¯·åœ¨ä¼šè¯å†…è¿è¡Œ `/help` èŽ·å–æƒå¨åˆ—è¡¨ï¼Œæˆ–æŸ¥çœ‹[å®žæ—¶æ–œæ å‘½ä»¤å‚è€ƒ](https://zed-agent.zedteam.com/docs/reference/slash-commands)ã€‚å‘½ä»¤æ³¨å†Œè¡¨çš„æƒå¨æ¥æºæ˜¯ `zed_cli/commands.py` â€” æ¯ä¸ªæ¶ˆè´¹æ–¹ï¼ˆè‡ªåŠ¨è¡¥å…¨ã€Telegram èœå•ã€Slack æ˜ å°„ã€`/help`ï¼‰å‡ä»Žä¸­æ´¾ç”Ÿã€‚
 
 ### ä¼šè¯æŽ§åˆ¶
 ```
@@ -377,7 +377,7 @@ Profiles ä½¿ç”¨ `~/.zed/profiles/<name>/`ï¼Œå¸ƒå±€ç›¸åŒ
 | `delegation` | `model`, `provider`, `base_url`, `api_key`, `max_iterations` (50), `reasoning_effort` |
 | `checkpoints` | `enabled`, `max_snapshots` (50) |
 
-å®Œæ•´é…ç½®å‚è€ƒï¼šhttps://zed-agent.nousresearch.com/docs/user-guide/configuration
+å®Œæ•´é…ç½®å‚è€ƒï¼šhttps://zed-agent.zedteam.com/docs/user-guide/configuration
 
 ### æä¾›å•†
 
@@ -387,7 +387,7 @@ Profiles ä½¿ç”¨ `~/.zed/profiles/<name>/`ï¼Œå¸ƒå±€ç›¸åŒ
 |----------|------|-------------|
 | OpenRouter | API key | `OPENROUTER_API_KEY` |
 | Anthropic | API key | `ANTHROPIC_API_KEY` |
-| Nous Portal | OAuth | `zed auth` |
+| Zed Portal | OAuth | `zed auth` |
 | OpenAI Codex | OAuth | `zed auth` |
 | GitHub Copilot | Token | `COPILOT_GITHUB_TOKEN` |
 | Google Gemini | API key | `GOOGLE_API_KEY` æˆ– `GEMINI_API_KEY` |
@@ -407,7 +407,7 @@ Profiles ä½¿ç”¨ `~/.zed/profiles/<name>/`ï¼Œå¸ƒå±€ç›¸åŒ
 | è‡ªå®šä¹‰ç«¯ç‚¹ | é…ç½® | `config.yaml` ä¸­çš„ `model.base_url` + `model.api_key` |
 | GitHub Copilot ACP | å¤–éƒ¨ | `COPILOT_CLI_PATH` æˆ– Copilot CLI |
 
-å®Œæ•´æä¾›å•†æ–‡æ¡£ï¼šhttps://zed-agent.nousresearch.com/docs/integrations/providers
+å®Œæ•´æä¾›å•†æ–‡æ¡£ï¼šhttps://zed-agent.zedteam.com/docs/integrations/providers
 
 ### Toolset
 
@@ -649,7 +649,7 @@ terminal(command="tmux new-session -d -s resumed 'zed --resume 20260225_143052_a
 - **æ¯ä»»åŠ¡é€‰é¡¹ï¼š** `skills`ã€`model`/`provider` è¦†ç›–ã€`script`ï¼ˆé¢„è¿è¡Œæ•°æ®æ”¶é›†ï¼›`no_agent=True` ä½¿è„šæœ¬æˆä¸ºæ•´ä¸ªä»»åŠ¡ï¼‰ã€`context_from`ï¼ˆå°†ä»»åŠ¡ A çš„è¾“å‡ºé“¾æŽ¥åˆ°ä»»åŠ¡ Bï¼‰ã€`workdir`ï¼ˆåœ¨ç‰¹å®šç›®å½•ä¸­è¿è¡Œï¼ŒåŠ è½½å…¶ `AGENTS.md` / `CLAUDE.md`ï¼‰ã€å¤šå¹³å°æŠ•é€’ã€‚
 - **ä¸å˜é‡ï¼š** æ¯æ¬¡è¿è¡Œ 3 åˆ†é’Ÿç¡¬ä¸­æ–­ï¼Œ`.tick.lock` æ–‡ä»¶é˜²æ­¢è·¨è¿›ç¨‹é‡å¤ tickï¼Œcron ä¼šè¯é»˜è®¤ä¼ é€’ `skip_memory=True`ï¼Œcron æŠ•é€’ä½¿ç”¨é¡µçœ‰/é¡µè„šæ¡†æž¶è€Œéžé•œåƒåˆ°ç›®æ ‡ gateway ä¼šè¯ï¼ˆä¿æŒè§’è‰²äº¤æ›¿å®Œæ•´ï¼‰ã€‚
 
-ç”¨æˆ·æ–‡æ¡£ï¼šhttps://zed-agent.nousresearch.com/docs/user-guide/features/cron
+ç”¨æˆ·æ–‡æ¡£ï¼šhttps://zed-agent.zedteam.com/docs/user-guide/features/cron
 
 ### Curatorï¼ˆskill ç”Ÿå‘½å‘¨æœŸï¼‰
 
@@ -661,7 +661,7 @@ agent åˆ›å»ºçš„ skill çš„åŽå°ç»´æŠ¤ã€‚è·Ÿè
 - **é¥æµ‹ï¼š** `~/.zed/skills/.usage.json` ä¸­çš„ sidecar ä¿å­˜æ¯ä¸ª skill çš„ `use_count`ã€`view_count`ã€`patch_count`ã€`last_activity_at`ã€`state`ã€`pinned`ã€‚
 
 é…ç½®ï¼š`curator.*`ï¼ˆ`enabled`ã€`interval_hours`ã€`min_idle_hours`ã€`stale_after_days`ã€`archive_after_days`ã€`backup.*`ï¼‰ã€‚
-ç”¨æˆ·æ–‡æ¡£ï¼šhttps://zed-agent.nousresearch.com/docs/user-guide/features/curator
+ç”¨æˆ·æ–‡æ¡£ï¼šhttps://zed-agent.zedteam.com/docs/user-guide/features/curator
 
 ### Kanbanï¼ˆå¤š agent å·¥ä½œé˜Ÿåˆ—ï¼‰
 
@@ -672,7 +672,7 @@ agent åˆ›å»ºçš„ skill çš„åŽå°ç»´æŠ¤ã€‚è·Ÿè
 - **è°ƒåº¦å™¨** é»˜è®¤åœ¨ gateway å†…è¿è¡Œï¼ˆ`kanban.dispatch_in_gateway: true`ï¼‰â€”â€”å›žæ”¶è¿‡æœŸè®¤é¢†ã€æŽ¨è¿›å°±ç»ªä»»åŠ¡ã€åŽŸå­è®¤é¢†ã€ç”Ÿæˆå·²åˆ†é…çš„ profileã€‚åœ¨é…ç½®çš„ `kanban.failure_limit` æ¬¡è¿žç»­éžæˆåŠŸå°è¯•åŽè‡ªåŠ¨é˜»å¡žä»»åŠ¡ï¼ˆé»˜è®¤ï¼š2ï¼‰ã€‚
 - **éš”ç¦»ï¼š** çœ‹æ¿æ˜¯ç¡¬è¾¹ç•Œï¼ˆworker åœ¨çŽ¯å¢ƒä¸­å›ºå®š `ZED_KANBAN_BOARD`ï¼‰ï¼›ç§Ÿæˆ·æ˜¯çœ‹æ¿å†…ç”¨äºŽå·¥ä½œåŒºè·¯å¾„å’Œè®°å¿†é”®éš”ç¦»çš„è½¯å‘½åç©ºé—´ã€‚
 
-ç”¨æˆ·æ–‡æ¡£ï¼šhttps://zed-agent.nousresearch.com/docs/user-guide/features/kanban
+ç”¨æˆ·æ–‡æ¡£ï¼šhttps://zed-agent.zedteam.com/docs/user-guide/features/kanban
 
 ---
 
@@ -781,18 +781,18 @@ zed config set auxiliary.vision.model <model_name>
 
 | æŸ¥æ‰¾å†…å®¹... | ä½ç½® |
 |----------------|----------|
-| é…ç½®é€‰é¡¹ | `zed config edit` æˆ–[é…ç½®æ–‡æ¡£](https://zed-agent.nousresearch.com/docs/user-guide/configuration) |
-| å¯ç”¨å·¥å…· | `zed tools list` æˆ–[å·¥å…·å‚è€ƒ](https://zed-agent.nousresearch.com/docs/reference/tools-reference) |
-| æ–œæ å‘½ä»¤ | ä¼šè¯å†… `/help` æˆ–[æ–œæ å‘½ä»¤å‚è€ƒ](https://zed-agent.nousresearch.com/docs/reference/slash-commands) |
-| Skill ç›®å½• | `zed skills browse` æˆ–[Skill ç›®å½•](https://zed-agent.nousresearch.com/docs/reference/skills-catalog) |
-| æä¾›å•†è®¾ç½® | `zed model` æˆ–[æä¾›å•†æŒ‡å—](https://zed-agent.nousresearch.com/docs/integrations/providers) |
-| å¹³å°è®¾ç½® | `zed gateway setup` æˆ–[æ¶ˆæ¯æ–‡æ¡£](https://zed-agent.nousresearch.com/docs/user-guide/messaging/) |
-| MCP æœåŠ¡å™¨ | `zed mcp list` æˆ–[MCP æŒ‡å—](https://zed-agent.nousresearch.com/docs/user-guide/features/mcp) |
-| Profiles | `zed profile list` æˆ–[Profiles æ–‡æ¡£](https://zed-agent.nousresearch.com/docs/user-guide/profiles) |
-| Cron ä»»åŠ¡ | `zed cron list` æˆ–[Cron æ–‡æ¡£](https://zed-agent.nousresearch.com/docs/user-guide/features/cron) |
-| è®°å¿† | `zed memory status` æˆ–[è®°å¿†æ–‡æ¡£](https://zed-agent.nousresearch.com/docs/user-guide/features/memory) |
-| çŽ¯å¢ƒå˜é‡ | `zed config env-path` æˆ–[çŽ¯å¢ƒå˜é‡å‚è€ƒ](https://zed-agent.nousresearch.com/docs/reference/environment-variables) |
-| CLI å‘½ä»¤ | `zed --help` æˆ–[CLI å‚è€ƒ](https://zed-agent.nousresearch.com/docs/reference/cli-commands) |
+| é…ç½®é€‰é¡¹ | `zed config edit` æˆ–[é…ç½®æ–‡æ¡£](https://zed-agent.zedteam.com/docs/user-guide/configuration) |
+| å¯ç”¨å·¥å…· | `zed tools list` æˆ–[å·¥å…·å‚è€ƒ](https://zed-agent.zedteam.com/docs/reference/tools-reference) |
+| æ–œæ å‘½ä»¤ | ä¼šè¯å†… `/help` æˆ–[æ–œæ å‘½ä»¤å‚è€ƒ](https://zed-agent.zedteam.com/docs/reference/slash-commands) |
+| Skill ç›®å½• | `zed skills browse` æˆ–[Skill ç›®å½•](https://zed-agent.zedteam.com/docs/reference/skills-catalog) |
+| æä¾›å•†è®¾ç½® | `zed model` æˆ–[æä¾›å•†æŒ‡å—](https://zed-agent.zedteam.com/docs/integrations/providers) |
+| å¹³å°è®¾ç½® | `zed gateway setup` æˆ–[æ¶ˆæ¯æ–‡æ¡£](https://zed-agent.zedteam.com/docs/user-guide/messaging/) |
+| MCP æœåŠ¡å™¨ | `zed mcp list` æˆ–[MCP æŒ‡å—](https://zed-agent.zedteam.com/docs/user-guide/features/mcp) |
+| Profiles | `zed profile list` æˆ–[Profiles æ–‡æ¡£](https://zed-agent.zedteam.com/docs/user-guide/profiles) |
+| Cron ä»»åŠ¡ | `zed cron list` æˆ–[Cron æ–‡æ¡£](https://zed-agent.zedteam.com/docs/user-guide/features/cron) |
+| è®°å¿† | `zed memory status` æˆ–[è®°å¿†æ–‡æ¡£](https://zed-agent.zedteam.com/docs/user-guide/features/memory) |
+| çŽ¯å¢ƒå˜é‡ | `zed config env-path` æˆ–[çŽ¯å¢ƒå˜é‡å‚è€ƒ](https://zed-agent.zedteam.com/docs/reference/environment-variables) |
+| CLI å‘½ä»¤ | `zed --help` æˆ–[CLI å‚è€ƒ](https://zed-agent.zedteam.com/docs/reference/cli-commands) |
 | Gateway æ—¥å¿— | `~/.zed/logs/gateway.log` |
 | ä¼šè¯æ–‡ä»¶ | `~/.zed/sessions/` æˆ– `zed sessions browse` |
 | æºä»£ç  | `~/.zed/zed-agent/` |
@@ -801,7 +801,7 @@ zed config set auxiliary.vision.model <model_name>
 
 ## è´¡çŒ®è€…å¿«é€Ÿå‚è€ƒ
 
-é¢å‘å¶å°”è´¡çŒ®è€…å’Œ PR ä½œè€…ã€‚å®Œæ•´å¼€å‘è€…æ–‡æ¡£ï¼šhttps://zed-agent.nousresearch.com/docs/developer-guide/
+é¢å‘å¶å°”è´¡çŒ®è€…å’Œ PR ä½œè€…ã€‚å®Œæ•´å¼€å‘è€…æ–‡æ¡£ï¼šhttps://zed-agent.zedteam.com/docs/developer-guide/
 
 ### é¡¹ç›®ç»“æž„
 

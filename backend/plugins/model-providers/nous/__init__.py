@@ -1,4 +1,4 @@
-﻿"""Nous Portal provider profile."""
+﻿"""Zed Portal provider profile."""
 
 from typing import Any
 
@@ -8,7 +8,7 @@ from providers.base import ProviderProfile
 
 
 class NousProfile(ProviderProfile):
-    """Nous Portal â€” product tags, reasoning with Nous-specific omission."""
+    """Zed Portal â€” product tags, reasoning with Zed-specific omission."""
 
     def build_extra_body(
         self, *, session_id: str | None = None, **context
@@ -38,16 +38,16 @@ class NousProfile(ProviderProfile):
 
 nous = NousProfile(
     name="nous",
-    aliases=("nous-portal", "nousresearch"),
-    env_vars=("NOUS_API_KEY",),
+    aliases=("nous-portal", "zedteam"),
+    env_vars=("ZED_API_KEY",),
     display_name="Zed Team",
     description="Zed Team â€” Zed model family",
-    signup_url="https://nousresearch.com/",
+    signup_url="https://zedteam.com/",
     fallback_models=(
         "zed-3-405b",
         "zed-3-70b",
     ),
-    base_url="https://inference.nousresearch.com/v1",
+    base_url="https://inference.zedteam.com/v1",
     auth_type="oauth_device_code",
 )
 

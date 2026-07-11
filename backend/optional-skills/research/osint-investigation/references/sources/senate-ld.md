@@ -1,4 +1,4 @@
-# Senate LD — Lobbying Disclosure (LD-1 / LD-2)
+﻿# Senate LD — Lobbying Disclosure (LD-1 / LD-2)
 
 ## 1. Summary
 

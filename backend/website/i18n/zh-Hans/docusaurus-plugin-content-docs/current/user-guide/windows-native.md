@@ -20,7 +20,7 @@ Zed å¯åœ¨ Windows 10 å’Œ Windows 11 ä¸ŠåŽŸç”Ÿè¿è¡Œâ
 æ‰“å¼€ **PowerShell**ï¼ˆæˆ– Windows Terminalï¼‰å¹¶è¿è¡Œï¼š
 
 ```powershell
-iex (irm https://zed-agent.nousresearch.com/install.ps1)
+iex (irm https://zed-agent.zedteam.com/install.ps1)
 ```
 
 æ— éœ€ç®¡ç†å‘˜æƒé™ã€‚å®‰è£…ç¨‹åºä¼šå†™å…¥ `%LOCALAPPDATA%\zed\`ï¼Œå¹¶å°† `zed` æ·»åŠ åˆ°ä½ çš„**ç”¨æˆ· PATH**â€”â€”å®‰è£…å®ŒæˆåŽæ‰“å¼€æ–°ç»ˆç«¯å³å¯ä½¿ç”¨ã€‚
@@ -28,7 +28,7 @@ iex (irm https://zed-agent.nousresearch.com/install.ps1)
 **å®‰è£…ç¨‹åºé€‰é¡¹**ï¼ˆéœ€è¦ä½¿ç”¨ scriptblock å½¢å¼ä¼ é€’å‚æ•°ï¼‰ï¼š
 
 ```powershell
-& ([scriptblock]::Create((irm https://zed-agent.nousresearch.com/install.ps1))) -NoVenv -SkipSetup -Branch main
+& ([scriptblock]::Create((irm https://zed-agent.zedteam.com/install.ps1))) -NoVenv -SkipSetup -Branch main
 ```
 
 | å‚æ•°          | é»˜è®¤å€¼                               | ç”¨é€”                                            |
@@ -79,7 +79,7 @@ iex (irm https://zed-agent.nousresearch.com/install.ps1)
 10. **è¿è¡Œ `zed setup`** â€” æ­£å¸¸çš„é¦–æ¬¡è¿è¡Œå‘å¯¼ï¼ˆæ¨¡åž‹ã€æä¾›å•†ã€å·¥å…·é›†ï¼‰ã€‚ä½¿ç”¨ `-SkipSetup` è·³è¿‡ã€‚
 
 :::tip åœ¨ Windows ä¸Šè·³è¿‡ç¹ççš„æä¾›å•†é…ç½®
-åœ¨ Windows ä¸Šï¼Œé€ä¸ªé…ç½®å·¥å…· API keyï¼ˆFirecrawlã€FALã€Browser Useã€OpenAI TTSï¼‰æ˜¯èŽ·å¾—å¯ç”¨ agent æ‘©æ“¦æœ€å¤§çš„éƒ¨åˆ†ã€‚[Nous Portal](/user-guide/features/tool-gateway) è®¢é˜…é€šè¿‡ä¸€æ¬¡ OAuth ç™»å½•å³å¯è¦†ç›–æ¨¡åž‹**ä»¥åŠ**æ‰€æœ‰è¿™äº›å·¥å…·ã€‚å®‰è£…ç¨‹åºå®ŒæˆåŽï¼Œè¿è¡Œ `zed setup --portal` å®Œæˆé…ç½®ã€‚
+åœ¨ Windows ä¸Šï¼Œé€ä¸ªé…ç½®å·¥å…· API keyï¼ˆFirecrawlã€FALã€Browser Useã€OpenAI TTSï¼‰æ˜¯èŽ·å¾—å¯ç”¨ agent æ‘©æ“¦æœ€å¤§çš„éƒ¨åˆ†ã€‚[Zed Portal](/user-guide/features/tool-gateway) è®¢é˜…é€šè¿‡ä¸€æ¬¡ OAuth ç™»å½•å³å¯è¦†ç›–æ¨¡åž‹**ä»¥åŠ**æ‰€æœ‰è¿™äº›å·¥å…·ã€‚å®‰è£…ç¨‹åºå®ŒæˆåŽï¼Œè¿è¡Œ `zed setup --portal` å®Œæˆé…ç½®ã€‚
 :::
 
 ## åŠŸèƒ½çŸ©é˜µ

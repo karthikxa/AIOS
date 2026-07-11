@@ -7,7 +7,7 @@ operation). It must therefore be a *silent* predicate â€” returning True/Fa
 without logging â€” otherwise every user without the ``raft`` CLI installed
 gets their logs flooded with WARNING messages every few seconds.
 
-See: https://github.com/NousResearch/zed-agent/issues/49234
+See: https://github.com/ZedTeam/zed-agent/issues/49234
 """
 
 import logging

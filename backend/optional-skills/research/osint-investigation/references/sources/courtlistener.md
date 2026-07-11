@@ -1,4 +1,4 @@
-# CourtListener — Free Law Project
+﻿# CourtListener — Free Law Project
 
 ## 1. Summary
 

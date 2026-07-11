@@ -1,8 +1,8 @@
 ﻿# Zed Achievements
 
-> **Bundled with Zed Agent.** Originally authored by [@PCinkusz](https://github.com/PCinkusz) at https://github.com/PCinkusz/zed-achievements â€” vendored into `plugins/zed-achievements/` so it ships with the dashboard out-of-the-box and stays in lockstep with Zed feature changes. Upstream repo remains the staging ground for new badges and UI iteration.
+> **Bundled with Zed Agent.** Originally authored by [@PCinkusz](https://github.com/PCinkusz) at https://github.com/PCinkusz/zed-achievements — vendored into `plugins/zed-achievements/` so it ships with the dashboard out-of-the-box and stays in lockstep with Zed feature changes. Upstream repo remains the staging ground for new badges and UI iteration.
 >
-> When Zed is installed via `pip install zed-agent` or cloned from source, this plugin auto-registers as a dashboard tab on first `zed dashboard` launch. No separate install step. See [Built-in Plugins â†’ zed-achievements](../../website/docs/user-guide/features/built-in-plugins.md) in the main docs.
+> When Zed is installed via the install script or cloned from source, this plugin auto-registers as a dashboard tab on first `hermes dashboard` launch. No separate install step. See [Built-in Plugins → zed-achievements](../../website/docs/user-guide/features/built-in-plugins.md) in the main docs.
 
 Achievement system for the Zed Dashboard: collectible, tiered badges generated from real local Zed session history.
 
@@ -12,7 +12,7 @@ The screenshots use temporary demo tier data to show the full visual range. The 
 
 > **Update notice (2026-04-29):** If you installed this plugin before today, update to the latest version. The achievements scan path was refactored for much faster warm loads (snapshot cache + incremental checkpoint scan).
 >
-> **Share cards (2026-05-04, vendored in zed-agent v0.4.0):** Unlocked achievement cards now have a "Share" button that renders a 1200Ã—630 PNG share card (client-side canvas, no backend, no network) with Download + Copy-to-clipboard actions. Fits X/Twitter, Discord, LinkedIn, Bluesky link-preview dimensions.
+> **Share cards (2026-05-04, vendored in zed-agent v0.4.0):** Unlocked achievement cards now have a "Share" button that renders a 1200×630 PNG share card (client-side canvas, no backend, no network) with Download + Copy-to-clipboard actions. Fits X/Twitter, Discord, LinkedIn, Bluesky link-preview dimensions.
 
 ## What it does
 
@@ -28,14 +28,14 @@ Zed Achievements scans local Zed sessions and unlocks badges based on real agent
 
 Achievements have three visible states:
 
-- **Unlocked** â€” earned at least one tier
-- **Discovered** â€” known achievement, progress visible, not earned yet
-- **Secret** â€” hidden until Zed detects the first related signal
+- **Unlocked** — earned at least one tier
+- **Discovered** — known achievement, progress visible, not earned yet
+- **Secret** — hidden until Zed detects the first related signal
 
 Most achievements level through:
 
 ```text
-Copper â†’ Silver â†’ Gold â†’ Diamond â†’ Olympian
+Copper → Silver → Gold → Diamond → Olympian
 ```
 
 Each card has a collapsible **What counts** section showing the exact tracked metric or requirement once the user wants details.
@@ -77,7 +77,7 @@ Then rescan dashboard plugins:
 curl http://127.0.0.1:9119/api/dashboard/plugins/rescan
 ```
 
-If backend API routes 404, restart `zed dashboard`; plugin APIs are mounted at dashboard startup.
+If backend API routes 404, restart `hermes dashboard`; plugin APIs are mounted at dashboard startup.
 
 ## Updating
 
@@ -89,7 +89,7 @@ git pull --ff-only
 curl http://127.0.0.1:9119/api/dashboard/plugins/rescan
 ```
 
-If the update changes backend routes or `plugin_api.py`, restart `zed dashboard` after pulling.
+If the update changes backend routes or `plugin_api.py`, restart `hermes dashboard` after pulling.
 
 As of 2026-04-29, updating is strongly recommended because scan performance changed significantly:
 - removed duplicate `/overview` scan path
@@ -109,11 +109,11 @@ git checkout v0.2.0
 
 ```text
 dashboard/
-â”œâ”€â”€ manifest.json
-â”œâ”€â”€ plugin_api.py
-â””â”€â”€ dist/
-    â”œâ”€â”€ index.js
-    â””â”€â”€ style.css
+├── manifest.json
+├── plugin_api.py
+└── dist/
+    ├── index.js
+    └── style.css
 ```
 
 ## API

@@ -1,4 +1,4 @@
-# LLaVA Training Guide
+﻿# LLaVA Training Guide
 
 Guide to training and fine-tuning LLaVA models.
 

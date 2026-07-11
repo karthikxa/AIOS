@@ -1,4 +1,4 @@
-"""Configurable budget constants for tool result persistence.
+﻿"""Configurable budget constants for tool result persistence.
 
 Per-tool resolution: pinned > config overrides > registry > default.
 """

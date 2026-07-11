@@ -1,4 +1,4 @@
-"""WeCom BizMsgCrypt-compatible AES-CBC encryption for callback mode.
+﻿"""WeCom BizMsgCrypt-compatible AES-CBC encryption for callback mode.
 
 Implements the same wire format as Tencent's official ``WXBizMsgCrypt``
 SDK so that WeCom can verify, encrypt, and decrypt callback payloads.

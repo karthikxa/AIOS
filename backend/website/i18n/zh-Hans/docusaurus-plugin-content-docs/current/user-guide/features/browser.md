@@ -34,7 +34,7 @@ Zed Agent å†…ç½®å®Œæ•´çš„æµè§ˆå™¨è‡ªåŠ¨åŒ
 ## é…ç½®
 
 :::tip Nous è®¢é˜…ç”¨æˆ·
-å¦‚æžœæ‚¨æ‹¥æœ‰ä»˜è´¹ [Nous Portal](https://portal.nousresearch.com) è®¢é˜…ï¼Œå¯é€šè¿‡ **[Tool Gateway](tool-gateway.md)** ä½¿ç”¨æµè§ˆå™¨è‡ªåŠ¨åŒ–åŠŸèƒ½ï¼Œæ— éœ€å•ç‹¬çš„ API å¯†é’¥ã€‚æ–°å®‰è£…å¯è¿è¡Œ `zed setup --portal` ç™»å½•å¹¶ä¸€æ¬¡æ€§å¼€å¯æ‰€æœ‰ gateway å·¥å…·ï¼›å·²æœ‰å®‰è£…å¯é€šè¿‡ `zed model` æˆ– `zed tools` é€‰æ‹© **Nous Subscription** ä½œä¸ºæµè§ˆå™¨æä¾›å•†ã€‚
+å¦‚æžœæ‚¨æ‹¥æœ‰ä»˜è´¹ [Zed Portal](https://portal.zedteam.com) è®¢é˜…ï¼Œå¯é€šè¿‡ **[Tool Gateway](tool-gateway.md)** ä½¿ç”¨æµè§ˆå™¨è‡ªåŠ¨åŒ–åŠŸèƒ½ï¼Œæ— éœ€å•ç‹¬çš„ API å¯†é’¥ã€‚æ–°å®‰è£…å¯è¿è¡Œ `zed setup --portal` ç™»å½•å¹¶ä¸€æ¬¡æ€§å¼€å¯æ‰€æœ‰ gateway å·¥å…·ï¼›å·²æœ‰å®‰è£…å¯é€šè¿‡ `zed model` æˆ– `zed tools` é€‰æ‹© **Nous Subscription** ä½œä¸ºæµè§ˆå™¨æä¾›å•†ã€‚
 :::
 
 ### Browserbase äº‘ç«¯æ¨¡å¼

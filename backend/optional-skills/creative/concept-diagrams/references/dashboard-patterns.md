@@ -1,4 +1,4 @@
-# Dashboard Patterns
+﻿# Dashboard Patterns
 
 Building blocks for UI/dashboard mockups inside a concept diagram — admin panels, monitoring dashboards, control interfaces, status displays.
 

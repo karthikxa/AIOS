@@ -501,8 +501,8 @@ client = QdrantClient(
 
 ## å‚è€ƒèµ„æ–™
 
-- **[é«˜çº§ç”¨æ³•](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/qdrant/references/advanced-usage.md)** â€” åˆ†å¸ƒå¼æ¨¡å¼ã€æ··åˆæœç´¢ã€æŽ¨èç³»ç»Ÿ
-- **[æ•…éšœæŽ’æŸ¥](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/qdrant/references/troubleshooting.md)** â€” å¸¸è§é—®é¢˜ã€è°ƒè¯•ã€æ€§èƒ½è°ƒä¼˜
+- **[é«˜çº§ç”¨æ³•](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/qdrant/references/advanced-usage.md)** â€” åˆ†å¸ƒå¼æ¨¡å¼ã€æ··åˆæœç´¢ã€æŽ¨èç³»ç»Ÿ
+- **[æ•…éšœæŽ’æŸ¥](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/qdrant/references/troubleshooting.md)** â€” å¸¸è§é—®é¢˜ã€è°ƒè¯•ã€æ€§èƒ½è°ƒä¼˜
 
 ## èµ„æº
 

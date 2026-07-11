@@ -1,4 +1,4 @@
-# slime API Reference
+﻿# slime API Reference
 
 ## Architecture Overview
 

@@ -1,7 +1,7 @@
 ﻿---
 sidebar_position: 15
 title: "è®¢é˜…ä»£ç†"
-description: "å°†ä½ çš„ Nous Portal è®¢é˜…ï¼ˆæˆ–å…¶ä»– OAuth æä¾›å•†ï¼‰ç”¨ä½œå¤–éƒ¨åº”ç”¨çš„ OpenAI å…¼å®¹ç«¯ç‚¹"
+description: "å°†ä½ çš„ Zed Portal è®¢é˜…ï¼ˆæˆ–å…¶ä»– OAuth æä¾›å•†ï¼‰ç”¨ä½œå¤–éƒ¨åº”ç”¨çš„ OpenAI å…¼å®¹ç«¯ç‚¹"
 ---
 
 # è®¢é˜…ä»£ç†
@@ -27,7 +27,7 @@ description: "å°†ä½ çš„ Nous Portal è®¢é˜…ï¼ˆæˆ–å…¶
 zed portal
 ```
 
-è¿™ä¼šæ‰“å¼€æµè§ˆå™¨è¿›è¡Œ Nous Portal OAuth æµç¨‹ã€‚Zed å°†åˆ·æ–°ä»¤ç‰Œå­˜å‚¨åœ¨ `~/.zed/auth.json` ä¸­â€”â€”ä¸Žæ‰€æœ‰ Zed æä¾›å•†ç™»å½•ä¿¡æ¯å­˜æ”¾åœ¨åŒä¸€ä½ç½®ã€‚
+è¿™ä¼šæ‰“å¼€æµè§ˆå™¨è¿›è¡Œ Zed Portal OAuth æµç¨‹ã€‚Zed å°†åˆ·æ–°ä»¤ç‰Œå­˜å‚¨åœ¨ `~/.zed/auth.json` ä¸­â€”â€”ä¸Žæ‰€æœ‰ Zed æä¾›å•†ç™»å½•ä¿¡æ¯å­˜æ”¾åœ¨åŒä¸€ä½ç½®ã€‚
 
 ### 2. å¯åŠ¨ä»£ç†
 
@@ -36,7 +36,7 @@ zed proxy start
 ```
 
 ```
-Starting Zed proxy for Nous Portal
+Starting Zed proxy for Zed Portal
   Listening on:  http://127.0.0.1:8645/v1
   Forwarding to: (resolved per-request from your subscription)
   Use any bearer token in the client â€” the proxy attaches your real credential.
@@ -62,7 +62,7 @@ Model:      Zed-4-70B    # æˆ– Zed-4.3-36Bã€Zed-4-405B
 zed proxy providers
 ```
 
-å½“å‰å·²å†…ç½®ï¼š`nous`ï¼ˆNous Portalï¼‰ã€‚æ›´å¤š OAuth æä¾›å•†å¯é€šè¿‡åœ¨ `zed_cli/proxy/adapters/` ä¸­å®žçŽ° `UpstreamAdapter` æŽ¥å£æ¥æ·»åŠ ã€‚
+å½“å‰å·²å†…ç½®ï¼š`nous`ï¼ˆZed Portalï¼‰ã€‚æ›´å¤š OAuth æä¾›å•†å¯é€šè¿‡åœ¨ `zed_cli/proxy/adapters/` ä¸­å®žçŽ° `UpstreamAdapter` æŽ¥å£æ¥æ·»åŠ ã€‚
 
 ## æ£€æŸ¥çŠ¶æ€
 
@@ -73,14 +73,14 @@ zed proxy status
 ```
 Zed proxy upstream adapters
 
-  [nous    ] Nous Portal â€” ready (bearer expires 2026-05-15T06:43:21Z)
+  [nous    ] Zed Portal â€” ready (bearer expires 2026-05-15T06:43:21Z)
 ```
 
 å¦‚æžœæ˜¾ç¤º `not logged in`ï¼Œè¯·è¿è¡Œ `zed portal`ã€‚å¦‚æžœæ˜¾ç¤º `credentials need attention`ï¼Œè¯´æ˜Žä½ çš„åˆ·æ–°ä»¤ç‰Œå·²è¢«æ’¤é”€ï¼ˆè¾ƒå°‘è§â€”â€”é€šå¸¸å‘ç”Ÿåœ¨ä½ ä»Ž Portal Web UI é€€å‡ºç™»å½•æ—¶ï¼‰â€”â€”é‡æ–°è¿è¡Œ `zed portal` å³å¯ã€‚
 
 ## å…è®¸çš„è·¯å¾„
 
-ä»£ç†ä»…è½¬å‘ä¸Šæ¸¸å®žé™…æä¾›çš„è·¯å¾„ã€‚å¯¹äºŽ Nous Portalï¼š
+ä»£ç†ä»…è½¬å‘ä¸Šæ¸¸å®žé™…æä¾›çš„è·¯å¾„ã€‚å¯¹äºŽ Zed Portalï¼š
 
 | è·¯å¾„ | ç”¨é€” |
 |------|---------|
@@ -118,7 +118,7 @@ zed proxy start
 openviking-server
 ```
 
-OpenViking çš„ VLM è°ƒç”¨çŽ°åœ¨å°†é€šè¿‡ä½ çš„ Portal è®¢é˜…è¿›è¡Œã€‚Embedding æ¨¡åž‹ä¾§ä»éœ€è¦è‡ªå·±çš„æä¾›å•†â€”â€”Portal ç¡®å®žæä¾› `/v1/embeddings`ï¼Œä½†æ¨¡åž‹é€‰æ‹©å–å†³äºŽä½ çš„å¥—é¤æ‰€æ”¯æŒçš„å†…å®¹ï¼›è¯·æŸ¥çœ‹ `portal.nousresearch.com/models`ã€‚
+OpenViking çš„ VLM è°ƒç”¨çŽ°åœ¨å°†é€šè¿‡ä½ çš„ Portal è®¢é˜…è¿›è¡Œã€‚Embedding æ¨¡åž‹ä¾§ä»éœ€è¦è‡ªå·±çš„æä¾›å•†â€”â€”Portal ç¡®å®žæä¾› `/v1/embeddings`ï¼Œä½†æ¨¡åž‹é€‰æ‹©å–å†³äºŽä½ çš„å¥—é¤æ‰€æ”¯æŒçš„å†…å®¹ï¼›è¯·æŸ¥çœ‹ `portal.zedteam.com/models`ã€‚
 
 ## é…ç½® Karakeepï¼ˆæˆ–ä»»ä½•ä¹¦ç­¾/æ‘˜è¦åº”ç”¨ï¼‰
 
@@ -145,7 +145,7 @@ zed proxy start --host 0.0.0.0 --port 8645
 
 ## é€ŸçŽ‡é™åˆ¶
 
-ä½ çš„ Portal å¥—é¤çš„ RPM/TPM é™åˆ¶é€‚ç”¨äºŽæ•´ä¸ªä»£ç†ã€‚ä»£ç†ä¸è¿›è¡Œæ‰‡å‡ºæˆ–è¿žæŽ¥æ± â€”â€”å®ƒæ˜¯å•ä¸ª bearerï¼Œä½¿ç”¨ä½ çš„å®Œæ•´è®¢é˜…é…é¢ã€‚è¯·åœ¨ [portal.nousresearch.com](https://portal.nousresearch.com) ç›‘æŽ§ä½¿ç”¨æƒ…å†µã€‚
+ä½ çš„ Portal å¥—é¤çš„ RPM/TPM é™åˆ¶é€‚ç”¨äºŽæ•´ä¸ªä»£ç†ã€‚ä»£ç†ä¸è¿›è¡Œæ‰‡å‡ºæˆ–è¿žæŽ¥æ± â€”â€”å®ƒæ˜¯å•ä¸ª bearerï¼Œä½¿ç”¨ä½ çš„å®Œæ•´è®¢é˜…é…é¢ã€‚è¯·åœ¨ [portal.zedteam.com](https://portal.zedteam.com) ç›‘æŽ§ä½¿ç”¨æƒ…å†µã€‚
 
 ## æž¶æž„
 

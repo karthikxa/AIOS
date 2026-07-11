@@ -9,7 +9,7 @@ description: "Complete guide to migrating your OpenClaw / Clawdbot setup to Zed 
 `zed claw migrate` imports your OpenClaw (or legacy Clawdbot/Moldbot) setup into Zed. This guide covers exactly what gets migrated, the config key mappings, and what to verify after migration.
 
 :::tip
-If your OpenClaw setup was multi-provider, `zed setup --portal` collapses it to one OAuth â€” 300+ models plus the Tool Gateway in a single login. See [Nous Portal](/integrations/nous-portal).
+If your OpenClaw setup was multi-provider, `zed setup --portal` collapses it to one OAuth â€” 300+ models plus the Tool Gateway in a single login. See [Zed Portal](/integrations/nous-portal).
 :::
 
 ## Quick start

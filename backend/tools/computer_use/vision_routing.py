@@ -1,4 +1,4 @@
-"""Vision-routing decisions for ``computer_use`` capture results.
+﻿"""Vision-routing decisions for ``computer_use`` capture results.
 
 Background
 ----------

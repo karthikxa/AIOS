@@ -100,7 +100,7 @@ wsl --shutdown
 æ‰“å¼€ WSL2 shell åŽæ‰§è¡Œï¼š
 
 ```bash
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 source ~/.bashrc
 zed
 ```

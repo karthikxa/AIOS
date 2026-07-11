@@ -11,8 +11,8 @@ Architecture:
 This server:
   - Proxies /v1/chat/completions to freellmapi (port 3001) with SSE streaming
   - Exposes all agent management APIs (sessions, skills, tools, cron, memory)
-  - Loads config from C:\\Users\\balur\\.hermes\\config.yaml (Zed Home)
-  - All sessions/memories/skills saved to C:\\Users\\balur\\.hermes\\
+  - Loads config from C:\\Users\\balur\\.zed\\config.yaml (Zed Home)
+  - All sessions/memories/skills saved to C:\\Users\\balur\\.zed\\
 """
 
 from __future__ import annotations
@@ -41,10 +41,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-# ── Zed Home = C:\Users\<user>\.hermes (all sessions, config, memories) ────
+# ── Zed Home = C:\Users\<user>\.zed (all sessions, config, memories) ────
 # CRITICAL: Must set ZED_HOME env var BEFORE importing cron modules,
 # because cron/jobs.py resolves get_zed_home() at import time.
-_DEFAULT_ZED_HOME = Path.home() / ".hermes"
+_DEFAULT_ZED_HOME = Path.home() / ".zed"
 _raw_zed_home = os.environ.get("ZED_HOME", str(_DEFAULT_ZED_HOME)).strip()
 ZED_HOME = Path(_raw_zed_home)
 os.environ["ZED_HOME"] = str(ZED_HOME)
@@ -99,7 +99,7 @@ logger = logging.getLogger("zed.server")
 
 # ── Enable tools that gate on session-mode env vars ───────────────────────
 # These defaults unlock cronjob + kanban-style tools so the dashboard gets the
-# full Hermes toolset without requiring a gateway / interactive-CLI session.
+# full Zed toolset without requiring a gateway / interactive-CLI session.
 # Individual tools still self-disable via check_fn when their real deps are
 # missing (playwright binaries, API keys, etc.) -- we only flip the session-
 # mode flags that have no other meaning here.
@@ -182,66 +182,71 @@ Query: {query}"""
 
 _SWARM_ROUTE = ["swarm"]
 
+# Core tools EVERY query should have — delegation, clarification, memory, etc.
+_CORE_AGENT_TOOLS = ["delegation", "clarify", "memory", "todo", "session_search", "skills"]
+
 
 def route_query(query: str) -> list:
     """Route a query to the matching toolsets. Uses keyword heuristic (0 tokens), falls back to LLM."""
     q = query.lower()
     # Quick keyword check first. ALWAYS include swarm so the agent can
     # autonomously decide when multi-agent orchestration helps — like Kimi.
+    # Every route gets core agent tools (delegation, clarify, memory) plus specific tools
+    core = _CORE_AGENT_TOOLS + _SWARM_ROUTE
     if any(w in q for w in ["email", "inbox", "send mail", "compose"]):
-        return TOOL_ROUTES["email"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["email"]
     if any(w in q for w in ["gmail", "google mail", "read mail"]):
-        return TOOL_ROUTES["gmail"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["gmail"]
     if any(w in q for w in ["drive", "google drive", "file in drive"]):
-        return TOOL_ROUTES["drive"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["drive"]
     if any(w in q for w in ["browse", "open url", "navigate", "website", "go to"]):
-        return TOOL_ROUTES["browser"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["browser"]
     if any(w in q for w in ["search", "find", "look up", "google", "research"]):
-        return TOOL_ROUTES["search"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["search"]
     if any(w in q for w in ["run", "execute", "bash", "terminal", "command", "shell"]):
-        return TOOL_ROUTES["terminal"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["terminal"]
     if any(w in q for w in ["write code", "python", "javascript", "program", "script"]):
-        return TOOL_ROUTES["code"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["code"]
     if any(w in q for w in ["read", "write", "create file", "edit file", "list dir"]):
-        return TOOL_ROUTES["file"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["file"]
     if any(w in q for w in ["delegate", "subagent", "child"]):
-        return TOOL_ROUTES["delegate"]
+        return core + TOOL_ROUTES["delegate"]
     if any(w in q for w in ["swarm", "concurrent", "hierarchical", "orchestrate", "multi-agent", "forest"]):
-        return TOOL_ROUTES["swarm"]
+        return core + TOOL_ROUTES["swarm"]
     if any(w in q for w in ["remember", "memory", "recall", "find session"]):
-        return TOOL_ROUTES["memory"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["memory"]
     if any(w in q for w in ["skill", "install", "create skill"]):
-        return TOOL_ROUTES["skill"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["skill"]
     if any(w in q for w in ["schedule", "cron", "every day", "every hour", "recurring"]):
-        return TOOL_ROUTES["cron"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["cron"]
     if any(w in q for w in ["todo", "task list", "to-do"]):
-        return TOOL_ROUTES["todo"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["todo"]
     if any(w in q for w in ["see ", "view ", "image", "photo", "picture", "screenshot"]):
-        return TOOL_ROUTES["vision"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["vision"]
     if any(w in q for w in ["generate image", "create image", "draw", "make a picture"]):
-        return TOOL_ROUTES["image"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["image"]
     if any(w in q for w in ["video", "youtube", "watch", "play video"]):
-        return TOOL_ROUTES["video"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["video"]
     if any(w in q for w in ["calendar", "event", "appointment", "schedule"]):
-        return TOOL_ROUTES["calendar"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["calendar"]
     if any(w in q for w in ["contact", "phonebook", "people", "address book"]):
-        return TOOL_ROUTES["contacts"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["contacts"]
     if any(w in q for w in ["photo", "picture", "album"]):
-        return TOOL_ROUTES["photos"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["photos"]
     if any(w in q for w in ["doc", "google doc", "write doc"]):
-        return TOOL_ROUTES["docs"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["docs"]
     if any(w in q for w in ["sheet", "spreadsheet", "excel"]):
-        return TOOL_ROUTES["sheets"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["sheets"]
     if any(w in q for w in ["slide", "presentation", "powerpoint"]):
-        return TOOL_ROUTES["slides"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["slides"]
     if any(w in q for w in ["google chat", "chat space", "chat message"]):
-        return TOOL_ROUTES["chat"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["chat"]
     if any(w in q for w in ["meet", "video call", "meeting", "conference"]):
-        return TOOL_ROUTES["meet"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["meet"]
     if any(w in q for w in ["fitness", "fit data", "health data", "step count"]):
-        return TOOL_ROUTES["fit"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["fit"]
     if any(w in q for w in ["classroom", "course", "class", "student"]):
-        return TOOL_ROUTES["classroom"] + _SWARM_ROUTE
+        return core + TOOL_ROUTES["classroom"]
     # Default: minimal toolset (~20 tools, <1000 tokens)
     # Covers common general-purpose capabilities without the full 76-tool footprint
     return ["web", "file", "terminal", "browser", "delegation", "memory", "skills",
@@ -253,6 +258,26 @@ from plugins.dashboard_auth.google import init_db as init_google_db
 from plugins.dashboard_auth.google import all_connected, GOOGLE_PLUGIN_IDS
 
 # ── Dashboard API Endpoints ──────────────────────────────────────────────────
+
+
+def _build_full_system_prompt(system_msg: str, context_files: dict, soul_content: str) -> str:
+    """Build 3-tier system prompt like Hermes: SOUL + context files + caller's message."""
+    parts = []
+
+    # TIER 1: SOUL (agent identity/personality)
+    if soul_content:
+        parts.append(soul_content)
+
+    # TIER 2: Context files (AGENTS.md, CLAUDE.md, .cursorrules, etc.)
+    for name, content in context_files.items():
+        if content and content.strip():
+            parts.append(f"## Project Context: {name}\n\n{content}")
+
+    # TIER 3: Caller's system message (from frontend)
+    if system_msg:
+        parts.append(system_msg)
+
+    return "\n\n".join(p for p in parts if p)
 
 
 def _enhance_system_prompt(system_msg: str, dashboard_state: Optional[Dict[str, Any]] = None) -> str:
@@ -343,13 +368,18 @@ _ws_clients: List[WebSocket] = []
 session_db: Optional[SessionDB] = None
 _plugin_manager = None
 _http_client: Optional[httpx.AsyncClient] = None
+memory_store = None
+memory_manager = None
+credential_pool = None
+context_files = {}
+soul_content = ""
 
 
 
 # ── Lifespan ─────────────────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global session_db, _plugin_manager, _http_client
+    global session_db, _plugin_manager, _http_client, memory_store, memory_manager, credential_pool, context_files, soul_content
 
     logger.info("=" * 60)
     logger.info("  Zed Pro Backend starting on port %s", PORT)
@@ -362,6 +392,54 @@ async def lifespan(app: FastAPI):
     # Session DB
     session_db_path = ZED_HOME / "sessions.db"
     session_db = SessionDB(session_db_path)
+
+    # ── Memory system (MEMORY.md + USER.md + external providers) ─────────────
+    memory_store = None
+    memory_manager = None
+    try:
+        from agent.memory_store import MemoryStore
+        memory_store = MemoryStore(ZED_HOME)
+        logger.info("Memory store initialized: %s", ZED_HOME)
+    except Exception as e:
+        logger.warning("Memory store init failed: %s", e)
+
+    try:
+        from agent.memory_manager import MemoryManager
+        memory_manager = MemoryManager(zed_home=ZED_HOME)
+        memory_manager.setup()
+        logger.info("Memory manager initialized")
+    except Exception as e:
+        logger.warning("Memory manager init failed: %s", e)
+
+    # ── Credential pool (multi-key rotation + failover) ─────────────────────
+    credential_pool = None
+    try:
+        from agent.credential_pool import CredentialPool
+        credential_pool = CredentialPool(zed_home=ZED_HOME)
+        logger.info("Credential pool initialized")
+    except Exception as e:
+        logger.warning("Credential pool init failed: %s", e)
+
+    # ── Context files (AGENTS.md, CLAUDE.md, .cursorrules) ──────────────────
+    context_files = {}
+    try:
+        from agent.context_engine import load_context_files
+        context_files = load_context_files(Path.cwd())
+        logger.info("Loaded %d context files", len(context_files))
+    except Exception as e:
+        logger.warning("Context file loading failed: %s", e)
+
+    # ── SOUL.md (agent identity/personality) ────────────────────────────────
+    soul_content = ""
+    try:
+        soul_path = ZED_HOME / "SOUL.md"
+        if soul_path.exists():
+            soul_content = soul_path.read_text(encoding="utf-8")
+            logger.info("Loaded SOUL.md: %d chars", len(soul_content))
+        else:
+            logger.info("No SOUL.md found at %s, using default identity", soul_path)
+    except Exception as e:
+        logger.warning("SOUL.md loading failed: %s", e)
 
     # Initialize Google OAuth plugin DB
     init_google_db(ZED_HOME / "connections.db")
@@ -487,146 +565,36 @@ async def lifespan(app: FastAPI):
                     return
 
                 try:
-                    # Use backend server which has tools registered
-                    llm_base_url = os.environ.get(
-                        "ZED_PRO_BASE_URL", "https://aios-lovat-two.vercel.app"
-                    ).rstrip("/")
-                    # Remove trailing /v1 if present to avoid double /v1
-                    if llm_base_url.endswith("/v1"):
-                        llm_base_url = llm_base_url[:-3]
-                    llm_api_key = os.environ.get(
-                        "ZED_PRO_API_KEY", os.environ.get("OPENAI_API_KEY", "no-key")
+                    # Use full AIAgent (same as chat endpoint) — skills, memory, tools, 90 rounds
+                    resolved = _llm_model if _llm_model.lower() not in ("auto", "zed-pro", "") else "gemini-2.5-flash-lite"
+
+                    agent = AIAgent(
+                        session_id=f"cron-{_job_id}",
+                        session_db=session_db,
+                        model=resolved,
+                        quiet_mode=True,
+                        verbose_logging=False,
+                        base_url=os.environ.get("ZED_PRO_BASE_URL", "https://aios-lovat-two.vercel.app").rstrip("/"),
+                        api_key=os.environ.get("ZED_PRO_API_KEY", os.environ.get("OPENAI_API_KEY", "no-key")),
+                        credential_pool=credential_pool,
                     )
 
-                    # Tool calling loop - execute tools until LLM gives final response
-                    messages = [{"role": "user", "content": _prompt}]
-                    max_tool_rounds = 5
-                    result = "No response"
-                    status = "error"
-                    tool_rounds_used = 0
-                    
-                    # Get tool definitions for the request
-                    try:
-                        from model_tools import get_tool_definitions
-                        tool_defs = get_tool_definitions(
-                            enabled_toolsets=None  # None = all available tools
-                        )
-                    except Exception:
-                        tool_defs = []
-                    
-                    use_tools = len(tool_defs) > 0
-                    
-                    # Tool calling loop (with automatic fallback to text-only)
-                    for tool_round in range(max_tool_rounds if use_tools else 0):
-                        tool_rounds_used = tool_round + 1
-                        resp = httpx.post(
-                            f"{llm_base_url}/v1/chat/completions",
-                            json={
-                                "model": _llm_model,
-                                "messages": messages,
-                                "max_tokens": 4096,
-                                "stream": False,
-                                **({"tools": tool_defs} if use_tools else {}),
-                            },
-                            headers={
-                                "Authorization": f"Bearer {llm_api_key}",
-                                "Content-Type": "application/json",
-                            },
-                            timeout=120.0,
-                        )
-                        
-                        # If provider rejects tools, fall back to text-only
-                        if use_tools and resp.status_code in (401, 422, 502):
-                            logger.warning("Provider rejected tools (%s), falling back to text-only", resp.status_code)
-                            use_tools = False
-                            resp = httpx.post(
-                                f"{llm_base_url}/v1/chat/completions",
-                                json={
-                                    "model": _llm_model,
-                                    "messages": [{"role": "user", "content": _prompt}],
-                                    "max_tokens": 4096,
-                                },
-                                headers={
-                                    "Authorization": f"Bearer {llm_api_key}",
-                                    "Content-Type": "application/json",
-                                },
-                                timeout=120.0,
-                            )
-                        
-                        if resp.status_code != 200:
-                            result = f"LLM error {resp.status_code}: {resp.text[:200]}"
-                            status = "error"
-                            break
-                        
-                        data = resp.json()
-                        choice = data.get("choices", [{}])[0]
-                        assistant_msg = choice.get("message", {})
-                        
-                        # If no tool calls, we're done
-                        if not assistant_msg.get("tool_calls"):
-                            result = assistant_msg.get("content", "No response")
-                            status = "success"
-                            break
-                        
-                        # Add assistant message with tool calls
-                        messages.append(assistant_msg)
-                        
-                        # Execute each tool call
-                        for tool_call in assistant_msg["tool_calls"]:
-                            func = tool_call.get("function", {})
-                            func_name = func.get("name", "")
-                            func_args = json.loads(func.get("arguments", "{}"))
-                            
-                            tool_resp = httpx.post(
-                                f"{llm_base_url}/api/tools/execute",
-                                json={
-                                    "tool": func_name,
-                                    "args": func_args
-                                },
-                                headers={
-                                    "Authorization": f"Bearer {llm_api_key}",
-                                    "Content-Type": "application/json",
-                                },
-                                timeout=30.0,
-                            )
-                            
-                            tool_result = tool_resp.json() if tool_resp.status_code == 200 else {"error": f"Tool failed: {tool_resp.status_code}"}
-                            
-                            messages.append({
-                                "role": "tool",
-                                "tool_call_id": tool_call.get("id", ""),
-                                "content": json.dumps(tool_result)
-                            })
-                    
+                    system_msg = _build_full_system_prompt(
+                        "Execute this scheduled task accurately. Use available tools as needed.",
+                        context_files, soul_content,
+                    )
+
+                    agent_result = agent.run_conversation(
+                        user_message=_prompt,
+                        system_message=system_msg,
+                    )
+
+                    if isinstance(agent_result, dict):
+                        result = agent_result.get("final_response", str(agent_result))
+                        status = "success" if result else "error"
                     else:
-                        # Max rounds reached
-                        result = "Max tool rounds reached"
-                        status = "error"
-                    
-                    # Text-only fallback (when tools disabled before loop)
-                    if status == "error" and "Max tool rounds" not in result and tool_rounds_used == 0:
-                        resp = httpx.post(
-                            f"{llm_base_url}/v1/chat/completions",
-                            json={
-                                "model": _llm_model,
-                                "messages": [{"role": "user", "content": _prompt}],
-                                "max_tokens": 4096,
-                                "stream": False,
-                            },
-                            headers={
-                                "Authorization": f"Bearer {llm_api_key}",
-                                "Content-Type": "application/json",
-                            },
-                            timeout=120.0,
-                        )
-                        if resp.status_code == 200:
-                            result = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "No response")
-                            status = "success"
-                        else:
-                            result = f"LLM error {resp.status_code}: {resp.text[:200]}"
-                            status = "error"
-                    
-                    logger.info("Cron job '%s' completed with %d tool rounds", _job_name, tool_rounds_used)
+                        result = str(agent_result)
+                        status = "success"
                 except Exception as e:
                     result = f"Execution failed: {e}"
                     status = "error"
@@ -958,175 +926,14 @@ async def list_models():
 async def chat_completions(request: ChatCompletionRequest, raw_request: Request):
     """
     OpenAI-compatible chat endpoint.
-    - Normal chat: direct httpx proxy to freellmapi port 3002 (no auth needed)
-    - Agentic mode (dashboard_state set): runs full AIAgent loop with tools
-    Supports both streaming (SSE) and non-streaming responses.
+    Always runs through the full AIAgent loop with tools, memory, skills,
+    context files, and retry — same as Hermes. Falls back to direct proxy
+    only if AIAgent initialization fails.
     """
     if not request.messages:
         raise HTTPException(status_code=400, detail="No messages provided")
 
-    # ── Build outbound payload ───────────────────────────────────────────────
-    def build_payload() -> dict:
-        payload: dict = {}
-        # Map zed-pro / auto → router picks best model
-        model = request.model or "auto"
-        payload["model"] = "auto" if model.lower() in ("zed-pro", "auto") else model
-        # Serialize messages — drop None fields so freellmapi schema validates
-        payload["messages"] = [
-            {k: v for k, v in msg.dict(exclude_none=True).items()}
-            for msg in request.messages
-        ]
-        if request.stream is not None:
-            payload["stream"] = request.stream
-        if request.max_tokens is not None:
-            payload["max_tokens"] = request.max_tokens
-        if request.temperature is not None:
-            payload["temperature"] = request.temperature
-        if request.tools:
-            payload["tools"] = request.tools
-        if request.tool_choice:
-            payload["tool_choice"] = request.tool_choice
-        return payload
-
-    # ── Direct proxy path (normal chat + tool-call requests) ─────────────────
-    # Skip AIAgent entirely — go direct to freellmapi via httpx (no auth header).
-    use_agent = bool(request.dashboard_state)  # only agentic mode uses AIAgent
-
-    # Check if tools are enabled (from cron scheduler or agent runner)
-    # Disable tools when using Ollama provider (doesn't support tool calling)
-    tools_enabled = request.tools and len(request.tools) > 0 if request.tools else False
-    model_name = (request.model or "auto").lower()
-    if "ollama" in model_name:
-        tools_enabled = False
-
-    if not use_agent:
-        payload = build_payload()
-        # Route dynamically to remote LLM Proxy URL (like Render) if configured.
-        base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
-        api_key = os.getenv("ZED_PRO_API_KEY", "")
-        freellmapi_target = base_url.rstrip("/") + "/chat/completions"
-            
-        proxy_headers = {"Content-Type": "application/json"}
-        if api_key:
-            proxy_headers["Authorization"] = f"Bearer {api_key}"
-
-        if request.stream and not tools_enabled:
-            async def stream_direct():
-                try:
-                    async with _http_client.stream(
-                        "POST",
-                        freellmapi_target,
-                        json=payload,
-                        headers=proxy_headers,
-                        timeout=httpx.Timeout(120.0),
-                    ) as resp:
-                        async for chunk in resp.aiter_bytes():
-                            yield chunk
-                except Exception as e:
-                    logger.exception("Direct stream proxy error")
-                    yield f"data: {json.dumps({'error': {'message': str(e), 'type': 'proxy_error'}})}\n\n".encode()
-                    yield b"data: [DONE]\n\n"
-
-            return StreamingResponse(
-                stream_direct(),
-                media_type="text/event-stream",
-                headers={
-                    "Cache-Control": "no-cache",
-                    "Connection": "keep-alive",
-                    "X-Accel-Buffering": "no",
-                    "Access-Control-Allow-Origin": "*",
-                },
-            )
-        else:
-            # Tool calling loop for non-streaming requests with tools enabled
-            if tools_enabled:
-                try:
-                    messages = [msg.dict(exclude_none=True) for msg in request.messages]
-                    max_rounds = 5
-                    final_result = None
-
-                    for round_num in range(max_rounds):
-                        resp = await _http_client.post(
-                            freellmapi_target,
-                            json=payload,
-                            headers=proxy_headers,
-                            timeout=120.0,
-                        )
-                        if not resp.is_success:
-                            return Response(
-                                content=resp.content,
-                                status_code=resp.status_code,
-                                media_type="application/json",
-                            )
-
-                        data = resp.json()
-                        choice = data.get("choices", [{}])[0]
-                        assistant_msg = choice.get("message", {})
-
-                        # If no tool calls, return the response
-                        if not assistant_msg.get("tool_calls"):
-                            final_result = data
-                            break
-
-                        # Add assistant message to history
-                        messages.append(assistant_msg)
-
-                        # Execute each tool call
-                        for tool_call in assistant_msg["tool_calls"]:
-                            func = tool_call.get("function", {})
-                            func_name = func.get("name", "")
-                            func_args = json.loads(func.get("arguments", "{}"))
-
-                            try:
-                                from model_tools import handle_function_call
-                                tool_result = handle_function_call(
-                                    function_name=func_name,
-                                    function_args=func_args,
-                                )
-                            except Exception as tool_err:
-                                tool_result = json.dumps({"error": str(tool_err)})
-
-                            messages.append({
-                                "role": "tool",
-                                "tool_call_id": tool_call.get("id", ""),
-                                "content": tool_result if isinstance(tool_result, str) else json.dumps(tool_result)
-                            })
-
-                        # Update payload for next round
-                        payload["messages"] = messages
-                    else:
-                        # Max rounds reached
-                        final_result = {"choices": [{"message": {"content": "Max tool rounds reached"}}]}
-
-                    return Response(
-                        content=json.dumps(final_result) if isinstance(final_result, dict) else final_result,
-                        status_code=200,
-                        media_type="application/json",
-                    )
-                except Exception as e:
-                    logger.exception("Tool calling loop error")
-                    raise HTTPException(status_code=500, detail=str(e))
-            else:
-                # No tools - direct proxy
-                try:
-                    resp = await _http_client.post(
-                        freellmapi_target,
-                        json=payload,
-                        headers=proxy_headers,
-                        timeout=120.0,
-                    )
-                    if not resp.is_success:
-                        logger.error("freellmapi error %s: %s", resp.status_code, resp.text[:500])
-                    return Response(
-                        content=resp.content,
-                        status_code=resp.status_code,
-                        media_type="application/json",
-                    )
-                except Exception as e:
-                    logger.exception("Direct proxy error")
-                    raise HTTPException(status_code=500, detail=str(e))
-
-    # ── AIAgent path (agentic / dashboard mode) ───────────────────────────────
+    # ── Always use AIAgent (unified path like Hermes) ────────────────────────
     session_id = raw_request.headers.get("x-zed-session-id") or raw_request.headers.get("x-session-id")
     if not session_id:
         session_id = str(uuid.uuid4())
@@ -1186,6 +993,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                     api_key=os.getenv("ZED_PRO_API_KEY", ""),
                     enabled_toolsets=selected_toolsets,
                     disabled_toolsets=disabled_toolsets,
+                    credential_pool=credential_pool,
                 )
                 agent_ref[0] = agent
 
@@ -1197,6 +1005,9 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                         system_msg = m.content
                     else:
                         history.append({"role": m.role, "content": m.content})
+
+                # Build full 3-tier system prompt (SOUL + context + memory)
+                system_msg = _build_full_system_prompt(system_msg, context_files, soul_content)
                 system_msg = _enhance_system_prompt(system_msg, dashboard_state=request.dashboard_state)
 
                 result = agent.run_conversation(
@@ -1252,6 +1063,33 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                             "choices": [{"index": 0, "delta": {"tool_usage": {"type": "tool_complete", "name": val.get("name", ""), "id": val.get("id", "")}}, "finish_reason": None}]
                         }
                         yield f"data: {json.dumps(chunk)}\n\n"
+                    elif event_type == "delegate_start":
+                        chunk = {
+                            "id": f"chatcmpl-{session_id}",
+                            "object": "chat.completion.chunk",
+                            "created": created_time,
+                            "model": request.model or "zed-pro",
+                            "choices": [{"index": 0, "delta": {"delegation": {"type": "delegate_start", "id": val.get("id", ""), "goal": val.get("goal", ""), "context": val.get("context", "")}}, "finish_reason": None}]
+                        }
+                        yield f"data: {json.dumps(chunk)}\n\n"
+                    elif event_type == "delegate_stream":
+                        chunk = {
+                            "id": f"chatcmpl-{session_id}",
+                            "object": "chat.completion.chunk",
+                            "created": created_time,
+                            "model": request.model or "zed-pro",
+                            "choices": [{"index": 0, "delta": {"delegation": {"type": "delegate_stream", "id": val.get("id", ""), "token": val.get("token", "")}}, "finish_reason": None}]
+                        }
+                        yield f"data: {json.dumps(chunk)}\n\n"
+                    elif event_type == "delegate_complete":
+                        chunk = {
+                            "id": f"chatcmpl-{session_id}",
+                            "object": "chat.completion.chunk",
+                            "created": created_time,
+                            "model": request.model or "zed-pro",
+                            "choices": [{"index": 0, "delta": {"delegation": {"type": "delegate_complete", "id": val.get("id", ""), "result": val.get("result", "")}}, "finish_reason": None}]
+                        }
+                        yield f"data: {json.dumps(chunk)}\n\n"
                     elif event_type == "done":
                         chunk = {
                             "id": f"chatcmpl-{session_id}",
@@ -1303,6 +1141,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                 api_key=os.getenv("ZED_PRO_API_KEY", ""),
                 enabled_toolsets=selected_toolsets,
                 disabled_toolsets=disabled_toolsets,
+                credential_pool=credential_pool,
             )
             user_msg_text = request.messages[-1].content
             history = []
@@ -1312,6 +1151,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                     system_msg = m.content
                 else:
                     history.append({"role": m.role, "content": m.content})
+            system_msg = _build_full_system_prompt(system_msg, context_files, soul_content)
             system_msg = _enhance_system_prompt(system_msg, dashboard_state=request.dashboard_state)
             return agent.run_conversation(
                 user_message=user_msg_text,
@@ -2405,15 +2245,31 @@ async def run_agent_now(agent_id: str):
 # ── WebSocket (live events) ────────────────────────────────────────────────────
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    """WebSocket for live agent events (tool calls, status, streaming)."""
+    """WebSocket for live agent events (tool calls, status, streaming, sub-agents)."""
     await websocket.accept()
     _ws_clients.append(websocket)
     logger.info("WebSocket client connected (%s total)", len(_ws_clients))
     try:
         while True:
             data = await websocket.receive_text()
-            # Echo back for ping/keep-alive
-            await websocket.send_text(json.dumps({"type": "pong", "data": data}))
+            msg = json.loads(data)
+            # Handle sub-agent commands from frontend
+            if msg.get("type") == "ping":
+                await websocket.send_text(json.dumps({"type": "pong"}))
+            elif msg.get("type") == "get_tools":
+                from model_tools import get_tool_definitions
+                tools = get_tool_definitions()
+                tool_list = [{"name": t["function"]["name"], "description": t["function"].get("description", "")} for t in tools]
+                await websocket.send_text(json.dumps({"type": "tools_list", "tools": tool_list}))
+            elif msg.get("type") == "delegation_status":
+                # Forward to active agent
+                session_id = msg.get("session_id")
+                if session_id and session_id in _active_agents:
+                    agent = _active_agents[session_id]
+                    try:
+                        agent.request_delegation_status()
+                    except Exception:
+                        pass
     except WebSocketDisconnect:
         pass
     finally:

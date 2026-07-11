@@ -30,7 +30,7 @@ Prices are FAL's pricing at time of writing; check [fal.ai](https://fal.ai/) for
 ## Setup
 
 :::tip Nous Subscribers
-If you have a paid [Nous Portal](https://portal.nousresearch.com) subscription, you can use image generation through the **[Tool Gateway](tool-gateway.md)** without a FAL API key. Your model selection persists across both paths. New installs can run `zed setup --portal` to log in and turn on every gateway tool at once; existing installs can pick **Nous Subscription** as the image-gen backend via `zed tools`.
+If you have a paid [Zed Portal](https://portal.zedteam.com) subscription, you can use image generation through the **[Tool Gateway](tool-gateway.md)** without a FAL API key. Your model selection persists across both paths. New installs can run `zed setup --portal` to log in and turn on every gateway tool at once; existing installs can pick **Nous Subscription** as the image-gen backend via `zed tools`.
 
 If the managed gateway returns `HTTP 4xx` for a specific model, that model isn't yet proxied on the portal side â€” the agent will tell you so, with remediation steps (set `FAL_KEY` for direct access, or pick a different model).
 :::
@@ -68,7 +68,7 @@ image_gen:
 
 ### GPT-Image Quality
 
-The `fal-ai/gpt-image-1.5` and `fal-ai/gpt-image-2` request quality is pinned to `medium` (~$0.034â€“$0.06/image at 1024Ã—1024). We don't expose the `low` / `high` tiers as a user-facing option so that Nous Portal billing stays predictable across all users â€” the cost spread between tiers is 3â€“22Ã—. If you want a cheaper option, pick Klein 9B or Z-Image Turbo; if you want higher quality, use Nano Banana Pro or Recraft V4 Pro.
+The `fal-ai/gpt-image-1.5` and `fal-ai/gpt-image-2` request quality is pinned to `medium` (~$0.034â€“$0.06/image at 1024Ã—1024). We don't expose the `low` / `high` tiers as a user-facing option so that Zed Portal billing stays predictable across all users â€” the cost spread between tiers is 3â€“22Ã—. If you want a cheaper option, pick Klein 9B or Z-Image Turbo; if you want higher quality, use Nano Banana Pro or Recraft V4 Pro.
 
 ## Usage
 

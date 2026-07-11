@@ -58,7 +58,7 @@ terminal.resize         clipboard.paste         image.attach
 
 ### Pi é£Žæ ¼ RPC æ˜ å°„
 
-Pi-mono RPC è§„èŒƒï¼ˆ[issue #360](https://github.com/NousResearch/zed-agent/issues/360)ï¼‰ä¸­çš„æ¯æ¡å‘½ä»¤å‡æœ‰å¯¹åº”çš„ TUI gateway ç­‰ä»·é¡¹ï¼š
+Pi-mono RPC è§„èŒƒï¼ˆ[issue #360](https://github.com/zedteam/zed-agent/issues/360)ï¼‰ä¸­çš„æ¯æ¡å‘½ä»¤å‡æœ‰å¯¹åº”çš„ TUI gateway ç­‰ä»·é¡¹ï¼š
 
 | Pi å‘½ä»¤ | Zed ç­‰ä»·é¡¹ |
 |------------|-------------------|

@@ -1,4 +1,4 @@
-"""Alibaba Cloud DashScope provider profile."""
+﻿"""Alibaba Cloud DashScope provider profile."""
 
 from providers import register_provider
 from providers.base import ProviderProfile

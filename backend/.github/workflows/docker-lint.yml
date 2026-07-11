@@ -1,4 +1,4 @@
-name: Docker / shell lint
+﻿name: Docker / shell lint
 
 # Lints the container build inputs: Dockerfile (via hadolint) and any shell
 # scripts under docker/ (via shellcheck). These catch the class of regression

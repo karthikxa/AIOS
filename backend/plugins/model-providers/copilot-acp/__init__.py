@@ -1,4 +1,4 @@
-"""GitHub Copilot ACP provider profile.
+﻿"""GitHub Copilot ACP provider profile.
 
 copilot-acp uses an external ACP subprocess — NOT the standard
 transport. api_mode="copilot_acp" is handled separately in run_agent.py.

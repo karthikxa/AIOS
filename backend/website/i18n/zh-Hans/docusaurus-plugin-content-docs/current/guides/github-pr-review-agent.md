@@ -69,7 +69,7 @@ zed
 ç”¨ä¸€ä¸ªç®€å•å‘½ä»¤æµ‹è¯•ï¼š
 
 ```
-Run: gh pr list --repo NousResearch/zed-agent --state open --limit 3
+Run: gh pr list --repo zedteam/zed-agent --state open --limit 3
 ```
 
 ä½ åº”è¯¥èƒ½çœ‹åˆ°ä¸€ä¸ªå¼€æ”¾ PR çš„åˆ—è¡¨ã€‚å¦‚æžœæˆåŠŸï¼Œå°±å¯ä»¥ç»§ç»­äº†ã€‚
@@ -84,7 +84,7 @@ Run: gh pr list --repo NousResearch/zed-agent --state open --limit 3
 Review this pull request. Read the diff, check for bugs, security issues,
 and code quality. Be specific about line numbers and quote problematic code.
 
-Run: gh pr diff 3888 --repo NousResearch/zed-agent
+Run: gh pr diff 3888 --repo zedteam/zed-agent
 ```
 
 Zed å°†ä¼šï¼š

@@ -1,4 +1,4 @@
-"""Shared types for normalized provider responses.
+﻿"""Shared types for normalized provider responses.
 
 These dataclasses define the canonical shape that all provider adapters
 normalize responses to.  The shared surface is intentionally minimal —

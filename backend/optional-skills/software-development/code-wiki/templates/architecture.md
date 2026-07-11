@@ -1,4 +1,4 @@
-# Architecture
+﻿# Architecture
 
 {{TWO_TO_THREE_PARAGRAPHS_SHAPE_OF_SYSTEM}}
 

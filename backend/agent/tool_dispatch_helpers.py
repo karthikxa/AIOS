@@ -1,4 +1,4 @@
-"""Tool-dispatch helpers — parallelism gating, multimodal envelopes, mutation tracking.
+﻿"""Tool-dispatch helpers — parallelism gating, multimodal envelopes, mutation tracking.
 
 Pure module-level utilities extracted from ``run_agent.py``:
 

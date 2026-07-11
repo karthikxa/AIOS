@@ -1196,7 +1196,7 @@ WACC = (Cost of Equity Ã— Equity Weight) + (After-tax Cost of Debt Ã— Debt
 
 ## æ•…éšœæŽ’é™¤
 
-**å¦‚æžœé‡åˆ°é”™è¯¯æˆ–ä¸åˆç†çš„ç»“æžœï¼Œè¯·é˜…è¯» [TROUBLESHOOTING.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/finance/dcf-model/TROUBLESHOOTING.md) èŽ·å–è¯¦ç»†çš„è°ƒè¯•æŒ‡å¯¼ã€‚**
+**å¦‚æžœé‡åˆ°é”™è¯¯æˆ–ä¸åˆç†çš„ç»“æžœï¼Œè¯·é˜…è¯» [TROUBLESHOOTING.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/finance/dcf-model/TROUBLESHOOTING.md) èŽ·å–è¯¦ç»†çš„è°ƒè¯•æŒ‡å¯¼ã€‚**
 
 ## å·¥ä½œæµé›†æˆ
 
@@ -1234,7 +1234,7 @@ WACC = (Cost of Equity Ã— Equity Weight) + (After-tax Cost of Debt Ã— Debt
 
 3. **æ£€æŸ¥è¾“å‡º**ï¼š
    - å¦‚æžœ `status` ä¸º `"success"` â†’ ç»§ç»­ç¬¬ 4 æ­¥
-   - å¦‚æžœ `status` ä¸º `"errors_found"` â†’ æ£€æŸ¥ `error_summary` å¹¶é˜…è¯» [TROUBLESHOOTING.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/finance/dcf-model/TROUBLESHOOTING.md) èŽ·å–è°ƒè¯•æŒ‡å¯¼
+   - å¦‚æžœ `status` ä¸º `"errors_found"` â†’ æ£€æŸ¥ `error_summary` å¹¶é˜…è¯» [TROUBLESHOOTING.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/finance/dcf-model/TROUBLESHOOTING.md) èŽ·å–è°ƒè¯•æŒ‡å¯¼
 
 4. **ä¿®å¤é”™è¯¯å¹¶é‡æ–°è¿è¡Œ recalc.py**ï¼Œç›´åˆ°çŠ¶æ€ä¸º"success"
 

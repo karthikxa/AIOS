@@ -248,12 +248,12 @@ Source URLs:
 
 ## å‚è€ƒèµ„æ–™
 
-- **[hub-discovery.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/inference/llama-cpp/references/hub-discovery.md)** â€” çº¯ URL Hugging Face å·¥ä½œæµã€æœç´¢æ¨¡å¼ã€GGUF æå–åŠå‘½ä»¤é‡å»º
-- **[advanced-usage.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/inference/llama-cpp/references/advanced-usage.md)** â€” æŽ¨æµ‹è§£ç ã€æ‰¹é‡æŽ¨ç†ã€è¯­æ³•çº¦æŸç”Ÿæˆã€LoRAã€å¤š GPUã€è‡ªå®šä¹‰æž„å»ºã€åŸºå‡†è„šæœ¬
-- **[quantization.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/inference/llama-cpp/references/quantization.md)** â€” é‡åŒ–è´¨é‡æƒè¡¡ã€ä½•æ—¶ä½¿ç”¨ Q4/Q5/Q6/IQã€æ¨¡åž‹å¤§å°ç¼©æ”¾ã€imatrix
-- **[server.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/inference/llama-cpp/references/server.md)** â€” ç›´æŽ¥ä»Ž Hub å¯åŠ¨æœåŠ¡å™¨ã€OpenAI API ç«¯ç‚¹ã€Docker éƒ¨ç½²ã€NGINX è´Ÿè½½å‡è¡¡ã€ç›‘æŽ§
-- **[optimization.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/inference/llama-cpp/references/optimization.md)** â€” CPU çº¿ç¨‹ã€BLASã€GPU å¸è½½å¯å‘å¼ã€æ‰¹å¤„ç†è°ƒä¼˜ã€åŸºå‡†æµ‹è¯•
-- **[troubleshooting.md](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/inference/llama-cpp/references/troubleshooting.md)** â€” å®‰è£…/è½¬æ¢/é‡åŒ–/æŽ¨ç†/æœåŠ¡å™¨é—®é¢˜ã€Apple Siliconã€è°ƒè¯•
+- **[hub-discovery.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/inference/llama-cpp/references/hub-discovery.md)** â€” çº¯ URL Hugging Face å·¥ä½œæµã€æœç´¢æ¨¡å¼ã€GGUF æå–åŠå‘½ä»¤é‡å»º
+- **[advanced-usage.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/inference/llama-cpp/references/advanced-usage.md)** â€” æŽ¨æµ‹è§£ç ã€æ‰¹é‡æŽ¨ç†ã€è¯­æ³•çº¦æŸç”Ÿæˆã€LoRAã€å¤š GPUã€è‡ªå®šä¹‰æž„å»ºã€åŸºå‡†è„šæœ¬
+- **[quantization.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/inference/llama-cpp/references/quantization.md)** â€” é‡åŒ–è´¨é‡æƒè¡¡ã€ä½•æ—¶ä½¿ç”¨ Q4/Q5/Q6/IQã€æ¨¡åž‹å¤§å°ç¼©æ”¾ã€imatrix
+- **[server.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/inference/llama-cpp/references/server.md)** â€” ç›´æŽ¥ä»Ž Hub å¯åŠ¨æœåŠ¡å™¨ã€OpenAI API ç«¯ç‚¹ã€Docker éƒ¨ç½²ã€NGINX è´Ÿè½½å‡è¡¡ã€ç›‘æŽ§
+- **[optimization.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/inference/llama-cpp/references/optimization.md)** â€” CPU çº¿ç¨‹ã€BLASã€GPU å¸è½½å¯å‘å¼ã€æ‰¹å¤„ç†è°ƒä¼˜ã€åŸºå‡†æµ‹è¯•
+- **[troubleshooting.md](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/inference/llama-cpp/references/troubleshooting.md)** â€” å®‰è£…/è½¬æ¢/é‡åŒ–/æŽ¨ç†/æœåŠ¡å™¨é—®é¢˜ã€Apple Siliconã€è°ƒè¯•
 
 ## èµ„æº
 

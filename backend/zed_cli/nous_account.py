@@ -1,4 +1,4 @@
-﻿"""Normalized Nous Portal account entitlement helpers."""
+﻿"""Normalized Zed Portal account entitlement helpers."""
 
 from __future__ import annotations
 
@@ -128,11 +128,11 @@ class NousPortalAccountInfo:
 
 
 def nous_portal_billing_url(account_info: Optional[NousPortalAccountInfo] = None) -> str:
-    """Return the billing URL for a normalized Nous account snapshot."""
+    """Return the billing URL for a normalized Zed account snapshot."""
     try:
         from zed_cli.auth import DEFAULT_NOUS_PORTAL_URL
     except Exception:
-        DEFAULT_NOUS_PORTAL_URL = "https://portal.nousresearch.com"
+        DEFAULT_NOUS_PORTAL_URL = "https://portal.zedteam.com"
 
     base = None
     if account_info is not None:
@@ -197,7 +197,7 @@ def format_nous_portal_entitlement_message(
                 # specific capability isn't covered. Surface a neutral billing
                 # nudge without exposing pool-vs-paid internals to the user.
                 return (
-                    f"{capability} isn't included with your current Nous Portal "
+                    f"{capability} isn't included with your current Zed Portal "
                     f"access. Add credits or a subscription to enable it at {billing_url}."
                 )
         elif account_info.tool_gateway_entitled:
@@ -205,7 +205,7 @@ def format_nous_portal_entitlement_message(
 
     if account_info is None:
         return (
-            f"Zed could not verify your Nous Portal entitlement, so {capability} "
+            f"Zed could not verify your Zed Portal entitlement, so {capability} "
             f"is unavailable. Run `zed model` to refresh your login, or check "
             f"billing at {billing_url}."
         )
@@ -213,19 +213,19 @@ def format_nous_portal_entitlement_message(
     if not account_info.logged_in:
         if account_info.inference_credential_present:
             return (
-                f"Nous inference credentials are configured, but Zed cannot verify "
-                f"your Nous Portal paid access for {capability}. Log in with "
+                f"Zed inference credentials are configured, but Zed cannot verify "
+                f"your Zed Portal paid access for {capability}. Log in with "
                 f"`zed model` to enable Portal-managed features. Billing and "
                 f"credits are managed at {billing_url}."
             )
         return (
-            f"Log in to Nous Portal to use {capability}: run `zed model`. "
+            f"Log in to Zed Portal to use {capability}: run `zed model`. "
             f"Billing and credits are managed at {billing_url}."
         )
 
     if account_info.paid_service_access is None:
         detail = (
-            f"Zed could not verify your Nous Portal paid access, so {capability} "
+            f"Zed could not verify your Zed Portal paid access, so {capability} "
             f"is unavailable."
         )
         if account_info.error:
@@ -239,7 +239,7 @@ def format_nous_portal_entitlement_message(
     reason = access.reason if access else None
     if reason == "account_missing":
         return (
-            f"Zed could not find a Nous Portal account or organisation for this "
+            f"Zed could not find a Zed Portal account or organisation for this "
             f"login, so {capability} is unavailable. Run `zed model` to "
             f"authenticate again; if the problem persists, contact Nous support."
         )
@@ -251,7 +251,7 @@ def format_nous_portal_entitlement_message(
         return message
 
     return (
-        f"Your Nous Portal account does not currently have paid service access, "
+        f"Your Zed Portal account does not currently have paid service access, "
         f"so {capability} is unavailable. Add credits or update billing at {billing_url}."
     )
 
@@ -271,27 +271,27 @@ def _no_paid_access_message(
     if has_active_subscription and active_subscription_is_paid:
         credit_detail = _credit_detail(total_usable, subscription_credits, purchased_credits)
         return (
-            f"Your Nous Portal credits are exhausted{credit_detail}, so {capability} "
+            f"Your Zed Portal credits are exhausted{credit_detail}, so {capability} "
             f"is unavailable. Top up or renew credits at {billing_url}."
         )
 
     if has_active_subscription and active_subscription_is_paid is False:
         return (
-            f"Your current Nous Portal plan does not include paid service access, "
+            f"Your current Zed Portal plan does not include paid service access, "
             f"so {capability} is unavailable. Upgrade or add credits at {billing_url}."
         )
 
     if has_active_subscription is False:
         credit_detail = _credit_detail(total_usable, subscription_credits, purchased_credits)
         return (
-            f"Your Nous Portal account has no active subscription or usable credits"
+            f"Your Zed Portal account has no active subscription or usable credits"
             f"{credit_detail}, so {capability} is unavailable. Subscribe or add credits "
             f"at {billing_url}."
         )
 
     credit_detail = _credit_detail(total_usable, subscription_credits, purchased_credits)
     return (
-        f"Your Nous Portal account has no usable paid credits{credit_detail}, so "
+        f"Your Zed Portal account has no usable paid credits{credit_detail}, so "
         f"{capability} is unavailable. Add credits or update billing at {billing_url}."
     )
 
@@ -324,7 +324,7 @@ def get_nous_portal_account_info(
     force_fresh: bool = False,
     min_jwt_ttl_seconds: int = 60,
 ) -> NousPortalAccountInfo:
-    """Return normalized Nous Portal account entitlement information.
+    """Return normalized Zed Portal account entitlement information.
 
     By default, a valid unexpired OAuth access JWT is used as a low-latency
     local account snapshot. ``force_fresh=True`` always calls
@@ -564,7 +564,7 @@ def _fetch_nous_account_info(
     access_token: str,
     portal_base_url: Optional[str] = None,
 ) -> dict[str, Any]:
-    base = (portal_base_url or "https://portal.nousresearch.com").rstrip("/")
+    base = (portal_base_url or "https://portal.zedteam.com").rstrip("/")
     url = f"{base}/api/oauth/account"
     headers = {
         "Authorization": f"Bearer {access_token}",

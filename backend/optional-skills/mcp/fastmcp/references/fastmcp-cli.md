@@ -1,4 +1,4 @@
-# FastMCP CLI Reference
+﻿# FastMCP CLI Reference
 
 Use this file when the task needs exact FastMCP CLI workflows rather than the higher-level guidance in `SKILL.md`.
 

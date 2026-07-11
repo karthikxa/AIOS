@@ -1,11 +1,12 @@
-﻿"""Shared constants for Zed Agent.
+"""Shared constants for Zed Agent.
 
-Import-safe module with no dependencies â€” can be imported from anywhere
+Import-safe module with no dependencies — can be imported from anywhere
 without risk of circular imports.
 """
 
 import os
 import shutil
+import stat
 import sys
 import sysconfig
 from contextvars import ContextVar, Token
@@ -55,17 +56,17 @@ def get_zed_home() -> Path:
     """Return the Zed home directory (default: platform-native path).
 
     Reads ZED_HOME env var, falls back to the platform-native default.
-    This is the single source of truth â€” all other copies should import this.
+    This is the single source of truth — all other copies should import this.
 
     When ``ZED_HOME`` is unset but an ``active_profile`` file indicates
     a non-default profile is active, logs a loud one-shot warning to
     ``errors.log`` so cross-profile data corruption is diagnosable instead
-    of silent.  Behavior is unchanged otherwise â€” we still return
-    the platform-native default â€” because raising here would brick 30+ module-level
+    of silent.  Behavior is unchanged otherwise — we still return
+    the platform-native default — because raising here would brick 30+ module-level
     callers that import this at load time.  Subprocess spawners are
     expected to propagate ``ZED_HOME`` explicitly (see the systemd
     template in ``zed_cli/gateway.py`` and the kanban dispatcher in
-    ``zed_cli/kanban_db.py``).  See https://github.com/NousResearch/zed-agent/issues/18594.
+    ``zed_cli/kanban_db.py``).  See https://github.com/zedteam/zed-agent/issues/18594.
     """
     override = get_zed_home_override()
     if override:
@@ -95,7 +96,7 @@ def get_zed_home() -> Path:
             msg = (
                 f"[ZED_HOME fallback] ZED_HOME is unset but active "
                 f"profile is {active!r}. Falling back to {fallback_home}, which "
-                f"is the DEFAULT profile â€” not {active!r}. Any data this "
+                f"is the DEFAULT profile — not {active!r}. Any data this "
                 f"process writes will land in the wrong profile. The "
                 f"subprocess spawner should pass ZED_HOME explicitly "
                 f"(see issue #18594)."
@@ -117,14 +118,14 @@ def get_default_zed_root() -> Path:
 
     In Docker or custom deployments where ``ZED_HOME`` points outside
     ``~/.zed`` (e.g. ``/opt/data``), returns ``ZED_HOME`` directly
-    â€” that IS the root.
+    — that IS the root.
 
     In profile mode where ``ZED_HOME`` is ``<root>/profiles/<name>``,
     returns ``<root>`` so that ``profile list`` can see all profiles.
     Works both for standard (``~/.zed/profiles/coder``) and Docker
     (``/opt/data/profiles/coder``) layouts.
 
-    Import-safe â€” no dependencies beyond stdlib.
+    Import-safe — no dependencies beyond stdlib.
     """
     native_home = _get_platform_default_zed_home()
     env_home = os.environ.get("ZED_HOME", "")
@@ -141,11 +142,11 @@ def get_default_zed_root() -> Path:
     # Docker / custom deployment.
     # Check if this is a profile path: <root>/profiles/<name>
     # If the immediate parent dir is named "profiles", the root is
-    # the grandparent â€” this covers Docker profiles correctly.
+    # the grandparent — this covers Docker profiles correctly.
     if env_path.parent.name == "profiles":
         return env_path.parent.parent
 
-    # Not a profile path â€” ZED_HOME itself is the root
+    # Not a profile path — ZED_HOME itself is the root
     return env_path
 
 
@@ -186,7 +187,7 @@ def get_optional_skills_dir(default: Path | None = None) -> Path:
 def get_optional_mcps_dir(default: Path | None = None) -> Path:
     """Return the optional-mcps directory, honoring package-manager wrappers.
 
-    Mirrors :func:`get_optional_skills_dir` for the MCP catalog (Nous-approved
+    Mirrors :func:`get_optional_skills_dir` for the MCP catalog (Zed-approved
     Model Context Protocol servers shipped with the repo but disabled by
     default). Packaged installs may ship ``optional-mcps`` outside the Python
     package tree and expose it via ``ZED_OPTIONAL_MCPS``.
@@ -227,18 +228,27 @@ def get_zed_dir(new_subpath: str, old_name: str) -> Path:
 
     New installs get the consolidated layout (e.g. ``cache/images``).
     Existing installs that already have the old path (e.g. ``image_cache``)
-    keep using it â€” no migration required.
+    keep using it — no migration required.
+
+    A bare empty ``<old_name>/`` directory does **not** count as "the
+    legacy install is in use" — install scaffolds, manual ``mkdir`` work,
+    and cleared-then-abandoned locations all create empty stubs that
+    would otherwise silently shadow real data populated at
+    ``<new_subpath>/``. See #27602 for the pairing-store regression where
+    a dormant empty ``pairing/`` orphaned approved-user data in
+    ``platforms/pairing/``.
 
     Args:
         new_subpath: Preferred path relative to ZED_HOME (e.g. ``"cache/images"``).
         old_name: Legacy path relative to ZED_HOME (e.g. ``"image_cache"``).
 
     Returns:
-        Absolute ``Path`` â€” old location if it exists on disk, otherwise the new one.
+        Absolute ``Path`` — legacy location if it exists with content,
+        otherwise the new location.
     """
     home = get_zed_home()
     old_path = home / old_name
-    if old_path.exists():
+    if _legacy_path_has_content(old_path):
         return old_path
     return home / new_subpath
 
@@ -254,8 +264,8 @@ def iter_zed_node_dirs(home: Path | None = None) -> list[Path]:
     root = home or get_zed_home()
     dirs = [root / "node"]
     bin_dir = root / "node" / "bin"
-    # NOTE: keep this ordering in sync with zedManagedNodePathEntries() in
-    # apps/desktop/electron/main.cjs â€” the Electron main process is Node and
+    # NOTE: keep this ordering in sync with hermesManagedNodePathEntries() in
+    # apps/desktop/electron/main.cjs — the Electron main process is Node and
     # cannot import this module, so the platform-ordering rule is mirrored there.
     if sys.platform == "win32":
         return dirs + [bin_dir]
@@ -277,26 +287,235 @@ def _candidate_node_command_names(command: str) -> list[str]:
     return [f"{base}.cmd", f"{base}.exe", base]
 
 
+_ZED_NODE_TARGET_MAJOR = int(os.environ.get("ZED_NODE_TARGET_MAJOR", "22"))
+_managed_node_heal_attempted = False
+_NODE_BOOTSTRAP_SCRIPT = Path(__file__).resolve().parent / "scripts" / "lib" / "node-bootstrap.sh"
+
+
+def node_tool_runnable(path: str | None) -> bool:
+    """Return True only when *path* is a Node/npm/npx binary that actually runs.
+
+    Zed-managed Node trees live under ``$ZED_HOME/node`` (or a profile's
+    ``ZED_HOME``). A partial upgrade or interrupted install can leave
+    ``bin/npm`` behind while ``lib/cli.js`` is missing — the wrapper exists but
+    immediately throws ``MODULE_NOT_FOUND``. ``find_zed_node_executable``
+    used to trust file presence alone, so ``zed update`` would pick that
+    broken npm and fail the Node refresh / web UI build.
+
+    Probe with ``--version`` (same pattern as :func:`agent_browser_runnable`) so
+    broken managed wrappers are detected before use.
+    """
+    if not path:
+        return False
+    candidate = Path(path)
+    if sys.platform == "win32":
+        if not candidate.is_file():
+            return False
+    elif not os.path.exists(path) or not os.access(path, os.X_OK):
+        return False
+
+    import subprocess
+
+    try:
+        from zed_cli._subprocess_compat import windows_hide_flags
+
+        result = subprocess.run(
+            [path, "--version"],
+            capture_output=True,
+            timeout=10,
+            env=with_zed_node_path(),
+            creationflags=windows_hide_flags(),
+        )
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return False
+    return result.returncode == 0
+
+
+def zed_managed_node_tree_present(home: Path | None = None) -> bool:
+    """Return True when any Zed-managed node/npm/npx shim exists on disk."""
+    names = set()
+    for command in ("node", "npm", "npx"):
+        names.update(_candidate_node_command_names(command))
+    for directory in iter_zed_node_dirs(home):
+        for name in names:
+            candidate = directory / name
+            if candidate.is_file() and (
+                sys.platform == "win32" or os.access(candidate, os.X_OK)
+            ):
+                return True
+    return False
+
+
+def _heal_managed_node_windows() -> bool:
+    """Redownload the portable Node zip into ``%ZED_HOME%\\node`` on Windows."""
+    import re
+    import tempfile
+    import urllib.request
+    import zipfile
+
+    arch = (os.environ.get("PROCESSOR_ARCHITEW6432") or os.environ.get("PROCESSOR_ARCHITECTURE", "")).lower()
+    if arch in ("amd64", "x86_64"):
+        node_arch = "x64"
+    elif arch == "arm64":
+        node_arch = "arm64"
+    elif arch in ("x86",):
+        node_arch = "x86"
+    else:
+        return False
+
+    home = get_zed_home()
+    index_url = f"https://nodejs.org/dist/latest-v{_ZED_NODE_TARGET_MAJOR}.x/"
+    try:
+        with urllib.request.urlopen(index_url, timeout=60) as response:
+            index_html = response.read().decode("utf-8", errors="replace")
+    except OSError:
+        return False
+
+    match = re.search(
+        rf"node-v{_ZED_NODE_TARGET_MAJOR}\.\d+\.\d+-win-{node_arch}\.zip",
+        index_html,
+    )
+    if not match:
+        return False
+
+    zip_name = match.group(0)
+    download_url = f"{index_url}{zip_name}"
+    try:
+        with urllib.request.urlopen(download_url, timeout=300) as response:
+            zip_bytes = response.read()
+    except OSError:
+        return False
+
+    try:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            zip_path = tmp_path / zip_name
+            zip_path.write_bytes(zip_bytes)
+            extract_dir = tmp_path / "extract"
+            extract_dir.mkdir()
+            with zipfile.ZipFile(zip_path) as archive:
+                archive.extractall(extract_dir)
+            extracted = next(extract_dir.glob("node-v*"), None)
+            if extracted is None or not extracted.is_dir():
+                return False
+            target = home / "node"
+            if target.exists():
+                shutil.rmtree(target)
+            shutil.move(str(extracted), str(target))
+    except OSError:
+        return False
+
+    return node_tool_runnable(str(target / "node.exe"))
+
+
+def heal_zed_managed_node() -> bool:
+    """Redownload Zed-managed Node when the tree exists but is broken.
+
+    Runs at most once per process. POSIX installs shell out to
+    ``heal_managed_node`` in ``scripts/lib/node-bootstrap.sh``; Windows
+    downloads the portable zip directly (same source as ``install.ps1``).
+    """
+    global _managed_node_heal_attempted
+    if _managed_node_heal_attempted:
+        return False
+    if not zed_managed_node_tree_present():
+        return False
+    _managed_node_heal_attempted = True
+
+    if sys.platform == "win32":
+        return _heal_managed_node_windows()
+
+    if not _NODE_BOOTSTRAP_SCRIPT.is_file():
+        return False
+
+    import subprocess
+
+    try:
+        result = subprocess.run(
+            [
+                "bash",
+                "-c",
+                f'source "{_NODE_BOOTSTRAP_SCRIPT}" && heal_managed_node',
+            ],
+            env={**os.environ, "ZED_HOME": str(get_zed_home())},
+            capture_output=True,
+            timeout=300,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return result.returncode == 0
+
+
 def find_zed_node_executable(command: str) -> str | None:
-    """Return a Zed-managed Node/npm executable path, if installed."""
+    """Return a Zed-managed Node/npm executable path, healing broken trees."""
     names = _candidate_node_command_names(command)
+    broken_present = False
     for directory in iter_zed_node_dirs():
         for name in names:
             candidate = directory / name
             if candidate.is_file() and (
                 sys.platform == "win32" or os.access(candidate, os.X_OK)
             ):
+                resolved = str(candidate)
+                if node_tool_runnable(resolved):
+                    return resolved
+                broken_present = True
+    if broken_present and heal_zed_managed_node():
+        for directory in iter_zed_node_dirs():
+            for name in names:
+                candidate = directory / name
+                if candidate.is_file() and (
+                    sys.platform == "win32" or os.access(candidate, os.X_OK)
+                ):
+                    resolved = str(candidate)
+                    if node_tool_runnable(resolved):
+                        return resolved
+    return None
+
+
+def find_node_executable_on_path(command: str) -> str | None:
+    """Return a Node/npm executable from PATH with Windows shim ordering.
+
+    ``shutil.which("npm")`` can resolve an extensionless npm shim before the
+    ``.cmd`` shim on Windows. Python's CreateProcess cannot execute that shim
+    directly, so prefer the launchable variants explicitly for Zed-owned
+    subprocesses.
+    """
+    if sys.platform != "win32":
+        return shutil.which(command)
+
+    command_str = str(command)
+    has_path_separator = any(
+        sep and sep in command_str for sep in (os.sep, os.altsep, "/", "\\")
+    )
+    if has_path_separator:
+        return command_str if Path(command_str).is_file() else None
+
+    for name in _candidate_node_command_names(command_str):
+        for directory in os.environ.get("PATH", "").split(os.pathsep):
+            if not directory:
+                continue
+            candidate = Path(directory) / name
+            if candidate.is_file():
                 return str(candidate)
     return None
 
 
 def find_node_executable(command: str) -> str | None:
-    """Resolve a Node.js command, preferring Zed-managed installs.
+    """Resolve a Node.js command, preferring healthy Zed-managed installs.
 
     This is for Zed-owned subprocesses that should not be broken by a bad,
-    missing, or elevation-triggering system Node/npm on PATH.
+    missing, or elevation-triggering system Node/npm on PATH. When a managed
+    tree exists but cannot be healed, returns ``None`` instead of falling back
+    to system npm on PATH.
     """
-    return find_zed_node_executable(command) or shutil.which(command)
+    managed = find_zed_node_executable(command)
+    if managed:
+        return managed
+    if zed_managed_node_tree_present():
+        return None
+    return find_node_executable_on_path(command)
 
 
 def with_zed_node_path(env: dict[str, str] | None = None) -> dict[str, str]:
@@ -310,6 +529,103 @@ def with_zed_node_path(env: dict[str, str] | None = None) -> dict[str, str]:
             parts.insert(0, entry)
     merged["PATH"] = os.pathsep.join(parts)
     return merged
+
+
+def agent_browser_runnable(path: str | None) -> bool:
+    """Return True only when *path* is an agent-browser CLI that actually runs.
+
+    A bare presence check (``shutil.which`` / ``Path.exists``) is not enough:
+    agent-browser's npm ``postinstall`` re-points a *global* install symlink
+    (e.g. ``/opt/homebrew/bin/agent-browser``) at our local
+    ``node_modules/agent-browser/bin/...`` binary, which then disappears on the
+    next ``zed update`` — leaving a **dangling symlink** that ``which`` still
+    reports but exec fails on with exit 127 (issue #48521). Callers that trust
+    such a path silently break every browser tool.
+
+    This validates the candidate by resolving it to a real, executable file and
+    running ``--version`` with a short timeout. Returns True only on a clean
+    (exit 0) run, so a dead/wrong-arch/hung binary is rejected and the caller
+    can fall through to the next resolution candidate.
+
+    Special cases:
+      * ``None`` / empty → False.
+      * The ``"npx agent-browser"`` fallback form (contains a space, not a real
+        file) → True; npx resolves and validates the package at run time, so
+        there is nothing to stat here.
+    """
+    if not path:
+        return False
+    # The npx fallback is a two-token command string, not a filesystem path.
+    if " " in path and path.split()[0].endswith("npx"):
+        return True
+    # exists() follows symlinks — a dangling link returns False here, so we
+    # never even spawn a subprocess for the broken-link case.
+    if not os.path.exists(path) or not os.access(path, os.X_OK):
+        return False
+    import subprocess
+
+    try:
+        from zed_cli._subprocess_compat import windows_hide_flags
+
+        result = subprocess.run(
+            [path, "--version"],
+            capture_output=True,
+            timeout=10,
+            env=with_zed_node_path(),
+            creationflags=windows_hide_flags(),
+        )
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return False
+    return result.returncode == 0
+
+
+def _legacy_path_has_content(path: Path) -> bool:
+    """Return ``True`` iff ``path`` exists and has content worth honouring.
+
+    A populated *directory* (any entry inside) counts. A non-directory
+    file at ``path`` also counts — the consumer presumably wrote it.
+    An empty directory does **not** count, so a stale empty
+    legacy stub falls through to the new layout. If the path cannot be
+    inspected (``PermissionError`` on ``stat``/``iterdir``, or any other
+    ``OSError`` short of "not found"), assume occupied so we don't
+    accidentally orphan legacy data. Only a genuine
+    ``FileNotFoundError`` counts as absent.
+
+    Symlinks are resolved before judging content: a symlink pointing at a
+    populated directory (or any existing non-directory target) counts, but
+    a **dangling** symlink (broken target) does **not** — it must not be
+    allowed to shadow populated new-layout data, matching the old
+    ``exists()`` gate's behaviour for broken links.
+    """
+    try:
+        st = path.lstat()
+    except FileNotFoundError:
+        return False
+    except OSError:
+        # PermissionError on a parent, or any other inspection failure:
+        # treat as occupied rather than silently orphaning legacy data.
+        return True
+    if stat.S_ISLNK(st.st_mode):
+        # Resolve the link's target. A dangling symlink has no content and
+        # must not shadow the new layout; a valid one is judged on its target.
+        try:
+            target_st = path.stat()  # follows the link
+        except FileNotFoundError:
+            return False  # dangling symlink → fall through to new layout
+        except OSError:
+            return True  # can't resolve → assume occupied, don't orphan data
+        if not stat.S_ISDIR(target_st.st_mode):
+            return True
+        # target is a directory — fall through to the iterdir() emptiness check
+    elif not stat.S_ISDIR(st.st_mode):
+        return True
+    try:
+        next(path.iterdir())
+    except StopIteration:
+        return False
+    except OSError:
+        return True
+    return True
 
 
 def display_zed_home() -> str:
@@ -340,10 +656,10 @@ def secure_parent_dir(path: Path) -> None:
     prevent catastrophic host bricking when ``ZED_HOME`` or other path
     env vars resolve to an unexpected location.
 
-    See https://github.com/NousResearch/zed-agent/issues/25821.
+    See https://github.com/zedteam/zed-agent/issues/25821.
     """
     parent = path.parent.resolve()
-    # Refuse root and its direct children (/usr, /home, /var, /tmp, â€¦).
+    # Refuse root and its direct children (/usr, /home, /var, /tmp, …).
     if parent == Path("/") or len(parent.parts) < 3:
         return
     try:
@@ -391,7 +707,7 @@ def _iter_real_home_candidates(env: dict[str, str] | None = None) -> list[str]:
     try:
         import pwd
 
-        pw_home = pwd.getpwuid(os.getuid()).pw_dir.strip()  # windows-footgun: ok â€” POSIX-only module inside try/except
+        pw_home = pwd.getpwuid(os.getuid()).pw_dir.strip()  # windows-footgun: ok — POSIX-only module inside try/except
         if pw_home:
             candidates.append(pw_home)
     except Exception:
@@ -475,21 +791,29 @@ def apply_subprocess_home_env(env: dict[str, str]) -> None:
         env["HOME"] = home
 
 
-VALID_REASONING_EFFORTS = ("minimal", "low", "medium", "high", "xhigh")
+VALID_REASONING_EFFORTS = ("minimal", "low", "medium", "high", "xhigh", "max")
 
 
-def parse_reasoning_effort(effort: str) -> dict | None:
+def parse_reasoning_effort(effort) -> dict | None:
     """Parse a reasoning effort level into a config dict.
 
-    Valid levels: "none", "minimal", "low", "medium", "high", "xhigh".
+    Valid levels: "none", "minimal", "low", "medium", "high", "xhigh", "max".
     Returns None when the input is empty or unrecognized (caller uses default).
-    Returns {"enabled": False} for "none".
+    Returns {"enabled": False} for "none" (aliases: "false", "disabled", and
+    YAML boolean False — users write ``reasoning_effort: false``/``off``/``no``
+    in config.yaml and YAML hands us a bool, which must mean disabled, not
+    "fall back to the default and keep thinking").
     Returns {"enabled": True, "effort": <level>} for valid effort levels.
     """
-    if not effort or not effort.strip():
+    if effort is False:
+        return {"enabled": False}
+    if effort is None or effort is True:
+        return None
+    effort = str(effort)
+    if not effort.strip():
         return None
     effort = effort.strip().lower()
-    if effort == "none":
+    if effort in {"none", "false", "disabled"}:
         return {"enabled": False}
     if effort in VALID_REASONING_EFFORTS:
         return {"enabled": True, "effort": effort}
@@ -500,7 +824,7 @@ def is_termux() -> bool:
     """Return True when running inside a Termux (Android) environment.
 
     Checks ``TERMUX_VERSION`` (set by Termux) or the Termux-specific
-    ``PREFIX`` path.  Import-safe â€” no heavy deps.
+    ``PREFIX`` path.  Import-safe — no heavy deps.
     """
     prefix = os.getenv("PREFIX", "")
     return bool(os.getenv("TERMUX_VERSION") or "com.termux/files/usr" in prefix)
@@ -514,7 +838,7 @@ def is_wsl() -> bool:
 
     Checks ``/proc/version`` for the ``microsoft`` marker that both WSL1
     and WSL2 inject.  Result is cached for the process lifetime.
-    Import-safe â€” no heavy deps.
+    Import-safe — no heavy deps.
     """
     global _wsl_detected
     if _wsl_detected is not None:
@@ -534,18 +858,18 @@ def is_container() -> bool:
     """Return True when running inside a container.
 
     Recognizes Docker (``/.dockerenv``), Podman (``/run/.containerenv``),
-    and â€” via ``/proc/1/cgroup`` â€” the docker/podman/lxc cgroup-v1 markers.
+    and — via ``/proc/1/cgroup`` — the docker/podman/lxc cgroup-v1 markers.
 
     cgroup v2 collapses ``/proc/1/cgroup`` to a single ``0::/`` line with no
     runtime marker, so containerd/CRI-O runtimes (the common case on
     Kubernetes/k3s) were previously missed. To cover those, also check:
-      * ``KUBERNETES_SERVICE_HOST`` env var â€” set in every Kubernetes pod.
+      * ``KUBERNETES_SERVICE_HOST`` env var — set in every Kubernetes pod.
       * ``kubepods`` / ``containerd`` / ``crio`` markers in ``/proc/1/cgroup``.
       * the same markers in ``/proc/self/mountinfo`` (cgroup-v2 fallback).
 
-    Result is cached for the process lifetime.  Import-safe â€” no heavy deps.
+    Result is cached for the process lifetime.  Import-safe — no heavy deps.
 
-    See: NousResearch/zed-agent#47111
+    See: zedteam/zed-agent#47111
     """
     global _container_detected
     if _container_detected is not None:
@@ -584,7 +908,7 @@ def is_container() -> bool:
     return False
 
 
-# â”€â”€â”€ Well-Known Paths â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─── Well-Known Paths ─────────────────────────────────────────────────────────
 
 
 def get_config_path() -> Path:
@@ -607,7 +931,7 @@ def get_env_path() -> Path:
     return get_zed_home() / ".env"
 
 
-# â”€â”€â”€ Network Preferences â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─── Network Preferences ─────────────────────────────────────────────────────
 
 
 def apply_ipv4_preference(force: bool = False) -> None:
@@ -615,7 +939,7 @@ def apply_ipv4_preference(force: bool = False) -> None:
 
     On servers with broken or unreachable IPv6, Python tries AAAA records
     first and hangs for the full TCP timeout before falling back to IPv4.
-    This affects httpx, requests, urllib, the OpenAI SDK â€” everything that
+    This affects httpx, requests, urllib, the OpenAI SDK — everything that
     uses ``socket.getaddrinfo``.
 
     When *force* is True, patches ``getaddrinfo`` so that calls with
@@ -623,7 +947,7 @@ def apply_ipv4_preference(force: bool = False) -> None:
     skipping IPv6 entirely.  If no A record exists, falls back to the
     original unfiltered resolution so pure-IPv6 hosts still work.
 
-    Safe to call multiple times â€” only patches once.
+    Safe to call multiple times — only patches once.
     Set ``network.force_ipv4: true`` in ``config.yaml`` to enable.
     """
     if not force:
@@ -638,13 +962,13 @@ def apply_ipv4_preference(force: bool = False) -> None:
     _original_getaddrinfo = socket.getaddrinfo
 
     def _ipv4_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
-        if family == 0:  # AF_UNSPEC â€” caller didn't request a specific family
+        if family == 0:  # AF_UNSPEC — caller didn't request a specific family
             try:
                 return _original_getaddrinfo(
                     host, port, socket.AF_INET, type, proto, flags
                 )
             except socket.gaierror:
-                # No A record â€” fall back to full resolution (pure-IPv6 hosts)
+                # No A record — fall back to full resolution (pure-IPv6 hosts)
                 return _original_getaddrinfo(host, port, family, type, proto, flags)
         return _original_getaddrinfo(host, port, family, type, proto, flags)
 
@@ -652,7 +976,7 @@ def apply_ipv4_preference(force: bool = False) -> None:
     socket.getaddrinfo = _ipv4_getaddrinfo  # type: ignore[assignment]
 
 
-# â”€â”€â”€ Streaming Response Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─── Streaming Response Constants ────────────────────────────────────────────
 
 # Response ID for partial stream stubs used during error recovery
 PARTIAL_STREAM_STUB_ID = "partial-stream-stub"

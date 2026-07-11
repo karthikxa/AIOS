@@ -6,7 +6,7 @@ ABC introduced in PR #25214). The legacy in-tree module
 is now the canonical implementation.
 
 Browserbase requires direct ``BROWSERBASE_API_KEY`` and ``BROWSERBASE_PROJECT_ID``
-credentials. Managed Nous gateway support has been removed â€” the Nous
+credentials. Managed Zed gateway support has been removed â€” the Zed
 subscription now routes through Browser Use instead (see
 ``plugins/browser/browser_use/``).
 
@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 class BrowserbaseBrowserProvider(BrowserProvider):
     """Browserbase (https://browserbase.com) cloud browser backend.
 
-    Direct credentials only â€” managed-Nous-gateway support lives on the
+    Direct credentials only â€” managed-Zed-gateway support lives on the
     Browser Use provider now.
     """
 

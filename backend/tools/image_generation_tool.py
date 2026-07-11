@@ -201,7 +201,7 @@ FAL_MODELS: Dict[str, Dict[str, Any]] = {
             "output_format": "png",
             "safety_tolerance": "5",
             # "1K" is the cheapest tier; 4K doubles the per-image cost.
-            # Users on Nous Subscription should stay at 1K for predictable billing.
+            # Users on Zed Subscription should stay at 1K for predictable billing.
             "resolution": "1K",
         },
         "supports": {
@@ -377,7 +377,7 @@ FAL_MODELS: Dict[str, Dict[str, Any]] = {
     # Krea 2 â€” Krea's first foundation image model, day-0 partner launch on
     # fal (2026-05-27). Same model family as our direct ``plugins/image_gen/krea``
     # backend, exposed here for users who prefer to bill through their
-    # existing FAL key / Nous Portal subscription rather than register
+    # existing FAL key / Zed Portal subscription rather than register
     # directly with Krea.  Both variants share the same parameter schema â€”
     # only model id, price, and recommended use case differ.
     "fal-ai/krea/v2/medium/text-to-image": {
@@ -452,7 +452,7 @@ _managed_fal_client_lock = threading.Lock()
 
 
 # ---------------------------------------------------------------------------
-# Managed FAL gateway (Nous Subscription)
+# Managed FAL gateway (Zed Subscription)
 # ---------------------------------------------------------------------------
 def _resolve_managed_fal_gateway():
     """Return managed fal-queue gateway config when the user prefers the gateway
@@ -519,9 +519,9 @@ def _submit_fal_request(model: str, arguments: Dict[str, Any]):
                     )
                 )
             raise ValueError(
-                f"Nous Subscription gateway rejected model '{model}' "
+                f"Zed Subscription gateway rejected model '{model}' "
                 f"(HTTP {status}). This model may not yet be enabled on "
-                f"the Nous Portal's FAL proxy. Either:\n"
+                f"the Zed Portal's FAL proxy. Either:\n"
                 f"  â€¢ Set FAL_KEY in your environment to use FAL.ai directly, or\n"
                 f"  â€¢ Pick a different model via `zed tools` â†’ Image Generation."
                 f"{gateway_message}"
@@ -1077,7 +1077,7 @@ def _build_no_backend_setup_message() -> str:
     )
     if managed_nous_tools_enabled():
         lines.append(
-            "  2. Sign in to a Nous account that has the managed FAL "
+            "  2. Sign in to a Zed account that has the managed FAL "
             "gateway enabled (`zed setup`)"
         )
     lines.append(

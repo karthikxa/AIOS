@@ -1,4 +1,4 @@
-# Real-World Examples
+﻿# Real-World Examples
 
 Practical examples of using Instructor for structured data extraction.
 

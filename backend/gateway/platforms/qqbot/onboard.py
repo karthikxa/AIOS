@@ -1,4 +1,4 @@
-"""
+﻿"""
 QQBot scan-to-configure (QR code onboard) module.
 
 Mirrors the Feishu onboarding pattern: synchronous HTTP + a single public

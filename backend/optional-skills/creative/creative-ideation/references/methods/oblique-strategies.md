@@ -1,4 +1,4 @@
-# Oblique Strategies
+﻿# Oblique Strategies
 
 Brian Eno + Peter Schmidt, 1975. A deck of ~110 gnomic cards for breaking studio deadlocks. Used on Bowie's *Berlin Trilogy*, *Music for Airports*, and dozens of other records.
 

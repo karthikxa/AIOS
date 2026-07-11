@@ -1,4 +1,4 @@
-"""Native Anthropic provider profile."""
+﻿"""Native Anthropic provider profile."""
 
 import json
 import logging

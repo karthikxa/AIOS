@@ -1,4 +1,4 @@
-# Investigation Templates
+﻿# Investigation Templates
 
 Pre-built hypothesis and investigation templates for common supply chain attack scenarios.
 Each template includes: attack pattern, key evidence to collect, and hypothesis starters.

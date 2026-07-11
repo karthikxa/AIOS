@@ -1,4 +1,4 @@
-"""Shared helpers for classifying tool result payloads."""
+﻿"""Shared helpers for classifying tool result payloads."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Yuanbao sticker (TIMFaceElem) support.
 
 Ported from yuanbao-openclaw-plugin/src/sticker/.

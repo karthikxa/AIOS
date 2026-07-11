@@ -1,4 +1,4 @@
-"""Abstract base for proxy upstream adapters.
+﻿"""Abstract base for proxy upstream adapters.
 
 An :class:`UpstreamAdapter` represents one OAuth-authenticated provider the
 local proxy can forward requests to. The adapter is responsible for:
@@ -26,7 +26,7 @@ class UpstreamCredential:
     """Authorization header value to send upstream (token only, no ``Bearer`` prefix)."""
 
     base_url: str
-    """Upstream base URL, e.g. ``https://inference-api.nousresearch.com/v1``."""
+    """Upstream base URL, e.g. ``https://inference-api.zedteam.com/v1``."""
 
     token_type: str = "Bearer"
     """Auth scheme — currently always ``Bearer`` for supported providers."""

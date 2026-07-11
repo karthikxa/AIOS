@@ -1,7 +1,7 @@
 ﻿"""SelfHostedOIDCProvider â€” generic self-hosted OpenID Connect dashboard auth.
 
 A standards-compliant OpenID Connect Relying Party for the ``zed dashboard``
-OAuth gate. Unlike the bundled ``nous`` provider (which encodes Nous Portal's
+OAuth gate. Unlike the bundled ``nous`` provider (which encodes Zed Portal's
 bespoke contract â€” ``agent:{instance_id}`` client ids, a custom access-token
 JWT, the ``x-nous-refresh-token`` header, an ``oauth_contract_version`` claim),
 this provider speaks **plain OIDC** so it works against any conformant
@@ -29,7 +29,7 @@ signed JWT carrying identity claims â€” that is its entire purpose. The acc
 token's format is opaque to the client per the spec; many IDPs issue random
 opaque strings the client cannot verify locally. Verifying the ID token is the
 only choice that is universally correct across self-hosted IDPs. (The ``nous``
-provider verifies its *access* token because Nous Portal mints a custom JWT
+provider verifies its *access* token because Zed Portal mints a custom JWT
 access token with the dashboard claims baked in â€” a non-OIDC shortcut.)
 
 Public PKCE clients only. Confidential clients (with a ``client_secret``) are
@@ -111,7 +111,7 @@ _TOKEN_ENDPOINT_TIMEOUT_SEC = 10.0
 # dashboard picks up an IDP endpoint migration within the hour.
 _DISCOVERY_CACHE_TTL_SEC = 3600
 
-# JWKS cache (PyJWKClient handles its own caching; this mirrors the nous
+# JWKS cache (PyJWKClient handles its own caching; this mirrors the Zed
 # provider's 5-minute lifespan so key rotation is picked up promptly).
 _JWKS_CACHE_SECONDS = 300
 
@@ -594,7 +594,7 @@ class SelfHostedOIDCProvider(DashboardAuthProvider):
         """Fast-fail obviously-broken redirect_uris before bouncing to the IDP.
 
         The IDP's own allowlist is authoritative; this just catches the common
-        operator-error case with a clear message. Mirrors the nous provider.
+        operator-error case with a clear message. Mirrors the Zed provider.
         """
         parsed = urllib.parse.urlparse(redirect_uri)
         if parsed.scheme not in ("https", "http"):

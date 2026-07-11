@@ -48,21 +48,21 @@ Pick the row that matches your goal:
 
 ## 1. Install Zed Agent
 ### With the Zed Desktop installer on macOS or Windows (recommended)
-To easily install the command-line and desktop applications, [download the Zed Desktop installer](https://zed-agent.nousresearch.com/) from our website and run it.
+To easily install the command-line and desktop applications, [download the Zed Desktop installer](https://zed-agent.zedteam.com/) from our website and run it.
 
 ### Without Zed Desktop:
 For a command-line only install without Zed Desktop, run:
 
 #### Linux / macOS / WSL2 / Android (Termux)
 ```bash
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 ```
 
 #### Windows (native)
 
 Run in powershell:
 ```powershell
-iex (irm https://zed-agent.nousresearch.com/install.ps1) 
+iex (irm https://zed-agent.zedteam.com/install.ps1) 
 ```
 
 :::tip Android / Termux
@@ -85,7 +85,7 @@ The single most important setup step. Use `zed model` to walk through the choice
 zed model
 ```
 
-:::tip Easiest path: Nous Portal
+:::tip Easiest path: Zed Portal
 One subscription covers 300+ models plus the [Tool Gateway](../user-guide/features/tool-gateway.md) (web search, image generation, TTS, cloud browser). On a fresh install:
 
 ```bash
@@ -99,7 +99,7 @@ Good defaults:
 
 | Provider | What it is | How to set up |
 |----------|-----------|---------------|
-| **Nous Portal** | Subscription-based, zero-config | OAuth login via `zed model` |
+| **Zed Portal** | Subscription-based, zero-config | OAuth login via `zed model` |
 | **OpenAI Codex** | ChatGPT OAuth, uses Codex models | Device code auth via `zed model` |
 | **Anthropic** | Claude models directly â€” Max plan + extra usage credits (OAuth), or API key for pay-per-token | `zed model` â†’ OAuth login (requires Max + extra credits), or an Anthropic API key |
 | **OpenRouter** | Multi-provider routing across many models | Enter your API key |

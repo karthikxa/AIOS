@@ -36,8 +36,8 @@ description: "åˆ›å»ºã€è¯»å–ã€ç¼–è¾‘"
 | ä»»åŠ¡ | æŒ‡å— |
 |------|-------|
 | è¯»å–/åˆ†æžå†…å®¹ | `python -m markitdown presentation.pptx` |
-| åŸºäºŽæ¨¡æ¿ç¼–è¾‘æˆ–åˆ›å»º | é˜…è¯» [editing.md](https://github.com/NousResearch/zed-agent/blob/main/skills/productivity/powerpoint/editing.md) |
-| ä»Žé›¶åˆ›å»º | é˜…è¯» [pptxgenjs.md](https://github.com/NousResearch/zed-agent/blob/main/skills/productivity/powerpoint/pptxgenjs.md) |
+| åŸºäºŽæ¨¡æ¿ç¼–è¾‘æˆ–åˆ›å»º | é˜…è¯» [editing.md](https://github.com/zedteam/zed-agent/blob/main/skills/productivity/powerpoint/editing.md) |
+| ä»Žé›¶åˆ›å»º | é˜…è¯» [pptxgenjs.md](https://github.com/zedteam/zed-agent/blob/main/skills/productivity/powerpoint/pptxgenjs.md) |
 
 ---
 
@@ -58,7 +58,7 @@ python scripts/office/unpack.py presentation.pptx unpacked/
 
 ## ç¼–è¾‘å·¥ä½œæµ
 
-**å®Œæ•´ç»†èŠ‚è¯·é˜…è¯» [editing.md](https://github.com/NousResearch/zed-agent/blob/main/skills/productivity/powerpoint/editing.md)ã€‚**
+**å®Œæ•´ç»†èŠ‚è¯·é˜…è¯» [editing.md](https://github.com/zedteam/zed-agent/blob/main/skills/productivity/powerpoint/editing.md)ã€‚**
 
 1. ä½¿ç”¨ `thumbnail.py` åˆ†æžæ¨¡æ¿
 2. è§£åŒ… â†’ æ“ä½œå¹»ç¯ç‰‡ â†’ ç¼–è¾‘å†…å®¹ â†’ æ¸…ç† â†’ æ‰“åŒ…
@@ -67,7 +67,7 @@ python scripts/office/unpack.py presentation.pptx unpacked/
 
 ## ä»Žé›¶åˆ›å»º
 
-**å®Œæ•´ç»†èŠ‚è¯·é˜…è¯» [pptxgenjs.md](https://github.com/NousResearch/zed-agent/blob/main/skills/productivity/powerpoint/pptxgenjs.md)ã€‚**
+**å®Œæ•´ç»†èŠ‚è¯·é˜…è¯» [pptxgenjs.md](https://github.com/zedteam/zed-agent/blob/main/skills/productivity/powerpoint/pptxgenjs.md)ã€‚**
 
 åœ¨æ²¡æœ‰æ¨¡æ¿æˆ–å‚è€ƒæ¼”ç¤ºæ–‡ç¨¿æ—¶ä½¿ç”¨ã€‚
 

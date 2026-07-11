@@ -1,4 +1,4 @@
-# Production-Ready Examples
+﻿# Production-Ready Examples
 
 Real-world examples of using Guidance for structured generation, agents, and workflows.
 

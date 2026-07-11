@@ -1,4 +1,4 @@
-"""Computer use toolset — universal (any-model) macOS desktop control.
+﻿"""Computer use toolset — universal (any-model) macOS desktop control.
 
 Architecture
 ------------

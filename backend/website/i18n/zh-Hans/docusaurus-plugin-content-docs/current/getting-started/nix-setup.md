@@ -35,11 +35,11 @@ Zed Agent æä¾›äº†ä¸€ä¸ª Nix flakeï¼Œæ”¯æŒä¸‰�
 
 ```bash
 # ç›´æŽ¥è¿è¡Œï¼ˆé¦–æ¬¡ä½¿ç”¨æ—¶æž„å»ºï¼Œä¹‹åŽä½¿ç”¨ç¼“å­˜ï¼‰
-nix run github:NousResearch/zed-agent -- setup
-nix run github:NousResearch/zed-agent -- chat
+nix run github:zedteam/zed-agent -- setup
+nix run github:zedteam/zed-agent -- chat
 
 # æˆ–æŒä¹…åŒ–å®‰è£…
-nix profile install github:NousResearch/zed-agent
+nix profile install github:zedteam/zed-agent
 zed setup
 zed chat
 ```
@@ -50,7 +50,7 @@ zed chat
 <summary><strong>ä»Žæœ¬åœ°å…‹éš†æž„å»º</strong></summary>
 
 ```bash
-git clone https://github.com/NousResearch/zed-agent.git
+git clone https://github.com/zedteam/zed-agent.git
 cd zed-agent
 nix build
 ./result/bin/zed setup
@@ -75,7 +75,7 @@ nix build
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    zed-agent.url = "github:NousResearch/zed-agent";
+    zed-agent.url = "github:zedteam/zed-agent";
   };
 
   outputs = { nixpkgs, zed-agent, ... }: {
@@ -685,7 +685,7 @@ services.zed-agent = {
 
 ```nix
 {
-  inputs.zed-agent.url = "github:NousResearch/zed-agent";
+  inputs.zed-agent.url = "github:zedteam/zed-agent";
   outputs = { zed-agent, nixpkgs, ... }: {
     nixpkgs.overlays = [ zed-agent.overlays.default ];
     # ç„¶åŽï¼š

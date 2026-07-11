@@ -9,7 +9,7 @@ description: "Master the Zed Agent terminal interface â€” commands, keybind
 Zed Agent's CLI is a full terminal user interface (TUI) â€” not a web UI. It features multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output. Built for people who live in the terminal.
 
 :::tip First-time setup
-One command â€” `zed setup --portal` â€” and you're ready to `zed chat`. See [Nous Portal](/integrations/nous-portal).
+One command â€” `zed setup --portal` â€” and you're ready to `zed chat`. See [Zed Portal](/integrations/nous-portal).
 :::
 
 :::tip
@@ -29,7 +29,7 @@ zed chat -q "Hello"
 zed chat --model "anthropic/claude-sonnet-4"
 
 # With a specific provider
-zed chat --provider nous        # Use Nous Portal
+zed chat --provider nous        # Use Zed Portal
 zed chat --provider openrouter  # Force OpenRouter
 
 # With specific toolsets

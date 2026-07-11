@@ -43,7 +43,7 @@ description: "å¦‚ä½•ä¸º Zed Agent åšè´¡çŒ® â€” å¼€
 å¯¹å¤§å¤šæ•°è´¡çŒ®è€…æ¥è¯´ï¼Œæœ€å¥½çš„å¼€å‘å¯åŠ¨æ–¹å¼å’Œç”¨æˆ·å®‰è£…æ–¹å¼ç›¸åŒï¼šè¿è¡Œæ ‡å‡†å®‰è£…å™¨ï¼Œç„¶åŽåœ¨å®ƒå…‹éš†å‡ºçš„ä»“åº“é‡Œå¼€å‘ã€‚å®‰è£…å™¨ä¼šåˆ›å»º Zed venvã€é…ç½® `zed` å‘½ä»¤ã€ä¸º `zed update` å†™å…¥å®‰è£…æ–¹å¼æ ‡è®°ï¼Œå¹¶æŠŠå®Œæ•´ git é¡¹ç›®å…‹éš†åˆ° `$ZED_HOME/zed-agent`ï¼ˆé€šå¸¸æ˜¯ `~/.zed/zed-agent`ï¼‰ã€‚è¿™æ ·ä½ çš„å¼€å‘çŽ¯å¢ƒä¼šå’Œ CLIã€updaterã€lazy dependency installerã€gatewayã€docs é»˜è®¤å‡è®¾çš„å¸ƒå±€ä¸€è‡´ã€‚
 
 ```bash
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 cd "${ZED_HOME:-$HOME/.zed}/zed-agent"
 
 # åœ¨æ ‡å‡†å®‰è£…åŸºç¡€ä¸Šæ·»åŠ å¼€å‘/æµ‹è¯• extrasã€‚
@@ -65,7 +65,7 @@ scripts/run_tests.sh
 åªæœ‰åœ¨ä½ æ˜Žç¡®ä¸æƒ³ä½¿ç”¨ Zed managed install layout æ—¶æ‰ä½¿ç”¨è¿™ç§æ–¹å¼ï¼ˆä¾‹å¦‚å®¹å™¨æˆ– CI job é‡Œçš„ä¸´æ—¶ cloneï¼‰ã€‚å¦‚æžœè¿™æ ·å®‰è£…ï¼Œè¯·ç¡®ä¿è¿è¡Œçš„æ˜¯è¿™ä¸ª venv é‡Œçš„ `zed` entrypointï¼›è¿è¡Œç³»ç»Ÿ `python3 -m zed_cli.main` å¯èƒ½ä¼šåŠ è½½æ— å…³çš„ç³»ç»Ÿ Python åŒ…ã€‚
 
 ```bash
-git clone https://github.com/NousResearch/zed-agent.git
+git clone https://github.com/zedteam/zed-agent.git
 cd zed-agent
 
 # ä½¿ç”¨ Python 3.11 åˆ›å»ºè™šæ‹ŸçŽ¯å¢ƒ
@@ -117,7 +117,7 @@ scripts/run_tests.sh
 - **æ³¨é‡Š**ï¼šä»…åœ¨è§£é‡Šéžæ˜¾è€Œæ˜“è§çš„æ„å›¾ã€æƒè¡¡å–èˆæˆ– API ç‰¹æ®Šè¡Œä¸ºæ—¶æ·»åŠ 
 - **é”™è¯¯å¤„ç†**ï¼šæ•èŽ·å…·ä½“å¼‚å¸¸ã€‚å¯¹äºŽæ„å¤–é”™è¯¯ï¼Œä½¿ç”¨ `logger.warning()`/`logger.error()` å¹¶è®¾ç½® `exc_info=True`
 - **è·¨å¹³å°**ï¼šä¸å¾—å‡è®¾ Unix çŽ¯å¢ƒï¼ˆè§ä¸‹æ–‡ï¼‰
-- **Profile å®‰å…¨è·¯å¾„**ï¼šä¸å¾—ç¡¬ç¼–ç  `~/.zed` â€” ä»£ç è·¯å¾„ä½¿ç”¨ `zed_constants` ä¸­çš„ `get_zed_home()`ï¼Œé¢å‘ç”¨æˆ·çš„æ¶ˆæ¯ä½¿ç”¨ `display_zed_home()`ã€‚å®Œæ•´è§„åˆ™å‚è§ [AGENTS.md](https://github.com/NousResearch/zed-agent/blob/main/AGENTS.md#profiles-multi-instance-support)ã€‚
+- **Profile å®‰å…¨è·¯å¾„**ï¼šä¸å¾—ç¡¬ç¼–ç  `~/.zed` â€” ä»£ç è·¯å¾„ä½¿ç”¨ `zed_constants` ä¸­çš„ `get_zed_home()`ï¼Œé¢å‘ç”¨æˆ·çš„æ¶ˆæ¯ä½¿ç”¨ `display_zed_home()`ã€‚å®Œæ•´è§„åˆ™å‚è§ [AGENTS.md](https://github.com/zedteam/zed-agent/blob/main/AGENTS.md#profiles-multi-instance-support)ã€‚
 
 ## è·¨å¹³å°å…¼å®¹æ€§
 
@@ -253,7 +253,7 @@ fix(security): prevent shell injection in sudo password piping
 
 ## æŠ¥å‘Šé—®é¢˜
 
-- ä½¿ç”¨ [GitHub Issues](https://github.com/NousResearch/zed-agent/issues)
+- ä½¿ç”¨ [GitHub Issues](https://github.com/zedteam/zed-agent/issues)
 - è¯·åŒ…å«ï¼šæ“ä½œç³»ç»Ÿã€Python ç‰ˆæœ¬ã€Zed ç‰ˆæœ¬ï¼ˆ`zed version`ï¼‰ã€å®Œæ•´é”™è¯¯å †æ ˆ
 - åŒ…å«å¤çŽ°æ­¥éª¤
 - åˆ›å»ºå‰è¯·æ£€æŸ¥æ˜¯å¦å·²æœ‰é‡å¤ issue
@@ -261,10 +261,10 @@ fix(security): prevent shell injection in sudo password piping
 
 ## ç¤¾åŒº
 
-- **Discord**ï¼š[discord.gg/NousResearch](https://discord.gg/NousResearch)
+- **Discord**ï¼š[discord.gg/zedteam](https://discord.gg/zedteam)
 - **GitHub Discussions**ï¼šç”¨äºŽè®¾è®¡ææ¡ˆå’Œæž¶æž„è®¨è®º
 - **Skills Hub**ï¼šä¸Šä¼ ä¸“ä¸š skill å¹¶ä¸Žç¤¾åŒºå…±äº«
 
 ## è®¸å¯è¯
 
-æäº¤è´¡çŒ®å³è¡¨ç¤ºæ‚¨åŒæ„æ‚¨çš„è´¡çŒ®å°†ä»¥ [MIT è®¸å¯è¯](https://github.com/NousResearch/zed-agent/blob/main/LICENSE) æŽˆæƒã€‚
+æäº¤è´¡çŒ®å³è¡¨ç¤ºæ‚¨åŒæ„æ‚¨çš„è´¡çŒ®å°†ä»¥ [MIT è®¸å¯è¯](https://github.com/zedteam/zed-agent/blob/main/LICENSE) æŽˆæƒã€‚

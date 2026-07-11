@@ -1,4 +1,4 @@
-"""Shared Signal formatting helpers.
+﻿"""Shared Signal formatting helpers.
 
 Keep markdown → Signal native formatting conversion in one place so both the
 live Signal adapter and standalone send paths emit the same bodyRanges.

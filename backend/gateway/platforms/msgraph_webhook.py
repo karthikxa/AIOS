@@ -1,4 +1,4 @@
-"""Microsoft Graph webhook adapter for change-notification ingress."""
+﻿"""Microsoft Graph webhook adapter for change-notification ingress."""
 
 from __future__ import annotations
 

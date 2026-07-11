@@ -1,4 +1,4 @@
-# Jobs to Be Done
+﻿# Jobs to Be Done
 
 Clayton Christensen et al., *Competing Against Luck* (HarperBusiness, 2016). Customers don't buy products based on demographics — they "hire" products to do specific jobs in specific situations.
 

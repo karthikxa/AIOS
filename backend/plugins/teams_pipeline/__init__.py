@@ -1,4 +1,4 @@
-"""Teams meeting pipeline plugin.
+﻿"""Teams meeting pipeline plugin.
 
 Registers only operator-facing CLI surfaces. The agent should invoke these via
 the terminal tool; no model tools are added by this plugin.

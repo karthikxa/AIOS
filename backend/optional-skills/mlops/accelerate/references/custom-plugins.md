@@ -1,4 +1,4 @@
-# Custom Plugins for Accelerate
+﻿# Custom Plugins for Accelerate
 
 ## Overview
 

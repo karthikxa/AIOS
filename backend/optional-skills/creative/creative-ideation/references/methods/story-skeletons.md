@@ -1,4 +1,4 @@
-# Story Skeletons
+﻿# Story Skeletons
 
 Three traditions for narrative structure, deliberately heterogeneous (they disagree about what stories are):
 - **Emma Coats** — Pixar's 22 Story Basics (Twitter, May 2011). Working principles from Pixar's story room.

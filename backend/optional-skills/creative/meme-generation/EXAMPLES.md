@@ -1,4 +1,4 @@
-# Meme Generation Examples
+﻿# Meme Generation Examples
 
 ## Example 1: Debugging at 2 AM
 

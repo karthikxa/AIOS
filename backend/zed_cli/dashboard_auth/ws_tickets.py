@@ -1,4 +1,4 @@
-"""WS-upgrade auth credentials for gated mode.
+﻿"""WS-upgrade auth credentials for gated mode.
 
 Browsers cannot set ``Authorization`` on a WebSocket upgrade. In loopback
 mode the legacy ``?token=<_SESSION_TOKEN>`` query param works because the

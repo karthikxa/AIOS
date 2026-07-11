@@ -358,7 +358,7 @@ def doi_to_bibtex(doi: str) -> str:
 
 **åŠ¡å¿…å‘ŠçŸ¥ç§‘å­¦å®¶**ï¼š"æˆ‘å·²å°† [X] æ¡å¼•ç”¨æ ‡è®°ä¸ºéœ€è¦æ ¸å®žçš„å ä½ç¬¦ã€‚"
 
-å®Œæ•´ API æ–‡æ¡£å’Œ `CitationManager` ç±»è¯·å‚è§ [references/citation-workflow.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/citation-workflow.md)ã€‚
+å®Œæ•´ API æ–‡æ¡£å’Œ `CitationManager` ç±»è¯·å‚è§ [references/citation-workflow.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/citation-workflow.md)ã€‚
 
 ### æ­¥éª¤ 1.4ï¼šæ•´ç†ç›¸å…³å·¥ä½œ
 
@@ -440,7 +440,7 @@ analyze_results.py             # Statistical analysis
 make_charts.py                 # Visualization
 ```
 
-å®Œæ•´è®¾è®¡æ¨¡å¼ã€cron ç›‘æŽ§å’Œé”™è¯¯æ¢å¤è¯·å‚è§ [references/experiment-patterns.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/experiment-patterns.md)ã€‚
+å®Œæ•´è®¾è®¡æ¨¡å¼ã€cron ç›‘æŽ§å’Œé”™è¯¯æ¢å¤è¯·å‚è§ [references/experiment-patterns.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/experiment-patterns.md)ã€‚
 
 ### æ­¥éª¤ 2.5ï¼šè®¾è®¡äººå·¥è¯„ä¼°ï¼ˆå¦‚é€‚ç”¨ï¼‰
 
@@ -479,7 +479,7 @@ make_charts.py                 # Visualization
 - æ ‡æ³¨ç•Œé¢æè¿°æˆ–æˆªå›¾ï¼ˆé™„å½•ï¼‰
 - æ€»æ ‡æ³¨æ—¶é—´
 
-å®Œæ•´æŒ‡å—ï¼ˆå«äººå·¥è¯„ä¼°æ•°æ®çš„ç»Ÿè®¡æ£€éªŒã€ä¼—åŒ…è´¨é‡æŽ§åˆ¶æ¨¡å¼å’Œ IRB æŒ‡å¯¼ï¼‰è¯·å‚è§ [references/human-evaluation.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/human-evaluation.md)ã€‚
+å®Œæ•´æŒ‡å—ï¼ˆå«äººå·¥è¯„ä¼°æ•°æ®çš„ç»Ÿè®¡æ£€éªŒã€ä¼—åŒ…è´¨é‡æŽ§åˆ¶æ¨¡å¼å’Œ IRB æŒ‡å¯¼ï¼‰è¯·å‚è§ [references/human-evaluation.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/human-evaluation.md)ã€‚
 
 ---
 
@@ -609,7 +609,7 @@ for strategy, tasks in results.items():
 - **æˆå¯¹æ£€éªŒ**ï¼šMcNemar æ£€éªŒç”¨äºŽæ¯”è¾ƒä¸¤ç§æ–¹æ³•
 - **æ•ˆåº”é‡**ï¼šCohen's d æˆ– h ç”¨äºŽå®žé™…æ˜¾è‘—æ€§
 
-McNemar æ£€éªŒã€è‡ªä¸¾ CI å’Œ Cohen's h çš„å®Œæ•´å®žçŽ°è¯·å‚è§ [references/experiment-patterns.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/experiment-patterns.md)ã€‚
+McNemar æ£€éªŒã€è‡ªä¸¾ CI å’Œ Cohen's h çš„å®Œæ•´å®žçŽ°è¯·å‚è§ [references/experiment-patterns.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/experiment-patterns.md)ã€‚
 
 ### æ­¥éª¤ 4.3ï¼šæ‰¾å‡ºæ•…äº‹ä¸»çº¿
 
@@ -789,7 +789,7 @@ Frontier (S4.6)   â”‚ Excellent  â”‚ Good      â”‚ Small  â”�
 | è¿‡æ‹Ÿåˆï¼ˆä»£ç ï¼‰ | å…¬å¼€æµ‹è¯•é€šè¿‡çŽ‡é«˜ï¼Œç§æœ‰æµ‹è¯•é€šè¿‡çŽ‡ä½Ž | ä½¿ç”¨ç»“æž„åŒ–åˆ†æžï¼Œè€Œéžä»…ä¾èµ–æµ‹è¯•åé¦ˆ |
 | è¯„åˆ¤è€…æŸå | è§£æžå¤±è´¥å¯¼è‡´å°ç»„äººæ•°ä½ŽäºŽ 3 | å…ˆä¿®å¤è§£æžå™¨å†ç»§ç»­ |
 
-å®Œæ•´ promptï¼ˆæç¤ºè¯ï¼‰ã€Borda è®¡åˆ†ç»†èŠ‚ã€æ¨¡åž‹é€‰æ‹©æŒ‡å—ã€èŒƒå›´çº¦æŸè®¾è®¡æ¨¡å¼å’Œè®¡ç®—é¢„ç®—å‚è€ƒè¯·å‚è§ [references/autoreason-methodology.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/autoreason-methodology.md)ã€‚
+å®Œæ•´ promptï¼ˆæç¤ºè¯ï¼‰ã€Borda è®¡åˆ†ç»†èŠ‚ã€æ¨¡åž‹é€‰æ‹©æŒ‡å—ã€èŒƒå›´çº¦æŸè®¾è®¡æ¨¡å¼å’Œè®¡ç®—é¢„ç®—å‚è€ƒè¯·å‚è§ [references/autoreason-methodology.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/autoreason-methodology.md)ã€‚
 
 ---
 
@@ -855,8 +855,8 @@ Frontier (S4.6)   â”‚ Excellent  â”‚ Good      â”‚ Small  â”�
 | **Andrej Karpathy** | å•ä¸€è´¡çŒ®èšç„¦ | å„ç±»è®²åº§ |
 
 **æ·±å…¥äº†è§£ä»»ä½•ä¸€é¡¹ï¼Œè¯·å‚è§ï¼š**
-- [references/writing-guide.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/writing-guide.md) â€” å«ç¤ºä¾‹çš„å®Œæ•´è¯´æ˜Ž
-- [references/sources.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/sources.md) â€” å®Œæ•´å‚è€ƒä¹¦ç›®
+- [references/writing-guide.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/writing-guide.md) â€” å«ç¤ºä¾‹çš„å®Œæ•´è¯´æ˜Ž
+- [references/sources.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/sources.md) â€” å®Œæ•´å‚è€ƒä¹¦ç›®
 
 ### æ—¶é—´åˆ†é…
 
@@ -1165,7 +1165,7 @@ Model Card (Appendix):
 - å…¨æ–‡æœ¯è¯­ä¸€è‡´
 - é¿å…æ¸è¿›å¼è¯æ±‡ï¼š"developï¼ˆå¼€å‘ï¼‰"ï¼Œè€Œéž"combineï¼ˆç»“åˆï¼‰"
 
-**å«ç¤ºä¾‹çš„å®Œæ•´å†™ä½œæŒ‡å—**ï¼šå‚è§ [references/writing-guide.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/writing-guide.md)
+**å«ç¤ºä¾‹çš„å®Œæ•´å†™ä½œæŒ‡å—**ï¼šå‚è§ [references/writing-guide.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/writing-guide.md)
 
 ### ä½¿ç”¨ LaTeX æ¨¡æ¿
 
@@ -1256,7 +1256,7 @@ latexmk -pdf main.tex
 
 **é€šç”¨è§„åˆ™**ï¼šåŒç›²å®¡ç¨¿ï¼Œå‚è€ƒæ–‡çŒ®ä¸è®¡å…¥é¡µæ•°ï¼Œé™„å½•ä¸é™é¡µæ•°ï¼Œå¿…é¡»ä½¿ç”¨ LaTeXã€‚
 
-æ¨¡æ¿ä½äºŽ `templates/` ç›®å½•ã€‚ç¼–è¯‘è®¾ç½®ï¼ˆVS Codeã€CLIã€Overleafã€å…¶ä»– IDEï¼‰è¯·å‚è§ [templates/README.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/templates/README.md)ã€‚
+æ¨¡æ¿ä½äºŽ `templates/` ç›®å½•ã€‚ç¼–è¯‘è®¾ç½®ï¼ˆVS Codeã€CLIã€Overleafã€å…¶ä»– IDEï¼‰è¯·å‚è§ [templates/README.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/templates/README.md)ã€‚
 
 ### è¡¨æ ¼ä¸Žå›¾å½¢
 
@@ -1617,7 +1617,7 @@ Reviews:
 
 **å®¡ç¨¿æ¨¡åž‹é€‰æ‹©**ï¼šå®¡ç¨¿æœ€å¥½ä½¿ç”¨æœ€å¼ºçš„å¯ç”¨æ¨¡åž‹ï¼Œå³ä½¿ä½ ç”¨æ›´ä¾¿å®œçš„æ¨¡åž‹å†™äº†è®ºæ–‡ã€‚å®¡ç¨¿æ¨¡åž‹åº”ç‹¬ç«‹äºŽå†™ä½œæ¨¡åž‹é€‰æ‹©ã€‚
 
-**å°‘æ ·æœ¬æ ¡å‡†**ï¼šå¦‚æžœå¯ç”¨ï¼ŒåŒ…å« 1-2 ä»½æ¥è‡ªç›®æ ‡ä¼šè®®çš„çœŸå®žå·²å‘è¡¨å®¡ç¨¿æ„è§ä½œä¸ºç¤ºä¾‹ã€‚è¿™ä¼šæ˜¾è‘—æå‡åˆ†æ•°æ ¡å‡†ã€‚ç¤ºä¾‹å®¡ç¨¿æ„è§è¯·å‚è§ [references/reviewer-guidelines.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/reviewer-guidelines.md)ã€‚
+**å°‘æ ·æœ¬æ ¡å‡†**ï¼šå¦‚æžœå¯ç”¨ï¼ŒåŒ…å« 1-2 ä»½æ¥è‡ªç›®æ ‡ä¼šè®®çš„çœŸå®žå·²å‘è¡¨å®¡ç¨¿æ„è§ä½œä¸ºç¤ºä¾‹ã€‚è¿™ä¼šæ˜¾è‘—æå‡åˆ†æ•°æ ¡å‡†ã€‚ç¤ºä¾‹å®¡ç¨¿æ„è§è¯·å‚è§ [references/reviewer-guidelines.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/reviewer-guidelines.md)ã€‚
 
 ### æ­¥éª¤ 6.1bï¼šè§†è§‰å®¡é˜…ï¼ˆVLMï¼‰
 
@@ -1718,7 +1718,7 @@ paper/
 
 æ¯ä¸ªä¼šè®®éƒ½æœ‰å¼ºåˆ¶æ€§æ¸…å•ã€‚ä»”ç»†å®Œæˆâ€”â€”æ¸…å•ä¸å®Œæ•´å¯èƒ½å¯¼è‡´ç›´æŽ¥æ‹’ç¨¿ã€‚
 
-å‚è§ [references/checklists.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/checklists.md)ï¼ŒåŒ…å«ï¼š
+å‚è§ [references/checklists.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/checklists.md)ï¼ŒåŒ…å«ï¼š
 - NeurIPS 16 é¡¹è®ºæ–‡æ¸…å•
 - ICML æ›´å¹¿æ³›å½±å“ + å¯å¤çŽ°æ€§
 - ICLR LLM æŠ«éœ²æ”¿ç­–
@@ -2078,7 +2078,7 @@ ACL ç³»åˆ—ä¼šè®®æœ‰ä¸åŒçš„æŠ•ç¨¿ç±»åž�
 
 ## è¶…è¶Šå®žè¯ ML çš„è®ºæ–‡ç±»åž‹
 
-ä¸Šè¿°ä¸»è¦æµæ°´çº¿é’ˆå¯¹å®žè¯ ML è®ºæ–‡ã€‚å…¶ä»–è®ºæ–‡ç±»åž‹éœ€è¦ä¸åŒçš„ç»“æž„å’Œè¯æ®æ ‡å‡†ã€‚æ¯ç§ç±»åž‹çš„è¯¦ç»†æŒ‡å¯¼è¯·å‚è§ [references/paper-types.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/paper-types.md)ã€‚
+ä¸Šè¿°ä¸»è¦æµæ°´çº¿é’ˆå¯¹å®žè¯ ML è®ºæ–‡ã€‚å…¶ä»–è®ºæ–‡ç±»åž‹éœ€è¦ä¸åŒçš„ç»“æž„å’Œè¯æ®æ ‡å‡†ã€‚æ¯ç§ç±»åž‹çš„è¯¦ç»†æŒ‡å¯¼è¯·å‚è§ [references/paper-types.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/paper-types.md)ã€‚
 
 ### ç†è®ºè®ºæ–‡
 
@@ -2338,7 +2338,7 @@ Next step: <what happens next>
 - 2ï¼šæ‹’ç»â€”â€”æŠ€æœ¯ç¼ºé™·
 - 1ï¼šå¼ºçƒˆæ‹’ç»â€”â€”å·²çŸ¥ç»“æžœæˆ–ä¼¦ç†é—®é¢˜
 
-è¯¦ç»†æŒ‡å—ã€å¸¸è§å…³åˆ‡å’Œç­”è¾©ç­–ç•¥è¯·å‚è§ [references/reviewer-guidelines.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/reviewer-guidelines.md)ã€‚
+è¯¦ç»†æŒ‡å—ã€å¸¸è§å…³åˆ‡å’Œç­”è¾©ç­–ç•¥è¯·å‚è§ [references/reviewer-guidelines.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/reviewer-guidelines.md)ã€‚
 
 ---
 
@@ -2354,9 +2354,9 @@ Next step: <what happens next>
 | å®žéªŒèŒƒå›´è”“å»¶ | æ¯ä¸ªå®žéªŒå¿…é¡»æ˜ å°„åˆ°ä¸€ä¸ªå…·ä½“è®ºç‚¹ã€‚åˆ é™¤ä¸æ˜ å°„çš„å®žéªŒã€‚ |
 | è®ºæ–‡è¢«æ‹’ï¼Œéœ€è¦é‡æŠ• | å‚è§é˜¶æ®µ 7 ä¸­çš„ä¼šè®®é‡æŠ•ã€‚è§£å†³å®¡ç¨¿äººå…³åˆ‡ï¼Œä¸è¦å¼•ç”¨ä¹‹å‰çš„å®¡ç¨¿æ„è§ã€‚ |
 | ç¼ºå°‘æ›´å¹¿æ³›å½±å“å£°æ˜Ž | å‚è§æ­¥éª¤ 5.10ã€‚å¤§å¤šæ•°ä¼šè®®è¦æ±‚æ­¤å£°æ˜Žã€‚"æ— è´Ÿé¢å½±å“"å‡ ä¹Žä»Žä¸å¯ä¿¡ã€‚ |
-| äººå·¥è¯„ä¼°è¢«æ‰¹è¯„ä¸ºè–„å¼± | å‚è§æ­¥éª¤ 2.5 å’Œ [references/human-evaluation.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/human-evaluation.md)ã€‚æŠ¥å‘Šä¸€è‡´æ€§æŒ‡æ ‡ã€æ ‡æ³¨å‘˜è¯¦æƒ…ã€æŠ¥é…¬ã€‚ |
+| äººå·¥è¯„ä¼°è¢«æ‰¹è¯„ä¸ºè–„å¼± | å‚è§æ­¥éª¤ 2.5 å’Œ [references/human-evaluation.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/human-evaluation.md)ã€‚æŠ¥å‘Šä¸€è‡´æ€§æŒ‡æ ‡ã€æ ‡æ³¨å‘˜è¯¦æƒ…ã€æŠ¥é…¬ã€‚ |
 | å®¡ç¨¿äººè´¨ç–‘å¯å¤çŽ°æ€§ | å‘å¸ƒä»£ç ï¼ˆæ­¥éª¤ 7.9ï¼‰ï¼Œè®°å½•æ‰€æœ‰è¶…å‚æ•°ï¼ŒåŒ…å«éšæœºç§å­å’Œè®¡ç®—ç»†èŠ‚ã€‚ |
-| ç†è®ºè®ºæ–‡ç¼ºä¹ç›´è§‰ | åœ¨æ­£å¼è¯æ˜Žä¹‹å‰æ·»åŠ å«é€šä¿—è¯­è¨€è§£é‡Šçš„è¯æ˜Žè‰å›¾ã€‚å‚è§ [references/paper-types.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/paper-types.md)ã€‚ |
+| ç†è®ºè®ºæ–‡ç¼ºä¹ç›´è§‰ | åœ¨æ­£å¼è¯æ˜Žä¹‹å‰æ·»åŠ å«é€šä¿—è¯­è¨€è§£é‡Šçš„è¯æ˜Žè‰å›¾ã€‚å‚è§ [references/paper-types.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/paper-types.md)ã€‚ |
 | ç»“æžœä¸ºè´Ÿé¢/é›¶ç»“æžœ | å‚è§é˜¶æ®µ 4.3 å…³äºŽå¤„ç†è´Ÿé¢ç»“æžœçš„å†…å®¹ã€‚è€ƒè™‘ç ”è®¨ä¼šã€TMLR æˆ–é‡æ–°æ¡†æž¶ä¸ºåˆ†æžã€‚ |
 
 ---
@@ -2365,21 +2365,21 @@ Next step: <what happens next>
 
 | æ–‡æ¡£ | å†…å®¹ |
 |------|------|
-| [references/writing-guide.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/writing-guide.md) | Gopen & Swan 7 æ¡åŽŸåˆ™ã€Perez å¾®è§‚æŠ€å·§ã€Lipton è¯è¯­é€‰æ‹©ã€Steinhardt ç²¾ç¡®æ€§ã€å›¾å½¢è®¾è®¡ |
-| [references/citation-workflow.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/citation-workflow.md) | å¼•ç”¨ APIã€Python ä»£ç ã€CitationManager ç±»ã€BibTeX ç®¡ç† |
-| [references/checklists.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/checklists.md) | NeurIPS 16 é¡¹ã€ICMLã€ICLRã€ACL è¦æ±‚ã€é€šç”¨æŠ•ç¨¿å‰æ¸…å• |
-| [references/reviewer-guidelines.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/reviewer-guidelines.md) | è¯„ä¼°æ ‡å‡†ã€è¯„åˆ†ã€å¸¸è§å…³åˆ‡ã€ç­”è¾©æ¨¡æ¿ |
-| [references/sources.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/sources.md) | æ‰€æœ‰å†™ä½œæŒ‡å—ã€ä¼šè®®æŒ‡å—ã€API çš„å®Œæ•´å‚è€ƒä¹¦ç›® |
-| [references/experiment-patterns.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/experiment-patterns.md) | å®žéªŒè®¾è®¡æ¨¡å¼ã€è¯„ä¼°åè®®ã€ç›‘æŽ§ã€é”™è¯¯æ¢å¤ |
-| [references/autoreason-methodology.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/autoreason-methodology.md) | Autoreason å¾ªçŽ¯ã€ç­–ç•¥é€‰æ‹©ã€æ¨¡åž‹æŒ‡å—ã€promptï¼ˆæç¤ºè¯ï¼‰ã€èŒƒå›´çº¦æŸã€Borda è®¡åˆ† |
-| [references/human-evaluation.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/human-evaluation.md) | äººå·¥è¯„ä¼°è®¾è®¡ã€æ ‡æ³¨æŒ‡å—ã€ä¸€è‡´æ€§æŒ‡æ ‡ã€ä¼—åŒ…è´¨é‡æŽ§åˆ¶ã€IRB æŒ‡å¯¼ |
-| [references/paper-types.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/references/paper-types.md) | ç†è®ºè®ºæ–‡ï¼ˆè¯æ˜Žå†™ä½œã€å®šç†ç»“æž„ï¼‰ã€ç»¼è¿°è®ºæ–‡ã€åŸºå‡†æµ‹è¯•è®ºæ–‡ã€ç«‹åœºè®ºæ–‡ |
+| [references/writing-guide.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/writing-guide.md) | Gopen & Swan 7 æ¡åŽŸåˆ™ã€Perez å¾®è§‚æŠ€å·§ã€Lipton è¯è¯­é€‰æ‹©ã€Steinhardt ç²¾ç¡®æ€§ã€å›¾å½¢è®¾è®¡ |
+| [references/citation-workflow.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/citation-workflow.md) | å¼•ç”¨ APIã€Python ä»£ç ã€CitationManager ç±»ã€BibTeX ç®¡ç† |
+| [references/checklists.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/checklists.md) | NeurIPS 16 é¡¹ã€ICMLã€ICLRã€ACL è¦æ±‚ã€é€šç”¨æŠ•ç¨¿å‰æ¸…å• |
+| [references/reviewer-guidelines.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/reviewer-guidelines.md) | è¯„ä¼°æ ‡å‡†ã€è¯„åˆ†ã€å¸¸è§å…³åˆ‡ã€ç­”è¾©æ¨¡æ¿ |
+| [references/sources.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/sources.md) | æ‰€æœ‰å†™ä½œæŒ‡å—ã€ä¼šè®®æŒ‡å—ã€API çš„å®Œæ•´å‚è€ƒä¹¦ç›® |
+| [references/experiment-patterns.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/experiment-patterns.md) | å®žéªŒè®¾è®¡æ¨¡å¼ã€è¯„ä¼°åè®®ã€ç›‘æŽ§ã€é”™è¯¯æ¢å¤ |
+| [references/autoreason-methodology.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/autoreason-methodology.md) | Autoreason å¾ªçŽ¯ã€ç­–ç•¥é€‰æ‹©ã€æ¨¡åž‹æŒ‡å—ã€promptï¼ˆæç¤ºè¯ï¼‰ã€èŒƒå›´çº¦æŸã€Borda è®¡åˆ† |
+| [references/human-evaluation.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/human-evaluation.md) | äººå·¥è¯„ä¼°è®¾è®¡ã€æ ‡æ³¨æŒ‡å—ã€ä¸€è‡´æ€§æŒ‡æ ‡ã€ä¼—åŒ…è´¨é‡æŽ§åˆ¶ã€IRB æŒ‡å¯¼ |
+| [references/paper-types.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/references/paper-types.md) | ç†è®ºè®ºæ–‡ï¼ˆè¯æ˜Žå†™ä½œã€å®šç†ç»“æž„ï¼‰ã€ç»¼è¿°è®ºæ–‡ã€åŸºå‡†æµ‹è¯•è®ºæ–‡ã€ç«‹åœºè®ºæ–‡ |
 
 ### LaTeX æ¨¡æ¿
 
 `templates/` ä¸­çš„æ¨¡æ¿ï¼š**NeurIPS 2025**ã€**ICML 2026**ã€**ICLR 2026**ã€**ACL**ã€**AAAI 2026**ã€**COLM 2025**ã€‚
 
-ç¼–è¯‘è¯´æ˜Žè¯·å‚è§ [templates/README.md](https://github.com/NousResearch/zed-agent/blob/main/skills/research/research-paper-writing/templates/README.md)ã€‚
+ç¼–è¯‘è¯´æ˜Žè¯·å‚è§ [templates/README.md](https://github.com/zedteam/zed-agent/blob/main/skills/research/research-paper-writing/templates/README.md)ã€‚
 
 ### å…³é”®å¤–éƒ¨èµ„æº
 

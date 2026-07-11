@@ -9,7 +9,7 @@ description: "Practical advice to get the most out of Zed Agent â€” prompt 
 A quick-wins collection of practical tips that make you immediately more effective with Zed Agent. Each section targets a different aspect â€” scan the headers and jump to what's relevant.
 
 :::tip Confused which model to pick?
-Run `zed setup --portal` â€” you get 300+ models including Claude, GPT-5, and Gemini under one subscription. See [Nous Portal](/integrations/nous-portal).
+Run `zed setup --portal` â€” you get 300+ models including Claude, GPT-5, and Gemini under one subscription. See [Zed Portal](/integrations/nous-portal).
 :::
 
 ---

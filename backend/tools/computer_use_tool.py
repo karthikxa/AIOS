@@ -1,4 +1,4 @@
-"""Shim for tool discovery. Registers `computer_use` with tools.registry.
+﻿"""Shim for tool discovery. Registers `computer_use` with tools.registry.
 
 The real implementation lives in the `tools/computer_use/` package to keep
 the file structure clean. This shim exists because tools.registry auto-imports

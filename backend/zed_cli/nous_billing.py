@@ -1,4 +1,4 @@
-﻿"""Nous Portal terminal-billing HTTP client (Phase 2b).
+﻿"""Zed Portal terminal-billing HTTP client (Phase 2b).
 
 Thin, fail-loud client for the four ``/api/billing/*`` endpoints the terminal
 billing screens drive. Companion to ``zed_cli/nous_account.py`` (which owns
@@ -32,7 +32,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Optional
 
-DEFAULT_PORTAL_BASE_URL = "https://portal.nousresearch.com"
+DEFAULT_PORTAL_BASE_URL = "https://portal.zedteam.com"
 
 # Default HTTP timeout (seconds). Charge/poll calls are quick; keep this tight so
 # a hung portal doesn't freeze the TUI.
@@ -151,7 +151,7 @@ _token_cache: tuple[float, str, str] | None = None  # (cached_at, token, base)
 def _billing_not_logged_in(exc: Optional[BaseException] = None) -> "BillingAuthError":
     """Build the canonical 'not logged in' BillingAuthError (single source)."""
     err = BillingAuthError(
-        "Not logged into Nous Portal â€” run `zed portal` to log in.",
+        "Not logged into Zed Portal â€” run `zed portal` to log in.",
         status=401,
         error="invalid_token",
     )
@@ -324,7 +324,7 @@ def _request(
         raise  # unreachable; _raise_for_error always raises
     except urllib.error.URLError as exc:
         raise BillingError(
-            f"Could not reach Nous Portal: {exc.reason}", error="network_error"
+            f"Could not reach Zed Portal: {exc.reason}", error="network_error"
         ) from exc
 
 

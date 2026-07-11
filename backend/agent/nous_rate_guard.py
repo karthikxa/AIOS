@@ -1,7 +1,7 @@
-﻿"""Cross-session rate limit guard for Nous Portal.
+﻿"""Cross-session rate limit guard for Zed Portal.
 
 Writes rate limit state to a shared file so all sessions (CLI, gateway,
-cron, auxiliary) can check whether Nous Portal is currently rate-limited
+cron, auxiliary) can check whether Zed Portal is currently rate-limited
 before making requests.  Prevents retry amplification when RPH is tapped.
 
 Each 429 from Nous triggers up to 9 API calls per conversation turn
@@ -27,7 +27,7 @@ _STATE_FILENAME = "nous.json"
 
 
 def _state_path() -> str:
-    """Return the path to the Nous rate limit state file."""
+    """Return the path to the Zed rate limit state file."""
     try:
         from zed_constants import get_zed_home
         base = get_zed_home()
@@ -74,7 +74,7 @@ def record_nous_rate_limit(
     error_context: Optional[dict[str, Any]] = None,
     default_cooldown: float = 300.0,
 ) -> None:
-    """Record that Nous Portal is rate-limited.
+    """Record that Zed Portal is rate-limited.
 
     Parses the reset time from response headers or error context.
     Falls back to ``default_cooldown`` (5 minutes) if no reset info
@@ -129,15 +129,15 @@ def record_nous_rate_limit(
             raise
 
         logger.info(
-            "Nous rate limit recorded: resets in %.0fs (at %.0f)",
+            "Zed rate limit recorded: resets in %.0fs (at %.0f)",
             reset_at - now, reset_at,
         )
     except Exception as exc:
-        logger.debug("Failed to write Nous rate limit state: %s", exc)
+        logger.debug("Failed to write Zed rate limit state: %s", exc)
 
 
 def nous_rate_limit_remaining() -> Optional[float]:
-    """Check if Nous Portal is currently rate-limited.
+    """Check if Zed Portal is currently rate-limited.
 
     Returns:
         Seconds remaining until reset, or None if not rate-limited.
@@ -167,7 +167,7 @@ def clear_nous_rate_limit() -> None:
     except FileNotFoundError:
         pass
     except OSError as exc:
-        logger.debug("Failed to clear Nous rate limit state: %s", exc)
+        logger.debug("Failed to clear Zed rate limit state: %s", exc)
 
 
 def format_remaining(seconds: float) -> str:
@@ -194,9 +194,9 @@ def is_genuine_nous_rate_limit(
     headers: Optional[Mapping[str, str]] = None,
     last_known_state: Optional[Any] = None,
 ) -> bool:
-    """Decide whether a 429 from Nous Portal is a real account rate limit.
+    """Decide whether a 429 from Zed Portal is a real account rate limit.
 
-    Nous Portal multiplexes multiple upstream providers (DeepSeek, Kimi,
+    Zed Portal multiplexes multiple upstream providers (DeepSeek, Kimi,
     MiMo, Zed, ...) behind one endpoint.  A 429 can mean either:
 
       (a) The caller's own RPM / RPH / TPM / TPH bucket on Nous is

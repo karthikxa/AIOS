@@ -1,4 +1,4 @@
-# Bundled web search providers — plugins/web/.
+﻿# Bundled web search providers — plugins/web/.
 #
 # Each subdirectory follows the image_gen plugin layout:
 #   plugins/web/<name>/{plugin.yaml, __init__.py, provider.py}

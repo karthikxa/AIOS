@@ -1,8 +1,8 @@
-"""Rate limit tracking for inference API responses.
+﻿"""Rate limit tracking for inference API responses.
 
 Captures x-ratelimit-* headers from provider responses and provides
 formatted display for the /usage slash command.  Currently supports
-the Nous Portal header format (also used by OpenRouter and OpenAI-compatible
+the Zed Portal header format (also used by OpenRouter and OpenAI-compatible
 APIs that follow the same convention).
 
 Header schema (12 headers total):

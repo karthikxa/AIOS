@@ -1,4 +1,4 @@
-# OFAC SDN — Specially Designated Nationals List
+﻿# OFAC SDN — Specially Designated Nationals List
 
 ## 1. Summary
 

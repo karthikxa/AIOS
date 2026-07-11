@@ -319,11 +319,11 @@ set_seed(42)
 
 ## é«˜çº§ä¸»é¢˜
 
-**Megatron é›†æˆ**ï¼šå¼ é‡å¹¶è¡Œã€æµæ°´çº¿å¹¶è¡Œå’Œåºåˆ—å¹¶è¡Œçš„é…ç½®ï¼Œè¯·å‚é˜… [references/megatron-integration.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/accelerate/references/megatron-integration.md)ã€‚
+**Megatron é›†æˆ**ï¼šå¼ é‡å¹¶è¡Œã€æµæ°´çº¿å¹¶è¡Œå’Œåºåˆ—å¹¶è¡Œçš„é…ç½®ï¼Œè¯·å‚é˜… [references/megatron-integration.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/accelerate/references/megatron-integration.md)ã€‚
 
-**è‡ªå®šä¹‰æ’ä»¶**ï¼šåˆ›å»ºè‡ªå®šä¹‰åˆ†å¸ƒå¼æ’ä»¶åŠé«˜çº§é…ç½®ï¼Œè¯·å‚é˜… [references/custom-plugins.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/accelerate/references/custom-plugins.md)ã€‚
+**è‡ªå®šä¹‰æ’ä»¶**ï¼šåˆ›å»ºè‡ªå®šä¹‰åˆ†å¸ƒå¼æ’ä»¶åŠé«˜çº§é…ç½®ï¼Œè¯·å‚é˜… [references/custom-plugins.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/accelerate/references/custom-plugins.md)ã€‚
 
-**æ€§èƒ½è°ƒä¼˜**ï¼šæ€§èƒ½åˆ†æžã€å†…å­˜ä¼˜åŒ–åŠæœ€ä½³å®žè·µï¼Œè¯·å‚é˜… [references/performance.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/accelerate/references/performance.md)ã€‚
+**æ€§èƒ½è°ƒä¼˜**ï¼šæ€§èƒ½åˆ†æžã€å†…å­˜ä¼˜åŒ–åŠæœ€ä½³å®žè·µï¼Œè¯·å‚é˜… [references/performance.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/accelerate/references/performance.md)ã€‚
 
 ## ç¡¬ä»¶è¦æ±‚
 

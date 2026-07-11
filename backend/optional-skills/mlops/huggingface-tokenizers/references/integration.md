@@ -1,4 +1,4 @@
-# Transformers Integration
+﻿# Transformers Integration
 
 Complete guide to using HuggingFace Tokenizers with the Transformers library.
 

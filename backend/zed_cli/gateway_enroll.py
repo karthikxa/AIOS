@@ -5,7 +5,7 @@ customer-managed and internet-exposed). This command is the gateway half of the
 zero-touch enrollment in the connector repo's
 ``docs/connector-gateway-auth-design.md``:
 
-  1. Resolve a fresh Nous Portal access token from the existing login
+  1. Resolve a fresh Zed Portal access token from the existing login
      (``~/.zed/auth.json``) â€” the same path ``zed dashboard register``
      uses (``resolve_nous_access_token``). This proves *which Nous org (tenant)*
      the caller owns; the connector derives the authoritative tenant from it via
@@ -122,7 +122,7 @@ def _post_enroll(
             pass
         if exc.code == 401:
             raise RuntimeError(
-                "Connector rejected the caller identity (401). Your Nous Portal "
+                "Connector rejected the caller identity (401). Your Zed Portal "
                 "token could not be verified â€” try `zed auth login nous` and retry."
             ) from exc
         if exc.code == 403:
@@ -184,13 +184,13 @@ def cmd_gateway_enroll(args) -> None:
         access_token = resolve_nous_access_token()
     except AuthError as exc:
         if getattr(exc, "relogin_required", False):
-            print("âœ— You're not logged into Nous Portal.")
+            print("âœ— You're not logged into Zed Portal.")
             print("  Run `zed setup` (or `zed auth login nous`) first, then retry.")
         else:
-            print(f"âœ— Could not resolve a Nous Portal access token: {exc}")
+            print(f"âœ— Could not resolve a Zed Portal access token: {exc}")
         sys.exit(1)
     except Exception as exc:
-        print(f"âœ— Could not resolve a Nous Portal access token: {exc}")
+        print(f"âœ— Could not resolve a Zed Portal access token: {exc}")
         sys.exit(1)
 
     # 2-3. Redeem the enrollment token at the connector.

@@ -1,4 +1,4 @@
-# Pinecone Deployment Guide
+﻿# Pinecone Deployment Guide
 
 Production deployment patterns for Pinecone.
 

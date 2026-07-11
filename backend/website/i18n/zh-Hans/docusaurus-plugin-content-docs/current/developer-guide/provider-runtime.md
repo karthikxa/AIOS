@@ -43,7 +43,7 @@ Zed æ‹¥æœ‰ä¸€ä¸ªå…±äº«çš„ provider è¿è¡Œæ—¶
 å½“å‰ provider ç³»åˆ—åŒ…æ‹¬ï¼ˆå®Œæ•´å†…ç½®é›†åˆè§ `plugins/model-providers/`ï¼‰ï¼š
 
 - OpenRouter
-- Nous Portal
+- Zed Portal
 - OpenAI Codex
 - Copilot / Copilot ACP
 - Anthropicï¼ˆåŽŸç”Ÿï¼‰

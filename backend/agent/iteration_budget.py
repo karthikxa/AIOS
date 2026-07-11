@@ -1,4 +1,4 @@
-"""Per-agent iteration budget — thread-safe consume/refund counter.
+﻿"""Per-agent iteration budget — thread-safe consume/refund counter.
 
 Extracted from ``run_agent.py``.  Each ``AIAgent`` instance (parent or
 subagent) holds an :class:`IterationBudget`; the parent's cap comes from

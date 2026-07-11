@@ -1,4 +1,4 @@
-# Troubleshooting
+﻿# Troubleshooting
 
 ## `HeadlessExperimental.beginFrame' wasn't found` (first thing to check)
 

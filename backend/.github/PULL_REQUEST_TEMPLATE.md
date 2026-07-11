@@ -42,9 +42,9 @@ Fixes #
 
 ### Code
 
-- [ ] I've read the [Contributing Guide](https://github.com/NousResearch/zed-agent/blob/main/CONTRIBUTING.md)
+- [ ] I've read the [Contributing Guide](https://github.com/zedteam/zed-agent/blob/main/CONTRIBUTING.md)
 - [ ] My commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) (`fix(scope):`, `feat(scope):`, etc.)
-- [ ] I searched for [existing PRs](https://github.com/NousResearch/zed-agent/pulls) to make sure this isn't a duplicate
+- [ ] I searched for [existing PRs](https://github.com/zedteam/zed-agent/pulls) to make sure this isn't a duplicate
 - [ ] My PR contains **only** changes related to this fix/feature (no unrelated commits)
 - [ ] I've run `pytest tests/ -q` and all tests pass
 - [ ] I've added tests for my changes (required for bug fixes, strongly encouraged for features)
@@ -57,15 +57,15 @@ Fixes #
 - [ ] I've updated relevant documentation (README, `docs/`, docstrings) â€” or N/A
 - [ ] I've updated `cli-config.yaml.example` if I added/changed config keys â€” or N/A
 - [ ] I've updated `CONTRIBUTING.md` or `AGENTS.md` if I changed architecture or workflows â€” or N/A
-- [ ] I've considered cross-platform impact (Windows, macOS) per the [compatibility guide](https://github.com/NousResearch/zed-agent/blob/main/CONTRIBUTING.md#cross-platform-compatibility) â€” or N/A
+- [ ] I've considered cross-platform impact (Windows, macOS) per the [compatibility guide](https://github.com/zedteam/zed-agent/blob/main/CONTRIBUTING.md#cross-platform-compatibility) â€” or N/A
 - [ ] I've updated tool descriptions/schemas if I changed tool behavior â€” or N/A
 
 ## For New Skills
 
 <!-- Only fill this out if you're adding a skill. Delete this section otherwise. -->
 
-- [ ] This skill is **broadly useful** to most users (if bundled) â€” see [Contributing Guide](https://github.com/NousResearch/zed-agent/blob/main/CONTRIBUTING.md#should-the-skill-be-bundled)
-- [ ] SKILL.md follows the [standard format](https://github.com/NousResearch/zed-agent/blob/main/CONTRIBUTING.md#skillmd-format) (frontmatter, trigger conditions, steps, pitfalls)
+- [ ] This skill is **broadly useful** to most users (if bundled) â€” see [Contributing Guide](https://github.com/zedteam/zed-agent/blob/main/CONTRIBUTING.md#should-the-skill-be-bundled)
+- [ ] SKILL.md follows the [standard format](https://github.com/zedteam/zed-agent/blob/main/CONTRIBUTING.md#skillmd-format) (frontmatter, trigger conditions, steps, pitfalls)
 - [ ] No external dependencies that aren't already available (prefer stdlib, curl, existing Zed tools)
 - [ ] I've tested the skill end-to-end: `zed --toolsets skills -q "Use the X skill to do Y"`
 

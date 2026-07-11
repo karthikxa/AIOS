@@ -15,19 +15,19 @@ Zed ä¸ä»…ä»…æ˜¯ä¸€ä¸ª CLI å·¥å…·ã€‚ä½ å�
 ç›´æŽ¥ä»Žä»“åº“å®‰è£… Zedï¼š
 
 ```bash
-pip install git+https://github.com/NousResearch/zed-agent.git
+pip install git+https://github.com/zedteam/zed-agent.git
 ```
 
 æˆ–ä½¿ç”¨ [uv](https://docs.astral.sh/uv/)ï¼š
 
 ```bash
-uv pip install git+https://github.com/NousResearch/zed-agent.git
+uv pip install git+https://github.com/zedteam/zed-agent.git
 ```
 
 ä¹Ÿå¯ä»¥åœ¨ `requirements.txt` ä¸­å›ºå®šç‰ˆæœ¬ï¼š
 
 ```text
-zed-agent @ git+https://github.com/NousResearch/zed-agent.git
+zed-agent @ git+https://github.com/zedteam/zed-agent.git
 ```
 
 :::tip

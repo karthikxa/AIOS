@@ -1,4 +1,4 @@
-# Accelerate Performance Tuning
+﻿# Accelerate Performance Tuning
 
 ## Profiling
 

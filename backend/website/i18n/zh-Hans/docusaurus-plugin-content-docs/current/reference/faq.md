@@ -17,7 +17,7 @@ description: "Zed Agent å¸¸è§é—®é¢˜è§£ç­”åŠå¸¸è§
 Zed Agent å¯ä¸Žä»»ä½•å…¼å®¹ OpenAI çš„ API é…åˆä½¿ç”¨ã€‚æ”¯æŒçš„æä¾›å•†åŒ…æ‹¬ï¼š
 
 - **[OpenRouter](https://openrouter.ai/)** â€” é€šè¿‡ä¸€ä¸ª API key è®¿é—®æ•°ç™¾ä¸ªæ¨¡åž‹ï¼ˆæŽ¨èï¼Œçµæ´»æ€§å¼ºï¼‰
-- **Nous Portal** â€” Zed Team è‡ªæœ‰æŽ¨ç†ç«¯ç‚¹
+- **Zed Portal** â€” Zed Team è‡ªæœ‰æŽ¨ç†ç«¯ç‚¹
 - **OpenAI** â€” GPT-5.4ã€GPT-5-codexã€GPT-4.1ã€GPT-4o ç­‰
 - **Anthropic** â€” Claude æ¨¡åž‹ï¼ˆç›´æŽ¥ APIã€é€šè¿‡ `zed auth add anthropic` è¿›è¡Œ OAuthã€OpenRouter æˆ–ä»»ä½•å…¼å®¹ä»£ç†ï¼‰
 - **Google** â€” Gemini æ¨¡åž‹ï¼ˆé€šè¿‡ `gemini` æä¾›å•†ç›´æŽ¥è°ƒç”¨ APIã€`google-gemini-cli` OAuth æä¾›å•†ã€OpenRouter æˆ–å…¼å®¹ä»£ç†ï¼‰
@@ -33,7 +33,7 @@ Zed Agent å¯ä¸Žä»»ä½•å…¼å®¹ OpenAI çš„ API é…å�
 **åŽŸç”Ÿä¸æ”¯æŒã€‚** Zed Agent éœ€è¦ç±» Unix çŽ¯å¢ƒã€‚åœ¨ Windows ä¸Šï¼Œè¯·å®‰è£… [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) å¹¶åœ¨å…¶ä¸­è¿è¡Œ Zedã€‚æ ‡å‡†å®‰è£…å‘½ä»¤åœ¨ WSL2 ä¸­å¯å®Œç¾Žè¿è¡Œï¼š
 
 ```bash
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 ```
 
 ### æˆ‘åœ¨ WSL2 ä¸­è¿è¡Œ Zedï¼Œå¦‚ä½•æŽ§åˆ¶ Windows ä¸Šçš„æ™®é€š Chromeï¼Ÿ
@@ -61,7 +61,7 @@ curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
 å¿«é€Ÿå®‰è£…ï¼š
 
 ```bash
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 ```
 
 å®Œæ•´çš„æ‰‹åŠ¨æ­¥éª¤ã€æ”¯æŒçš„æ‰©å±•åŠå½“å‰é™åˆ¶ï¼Œè¯·å‚é˜… [Termux æŒ‡å—](../getting-started/termux.md)ã€‚
@@ -225,7 +225,7 @@ source ~/.bashrc
 # å¦‚æžœä¹‹å‰ä½¿ç”¨ sudo å®‰è£…ï¼Œè¯·å…ˆæ¸…ç†ï¼š
 sudo rm /usr/local/bin/zed
 # ç„¶åŽé‡æ–°è¿è¡Œæ ‡å‡†å®‰è£…ç¨‹åº
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 ```
 
 ---
@@ -750,7 +750,7 @@ skills:
 
 1. åœ¨æ–°æœºå™¨ä¸Šå®‰è£… Zed Agentï¼š
    ```bash
-   curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+   curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
    ```
 
 2. åœ¨**æºæœºå™¨**ä¸Šåˆ›å»ºå®Œæ•´å¤‡ä»½ï¼š
@@ -854,6 +854,6 @@ zed chat -q "hello" --model anthropic/claude-opus-4.7
 
 å¦‚æžœæ‚¨çš„é—®é¢˜æœªåœ¨æ­¤å¤„æ¶µç›–ï¼š
 
-1. **æœç´¢çŽ°æœ‰ issueï¼š** [GitHub Issues](https://github.com/NousResearch/zed-agent/issues)
-2. **å‘ç¤¾åŒºæé—®ï¼š** [Zed Team Discord](https://discord.gg/nousresearch)
+1. **æœç´¢çŽ°æœ‰ issueï¼š** [GitHub Issues](https://github.com/zedteam/zed-agent/issues)
+2. **å‘ç¤¾åŒºæé—®ï¼š** [Zed Team Discord](https://discord.gg/zedteam)
 3. **æäº¤ bug æŠ¥å‘Šï¼š** è¯·åŒ…å«æ‚¨çš„æ“ä½œç³»ç»Ÿã€Python ç‰ˆæœ¬ï¼ˆ`python3 --version`ï¼‰ã€Zed ç‰ˆæœ¬ï¼ˆ`zed --version`ï¼‰ä»¥åŠå®Œæ•´çš„é”™è¯¯ä¿¡æ¯

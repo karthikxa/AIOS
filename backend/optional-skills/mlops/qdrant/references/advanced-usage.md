@@ -1,4 +1,4 @@
-# Qdrant Advanced Usage Guide
+﻿# Qdrant Advanced Usage Guide
 
 ## Distributed Deployment
 

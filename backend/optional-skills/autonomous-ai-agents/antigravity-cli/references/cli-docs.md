@@ -1,4 +1,4 @@
-# Antigravity CLI docs, condensed
+﻿# Antigravity CLI docs, condensed
 
 Source pages reviewed:
 - `/docs/cli-getting-started`

@@ -1,4 +1,4 @@
-"""Production WebSocket RelayTransport — the gateway's live link to the connector.
+﻿"""Production WebSocket RelayTransport — the gateway's live link to the connector.
 
 The gateway dials OUT to the connector's relay endpoint over a WebSocket and
 speaks the newline-delimited JSON frame protocol defined in the connector repo

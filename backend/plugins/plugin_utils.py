@@ -1,4 +1,4 @@
-"""Shared concurrency helpers for plugin authors.
+﻿"""Shared concurrency helpers for plugin authors.
 
 The most common plugin footgun is the lazy process-wide singleton:
 

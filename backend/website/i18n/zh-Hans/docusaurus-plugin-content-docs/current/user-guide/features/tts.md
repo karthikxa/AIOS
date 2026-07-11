@@ -9,7 +9,7 @@ description: "è·¨æ‰€æœ‰å¹³å°çš„æ–‡å­—è½¬è¯�
 Zed Agent æ”¯æŒè·¨æ‰€æœ‰æ¶ˆæ¯å¹³å°çš„æ–‡å­—è½¬è¯­éŸ³ï¼ˆTTSï¼‰è¾“å‡ºå’Œè¯­éŸ³æ¶ˆæ¯è½¬å½•ï¼ˆSTTï¼‰ã€‚
 
 :::tip Nous è®¢é˜…ç”¨æˆ·
-å¦‚æžœä½ æ‹¥æœ‰ä»˜è´¹çš„ [Nous Portal](https://portal.nousresearch.com) è®¢é˜…ï¼ŒOpenAI TTS å¯é€šè¿‡ **[Tool Gateway](tool-gateway.md)** ä½¿ç”¨ï¼Œæ— éœ€å•ç‹¬çš„ OpenAI API å¯†é’¥ã€‚æ–°å®‰è£…å¯è¿è¡Œ `zed setup --portal` ç™»å½•å¹¶ä¸€æ¬¡æ€§å¼€å¯æ‰€æœ‰ gateway å·¥å…·ï¼›å·²æœ‰å®‰è£…å¯é€šè¿‡ `zed model` æˆ– `zed tools` é€‰æ‹© **Nous Subscription** ä»…å¯ç”¨ TTSã€‚
+å¦‚æžœä½ æ‹¥æœ‰ä»˜è´¹çš„ [Zed Portal](https://portal.zedteam.com) è®¢é˜…ï¼ŒOpenAI TTS å¯é€šè¿‡ **[Tool Gateway](tool-gateway.md)** ä½¿ç”¨ï¼Œæ— éœ€å•ç‹¬çš„ OpenAI API å¯†é’¥ã€‚æ–°å®‰è£…å¯è¿è¡Œ `zed setup --portal` ç™»å½•å¹¶ä¸€æ¬¡æ€§å¼€å¯æ‰€æœ‰ gateway å·¥å…·ï¼›å·²æœ‰å®‰è£…å¯é€šè¿‡ `zed model` æˆ– `zed tools` é€‰æ‹© **Nous Subscription** ä»…å¯ç”¨ TTSã€‚
 :::
 
 ## æ–‡å­—è½¬è¯­éŸ³ï¼ˆTTSï¼‰

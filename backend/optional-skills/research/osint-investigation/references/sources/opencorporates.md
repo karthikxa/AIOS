@@ -1,4 +1,4 @@
-# OpenCorporates — Global Corporate Registry
+﻿# OpenCorporates — Global Corporate Registry
 
 ## 1. Summary
 

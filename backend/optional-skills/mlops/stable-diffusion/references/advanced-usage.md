@@ -1,4 +1,4 @@
-# Stable Diffusion Advanced Usage Guide
+﻿# Stable Diffusion Advanced Usage Guide
 
 ## Custom Pipelines
 

@@ -351,8 +351,8 @@ if __name__ == "__main__":
 
 ## å‚è€ƒèµ„æ–™
 
-- **[é«˜çº§ç”¨æ³•](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/modal/references/advanced-usage.md)** - å¤š GPUã€åˆ†å¸ƒå¼è®­ç»ƒã€æˆæœ¬ä¼˜åŒ–
-- **[æ•…éšœæŽ’æŸ¥](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/modal/references/troubleshooting.md)** - å¸¸è§é—®é¢˜ä¸Žè§£å†³æ–¹æ¡ˆ
+- **[é«˜çº§ç”¨æ³•](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/modal/references/advanced-usage.md)** - å¤š GPUã€åˆ†å¸ƒå¼è®­ç»ƒã€æˆæœ¬ä¼˜åŒ–
+- **[æ•…éšœæŽ’æŸ¥](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/modal/references/troubleshooting.md)** - å¸¸è§é—®é¢˜ä¸Žè§£å†³æ–¹æ¡ˆ
 
 ## èµ„æº
 

@@ -1,4 +1,4 @@
-# FAISS Index Types Guide
+﻿# FAISS Index Types Guide
 
 Complete guide to choosing and using FAISS index types.
 

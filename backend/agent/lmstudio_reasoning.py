@@ -1,4 +1,4 @@
-"""LM Studio reasoning-effort resolution shared by the chat-completions
+﻿"""LM Studio reasoning-effort resolution shared by the chat-completions
 transport and run_agent's iteration-limit summary path.
 
 LM Studio publishes per-model ``capabilities.reasoning.allowed_options`` (e.g.

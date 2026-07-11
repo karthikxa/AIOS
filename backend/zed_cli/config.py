@@ -404,7 +404,7 @@ def detect_install_method(project_root: Optional[Path] = None) -> str:
     The supported installs self-identify via the code-scoped stamp:
       - the curl installer (scripts/install.sh, the README/website install
         command) git-clones the repo and stamps ``git`` next to the code;
-      - the published ``nousresearch/zed-agent`` image bakes a ``docker``
+      - the published ``zedteam/zed-agent`` image bakes a ``docker``
         stamp into ``/opt/zed`` at build time.
     An unsupported manual install dropped into a container (no stamp) falls
     through to the ``.git``/pip checks and behaves like any off-path install.
@@ -510,7 +510,7 @@ def recommended_update_command_for_method(method: str) -> str:
     if method == "homebrew":
         return "brew upgrade zed-agent"
     if method == "docker":
-        return "docker pull nousresearch/zed-agent:latest"
+        return "docker pull zedteam/zed-agent:latest"
     if method == "pip":
         if is_uv_tool_install():
             return "uv tool upgrade zed-agent"
@@ -548,23 +548,23 @@ def recommended_update_command() -> str:
 _DOCKER_UPDATE_MESSAGE = """\
 âœ— ``zed update`` doesn't apply inside the Docker container.
 
-Zed Agent runs as a published image (nousresearch/zed-agent), not a
+Zed Agent runs as a published image (zedteam/zed-agent), not a
 git checkout â€” the container has no working tree to pull into.  Update by
 pulling a fresh image and restarting your container instead:
 
-  docker pull nousresearch/zed-agent:latest
+  docker pull zedteam/zed-agent:latest
   # then restart whatever started the container, e.g.:
   docker compose up -d --force-recreate zed-agent
   # or, for ad-hoc runs, exit the current container and `docker run` again
 
 Verify the new version after restart:
-  docker run --rm nousresearch/zed-agent:latest --version
+  docker run --rm zedteam/zed-agent:latest --version
 
 Notes:
   â€¢ If you pinned a specific tag (e.g. ``:v0.14.0``) the ``:latest`` tag
     won't move your container â€” pull the newer tag you actually want, or
     switch to ``:latest`` / ``:main`` for rolling updates.  See available
-    tags at https://hub.docker.com/r/nousresearch/zed-agent/tags
+    tags at https://hub.docker.com/r/zedteam/zed-agent/tags
   â€¢ Your config and session history live under ``$ZED_HOME`` (``/opt/data``
     in the container, typically bind-mounted from the host) and persist
     across image upgrades â€” re-pulling doesn't lose any state.
@@ -1578,7 +1578,7 @@ DEFAULT_CONFIG = {
         # class of over-claim that otherwise forces users to run
         # `git status` to verify edits landed.  Set false to suppress.
         "file_mutation_verifier": True,
-        # Nous credits status-bar notices (usage bands, grant-spent, depleted /
+        # Zed credits status-bar notices (usage bands, grant-spent, depleted /
         # restored).  When false, no credits notices are emitted â€” balance data
         # is still captured and /usage keeps working.  Off switch for sub +
         # top-up users who find the gauge noisy.
@@ -1681,7 +1681,7 @@ DEFAULT_CONFIG = {
         # that the numbers are a local lower-bound estimate, not billing.
         "show_token_analytics": False,
         # OAuth gate configuration (engaged when ``--host`` is set and
-        # ``--insecure`` is not). The bundled Nous Portal plugin reads
+        # ``--insecure`` is not). The bundled Zed Portal plugin reads
         # both keys at startup; they are the canonical surface for these
         # settings. Each can be overridden by an environment variable â€”
         # ``ZED_DASHBOARD_OAUTH_CLIENT_ID`` and
@@ -1692,7 +1692,7 @@ DEFAULT_CONFIG = {
         # touch config.yaml. Local dev / non-Fly deploys can set either
         # surface; missing values fall through to the plugin's defaults
         # (no provider registered when ``client_id`` is empty;
-        # ``portal_url`` defaults to https://portal.nousresearch.com).
+        # ``portal_url`` defaults to https://portal.zedteam.com).
         "oauth": {
             "client_id": "",  # agent:{instance_id} â€” Portal provisions this
             "portal_url": "",  # blank â†’ use plugin default (production Portal)
@@ -2282,11 +2282,11 @@ DEFAULT_CONFIG = {
         # provider == "chronos". All non-secret (URLs + the JWT audience): the
         # agent holds NO external-scheduler credentials. For hosted agents, NAS
         # sets these at provision time. The outbound provision call reuses the
-        # agent's existing Nous Portal token â€” there is no token key here.
+        # agent's existing Zed Portal token â€” there is no token key here.
         "chronos": {
             # NAS / portal base URL the agent calls to arm/cancel one-shots
             # and that mints the inbound fire JWT (used as the expected issuer).
-            "portal_url": "https://portal.nousresearch.com",
+            "portal_url": "https://portal.zedteam.com",
             # The agent's OWN publicly-reachable base URL for NASâ†’agent fires
             # (NAS POSTs {callback_url}/api/cron/fire). Empty â†’ Chronos is
             # unavailable and the resolver falls back to the built-in ticker.
@@ -2423,13 +2423,13 @@ DEFAULT_CONFIG = {
     },
 
     # Remotely-hosted model catalog manifest.  When enabled, the CLI fetches
-    # curated model lists for OpenRouter and Nous Portal from this URL,
+    # curated model lists for OpenRouter and Zed Portal from this URL,
     # falling back to the in-repo snapshot on network failure.  Lets us
     # update model picker lists without shipping a zed-agent release.
     # The default URL is served by the docs site GitHub Pages deploy.
     "model_catalog": {
         "enabled": True,
-        "url": "https://zed-agent.nousresearch.com/docs/api/model-catalog.json",
+        "url": "https://zed-agent.zedteam.com/docs/api/model-catalog.json",
         # Disk cache TTL in hours.  Beyond this, the CLI refetches on the
         # next /model or `zed model` invocation; network failures
         # silently fall back to the stale cache.
@@ -2776,7 +2776,7 @@ ENV_VARS_BY_VERSION: Dict[int, List[str]] = {
 
 # Required environment variables with metadata for migration prompts.
 # LLM provider is required but handled in the setup wizard's provider
-# selection step (Nous Portal / OpenRouter / Custom endpoint), so this
+# selection step (Zed Portal / OpenRouter / Custom endpoint), so this
 # dict is intentionally empty â€” no single env var is universally required.
 REQUIRED_ENV_VARS = {}
 
@@ -2784,8 +2784,8 @@ REQUIRED_ENV_VARS = {}
 OPTIONAL_ENV_VARS = {
     # â”€â”€ Provider (handled in provider selection, not shown in checklists) â”€â”€
     "NOUS_BASE_URL": {
-        "description": "Nous Portal base URL override",
-        "prompt": "Nous Portal base URL (leave empty for default)",
+        "description": "Zed Portal base URL override",
+        "prompt": "Zed Portal base URL (leave empty for default)",
         "url": None,
         "password": False,
         "category": "provider",
@@ -3213,7 +3213,7 @@ OPTIONAL_ENV_VARS = {
         "advanced": True,
     },
     "FIRECRAWL_GATEWAY_URL": {
-        "description": "Exact Firecrawl tool-gateway origin override for Nous Subscribers only (optional)",
+        "description": "Exact Firecrawl tool-gateway origin override for Zed Subscribers only (optional)",
         "prompt": "Firecrawl gateway URL (leave empty to derive from domain)",
         "url": None,
         "password": False,
@@ -3221,7 +3221,7 @@ OPTIONAL_ENV_VARS = {
         "advanced": True,
     },
     "TOOL_GATEWAY_DOMAIN": {
-        "description": "Shared tool-gateway domain suffix for Nous Subscribers only, used to derive vendor hosts, e.g. nousresearch.com -> firecrawl-gateway.nousresearch.com",
+        "description": "Shared tool-gateway domain suffix for Zed Subscribers only, used to derive vendor hosts, e.g. zedteam.com -> firecrawl-gateway.zedteam.com",
         "prompt": "Tool-gateway domain suffix",
         "url": None,
         "password": False,
@@ -3229,7 +3229,7 @@ OPTIONAL_ENV_VARS = {
         "advanced": True,
     },
     "TOOL_GATEWAY_SCHEME": {
-        "description": "Shared tool-gateway URL scheme for Nous Subscribers only, used to derive vendor hosts (`https` by default, set `http` for local gateway testing)",
+        "description": "Shared tool-gateway URL scheme for Zed Subscribers only, used to derive vendor hosts (`https` by default, set `http` for local gateway testing)",
         "prompt": "Tool-gateway URL scheme",
         "url": None,
         "password": False,
@@ -3237,7 +3237,7 @@ OPTIONAL_ENV_VARS = {
         "advanced": True,
     },
     "TOOL_GATEWAY_USER_TOKEN": {
-        "description": "Explicit Nous Subscriber access token for tool-gateway requests (optional; otherwise read from the Zed auth store)",
+        "description": "Explicit Zed Subscriber access token for tool-gateway requests (optional; otherwise read from the Zed auth store)",
         "prompt": "Tool-gateway user token",
         "url": None,
         "password": True,
@@ -5810,7 +5810,7 @@ _FALLBACK_COMMENT = """
 # Supported providers:
 #   openrouter   (OPENROUTER_API_KEY)  â€” routes to any model
 #   openai-codex (OAuth â€” zed auth) â€” OpenAI Codex
-#   nous         (OAuth â€” zed auth) â€” Nous Portal
+#   nous         (OAuth â€” zed auth) â€” Zed Portal
 #   zai          (ZAI_API_KEY)         â€” Z.AI / GLM
 #   kimi-coding  (KIMI_API_KEY)        â€” Kimi / Moonshot
 #   kimi-coding-cn (KIMI_CN_API_KEY)   â€” Kimi / Moonshot (China)
@@ -5842,7 +5842,7 @@ _COMMENTED_SECTIONS = """
 # Supported providers:
 #   openrouter   (OPENROUTER_API_KEY)  â€” routes to any model
 #   openai-codex (OAuth â€” zed auth) â€” OpenAI Codex
-#   nous         (OAuth â€” zed auth) â€” Nous Portal
+#   nous         (OAuth â€” zed auth) â€” Zed Portal
 #   zai          (ZAI_API_KEY)         â€” Z.AI / GLM
 #   kimi-coding  (KIMI_API_KEY)        â€” Kimi / Moonshot
 #   kimi-coding-cn (KIMI_CN_API_KEY)   â€” Kimi / Moonshot (China)

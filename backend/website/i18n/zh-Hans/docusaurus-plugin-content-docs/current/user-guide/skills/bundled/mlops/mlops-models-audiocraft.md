@@ -575,8 +575,8 @@ for desc in descriptions:
 
 ## å‚è€ƒèµ„æ–™
 
-- **[é«˜çº§ç”¨æ³•](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/models/audiocraft/references/advanced-usage.md)** - è®­ç»ƒã€å¾®è°ƒã€éƒ¨ç½²
-- **[æ•…éšœæŽ’æŸ¥](https://github.com/NousResearch/zed-agent/blob/main/skills/mlops/models/audiocraft/references/troubleshooting.md)** - å¸¸è§é—®é¢˜ä¸Žè§£å†³æ–¹æ¡ˆ
+- **[é«˜çº§ç”¨æ³•](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/models/audiocraft/references/advanced-usage.md)** - è®­ç»ƒã€å¾®è°ƒã€éƒ¨ç½²
+- **[æ•…éšœæŽ’æŸ¥](https://github.com/zedteam/zed-agent/blob/main/skills/mlops/models/audiocraft/references/troubleshooting.md)** - å¸¸è§é—®é¢˜ä¸Žè§£å†³æ–¹æ¡ˆ
 
 ## èµ„æº
 

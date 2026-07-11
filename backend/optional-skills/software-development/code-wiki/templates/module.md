@@ -1,4 +1,4 @@
-# Module: `{{MODULE_NAME}}`
+﻿# Module: `{{MODULE_NAME}}`
 
 {{ONE_TO_TWO_SENTENCE_PURPOSE}}
 

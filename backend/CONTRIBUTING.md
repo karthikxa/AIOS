@@ -45,7 +45,7 @@ Bundled skills (in `skills/`) ship with every Zed install. They should be **broa
 
 If your skill is official and useful but not universally needed (e.g., a paid service integration, a heavyweight dependency), put it in **`optional-skills/`** â€” it ships with the repo but isn't activated by default. Users can discover it via `zed skills browse` (labeled "official") and install it with `zed skills install` (no third-party warning, built-in trust).
 
-If your skill is specialized, community-contributed, or niche, it's better suited for a **Skills Hub** â€” upload it to a skills registry and share it in the [Zed Team Discord](https://discord.gg/NousResearch). Users can install it with `zed skills install`.
+If your skill is specialized, community-contributed, or niche, it's better suited for a **Skills Hub** â€” upload it to a skills registry and share it in the [Zed Team Discord](https://discord.gg/zedteam). Users can install it with `zed skills install`.
 
 ---
 
@@ -89,7 +89,7 @@ development environment on the same layout the CLI, updater, lazy dependency
 installer, gateway, and docs assume.
 
 ```bash
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 cd "${ZED_HOME:-$HOME/.zed}/zed-agent"
 
 # Add dev/test extras on top of the standard install.
@@ -115,7 +115,7 @@ system `python3 -m zed_cli.main` can pick up unrelated system Python
 packages.
 
 ```bash
-git clone https://github.com/NousResearch/zed-agent.git
+git clone https://github.com/zedteam/zed-agent.git
 cd zed-agent
 
 # Create venv with Python 3.11
@@ -192,7 +192,7 @@ zed-agent/
 â”‚   â”œâ”€â”€ main.py                   # Entry point, argument parsing, command dispatch
 â”‚   â”œâ”€â”€ config.py                 # Config management, migration, env var definitions
 â”‚   â”œâ”€â”€ setup.py                  # Interactive setup wizard
-â”‚   â”œâ”€â”€ auth.py                   # Provider resolution, OAuth, Nous Portal
+â”‚   â”œâ”€â”€ auth.py                   # Provider resolution, OAuth, Zed Portal
 â”‚   â”œâ”€â”€ models.py                 # OpenRouter model selection lists
 â”‚   â”œâ”€â”€ banner.py                 # Welcome banner, ASCII art
 â”‚   â”œâ”€â”€ commands.py               # Central slash command registry (CommandDef), autocomplete, gateway helpers
@@ -232,7 +232,7 @@ zed-agent/
 â”œâ”€â”€ skills/                   # Bundled skills (copied to ~/.zed/skills/ on install)
 â”œâ”€â”€ optional-skills/          # Official optional skills (discoverable via hub, not activated by default)
 â”œâ”€â”€ tests/                    # Test suite
-â”œâ”€â”€ website/                  # Documentation site (zed-agent.nousresearch.com)
+â”œâ”€â”€ website/                  # Documentation site (zed-agent.zedteam.com)
 â”‚
 â”œâ”€â”€ cli-config.yaml.example   # Example configuration (copied to ~/.zed/config.yaml)
 â””â”€â”€ AGENTS.md                 # Development guide for AI coding assistants
@@ -244,7 +244,7 @@ zed-agent/
 |------|---------|
 | `~/.zed/config.yaml` | Settings (model, terminal, toolsets, compression, etc.) |
 | `~/.zed/.env` | API keys and secrets |
-| `~/.zed/auth.json` | OAuth credentials (Nous Portal) |
+| `~/.zed/auth.json` | OAuth credentials (Zed Portal) |
 | `~/.zed/skills/` | All active skills (bundled + hub-installed + agent-created) |
 | `~/.zed/memories/` | Persistent memory (MEMORY.md, USER.md) |
 | `~/.zed/state.db` | SQLite session database |
@@ -279,7 +279,7 @@ User message â†’ AIAgent._run_agent_loop()
 - **Toolset grouping**: Tools are grouped into toolsets (`web`, `terminal`, `file`, `browser`, etc.) that can be enabled/disabled per platform.
 - **Session persistence**: All conversations are stored in SQLite (`zed_state.py`) with full-text search and unique session titles. Per-session JSON snapshots in `~/.zed/sessions/` were superseded by the SQLite store and are off by default; opt back in with `sessions.write_json_snapshots: true` if you have external tooling that consumes the JSON files directly.
 - **Ephemeral injection**: System prompts and prefill messages are injected at API call time, never persisted to the database or logs.
-- **Provider abstraction**: The agent works with any OpenAI-compatible API. Provider resolution happens at init time (Nous Portal OAuth, OpenRouter API key, or custom endpoint).
+- **Provider abstraction**: The agent works with any OpenAI-compatible API. Provider resolution happens at init time (Zed Portal OAuth, OpenRouter API key, or custom endpoint).
 - **Provider routing**: When using OpenRouter, `provider_routing` in config.yaml controls provider selection (sort by throughput/latency/price, allow/ignore specific providers, data retention policies). These are injected as `extra_body.provider` in API requests.
 
 ---
@@ -939,7 +939,7 @@ test(tools): add unit tests for file_operations
 
 ## Reporting Issues
 
-- Use [GitHub Issues](https://github.com/NousResearch/zed-agent/issues)
+- Use [GitHub Issues](https://github.com/zedteam/zed-agent/issues)
 - Include: OS, Python version, Zed version (`zed version`), full error traceback
 - Include steps to reproduce
 - Check existing issues before creating duplicates
@@ -949,7 +949,7 @@ test(tools): add unit tests for file_operations
 
 ## Community
 
-- **Discord**: [discord.gg/NousResearch](https://discord.gg/NousResearch) â€” for questions, showcasing projects, and sharing skills
+- **Discord**: [discord.gg/zedteam](https://discord.gg/zedteam) â€” for questions, showcasing projects, and sharing skills
 - **GitHub Discussions**: For design proposals and architecture discussions
 - **Skills Hub**: Upload specialized skills to a registry and share them with the community
 

@@ -9,7 +9,7 @@ description: "Configure Zed Agent â€” config.yaml, providers, models, API k
 All settings are stored in the `~/.zed/` directory for easy access.
 
 :::tip Easiest path to a working `config.yaml`
-Run `zed setup --portal` â€” one OAuth gets you a model provider and all four Tool Gateway tools without hand-editing YAML. Portal subscribers also get 10% off token-billed providers. See [Nous Portal](/integrations/nous-portal).
+Run `zed setup --portal` â€” one OAuth gets you a model provider and all four Tool Gateway tools without hand-editing YAML. Portal subscribers also get 10% off token-billed providers. See [Zed Portal](/integrations/nous-portal).
 :::
 
 ## Directory Structure
@@ -18,7 +18,7 @@ Run `zed setup --portal` â€” one OAuth gets you a model provider and all fo
 ~/.zed/
 â”œâ”€â”€ config.yaml     # Settings (model, terminal, TTS, compression, etc.)
 â”œâ”€â”€ .env            # API keys and secrets
-â”œâ”€â”€ auth.json       # OAuth provider credentials (Nous Portal, etc.)
+â”œâ”€â”€ auth.json       # OAuth provider credentials (Zed Portal, etc.)
 â”œâ”€â”€ SOUL.md         # Primary agent identity (slot #1 in system prompt)
 â”œâ”€â”€ memories/       # Persistent memory (MEMORY.md, USER.md)
 â”œâ”€â”€ skills/         # Agent-created skills (managed via skill_manage tool)
@@ -89,7 +89,7 @@ You can set `providers.<id>.request_timeout_seconds` for a provider-wide request
 
 You can also set `providers.<id>.stale_timeout_seconds` for the non-streaming stale-call detector, plus `providers.<id>.models.<model>.stale_timeout_seconds` for a model-specific override. This wins over the legacy `ZED_API_CALL_STALE_TIMEOUT` env var.
 
-Leaving these unset keeps the legacy defaults (`ZED_API_TIMEOUT=1800`s, `ZED_API_CALL_STALE_TIMEOUT=300`s, native Anthropic 900s). Not currently wired for AWS Bedrock (both `bedrock_converse` and AnthropicBedrock SDK paths use boto3 with its own timeout configuration). See the commented example in [`cli-config.yaml.example`](https://github.com/NousResearch/zed-agent/blob/main/cli-config.yaml.example).
+Leaving these unset keeps the legacy defaults (`ZED_API_TIMEOUT=1800`s, `ZED_API_CALL_STALE_TIMEOUT=300`s, native Anthropic 900s). Not currently wired for AWS Bedrock (both `bedrock_converse` and AnthropicBedrock SDK paths use boto3 with its own timeout configuration). See the commented example in [`cli-config.yaml.example`](https://github.com/zedteam/zed-agent/blob/main/cli-config.yaml.example).
 
 ## Update Behavior
 
@@ -893,7 +893,7 @@ Options: `fill_first` (default), `round_robin`, `least_used`, `random`. See [Cre
 
 Zed turns on cross-session prompt caching automatically when the active provider supports it â€” no user config needed.
 
-For Claude on **native Anthropic**, **OpenRouter**, and **Nous Portal**, Zed attaches `cache_control` breakpoints with the 1-hour TTL (`ttl: "1h"`) on the system prompt and skill blocks. The first send within a fresh hour pays full input rates; subsequent sends across any session within the same hour pull from the cache at the discounted cached-read rate. This means the system prompt, loaded skill content, and the early portion of any long-context include get reused across `zed` sessions and across forked subagents for the first hour.
+For Claude on **native Anthropic**, **OpenRouter**, and **Zed Portal**, Zed attaches `cache_control` breakpoints with the 1-hour TTL (`ttl: "1h"`) on the system prompt and skill blocks. The first send within a fresh hour pays full input rates; subsequent sends across any session within the same hour pull from the cache at the discounted cached-read rate. This means the system prompt, loaded skill content, and the early portion of any long-context include get reused across `zed` sessions and across forked subagents for the first hour.
 
 The Qwen Cloud (Alibaba DashScope) upstream caps cache TTL at 5 minutes, so Zed uses the 5-minute breakpoint TTL there instead. Other Claude-via-third-party paths (AWS Bedrock, Azure Foundry) fall back to the provider's own caching defaults. xAI Grok uses a separate session-pinned conversation-id mechanism â€” see [xAI prompt caching](/integrations/providers#xai-grok--responses-api--prompt-caching).
 
@@ -904,7 +904,7 @@ No knob exists to disable this â€” caching is always-on and saves money eve
 Zed uses "auxiliary" models for side tasks like image analysis, web page summarization, browser screenshot analysis, session-title generation, and context compression. By default (`auxiliary.*.provider: "auto"`), Zed routes every auxiliary task to your **main chat model** â€” the same provider/model you picked in `zed model`. You don't need to configure anything to get started, but be aware that on expensive reasoning models (Opus, MiniMax M2.7, etc.) auxiliary tasks add meaningful cost. If you want cheap-and-fast side tasks regardless of your main model, set `auxiliary.<task>.provider` and `auxiliary.<task>.model` explicitly (for example, Gemini Flash on OpenRouter for vision and web extraction).
 
 :::note Why "auto" uses your main model
-Earlier builds split aggregator users (OpenRouter, Nous Portal) onto a cheap provider-side default. That was surprising â€” users who paid for an aggregator subscription would see a different model handling their auxiliary traffic. `auto` now uses the main model for everyone, and per-task overrides in `config.yaml` still win (see [Full auxiliary config reference](#full-auxiliary-config-reference) below).
+Earlier builds split aggregator users (OpenRouter, Zed Portal) onto a cheap provider-side default. That was surprising â€” users who paid for an aggregator subscription would see a different model handling their auxiliary traffic. `auto` now uses the main model for everyone, and per-task overrides in `config.yaml` still win (see [Full auxiliary config reference](#full-auxiliary-config-reference) below).
 :::
 
 ### Configuring auxiliary models interactively
@@ -1100,7 +1100,7 @@ These options apply to **auxiliary task configs** (`auxiliary:`, `compression:`)
 |----------|-------------|-------------|
 | `"auto"` | Best available (default). Vision tries OpenRouter â†’ Nous â†’ Codex. | â€” |
 | `"openrouter"` | Force OpenRouter â€” routes to any model (Gemini, GPT-4o, Claude, etc.) | `OPENROUTER_API_KEY` |
-| `"nous"` | Force Nous Portal | `zed auth` |
+| `"nous"` | Force Zed Portal | `zed auth` |
 | `"codex"` | Force Codex OAuth (ChatGPT account). Supports vision (gpt-5.3-codex). | `zed model` â†’ Codex |
 | `"minimax-oauth"` | Force MiniMax OAuth (browser login, no API key). Uses MiniMax-M2.7-highspeed for auxiliary tasks. | `zed model` â†’ MiniMax (OAuth) |
 | `"xai-oauth"` | Force xAI Grok OAuth (browser login for SuperGrok or X Premium+ subscribers, no API key). Same OAuth token covers chat, TTS, image, video, and transcription. | `zed model` â†’ xAI Grok OAuth (SuperGrok / Premium+) |

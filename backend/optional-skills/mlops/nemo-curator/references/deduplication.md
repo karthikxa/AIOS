@@ -1,4 +1,4 @@
-# Deduplication Guide
+﻿# Deduplication Guide
 
 Complete guide to exact, fuzzy, and semantic deduplication.
 

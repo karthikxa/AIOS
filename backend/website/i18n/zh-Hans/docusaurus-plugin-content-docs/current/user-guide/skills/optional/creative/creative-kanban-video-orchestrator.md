@@ -67,7 +67,7 @@ DISCOVER  â†’  BRIEF  â†’  TEAM DESIGN  â†’  SETUP  â†’  EXE
 æ ¹æ®å›žç­”ï¼Œå¯¹é£Žæ ¼ç±»åˆ«è¿›è¡Œåˆ†ç±»ã€‚é£Žæ ¼å†³å®šåŽç»­éœ€è¦æé—®çš„é—®é¢˜ã€‚**ä¸è¦ä¸€æ¬¡æ€§é—®æ‰€æœ‰é—®é¢˜ã€‚** æ¯æ¬¡é—® 2-4 ä¸ªï¼Œå€¾å¬å›žç­”ï¼Œç„¶åŽç»§ç»­ã€‚å½“ç”¨æˆ·çš„å›žç­”éšå«æŸä¸ªç­”æ¡ˆæ—¶ï¼Œåšå‡ºåˆç†å‡è®¾ã€‚
 
 å®Œæ•´çš„æ”¶é›†æ¨¡å¼å’Œå„é£Žæ ¼é—®é¢˜åº“ï¼Œå‚è§
-**[references/intake.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/kanban-video-orchestrator/references/intake.md)**ã€‚
+**[references/intake.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/kanban-video-orchestrator/references/intake.md)**ã€‚
 
 ### ç¬¬äºŒæ­¥ â€” ç®€æŠ¥
 
@@ -87,10 +87,10 @@ DISCOVER  â†’  BRIEF  â†’  TEAM DESIGN  â†’  SETUP  â†’  EXE
 ä»Žè§’è‰²åº“ä¸­æŒ‘é€‰é€‚åˆæœ¬è§†é¢‘çš„è§’è‰²åŽŸåž‹ã€‚**ç»„åˆï¼Œè€Œéžå¤åˆ¶ã€‚** å¤§å¤šæ•°è§†é¢‘éœ€è¦ 4-7 ä¸ª profilesã€‚director å§‹ç»ˆå­˜åœ¨ï¼›å…¶ä½™è§’è‰²æ ¹æ®ç®€æŠ¥çš„å®žé™…éœ€æ±‚é€‰å–ã€‚
 
 è§’è‰²åº“å’Œå„é£Žæ ¼å›¢é˜Ÿç»„åˆï¼Œå‚è§
-**[references/role-archetypes.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/kanban-video-orchestrator/references/role-archetypes.md)**ã€‚
+**[references/role-archetypes.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/kanban-video-orchestrator/references/role-archetypes.md)**ã€‚
 
 è§’è‰²ä¸Ž Zed æŠ€èƒ½åŠå·¥å…·é›†çš„æ˜ å°„å…³ç³»ï¼Œå‚è§
-**[references/tool-matrix.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/kanban-video-orchestrator/references/tool-matrix.md)**ã€‚
+**[references/tool-matrix.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/kanban-video-orchestrator/references/tool-matrix.md)**ã€‚
 
 ### ç¬¬å››æ­¥ â€” å®‰è£…
 
@@ -104,7 +104,7 @@ DISCOVER  â†’  BRIEF  â†’  TEAM DESIGN  â†’  SETUP  â†’  EXE
 6. ç¼–å†™ `brief.md`ã€`TEAM.md` å’Œ `taste/` å†…å®¹
 7. è§¦å‘åˆ†é…ç»™ director çš„åˆå§‹ `zed kanban create` ä»»åŠ¡
 
-ä½¿ç”¨ `scripts/bootstrap_pipeline.py` ä»Žç®€æŠ¥ + å›¢é˜Ÿè®¾è®¡ JSON ç”Ÿæˆ setup.shã€‚å®‰è£…è„šæœ¬ç»“æž„ã€profile é…ç½®æ¨¡å¼å’Œå…³é”®çš„"å…±äº«å·¥ä½œåŒº"è§„åˆ™ï¼Œå‚è§ **[references/kanban-setup.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/kanban-video-orchestrator/references/kanban-setup.md)**ã€‚
+ä½¿ç”¨ `scripts/bootstrap_pipeline.py` ä»Žç®€æŠ¥ + å›¢é˜Ÿè®¾è®¡ JSON ç”Ÿæˆ setup.shã€‚å®‰è£…è„šæœ¬ç»“æž„ã€profile é…ç½®æ¨¡å¼å’Œå…³é”®çš„"å…±äº«å·¥ä½œåŒº"è§„åˆ™ï¼Œå‚è§ **[references/kanban-setup.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/kanban-video-orchestrator/references/kanban-setup.md)**ã€‚
 
 ### ç¬¬äº”æ­¥ â€” æ‰§è¡Œ
 
@@ -128,11 +128,11 @@ director profile ä»Žæ­¤æŽ¥ç®¡ï¼Œé€šè¿‡ kanban å·¥å…
 2. ä»¥åŽŸä»»åŠ¡ä¸ºçˆ¶ä»»åŠ¡åˆ›å»ºé‡æ–°è¿è¡Œä»»åŠ¡
 3. è°ƒæ•´ç®€æŠ¥èŒƒå›´ï¼Œè®© director é‡æ–°åˆ†è§£
 
-è¯Šæ–­æ¨¡å¼ã€ä»‹å…¥æ–¹æ¡ˆå’Œ"ä»»åŠ¡å¡ä½"å¤„ç†æ‰‹å†Œï¼Œå‚è§ **[references/monitoring.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/kanban-video-orchestrator/references/monitoring.md)**ã€‚
+è¯Šæ–­æ¨¡å¼ã€ä»‹å…¥æ–¹æ¡ˆå’Œ"ä»»åŠ¡å¡ä½"å¤„ç†æ‰‹å†Œï¼Œå‚è§ **[references/monitoring.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/kanban-video-orchestrator/references/monitoring.md)**ã€‚
 
 ## å‚è€ƒï¼šå®žé™…æ¡ˆä¾‹
 
-å…­ä¸ªæ¶µç›–æˆªç„¶ä¸åŒè§†é¢‘é£Žæ ¼çš„å…·ä½“æµæ°´çº¿â€”â€”å™äº‹çŸ­ç‰‡ã€äº§å“/è¥é”€è§†é¢‘ã€MVã€æ•°å­¦/ç®—æ³•è§£è¯´ã€ASCII è§†é¢‘ã€å®žæ—¶è£…ç½®â€”â€”å±•ç¤ºç›¸åŒå·¥ä½œæµç¨‹å¦‚ä½•äº§ç”Ÿæˆªç„¶ä¸åŒçš„å›¢é˜Ÿå’Œä»»åŠ¡å›¾ã€‚å‚è§ **[references/examples.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/creative/kanban-video-orchestrator/references/examples.md)**ã€‚
+å…­ä¸ªæ¶µç›–æˆªç„¶ä¸åŒè§†é¢‘é£Žæ ¼çš„å…·ä½“æµæ°´çº¿â€”â€”å™äº‹çŸ­ç‰‡ã€äº§å“/è¥é”€è§†é¢‘ã€MVã€æ•°å­¦/ç®—æ³•è§£è¯´ã€ASCII è§†é¢‘ã€å®žæ—¶è£…ç½®â€”â€”å±•ç¤ºç›¸åŒå·¥ä½œæµç¨‹å¦‚ä½•äº§ç”Ÿæˆªç„¶ä¸åŒçš„å›¢é˜Ÿå’Œä»»åŠ¡å›¾ã€‚å‚è§ **[references/examples.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/creative/kanban-video-orchestrator/references/examples.md)**ã€‚
 
 ## å…³é”®è§„åˆ™
 

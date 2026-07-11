@@ -1,11 +1,11 @@
-"""FAL.ai image generation backend.
+﻿"""FAL.ai image generation backend.
 
 Wraps the 18-model FAL catalog (FLUX 2, Z-Image, Nano Banana, GPT
 Image 1.5, Recraft, Imagen 4, Qwen, Ideogram, …) as an
 :class:`ImageGenProvider` implementation.
 
 The heavy lifting — model catalog, payload construction, request
-submission, managed-Nous-gateway selection, Clarity Upscaler chaining
+submission, managed-Zed-gateway selection, Clarity Upscaler chaining
 — lives in :mod:`tools.image_generation_tool`. This plugin reaches into
 that module via call-time indirection (``import tools.image_generation_tool as _it``)
 so:
@@ -56,7 +56,7 @@ class FalImageGenProvider(ImageGenProvider):
         return "FAL.ai"
 
     def is_available(self) -> bool:
-        # Available when direct FAL_KEY is set OR the managed Nous
+        # Available when direct FAL_KEY is set OR the managed Zed
         # gateway resolves a fal-queue origin. Both checks come from the
         # legacy module so this provider tracks whatever logic ships
         # there.

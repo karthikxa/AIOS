@@ -1,4 +1,4 @@
-"""Realtime speech subpackage for the google_meet plugin (v2).
+﻿"""Realtime speech subpackage for the google_meet plugin (v2).
 
 Provides a thin OpenAI Realtime API client and a file-queue speaker
 wrapper so the Meet bot can play synthesized speech through the

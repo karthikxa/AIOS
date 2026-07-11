@@ -1,4 +1,4 @@
-# Hyperparameter Tuning with PyTorch Lightning
+﻿# Hyperparameter Tuning with PyTorch Lightning
 
 ## Integration with Tuning Frameworks
 

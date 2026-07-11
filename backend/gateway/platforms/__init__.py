@@ -1,4 +1,4 @@
-"""
+﻿"""
 Platform adapters for messaging integrations.
 
 Each adapter handles:

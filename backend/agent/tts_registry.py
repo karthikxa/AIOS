@@ -1,4 +1,4 @@
-"""
+﻿"""
 TTS Provider Registry
 =====================
 

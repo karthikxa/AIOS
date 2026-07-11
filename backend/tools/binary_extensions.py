@@ -1,4 +1,4 @@
-"""Binary file extensions to skip for text-based operations.
+﻿"""Binary file extensions to skip for text-based operations.
 
 These files can't be meaningfully compared as text and are often large.
 Ported from free-code src/constants/files.ts.

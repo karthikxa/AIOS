@@ -1,4 +1,4 @@
-"""Swarm orchestration patterns powered by delegate_task sub-agent spawning.
+﻿"""Swarm orchestration patterns powered by delegate_task sub-agent spawning.
 
 All 10 patterns use the native sub-agent system (up to 250 concurrent workers)
 instead of the external swarms library. Each worker runs as a full AIAgent with

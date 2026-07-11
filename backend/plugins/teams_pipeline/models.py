@@ -1,4 +1,4 @@
-"""Normalized models for the Teams meeting pipeline plugin."""
+﻿"""Normalized models for the Teams meeting pipeline plugin."""
 
 from __future__ import annotations
 

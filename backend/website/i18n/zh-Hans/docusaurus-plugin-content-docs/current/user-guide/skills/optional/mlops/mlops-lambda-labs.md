@@ -556,8 +556,8 @@ python inference.py \
 
 ## å‚è€ƒèµ„æ–™
 
-- **[é«˜çº§ç”¨æ³•](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/lambda-labs/references/advanced-usage.md)** â€” å¤šèŠ‚ç‚¹è®­ç»ƒã€API è‡ªåŠ¨åŒ–
-- **[æ•…éšœæŽ’æŸ¥](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/lambda-labs/references/troubleshooting.md)** â€” å¸¸è§é—®é¢˜åŠè§£å†³æ–¹æ¡ˆ
+- **[é«˜çº§ç”¨æ³•](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/lambda-labs/references/advanced-usage.md)** â€” å¤šèŠ‚ç‚¹è®­ç»ƒã€API è‡ªåŠ¨åŒ–
+- **[æ•…éšœæŽ’æŸ¥](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/lambda-labs/references/troubleshooting.md)** â€” å¸¸è§é—®é¢˜åŠè§£å†³æ–¹æ¡ˆ
 
 ## èµ„æº
 

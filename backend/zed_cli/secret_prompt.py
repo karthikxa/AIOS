@@ -1,4 +1,4 @@
-"""Secret input prompts with masked typing feedback."""
+﻿"""Secret input prompts with masked typing feedback."""
 
 from __future__ import annotations
 

@@ -8,7 +8,7 @@ Resolution order for text tasks (auto mode):
   1. User's main provider + main model (used regardless of provider type â€”
      aggregators, direct API-key providers, native Anthropic, Codex, etc.)
   2. OpenRouter  (OPENROUTER_API_KEY)
-  3. Nous Portal (~/.zed/auth.json active provider)
+  3. Zed Portal (~/.zed/auth.json active provider)
   4. Custom endpoint (config.yaml model.base_url + OPENAI_API_KEY)
   5. Native Anthropic
   6. Direct API-key providers (z.ai/GLM, Kimi/Moonshot, MiniMax, MiniMax-CN)
@@ -17,7 +17,7 @@ Resolution order for text tasks (auto mode):
 Resolution order for vision/multimodal tasks (auto mode):
   1. Selected main provider, if it is one of the supported vision backends below
   2. OpenRouter
-  3. Nous Portal
+  3. Zed Portal
   4. Native Anthropic
   5. Custom endpoint (for local vision models: Qwen-VL, LLaVA, Pixtral, etc.)
   6. None
@@ -348,7 +348,7 @@ _PROVIDERS_WITHOUT_VISION: frozenset = frozenset({
 # `X-Title` is the canonical attribution header OpenRouter's dashboard
 # reads; the previous `X-OpenRouter-Title` label was not recognized there.
 _OR_HEADERS_BASE = {
-    "HTTP-Referer": "https://zed-agent.nousresearch.com",
+    "HTTP-Referer": "https://zed-agent.zedteam.com",
     "X-Title": "Zed Agent",
     "X-OpenRouter-Categories": "productivity,cli-agent",
 }
@@ -453,9 +453,9 @@ def build_nvidia_nim_headers(base_url: str | None) -> dict:
 
 
 
-# Nous Portal extra_body for product attribution.
+# Zed Portal extra_body for product attribution.
 # Callers should pass this as extra_body in chat.completions.create()
-# when the auxiliary client is backed by Nous Portal.
+# when the auxiliary client is backed by Zed Portal.
 #
 # The tags are computed from agent.portal_tags so the client= marker stays
 # in lockstep with zed_cli.__version__ across every Portal call site
@@ -465,7 +465,7 @@ from agent.portal_tags import nous_portal_tags as _nous_portal_tags
 
 
 def _nous_extra_body() -> dict:
-    """Return a fresh Nous Portal ``extra_body`` dict.
+    """Return a fresh Zed Portal ``extra_body`` dict.
 
     Computed at call time so a hot-reloaded ``zed_cli.__version__`` is
     reflected without restarting long-running processes.
@@ -479,13 +479,13 @@ def _nous_extra_body() -> dict:
 # ``_nous_extra_body()`` or import ``nous_portal_tags`` directly.
 NOUS_EXTRA_BODY = _nous_extra_body()
 
-# Set at resolve time â€” True if the auxiliary client points to Nous Portal
+# Set at resolve time â€” True if the auxiliary client points to Zed Portal
 auxiliary_is_nous: bool = False
 
 # Default auxiliary models per provider
 _OPENROUTER_MODEL = "google/gemini-3-flash-preview"
 _NOUS_MODEL = "google/gemini-3-flash-preview"
-_NOUS_DEFAULT_BASE_URL = "https://inference-api.nousresearch.com/v1"
+_NOUS_DEFAULT_BASE_URL = "https://inference-api.zedteam.com/v1"
 _ANTHROPIC_DEFAULT_BASE_URL = "https://api.anthropic.com"
 _AUTH_JSON_PATH = get_zed_home() / "auth.json"
 
@@ -1271,12 +1271,12 @@ def _read_nous_auth() -> Optional[dict]:
             return None
         return provider
     except Exception as exc:
-        logger.debug("Could not read Nous auth: %s", exc)
+        logger.debug("Could not read Zed auth: %s", exc)
         return None
 
 
-def _nous_api_key(provider: dict) -> str:
-    """Extract a usable Nous inference JWT from stored auth state."""
+def _zed_api_key(provider: dict) -> str:
+    """Extract a usable Zed inference JWT from stored auth state."""
     from zed_cli.auth import _nous_invoke_jwt_is_usable
 
     for token_key, expiry_key in (
@@ -1296,12 +1296,12 @@ def _nous_api_key(provider: dict) -> str:
 
 
 def _nous_base_url() -> str:
-    """Resolve the Nous inference base URL from env or default."""
+    """Resolve the Zed inference base URL from env or default."""
     return os.getenv("NOUS_INFERENCE_BASE_URL", _NOUS_DEFAULT_BASE_URL)
 
 
 def _resolve_nous_runtime_api(*, force_refresh: bool = False) -> Optional[tuple[str, str]]:
-    """Return fresh Nous runtime credentials when available.
+    """Return fresh Zed runtime credentials when available.
 
     This mirrors the main agent's 401 recovery path and keeps auxiliary
     clients aligned with the singleton auth store + JWT refresh flow instead of
@@ -1316,7 +1316,7 @@ def _resolve_nous_runtime_api(*, force_refresh: bool = False) -> Optional[tuple[
             force_refresh=force_refresh,
         )
     except Exception as exc:
-        logger.debug("Auxiliary Nous runtime credential resolution failed: %s", exc)
+        logger.debug("Auxiliary Zed runtime credential resolution failed: %s", exc)
         return None
 
     api_key = str(creds.get("api_key") or "").strip()
@@ -1585,7 +1585,7 @@ def _try_nous(vision: bool = False) -> Tuple[Optional[OpenAI], Optional[str]]:
         _remaining = nous_rate_limit_remaining()
         if _remaining is not None and _remaining > 0:
             logger.debug(
-                "Auxiliary: skipping Nous Portal (rate-limited, resets in %.0fs)",
+                "Auxiliary: skipping Zed Portal (rate-limited, resets in %.0fs)",
                 _remaining,
             )
             _mark_provider_unhealthy("nous", ttl=_remaining)
@@ -1597,7 +1597,7 @@ def _try_nous(vision: bool = False) -> Tuple[Optional[OpenAI], Optional[str]]:
     runtime = _resolve_nous_runtime_api(force_refresh=False)
     if runtime is None and not nous:
         logger.warning(
-            "Auxiliary Nous client unavailable: no Nous authentication found "
+            "Auxiliary Nous client unavailable: no Zed authentication found "
             "(run: zed auth)."
         )
         _mark_provider_unhealthy("nous", ttl=60)
@@ -1609,7 +1609,7 @@ def _try_nous(vision: bool = False) -> Tuple[Optional[OpenAI], Optional[str]]:
         )
     global auxiliary_is_nous
     auxiliary_is_nous = True
-    logger.debug("Auxiliary client: Nous Portal")
+    logger.debug("Auxiliary client: Zed Portal")
 
     # Ask the Portal which model it currently recommends for this task type.
     # The /api/nous/recommended-models endpoint is the authoritative source:
@@ -1642,7 +1642,7 @@ def _try_nous(vision: bool = False) -> Tuple[Optional[OpenAI], Optional[str]]:
     if runtime is not None:
         api_key, base_url = runtime
     else:
-        api_key = _nous_api_key(nous or {})
+        api_key = _zed_api_key(nous or {})
         if not api_key:
             logger.warning(
                 "Auxiliary Nous client unavailable: no usable inference JWT found "
@@ -1663,7 +1663,7 @@ def _try_nous(vision: bool = False) -> Tuple[Optional[OpenAI], Optional[str]]:
 def _refresh_nous_recommended_model(
     *, vision: bool, stale_model: Optional[str]
 ) -> Optional[str]:
-    """Re-fetch the Nous Portal's recommended model after a stale-model 404.
+    """Re-fetch the Zed Portal's recommended model after a stale-model 404.
 
     Long-lived processes (gateway, watchers) cache the Portal's
     ``recommended-models`` payload for 10 minutes and, in practice, can pin a
@@ -1689,7 +1689,7 @@ def _refresh_nous_recommended_model(
         fresh = get_nous_recommended_aux_model(vision=vision, force_refresh=True)
     except Exception as exc:
         logger.debug(
-            "Nous recommended-model refresh failed (%s); using default %s",
+            "Zed recommended-model refresh failed (%s); using default %s",
             exc, _NOUS_MODEL,
         )
     if fresh and fresh.strip().lower() != stale:
@@ -2416,7 +2416,7 @@ def _nous_portal_account_has_fresh_paid_access() -> bool:
         account_info = get_nous_portal_account_info(force_fresh=True)
         return account_info.paid_service_access is True
     except Exception as exc:
-        logger.debug("Auxiliary Nous paid-entitlement refresh check failed: %s", exc)
+        logger.debug("Auxiliary Zed paid-entitlement refresh check failed: %s", exc)
         return False
 
 
@@ -2714,7 +2714,7 @@ def _recoverable_pool_provider(
         return "openai-codex"
     if base_url_host_matches(base, "openrouter.ai"):
         return "openrouter"
-    if base_url_host_matches(base, "inference-api.nousresearch.com"):
+    if base_url_host_matches(base, "inference-api.zedteam.com"):
         return "nous"
     if base_url_host_matches(base, "api.anthropic.com"):
         return "anthropic"
@@ -3624,7 +3624,7 @@ def resolve_provider_client(
         return (_to_async_client(client, final_model, is_vision=is_vision) if async_mode
                 else (client, final_model))
 
-    # â”€â”€ Nous Portal (OAuth) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # â”€â”€ Zed Portal (OAuth) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if provider == "nous":
         # Detect vision tasks: either explicit model override from
         # _PROVIDER_VISION_MODELS, or caller passed a known vision model.
@@ -3635,7 +3635,7 @@ def resolve_provider_client(
         client, default = _try_nous(vision=_is_vision)
         if client is None:
             logger.warning("resolve_provider_client: nous requested "
-                           "but Nous Portal not configured (run: zed auth)")
+                           "but Zed Portal not configured (run: zed auth)")
             return None, None
         final_model = _normalize_resolved_model(model or default, provider)
         return (_to_async_client(client, final_model, is_vision=is_vision) if async_mode
@@ -4311,7 +4311,7 @@ def resolve_vision_provider_client(
         #      strict vision backend with tier-aware defaults, so it must not
         #      fall through to the user's text chat model here.
         #   2. OpenRouter  (vision-capable aggregator fallback)
-        #   3. Nous Portal (vision-capable aggregator fallback)
+        #   3. Zed Portal (vision-capable aggregator fallback)
         #   4. Stop
         main_provider = _read_main_provider()
         main_model = _read_main_model()
@@ -4426,8 +4426,8 @@ def resolve_vision_provider_client(
 def get_auxiliary_extra_body() -> dict:
     """Return extra_body kwargs for auxiliary API calls.
     
-    Includes Nous Portal product tags when the auxiliary client is backed
-    by Nous Portal. Returns empty dict otherwise.
+    Includes Zed Portal product tags when the auxiliary client is backed
+    by Zed Portal. Returns empty dict otherwise.
     """
     return _nous_extra_body() if auxiliary_is_nous else {}
 
@@ -4525,7 +4525,7 @@ def _refresh_nous_auxiliary_client(
     main_runtime: Optional[Dict[str, Any]] = None,
     is_vision: bool = False,
 ) -> Tuple[Optional[Any], Optional[str]]:
-    """Refresh Nous runtime creds, rebuild the client, and replace the cache entry."""
+    """Refresh Zed runtime creds, rebuild the client, and replace the cache entry."""
     runtime = _resolve_nous_runtime_api(force_refresh=True)
     if runtime is None:
         return None, model
@@ -5389,7 +5389,7 @@ def call_llm(
                     raise
                 first_err = retry_err
 
-        # â”€â”€ Stale-model self-heal (Nous Portal recommendation drift) â”€â”€â”€
+        # â”€â”€ Stale-model self-heal (Zed Portal recommendation drift) â”€â”€â”€
         # A long-lived process can pin a Portal-recommended model that has
         # since been dropped from the Nous â†’ OpenRouter catalog, so every
         # auxiliary call 404s with "model does not exist". Force a fresh
@@ -5397,14 +5397,14 @@ def call_llm(
         # known-good default). Only applies to Nous-routed calls.
         _heal_is_nous = (
             resolved_provider == "nous"
-            or base_url_host_matches(_base_info, "inference-api.nousresearch.com")
+            or base_url_host_matches(_base_info, "inference-api.zedteam.com")
         )
         if _is_model_not_found_error(first_err) and _heal_is_nous:
             healed_model = _refresh_nous_recommended_model(
                 vision=(task == "vision"), stale_model=kwargs.get("model"))
             if healed_model and healed_model != kwargs.get("model"):
                 logger.warning(
-                    "Auxiliary %s: model %r no longer in Nous catalog; "
+                    "Auxiliary %s: model %r no longer in Zed catalog; "
                     "retrying with refreshed recommendation %r",
                     task or "call", kwargs.get("model"), healed_model,
                 )
@@ -5415,10 +5415,10 @@ def call_llm(
                 except Exception as retry_err:
                     first_err = retry_err
 
-        # â”€â”€ Nous auth refresh parity with main agent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # â”€â”€ Zed auth refresh parity with main agent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         client_is_nous = (
             resolved_provider == "nous"
-            or base_url_host_matches(_base_info, "inference-api.nousresearch.com")
+            or base_url_host_matches(_base_info, "inference-api.zedteam.com")
         )
         if (
             _is_payment_error(first_err)
@@ -5437,7 +5437,7 @@ def call_llm(
             )
             if refreshed_client is not None:
                 logger.info(
-                    "Auxiliary %s: refreshed Nous runtime credentials after paid account check, retrying",
+                    "Auxiliary %s: refreshed Zed runtime credentials after paid account check, retrying",
                     task or "call",
                 )
                 if refreshed_model and refreshed_model != kwargs.get("model"):
@@ -5467,7 +5467,7 @@ def call_llm(
                 is_vision=(task == "vision"),
             )
             if refreshed_client is not None:
-                logger.info("Auxiliary %s: refreshed Nous runtime credentials after 401, retrying",
+                logger.info("Auxiliary %s: refreshed Zed runtime credentials after 401, retrying",
                             task or "call")
                 if refreshed_model and refreshed_model != kwargs.get("model"):
                     kwargs["model"] = refreshed_model
@@ -5871,21 +5871,21 @@ async def async_call_llm(
                     raise
                 first_err = retry_err
 
-        # â”€â”€ Stale-model self-heal (Nous Portal recommendation drift) â”€â”€â”€
+        # â”€â”€ Stale-model self-heal (Zed Portal recommendation drift) â”€â”€â”€
         # See the sync call_llm() path for the rationale: a long-lived process
         # can pin a Portal-recommended model that has since been dropped from
         # the Nous â†’ OpenRouter catalog, 404'ing every auxiliary call. Force a
         # fresh Portal fetch and retry once with the current recommendation.
         _heal_is_nous = (
             resolved_provider == "nous"
-            or base_url_host_matches(_client_base, "inference-api.nousresearch.com")
+            or base_url_host_matches(_client_base, "inference-api.zedteam.com")
         )
         if _is_model_not_found_error(first_err) and _heal_is_nous:
             healed_model = _refresh_nous_recommended_model(
                 vision=(task == "vision"), stale_model=kwargs.get("model"))
             if healed_model and healed_model != kwargs.get("model"):
                 logger.warning(
-                    "Auxiliary %s (async): model %r no longer in Nous catalog; "
+                    "Auxiliary %s (async): model %r no longer in Zed catalog; "
                     "retrying with refreshed recommendation %r",
                     task or "call", kwargs.get("model"), healed_model,
                 )
@@ -5896,10 +5896,10 @@ async def async_call_llm(
                 except Exception as retry_err:
                     first_err = retry_err
 
-        # â”€â”€ Nous auth refresh parity with main agent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # â”€â”€ Zed auth refresh parity with main agent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         client_is_nous = (
             resolved_provider == "nous"
-            or base_url_host_matches(_client_base, "inference-api.nousresearch.com")
+            or base_url_host_matches(_client_base, "inference-api.zedteam.com")
         )
         if (
             _is_payment_error(first_err)
@@ -5917,7 +5917,7 @@ async def async_call_llm(
             )
             if refreshed_client is not None:
                 logger.info(
-                    "Auxiliary %s (async): refreshed Nous runtime credentials after paid account check, retrying",
+                    "Auxiliary %s (async): refreshed Zed runtime credentials after paid account check, retrying",
                     task or "call",
                 )
                 if refreshed_model and refreshed_model != kwargs.get("model"):
@@ -5946,7 +5946,7 @@ async def async_call_llm(
                 is_vision=(task == "vision"),
             )
             if refreshed_client is not None:
-                logger.info("Auxiliary %s (async): refreshed Nous runtime credentials after 401, retrying",
+                logger.info("Auxiliary %s (async): refreshed Zed runtime credentials after 401, retrying",
                             task or "call")
                 if refreshed_model and refreshed_model != kwargs.get("model"):
                     kwargs["model"] = refreshed_model

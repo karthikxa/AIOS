@@ -160,9 +160,9 @@ def _paste_to_tasks(ctx, raw_args: str) -> str:
 ```
 
 ç¬¬ä¸‰ä¸ªå®Œæ•´ç¤ºä¾‹ï¼ˆåŒ…å«å›¾åƒè¾“å…¥ï¼‰ä½äºŽ
-[`zed-example-plugins`](https://github.com/NousResearch/zed-example-plugins/tree/main/plugin-llm-example)
+[`zed-example-plugins`](https://github.com/zedteam/zed-example-plugins/tree/main/plugin-llm-example)
 ä»“åº“ï¼ˆå‚è€ƒ plugin çš„é…å¥—ä»“åº“â€”â€”ä¸éš zed-agent æœ¬ä½“æ‰“åŒ…ï¼‰ã€‚å…³äºŽå¼‚æ­¥æŽ¥å£ï¼ˆ`acomplete()` / `acomplete_structured()` ä¸Ž `asyncio.gather()` é…åˆä½¿ç”¨ï¼‰ï¼Œè¯·å‚è§åŒä¸€ä»“åº“ä¸­çš„
-[`plugin-llm-async-example`](https://github.com/NousResearch/zed-example-plugins/tree/main/plugin-llm-async-example)ã€‚
+[`plugin-llm-async-example`](https://github.com/zedteam/zed-example-plugins/tree/main/plugin-llm-async-example)ã€‚
 
 ## ä½•æ—¶ä½¿ç”¨å“ªç§æ–¹å¼
 
@@ -362,10 +362,10 @@ Plugin id å¯¹äºŽæ‰å¹³ plugin æ˜¯ manifest ä¸­çš„ `name:`
 
 ## å‚è€ƒèµ„æ–™
 
-* å®žçŽ°ï¼š[`agent/plugin_llm.py`](https://github.com/NousResearch/zed-agent/blob/main/agent/plugin_llm.py)
-* æµ‹è¯•ï¼š[`tests/agent/test_plugin_llm.py`](https://github.com/NousResearch/zed-agent/blob/main/tests/agent/test_plugin_llm.py)
+* å®žçŽ°ï¼š[`agent/plugin_llm.py`](https://github.com/zedteam/zed-agent/blob/main/agent/plugin_llm.py)
+* æµ‹è¯•ï¼š[`tests/agent/test_plugin_llm.py`](https://github.com/zedteam/zed-agent/blob/main/tests/agent/test_plugin_llm.py)
 * å‚è€ƒ pluginï¼ˆé…å¥—ä»“åº“ï¼‰ï¼š
-  * [`plugin-llm-example`](https://github.com/NousResearch/zed-example-plugins/tree/main/plugin-llm-example) â€” å¸¦å›¾åƒè¾“å…¥çš„åŒæ­¥ç»“æž„åŒ–æå–
-  * [`plugin-llm-async-example`](https://github.com/NousResearch/zed-example-plugins/tree/main/plugin-llm-async-example) â€” ä½¿ç”¨ `asyncio.gather()` çš„å¼‚æ­¥ç¤ºä¾‹
+  * [`plugin-llm-example`](https://github.com/zedteam/zed-example-plugins/tree/main/plugin-llm-example) â€” å¸¦å›¾åƒè¾“å…¥çš„åŒæ­¥ç»“æž„åŒ–æå–
+  * [`plugin-llm-async-example`](https://github.com/zedteam/zed-example-plugins/tree/main/plugin-llm-async-example) â€” ä½¿ç”¨ `asyncio.gather()` çš„å¼‚æ­¥ç¤ºä¾‹
 * è¾…åŠ©å®¢æˆ·ç«¯ï¼ˆåº•å±‚å¼•æ“Žï¼‰ï¼šå‚è§
   [Provider è¿è¡Œæ—¶](/developer-guide/provider-runtime)ã€‚

@@ -1,4 +1,4 @@
-# Intake — Discovery Question Banks
+﻿# Intake — Discovery Question Banks
 
 The discovery process is **adaptive**. Always start with three baseline
 questions to identify the broad style category, then drill into a per-style

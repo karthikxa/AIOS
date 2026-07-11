@@ -1,4 +1,4 @@
-# Dérive and Mapping
+﻿# Dérive and Mapping
 
 Three traditions of *attentive movement through territory* as ideation:
 - **Situationist dérive** — Guy Debord, *Théorie de la dérive* (1958). Drift through a city, displacing productive uses with attentive wandering.

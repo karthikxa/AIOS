@@ -36,7 +36,7 @@ Zed Agent é€šè¿‡åŸºäºŽæµè§ˆå™¨çš„ OAuth ç™»å½
 - æœ¬åœ°æœºå™¨ä¸Šæœ‰å¯ç”¨çš„æµè§ˆå™¨ï¼ˆè¿œç¨‹ä¼šè¯å¯ä½¿ç”¨ `--no-browser`ï¼‰
 
 :::warning xAI å¯èƒ½æŒ‰å¥—é¤é™åˆ¶ OAuth API è®¿é—®
-xAI çš„åŽç«¯å¯¹ OAuth API æŽ¥å£ç»´æŠ¤è‡ªå·±çš„ç™½åå•ï¼Œå·²æœ‰è®°å½•æ˜¾ç¤ºå³ä½¿åº”ç”¨å†…è®¢é˜…å¤„äºŽæ¿€æ´»çŠ¶æ€ï¼Œæ ‡å‡† SuperGrok è®¢é˜…è€…ä¹Ÿä¼šæ”¶åˆ° `HTTP 403`ï¼ˆè§ issue [#26847](https://github.com/NousResearch/zed-agent/issues/26847)ï¼‰ã€‚å¦‚æžœæµè§ˆå™¨ä¸­ OAuth ç™»å½•æˆåŠŸä½†æŽ¨ç†è¿”å›ž 403ï¼Œè¯·è®¾ç½® `XAI_API_KEY` å¹¶åˆ‡æ¢åˆ° API å¯†é’¥è·¯å¾„ï¼ˆ`provider: xai`ï¼‰â€”â€”è¯¥æŽ¥å£ç›®å‰ä¸å—ç›¸åŒé™åˆ¶ã€‚
+xAI çš„åŽç«¯å¯¹ OAuth API æŽ¥å£ç»´æŠ¤è‡ªå·±çš„ç™½åå•ï¼Œå·²æœ‰è®°å½•æ˜¾ç¤ºå³ä½¿åº”ç”¨å†…è®¢é˜…å¤„äºŽæ¿€æ´»çŠ¶æ€ï¼Œæ ‡å‡† SuperGrok è®¢é˜…è€…ä¹Ÿä¼šæ”¶åˆ° `HTTP 403`ï¼ˆè§ issue [#26847](https://github.com/zedteam/zed-agent/issues/26847)ï¼‰ã€‚å¦‚æžœæµè§ˆå™¨ä¸­ OAuth ç™»å½•æˆåŠŸä½†æŽ¨ç†è¿”å›ž 403ï¼Œè¯·è®¾ç½® `XAI_API_KEY` å¹¶åˆ‡æ¢åˆ° API å¯†é’¥è·¯å¾„ï¼ˆ`provider: xai`ï¼‰â€”â€”è¯¥æŽ¥å£ç›®å‰ä¸å—ç›¸åŒé™åˆ¶ã€‚
 :::
 
 ## å¿«é€Ÿå¼€å§‹
@@ -92,7 +92,7 @@ zed auth add xai-oauth --manual-paste
 zed model --manual-paste
 ```
 
-å®Œæ•´æ“ä½œè¯´æ˜Žè¯·å‚é˜… [OAuth over SSH / Remote Hosts](./oauth-over-ssh.md#browser-only-remote-cloud-shell--codespaces--ec2-instance-connect)ã€‚æ­¤ä¸º [#26923](https://github.com/NousResearch/zed-agent/issues/26923) çš„å›žå½’ä¿®å¤ã€‚
+å®Œæ•´æ“ä½œè¯´æ˜Žè¯·å‚é˜… [OAuth over SSH / Remote Hosts](./oauth-over-ssh.md#browser-only-remote-cloud-shell--codespaces--ec2-instance-connect)ã€‚æ­¤ä¸º [#26923](https://github.com/zedteam/zed-agent/issues/26923) çš„å›žå½’ä¿®å¤ã€‚
 
 ## ç™»å½•æµç¨‹è¯´æ˜Ž
 
@@ -235,7 +235,7 @@ zed auth add xai-oauth --no-browser
 
 æµè§ˆå™¨ä¸­ OAuth å®Œæˆï¼Œtoken å·²ä¿å­˜ï¼Œä½†æŽ¨ç†æˆ– token åˆ·æ–°è¿”å›ž `HTTP 403`ï¼Œæ¶ˆæ¯ç±»ä¼¼äºŽ *"The caller does not have permission to execute the specified operation"*ã€‚
 
-è¿™**ä¸æ˜¯** token è¿‡æœŸé—®é¢˜â€”â€”é‡æ–°è¿è¡Œ `zed model` ä¸ä¼šæ”¹å˜ç»“æžœã€‚xAI çš„åŽç«¯å·²è¢«è§‚å¯Ÿåˆ°å°† OAuth API è®¿é—®é™åˆ¶åœ¨ç‰¹å®š SuperGrok å¥—é¤ï¼Œå³ä½¿åº”ç”¨å†…è®¢é˜…å¤„äºŽæ¿€æ´»çŠ¶æ€ï¼ˆissue [#26847](https://github.com/NousResearch/zed-agent/issues/26847)ï¼‰ã€‚
+è¿™**ä¸æ˜¯** token è¿‡æœŸé—®é¢˜â€”â€”é‡æ–°è¿è¡Œ `zed model` ä¸ä¼šæ”¹å˜ç»“æžœã€‚xAI çš„åŽç«¯å·²è¢«è§‚å¯Ÿåˆ°å°† OAuth API è®¿é—®é™åˆ¶åœ¨ç‰¹å®š SuperGrok å¥—é¤ï¼Œå³ä½¿åº”ç”¨å†…è®¢é˜…å¤„äºŽæ¿€æ´»çŠ¶æ€ï¼ˆissue [#26847](https://github.com/zedteam/zed-agent/issues/26847)ï¼‰ã€‚
 
 **ä¿®å¤æ–¹æ³•ï¼š** è®¾ç½® `XAI_API_KEY` å¹¶åˆ‡æ¢åˆ° API å¯†é’¥è·¯å¾„ï¼š
 

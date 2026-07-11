@@ -25,7 +25,7 @@ zed chat -q "Hello"
 zed chat --model "anthropic/claude-sonnet-4"
 
 # ä½¿ç”¨æŒ‡å®šæä¾›å•†
-zed chat --provider nous        # ä½¿ç”¨ Nous Portal
+zed chat --provider nous        # ä½¿ç”¨ Zed Portal
 zed chat --provider openrouter  # å¼ºåˆ¶ä½¿ç”¨ OpenRouter
 
 # ä½¿ç”¨æŒ‡å®šå·¥å…·é›†

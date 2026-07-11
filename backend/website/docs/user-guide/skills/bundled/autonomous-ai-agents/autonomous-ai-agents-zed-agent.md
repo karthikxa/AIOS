@@ -46,13 +46,13 @@ People use Zed for software development, research, system administration, data a
 
 **This skill helps you work with Zed Agent effectively** â€” setting it up, configuring features, spawning additional agent instances, troubleshooting issues, finding the right commands and settings, and understanding how the system works when you need to extend or contribute to it.
 
-**Docs:** https://zed-agent.nousresearch.com/docs/
+**Docs:** https://zed-agent.zedteam.com/docs/
 
 ## Quick Start
 
 ```bash
 # Install
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 
 # Interactive chat (default)
 zed
@@ -174,7 +174,7 @@ zed gateway setup        Configure platforms
 
 Supported platforms: Telegram, Discord, Slack, WhatsApp, Signal, Email, SMS, Matrix, Mattermost, Home Assistant, DingTalk, Feishu, WeCom, BlueBubbles (iMessage), Weixin (WeChat), API Server, Webhooks. Open WebUI connects via the API Server adapter.
 
-Platform docs: https://zed-agent.nousresearch.com/docs/user-guide/messaging/
+Platform docs: https://zed-agent.zedteam.com/docs/user-guide/messaging/
 
 ### Sessions
 
@@ -256,7 +256,7 @@ zed uninstall            Uninstall Zed
 
 Type these during an interactive chat session. New commands land fairly
 often; if something below looks stale, run `/help` in-session for the
-authoritative list or see the [live slash commands reference](https://zed-agent.nousresearch.com/docs/reference/slash-commands).
+authoritative list or see the [live slash commands reference](https://zed-agent.zedteam.com/docs/reference/slash-commands).
 The registry of record is `zed_cli/commands.py` â€” every consumer
 (autocomplete, Telegram menu, Slack mapping, `/help`) derives from it.
 
@@ -389,7 +389,7 @@ Edit with `zed config edit` or `zed config set section.key value`.
 | `delegation` | `model`, `provider`, `base_url`, `api_key`, `max_iterations` (50), `reasoning_effort` |
 | `checkpoints` | `enabled`, `max_snapshots` (50) |
 
-Full config reference: https://zed-agent.nousresearch.com/docs/user-guide/configuration
+Full config reference: https://zed-agent.zedteam.com/docs/user-guide/configuration
 
 ### Providers
 
@@ -399,7 +399,7 @@ Full config reference: https://zed-agent.nousresearch.com/docs/user-guide/config
 |----------|------|-------------|
 | OpenRouter | API key | `OPENROUTER_API_KEY` |
 | Anthropic | API key | `ANTHROPIC_API_KEY` |
-| Nous Portal | OAuth | `zed auth` |
+| Zed Portal | OAuth | `zed auth` |
 | OpenAI Codex | OAuth | `zed auth` |
 | GitHub Copilot | Token | `COPILOT_GITHUB_TOKEN` |
 | Google Gemini | API key | `GOOGLE_API_KEY` or `GEMINI_API_KEY` |
@@ -419,7 +419,7 @@ Full config reference: https://zed-agent.nousresearch.com/docs/user-guide/config
 | Custom endpoint | Config | `model.base_url` + `model.api_key` in config.yaml |
 | GitHub Copilot ACP | External | `COPILOT_CLI_PATH` or Copilot CLI |
 
-Full provider docs: https://zed-agent.nousresearch.com/docs/integrations/providers
+Full provider docs: https://zed-agent.zedteam.com/docs/integrations/providers
 
 ### Toolsets
 
@@ -679,7 +679,7 @@ the `cronjob` tool, the `zed cron` CLI (`list`, `add`, `edit`,
   header/footer instead of being mirrored into the target gateway
   session (keeps role alternation intact).
 
-User docs: https://zed-agent.nousresearch.com/docs/user-guide/features/cron
+User docs: https://zed-agent.zedteam.com/docs/user-guide/features/cron
 
 ### Curator (skill lifecycle)
 
@@ -700,7 +700,7 @@ so nothing is lost.
 
 Config: `curator.*` (`enabled`, `interval_hours`, `min_idle_hours`,
 `stale_after_days`, `archive_after_days`, `backup.*`).
-User docs: https://zed-agent.nousresearch.com/docs/user-guide/features/curator
+User docs: https://zed-agent.zedteam.com/docs/user-guide/features/curator
 
 ### Kanban (multi-agent work queue)
 
@@ -729,7 +729,7 @@ sessions still have zero `kanban_*` schema footprint unless configured.
   `ZED_KANBAN_BOARD` pinned in env); tenant is a soft namespace
   within a board for workspace-path + memory-key isolation.
 
-User docs: https://zed-agent.nousresearch.com/docs/user-guide/features/kanban
+User docs: https://zed-agent.zedteam.com/docs/user-guide/features/kanban
 
 ---
 
@@ -880,18 +880,18 @@ zed config set auxiliary.vision.model <model_name>
 
 | Looking for... | Location |
 |----------------|----------|
-| Config options | `zed config edit` or [Configuration docs](https://zed-agent.nousresearch.com/docs/user-guide/configuration) |
-| Available tools | `zed tools list` or [Tools reference](https://zed-agent.nousresearch.com/docs/reference/tools-reference) |
-| Slash commands | `/help` in session or [Slash commands reference](https://zed-agent.nousresearch.com/docs/reference/slash-commands) |
-| Skills catalog | `zed skills browse` or [Skills catalog](https://zed-agent.nousresearch.com/docs/reference/skills-catalog) |
-| Provider setup | `zed model` or [Providers guide](https://zed-agent.nousresearch.com/docs/integrations/providers) |
-| Platform setup | `zed gateway setup` or [Messaging docs](https://zed-agent.nousresearch.com/docs/user-guide/messaging/) |
-| MCP servers | `zed mcp list` or [MCP guide](https://zed-agent.nousresearch.com/docs/user-guide/features/mcp) |
-| Profiles | `zed profile list` or [Profiles docs](https://zed-agent.nousresearch.com/docs/user-guide/profiles) |
-| Cron jobs | `zed cron list` or [Cron docs](https://zed-agent.nousresearch.com/docs/user-guide/features/cron) |
-| Memory | `zed memory status` or [Memory docs](https://zed-agent.nousresearch.com/docs/user-guide/features/memory) |
-| Env variables | `zed config env-path` or [Env vars reference](https://zed-agent.nousresearch.com/docs/reference/environment-variables) |
-| CLI commands | `zed --help` or [CLI reference](https://zed-agent.nousresearch.com/docs/reference/cli-commands) |
+| Config options | `zed config edit` or [Configuration docs](https://zed-agent.zedteam.com/docs/user-guide/configuration) |
+| Available tools | `zed tools list` or [Tools reference](https://zed-agent.zedteam.com/docs/reference/tools-reference) |
+| Slash commands | `/help` in session or [Slash commands reference](https://zed-agent.zedteam.com/docs/reference/slash-commands) |
+| Skills catalog | `zed skills browse` or [Skills catalog](https://zed-agent.zedteam.com/docs/reference/skills-catalog) |
+| Provider setup | `zed model` or [Providers guide](https://zed-agent.zedteam.com/docs/integrations/providers) |
+| Platform setup | `zed gateway setup` or [Messaging docs](https://zed-agent.zedteam.com/docs/user-guide/messaging/) |
+| MCP servers | `zed mcp list` or [MCP guide](https://zed-agent.zedteam.com/docs/user-guide/features/mcp) |
+| Profiles | `zed profile list` or [Profiles docs](https://zed-agent.zedteam.com/docs/user-guide/profiles) |
+| Cron jobs | `zed cron list` or [Cron docs](https://zed-agent.zedteam.com/docs/user-guide/features/cron) |
+| Memory | `zed memory status` or [Memory docs](https://zed-agent.zedteam.com/docs/user-guide/features/memory) |
+| Env variables | `zed config env-path` or [Env vars reference](https://zed-agent.zedteam.com/docs/reference/environment-variables) |
+| CLI commands | `zed --help` or [CLI reference](https://zed-agent.zedteam.com/docs/reference/cli-commands) |
 | Gateway logs | `~/.zed/logs/gateway.log` |
 | Session files | `zed sessions browse` (reads state.db) |
 | Source code | `~/.zed/zed-agent/` |
@@ -900,7 +900,7 @@ zed config set auxiliary.vision.model <model_name>
 
 ## Contributor Quick Reference
 
-For occasional contributors and PR authors. Full developer docs: https://zed-agent.nousresearch.com/docs/developer-guide/
+For occasional contributors and PR authors. Full developer docs: https://zed-agent.zedteam.com/docs/developer-guide/
 
 ### Project Layout
 

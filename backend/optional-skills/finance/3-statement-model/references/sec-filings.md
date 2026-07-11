@@ -1,4 +1,4 @@
-# SEC Filings Data Extraction Reference
+﻿# SEC Filings Data Extraction Reference
 
 **When to Use:** Only reference this file when a model template specifically requires pulling data from SEC filings (10-K, 10-Q). For templates that provide data directly or use other data sources, this reference is not needed.
 

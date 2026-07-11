@@ -1,4 +1,4 @@
-"""Relay transport protocol — the gateway<->connector wire contract. EXPERIMENTAL.
+﻿"""Relay transport protocol — the gateway<->connector wire contract. EXPERIMENTAL.
 
 The ``RelayAdapter`` (gateway side) delegates all wire I/O to a ``RelayTransport``.
 The gateway dials OUT to the connector, so a production transport is a WebSocket

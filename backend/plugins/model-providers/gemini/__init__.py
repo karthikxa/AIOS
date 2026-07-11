@@ -1,4 +1,4 @@
-"""Google Gemini provider profiles.
+﻿"""Google Gemini provider profiles.
 
 gemini:            Google AI Studio (API key) — uses GeminiNativeClient
 google-gemini-cli: Google Cloud Code Assist (OAuth) — uses GeminiCloudCodeClient

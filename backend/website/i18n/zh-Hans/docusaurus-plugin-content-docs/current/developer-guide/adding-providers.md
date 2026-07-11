@@ -127,7 +127,7 @@ Zed å·²ç»å¯ä»¥é€šè¿‡è‡ªå®šä¹‰ provider è·¯å
 
 å½“ä½ çš„ provider éœ€è¦ä»¥ä¸‹ä»»ä½•å†…å®¹æ—¶ï¼Œä½¿ç”¨ä¸‹é¢çš„å®Œæ•´æ¸…å•ï¼š
 
-- OAuth æˆ– token åˆ·æ–°ï¼ˆNous Portalã€Codexã€Google Geminiã€Qwen Portalã€Copilotï¼‰
+- OAuth æˆ– token åˆ·æ–°ï¼ˆZed Portalã€Codexã€Google Geminiã€Qwen Portalã€Copilotï¼‰
 - éœ€è¦æ–°é€‚é…å™¨çš„éž OpenAI API æ ¼å¼ï¼ˆAnthropic Messagesã€Codex Responsesï¼‰
 - è‡ªå®šä¹‰ç«¯ç‚¹æ£€æµ‹æˆ–å¤šåŒºåŸŸæŽ¢æµ‹ï¼ˆz.aiã€Kimiï¼‰
 - ç²¾é€‰çš„é™æ€æ¨¡åž‹ç›®å½•æˆ–å®žæ—¶ `/models` èŽ·å–

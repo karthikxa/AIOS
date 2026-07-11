@@ -12,8 +12,8 @@ body:
         - Run `zed debug share` and paste the links in the Debug Report section below
         - If you're in a chat session, you can use `/debug` instead â€” it does the same thing
         - Try `zed update` to get the latest version
-        - Check the [README troubleshooting section](https://github.com/NousResearch/zed-agent#troubleshooting)
-        - For general questions, consider the [Zed Team Discord](https://discord.gg/NousResearch) for faster help
+        - Check the [README troubleshooting section](https://github.com/zedteam/zed-agent#troubleshooting)
+        - For general questions, consider the [Zed Team Discord](https://discord.gg/zedteam) for faster help
 
   - type: textarea
     id: description
@@ -21,7 +21,7 @@ body:
       label: What's Going Wrong?
       description: Describe what you're trying to do and where it fails.
       placeholder: |
-        I ran `zed setup` and selected Nous Portal, but when I try to
+        I ran `zed setup` and selected Zed Portal, but when I try to
         start the gateway I get...
     validations:
       required: true

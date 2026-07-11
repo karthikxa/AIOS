@@ -194,7 +194,7 @@ description: "åœ¨ Excel ä¸­æž„å»ºå®Œæ•´é›†æˆçš„
 
 ## SEC ç”³æŠ¥æ–‡ä»¶æ•°æ®æå–
 
-å¦‚æžœæ¨¡æ¿æ˜Žç¡®éœ€è¦ä»Ž SEC ç”³æŠ¥æ–‡ä»¶ï¼ˆ10-Kã€10-Qï¼‰ä¸­æå–æ•°æ®ï¼Œè¯·å‚é˜… [references/sec-filings.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/finance/3-statement-model/references/sec-filings.md) èŽ·å–è¯¦ç»†æå–æŒ‡å¼•ã€‚ä»…åœ¨ä½¿ç”¨ä¸Šå¸‚å…¬å¸ç›‘ç®¡ç”³æŠ¥æ–‡ä»¶æ•°æ®å¡«å†™æ¨¡æ¿æ—¶æ‰éœ€è¦æ­¤å‚è€ƒæ–‡æ¡£ã€‚
+å¦‚æžœæ¨¡æ¿æ˜Žç¡®éœ€è¦ä»Ž SEC ç”³æŠ¥æ–‡ä»¶ï¼ˆ10-Kã€10-Qï¼‰ä¸­æå–æ•°æ®ï¼Œè¯·å‚é˜… [references/sec-filings.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/finance/3-statement-model/references/sec-filings.md) èŽ·å–è¯¦ç»†æå–æŒ‡å¼•ã€‚ä»…åœ¨ä½¿ç”¨ä¸Šå¸‚å…¬å¸ç›‘ç®¡ç”³æŠ¥æ–‡ä»¶æ•°æ®å¡«å†™æ¨¡æ¿æ—¶æ‰éœ€è¦æ­¤å‚è€ƒæ–‡æ¡£ã€‚
 
 ## å¡«å†™æ¨¡åž‹æ¨¡æ¿
 
@@ -327,7 +327,7 @@ description: "åœ¨ Excel ä¸­æž„å»ºå®Œæ•´é›†æˆçš„
 
 ### æ ¸å¿ƒå‹¾ç¨½é¡¹ï¼ˆå¿…é¡»å§‹ç»ˆæˆç«‹ï¼‰
 
-æ‰€æœ‰å…¬å¼è¯¦æƒ…è§ [references/formulas.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/finance/3-statement-model/references/formulas.md)ã€‚
+æ‰€æœ‰å…¬å¼è¯¦æƒ…è§ [references/formulas.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/finance/3-statement-model/references/formulas.md)ã€‚
 
 | æ£€æŸ¥é¡¹ | å…¬å¼ | é¢„æœŸç»“æžœ |
 |-------|---------|-----------------|

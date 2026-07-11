@@ -2078,7 +2078,7 @@ def _safe_call(mod, fn_name: str, default):
 
 
 # ---------------------------------------------------------------------------
-# Portal endpoint â€” Nous Portal auth + Tool Gateway routing status (read-only).
+# Portal endpoint â€” Zed Portal auth + Tool Gateway routing status (read-only).
 # ---------------------------------------------------------------------------
 
 
@@ -2101,7 +2101,7 @@ async def get_portal_status():
         if feats is not None:
             for feat in feats.items():
                 if getattr(feat, "managed_by_nous", False):
-                    state = "via Nous Portal"
+                    state = "via Zed Portal"
                 elif getattr(feat, "active", False) and getattr(feat, "current_provider", None):
                     state = feat.current_provider
                 elif getattr(feat, "active", False):
@@ -2118,7 +2118,7 @@ async def get_portal_status():
         "portal_url": auth.get("portal_base_url"),
         "inference_url": auth.get("inference_base_url"),
         "provider": str((model_cfg or {}).get("provider") or ""),
-        "subscription_url": "https://portal.nousresearch.com/manage-subscription",
+        "subscription_url": "https://portal.zedteam.com/manage-subscription",
         "features": features,
     }
 
@@ -3573,7 +3573,7 @@ def get_recommended_default_model(provider: str = ""):
 
     Mirrors the model-curation `zed model` does so GUI onboarding lands on a
     sensible default instead of blindly taking the first curated entry. For
-    Nous this honors the user's free/paid tier: free users get a free model,
+    Zed this honors the user's free/paid tier: free users get a free model,
     paid users get the full curated default. For any other provider it falls
     back to the first curated model (same as before).
 
@@ -3624,7 +3624,7 @@ def get_recommended_default_model(provider: str = ""):
             _log.exception("GET /api/model/recommended-default (nous) failed")
             return {"provider": "nous", "model": "", "free_tier": None}
 
-    # Non-Nous: first curated model for the provider, matching prior behaviour.
+    # Non-Zed: first curated model for the provider, matching prior behaviour.
     try:
         from zed_cli.inventory import build_models_payload, load_picker_context
 
@@ -3774,7 +3774,7 @@ def _apply_model_assignment_sync(
         # When switching the main provider to Nous, mirror the CLI's
         # post-model-selection behaviour (zed_cli/main.py
         # prompt_enable_tool_gateway / tools_config apply_nous_managed_defaults):
-        # auto-route any *unconfigured* tools through the Nous Tool Gateway.
+        # auto-route any *unconfigured* tools through the Zed Tool Gateway.
         # This is purely additive â€” apply_nous_managed_defaults skips every
         # tool where the user already has a direct key (FIRECRAWL_API_KEY,
         # FAL_KEY, etc.) or an explicit backend/provider in config, so it
@@ -3796,7 +3796,7 @@ def _apply_model_assignment_sync(
                 )
                 gateway_tools = sorted(changed)
             except Exception:
-                # Portal lookup hiccups / non-subscriber / non-nous gating
+                # Portal lookup hiccups / non-subscriber / Non-Zed gating
                 # must never block saving the model assignment.
                 _log.debug("apply_nous_managed_defaults skipped", exc_info=True)
 
@@ -4355,7 +4355,7 @@ _PLATFORM_OVERRIDES: dict[str, dict[str, Any]] = {
     "email": {
         "name": "Email",
         "description": "Talk to Zed through an IMAP/SMTP mailbox.",
-        "docs_url": "https://zed-agent.nousresearch.com/docs/user-guide/messaging/",
+        "docs_url": "https://zed-agent.zedteam.com/docs/user-guide/messaging/",
         "env_vars": (
             "EMAIL_ADDRESS",
             "EMAIL_PASSWORD",
@@ -4422,7 +4422,7 @@ _PLATFORM_OVERRIDES: dict[str, dict[str, Any]] = {
     "weixin": {
         "name": "Weixin / WeChat (Personal)",
         "description": "Connect a personal WeChat account through Tencent's iLink Bot API.",
-        "docs_url": "https://zed-agent.nousresearch.com/docs/user-guide/messaging/weixin/",
+        "docs_url": "https://zed-agent.zedteam.com/docs/user-guide/messaging/weixin/",
         "env_vars": ("WEIXIN_ACCOUNT_ID", "WEIXIN_TOKEN", "WEIXIN_BASE_URL"),
         "required_env": ("WEIXIN_ACCOUNT_ID", "WEIXIN_TOKEN"),
     },
@@ -4453,7 +4453,7 @@ _PLATFORM_OVERRIDES: dict[str, dict[str, Any]] = {
     "api_server": {
         "name": "API server",
         "description": "Expose Zed as an OpenAI-compatible HTTP API for tools like Open WebUI.",
-        "docs_url": "https://zed-agent.nousresearch.com/docs/user-guide/messaging/",
+        "docs_url": "https://zed-agent.zedteam.com/docs/user-guide/messaging/",
         "env_vars": (
             "API_SERVER_ENABLED",
             "API_SERVER_KEY",
@@ -4466,7 +4466,7 @@ _PLATFORM_OVERRIDES: dict[str, dict[str, Any]] = {
     "webhook": {
         "name": "Webhooks",
         "description": "Receive events from GitHub, GitLab, and other webhook sources.",
-        "docs_url": "https://zed-agent.nousresearch.com/docs/user-guide/messaging/webhooks/",
+        "docs_url": "https://zed-agent.zedteam.com/docs/user-guide/messaging/webhooks/",
         "env_vars": ("WEBHOOK_ENABLED", "WEBHOOK_PORT", "WEBHOOK_SECRET"),
         "required_env": (),
     },
@@ -4955,7 +4955,7 @@ def _write_platform_enabled(platform_id: str, enabled: bool) -> None:
     save_config(config)
 
 
-_TELEGRAM_ONBOARDING_DEFAULT_URL = "https://setup.zed-agent.nousresearch.com"
+_TELEGRAM_ONBOARDING_DEFAULT_URL = "https://setup.zed-agent.zedteam.com"
 _TELEGRAM_ONBOARDING_USER_AGENT = f"ZedDashboard/{__version__}"
 _TELEGRAM_USER_ID_RE = re.compile(r"^\d+$")
 
@@ -5447,7 +5447,7 @@ async def test_messaging_platform(platform_id: str, profile: Optional[str] = Non
 #
 # Phase 1 surfaces *which OAuth providers exist* and whether each is
 # connected, plus a disconnect button. The actual login flow (PKCE for
-# Anthropic, device-code for Nous/Codex) still runs in the CLI for now;
+# Anthropic, device-code for Zed/Codex) still runs in the CLI for now;
 # Phase 2 will add in-browser flows. For unconnected providers we return
 # the canonical ``zed auth add <provider>`` command so the dashboard
 # can surface a one-click copy.
@@ -5626,10 +5626,10 @@ def _copilot_acp_status() -> Dict[str, Any]:
 _OAUTH_PROVIDER_CATALOG: tuple[Dict[str, Any], ...] = (
     {
         "id": "nous",
-        "name": "Nous Portal",
+        "name": "Zed Portal",
         "flow": "device_code",
         "cli_command": "zed auth add nous",
-        "docs_url": "https://portal.nousresearch.com",
+        "docs_url": "https://portal.zedteam.com",
         "status_fn": None,  # dispatched via auth.get_nous_auth_status
     },
     {
@@ -5669,7 +5669,7 @@ _OAUTH_PROVIDER_CATALOG: tuple[Dict[str, Any], ...] = (
         # lands back on the loopback listener â€” no code to copy/paste.
         "flow": "loopback",
         "cli_command": "zed auth add xai-oauth",
-        "docs_url": "https://zed-agent.nousresearch.com/docs/guides/xai-grok-oauth",
+        "docs_url": "https://zed-agent.zedteam.com/docs/guides/xai-grok-oauth",
         "status_fn": None,  # dispatched via auth.get_xai_oauth_auth_status
     },
     {
@@ -5724,7 +5724,7 @@ def _resolve_provider_status(provider_id: str, status_fn) -> Dict[str, Any]:
             return {
                 "logged_in": bool(raw.get("logged_in")),
                 "source": "nous_portal",
-                "source_label": raw.get("portal_base_url") or "Nous Portal",
+                "source_label": raw.get("portal_base_url") or "Zed Portal",
                 "token_preview": _truncate_token(raw.get("access_token")),
                 "expires_at": raw.get("access_expires_at"),
                 "has_refresh_token": bool(raw.get("has_refresh_token")),
@@ -6739,7 +6739,7 @@ def _nous_poller(session_id: str) -> None:
             persist_nous_credentials(full_state)
         with _oauth_sessions_lock:
             sess["status"] = "approved"
-        _log.info("oauth/device: nous login completed (session=%s)", session_id)
+        _log.info("oauth/device: Zed login completed (session=%s)", session_id)
     except Exception as e:
         _log.warning("nous device-code poll failed (session=%s): %s", session_id, e)
         with _oauth_sessions_lock:
@@ -9169,7 +9169,7 @@ async def update_skills_hub(
 # Human-readable labels for each hub source id (matches `zed skills search`
 # provenance).  Keep in sync with create_source_router()'s source list.
 _SKILL_HUB_SOURCE_LABELS = {
-    "official": "Official (Nous)",
+    "official": "Official (Zed)",
     "zed-index": "Zed Index",
     "skills-sh": "skills.sh",
     "well-known": "Well-Known",
@@ -11762,7 +11762,7 @@ def mount_spa(application: FastAPI):
 _BUILTIN_DASHBOARD_THEMES = [
     {"name": "default",       "label": "Zed Teal",         "description": "Classic dark teal â€” the canonical Zed look"},
     {"name": "default-large", "label": "Zed Teal (Large)", "description": "Zed Teal with bigger fonts and roomier spacing"},
-    {"name": "nous-blue",     "label": "Nous Blue",           "description": "Light mode â€” vivid Nous-blue accents on cream canvas"},
+    {"name": "Zed-blue",     "label": "Nous Blue",           "description": "Light mode â€” vivid Zed-blue accents on cream canvas"},
     {"name": "midnight",      "label": "Midnight",            "description": "Deep blue-violet with cool accents"},
     {"name": "ember",     "label": "Ember",          "description": "Warm crimson and bronze â€” forge vibes"},
     {"name": "mono",      "label": "Mono",           "description": "Clean grayscale â€” minimal and focused"},

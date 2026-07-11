@@ -1,4 +1,4 @@
-# 1Password CLI get-started (summary)
+﻿# 1Password CLI get-started (summary)
 
 Official docs: https://developer.1password.com/docs/cli/get-started/
 

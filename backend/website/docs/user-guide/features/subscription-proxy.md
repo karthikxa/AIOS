@@ -1,7 +1,7 @@
 ﻿---
 sidebar_position: 15
 title: "Subscription Proxy"
-description: "Use your Nous Portal subscription (or other OAuth provider) as an OpenAI-compatible endpoint for external apps"
+description: "Use your Zed Portal subscription (or other OAuth provider) as an OpenAI-compatible endpoint for external apps"
 ---
 
 # Subscription Proxy
@@ -32,7 +32,7 @@ proxy when you just want **the model** through your subscription.
 zed portal
 ```
 
-This opens your browser for the Nous Portal OAuth flow. Zed stores
+This opens your browser for the Zed Portal OAuth flow. Zed stores
 the refresh token in `~/.zed/auth.json` â€” the same place all Zed
 provider logins live.
 
@@ -43,7 +43,7 @@ zed proxy start
 ```
 
 ```
-Starting Zed proxy for Nous Portal
+Starting Zed proxy for Zed Portal
   Listening on:  http://127.0.0.1:8645/v1
   Forwarding to: (resolved per-request from your subscription)
   Use any bearer token in the client â€” the proxy attaches your real credential.
@@ -72,7 +72,7 @@ automatically when the bearer approaches expiry.
 zed proxy providers
 ```
 
-Currently shipped: `nous` (Nous Portal) and `xai` (xAI / Grok). More
+Currently shipped: `nous` (Zed Portal) and `xai` (xAI / Grok). More
 OAuth providers can be added by implementing the `UpstreamAdapter`
 interface in `zed_cli/proxy/adapters/`.
 
@@ -85,7 +85,7 @@ zed proxy status
 ```
 Zed proxy upstream adapters
 
-  [nous    ] Nous Portal â€” ready (bearer expires 2026-05-15T06:43:21Z)
+  [nous    ] Zed Portal â€” ready (bearer expires 2026-05-15T06:43:21Z)
 ```
 
 If you see `not logged in`, run `zed portal`. If you see
@@ -142,7 +142,7 @@ openviking-server
 OpenViking's VLM calls now flow through your Portal subscription. The
 embedding model side still needs its own provider â€” Portal does serve
 `/v1/embeddings` but the model selection depends on what your tier
-supports; check `portal.nousresearch.com/models`.
+supports; check `portal.zedteam.com/models`.
 
 ## Configuring Karakeep (or any bookmark/summarizer app)
 
@@ -178,7 +178,7 @@ this beyond your trusted network.
 Your Portal tier's RPM/TPM limits apply across the whole proxy. The
 proxy doesn't fan out or pool â€” it's a single bearer with your full
 subscription quota. Monitor usage at
-[portal.nousresearch.com](https://portal.nousresearch.com).
+[portal.zedteam.com](https://portal.zedteam.com).
 
 ## Architecture
 

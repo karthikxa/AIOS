@@ -1,4 +1,4 @@
-# Chroma Integration Guide
+﻿# Chroma Integration Guide
 
 Integration with LangChain, LlamaIndex, and frameworks.
 

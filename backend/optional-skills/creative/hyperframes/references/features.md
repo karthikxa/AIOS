@@ -1,4 +1,4 @@
-# HyperFrames Feature Reference
+﻿# HyperFrames Feature Reference
 
 Load this file when a composition needs captions, TTS narration, audio-reactive visuals, marker-style text highlighting, or scene transitions. All patterns here are deterministic (no `Math.random()`, no `Date.now()`, no runtime audio analysis) and live on the same GSAP timeline as the rest of the composition.
 

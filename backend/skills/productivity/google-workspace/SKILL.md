@@ -13,7 +13,7 @@ required_credential_files:
 metadata:
   zed:
     tags: [Google, Gmail, Calendar, Drive, Sheets, Docs, Contacts, Email, OAuth]
-    homepage: https://github.com/NousResearch/zed-agent
+    homepage: https://github.com/zedteam/zed-agent
     related_skills: [himalaya]
 ---
 

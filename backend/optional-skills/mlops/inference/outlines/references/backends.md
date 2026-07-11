@@ -1,4 +1,4 @@
-# Backend Configuration Guide
+﻿# Backend Configuration Guide
 
 Complete guide to configuring Outlines with different model backends.
 

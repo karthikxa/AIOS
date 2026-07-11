@@ -1,4 +1,4 @@
-"""Per-attempt recovery bookkeeping for the conversation turn loop.
+﻿"""Per-attempt recovery bookkeeping for the conversation turn loop.
 
 The inner retry loop in ``run_conversation`` (``while retry_count <
 max_retries``) makes several distinct recovery attempts on a single model API

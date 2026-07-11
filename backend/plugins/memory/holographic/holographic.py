@@ -1,4 +1,4 @@
-"""Holographic Reduced Representations (HRR) with phase encoding.
+﻿"""Holographic Reduced Representations (HRR) with phase encoding.
 
 HRRs are a vector symbolic architecture for encoding compositional structure
 into fixed-width distributed representations. This module uses *phase vectors*:

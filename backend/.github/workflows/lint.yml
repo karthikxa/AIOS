@@ -1,4 +1,4 @@
-name: Lint (ruff + ty)
+﻿name: Lint (ruff + ty)
 
 # Two things here:
 #   1. Advisory diff — ruff + ty diagnostics as a diff vs the target branch.

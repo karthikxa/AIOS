@@ -1,4 +1,4 @@
-"""User-facing summaries for manual compression commands."""
+﻿"""User-facing summaries for manual compression commands."""
 
 from __future__ import annotations
 

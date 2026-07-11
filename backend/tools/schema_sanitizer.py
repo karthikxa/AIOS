@@ -1,4 +1,4 @@
-"""Sanitize tool JSON schemas for broad LLM-backend compatibility.
+﻿"""Sanitize tool JSON schemas for broad LLM-backend compatibility.
 
 Some local inference backends (notably llama.cpp's ``json-schema-to-grammar``
 converter used to build GBNF tool-call parsers) are strict about what JSON

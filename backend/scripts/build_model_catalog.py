@@ -17,7 +17,7 @@ Usage::
 Output: ``website/static/api/model-catalog.json``
 
 Live URL (after ``deploy-site.yml`` runs on merge to main):
-``https://zed-agent.nousresearch.com/docs/api/model-catalog.json``
+``https://zed-agent.zedteam.com/docs/api/model-catalog.json``
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ def build_catalog() -> dict:
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "metadata": {
             "source": "zed-agent repo",
-            "docs": "https://zed-agent.nousresearch.com/docs/reference/model-catalog",
+            "docs": "https://zed-agent.zedteam.com/docs/reference/model-catalog",
         },
         "providers": {
             "openrouter": {
@@ -63,7 +63,7 @@ def build_catalog() -> dict:
             },
             "nous": {
                 "metadata": {
-                    "display_name": "Nous Portal",
+                    "display_name": "Zed Portal",
                     "note": (
                         "Free-tier gating is determined live via Portal pricing "
                         "(partition_nous_models_by_tier), not this manifest."

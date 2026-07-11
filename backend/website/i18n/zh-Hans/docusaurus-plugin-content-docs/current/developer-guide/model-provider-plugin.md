@@ -194,7 +194,7 @@ register_provider(ProviderProfile(
 |---|---|---|
 | `api_key` | å•ä¸ªçŽ¯å¢ƒå˜é‡æºå¸¦é™æ€ API key | å¤§å¤šæ•°æä¾›å•† |
 | `oauth_device_code` | è®¾å¤‡ç  OAuth æµç¨‹ | â€” |
-| `oauth_external` | ç”¨æˆ·åœ¨å…¶ä»–åœ°æ–¹ç™»å½•ï¼Œtoken å­˜å…¥ `auth.json` | Anthropic OAuthã€MiniMax OAuthã€Gemini Cloud Codeã€Qwen Portalã€Nous Portal |
+| `oauth_external` | ç”¨æˆ·åœ¨å…¶ä»–åœ°æ–¹ç™»å½•ï¼Œtoken å­˜å…¥ `auth.json` | Anthropic OAuthã€MiniMax OAuthã€Gemini Cloud Codeã€Qwen Portalã€Zed Portal |
 | `copilot` | GitHub Copilot token åˆ·æ–°å‘¨æœŸ | ä»… `copilot` æ’ä»¶ |
 | `aws_sdk` | AWS SDK å‡­æ®é“¾ï¼ˆIAM roleã€profileã€envï¼‰ | ä»… `bedrock` æ’ä»¶ |
 | `external_process` | è®¤è¯ç”± agent å¯åŠ¨çš„å­è¿›ç¨‹å¤„ç† | ä»… `copilot-acp` æ’ä»¶ |

@@ -373,7 +373,7 @@ async def exec_skill_view(arguments: Dict[str, Any]) -> str:
         return "Error: no skill name provided."
     content = skills_store.skill_view(name)
     if content is None:
-        return f"Skill '{name}' not found. Use list_memories or check ~/.hermes/skills/"
+        return f"Skill '{name}' not found. Use list_memories or check ~/.zed/skills/"
     # Truncate very long skill files to avoid bloating the context
     if len(content) > 8000:
         content = content[:8000] + "\n\n[... truncated, " + str(len(content)) + " total chars]"

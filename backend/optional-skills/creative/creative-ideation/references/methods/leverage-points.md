@@ -1,4 +1,4 @@
-# Leverage Points
+﻿# Leverage Points
 
 Donella Meadows, 1997/1999. 12 places to intervene in a system, in increasing order of effectiveness. Most policy interventions happen at the bottom of the list (parameters); the actually transformative ones happen at the top (paradigms) — and are the most resisted.
 

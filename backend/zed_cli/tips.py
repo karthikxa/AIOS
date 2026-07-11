@@ -335,7 +335,7 @@ TIPS = [
     "ZED_DEV=1 bypasses container mode detection for local development.",
     "Each MCP server gets its own toolset (mcp-servername) that can be toggled independently via zed tools.",
     "MCP ${ENV_VAR} placeholders in config are resolved at server spawn â€” including vars from ~/.zed/.env.",
-    "Skills from trusted repos (NousResearch) get a 'trusted' security level; community skills get extra scanning.",
+    "Skills from trusted repos (ZedTeam) get a 'trusted' security level; community skills get extra scanning.",
     "The skills quarantine at ~/.zed/skills/.hub/quarantine/ holds skills pending security review.",
 
     # --- Advanced Slash Commands ---
@@ -371,7 +371,7 @@ TIPS = [
     # --- Credential Pools & Routing ---
     'zed auth reset <provider> clears all cooldowns and exhaustion flags on a credential pool.',
     'credential_pool_strategies.<provider>: round_robin cycles keys evenly instead of the fill_first default.',
-    'use_gateway: true per-tool routes web, image, tts, or browser through your Nous subscription â€” no extra keys.',
+    'use_gateway: true per-tool routes web, image, tts, or browser through your Zed Subscription â€” no extra keys.',
     'provider_routing.data_collection: deny excludes data-storing providers on OpenRouter.',
     'provider_routing.require_parameters: true only routes to providers that support every param in your request.',
 

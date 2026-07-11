@@ -334,11 +334,11 @@ trainer = L.Trainer(accelerator='gpu', devices=1)
 
 ## è¿›é˜¶ä¸»é¢˜
 
-**å›žè°ƒ**ï¼šå‚è§ [references/callbacks.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/pytorch-lightning/references/callbacks.md)ï¼Œäº†è§£ EarlyStoppingã€ModelCheckpointã€è‡ªå®šä¹‰å›žè°ƒåŠå›žè°ƒé’©å­ï¼ˆhookï¼‰ã€‚
+**å›žè°ƒ**ï¼šå‚è§ [references/callbacks.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/pytorch-lightning/references/callbacks.md)ï¼Œäº†è§£ EarlyStoppingã€ModelCheckpointã€è‡ªå®šä¹‰å›žè°ƒåŠå›žè°ƒé’©å­ï¼ˆhookï¼‰ã€‚
 
-**åˆ†å¸ƒå¼ç­–ç•¥**ï¼šå‚è§ [references/distributed.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/pytorch-lightning/references/distributed.md)ï¼Œäº†è§£ DDPã€FSDPã€DeepSpeed ZeRO é›†æˆåŠå¤šèŠ‚ç‚¹é…ç½®ã€‚
+**åˆ†å¸ƒå¼ç­–ç•¥**ï¼šå‚è§ [references/distributed.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/pytorch-lightning/references/distributed.md)ï¼Œäº†è§£ DDPã€FSDPã€DeepSpeed ZeRO é›†æˆåŠå¤šèŠ‚ç‚¹é…ç½®ã€‚
 
-**è¶…å‚æ•°è°ƒä¼˜**ï¼šå‚è§ [references/hyperparameter-tuning.md](https://github.com/NousResearch/zed-agent/blob/main/optional-skills/mlops/pytorch-lightning/references/hyperparameter-tuning.md)ï¼Œäº†è§£ä¸Ž Optunaã€Ray Tune åŠ WandB sweeps çš„é›†æˆã€‚
+**è¶…å‚æ•°è°ƒä¼˜**ï¼šå‚è§ [references/hyperparameter-tuning.md](https://github.com/zedteam/zed-agent/blob/main/optional-skills/mlops/pytorch-lightning/references/hyperparameter-tuning.md)ï¼Œäº†è§£ä¸Ž Optunaã€Ray Tune åŠ WandB sweeps çš„é›†æˆã€‚
 
 ## ç¡¬ä»¶è¦æ±‚
 

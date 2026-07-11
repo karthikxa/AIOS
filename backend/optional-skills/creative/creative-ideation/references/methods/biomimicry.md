@@ -1,4 +1,4 @@
-# Biomimicry
+﻿# Biomimicry
 
 Janine Benyus, *Biomimicry* (1997). Evolution has 3.8 billion years of R&D on most physical design problems. Use biological strategies as a library of mechanisms — adapt the *operative principle*, not the metaphor.
 

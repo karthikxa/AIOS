@@ -1,4 +1,4 @@
-"""Format LSP diagnostics for inclusion in tool output.
+﻿"""Format LSP diagnostics for inclusion in tool output.
 
 The model sees a compact, severity-filtered, line-bounded summary of
 diagnostics introduced by the latest edit.  Format matches what

@@ -1,4 +1,4 @@
-"""Schema for the generic `computer_use` tool.
+﻿"""Schema for the generic `computer_use` tool.
 
 Model-agnostic. Any tool-calling model can drive this. Vision-capable models
 should prefer `capture(mode='som')` then `click(element=N)` — much more

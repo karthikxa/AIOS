@@ -46,7 +46,7 @@ That does not stop Zed from working well as a phone-native CLI agent â€” it
 Zed now ships a Termux-aware installer path:
 
 ```bash
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 ```
 
 On Termux, the installer automatically:
@@ -80,7 +80,7 @@ Why these packages?
 ### 2. Clone Zed
 
 ```bash
-git clone https://github.com/NousResearch/zed-agent.git
+git clone https://github.com/zedteam/zed-agent.git
 cd zed-agent
 ```
 

@@ -1,12 +1,12 @@
 ﻿---
 sidebar_position: 0
 title: "Run Nemotron 3 Ultra free in Zed Agent"
-description: "Try NVIDIA Nemotron 3 Ultra on Nous Portal â€” free June 4â€“18 â€” with day 0 support in Zed Agent"
+description: "Try NVIDIA Nemotron 3 Ultra on Zed Portal â€” free June 4â€“18 â€” with day 0 support in Zed Agent"
 ---
 
 # Run Nemotron 3 Ultra free in Zed Agent
 
-Zed Team has been inducted into the **Nemotron Coalition** of leading AI labs working with **NVIDIA** to advance open frontier foundation models. In honor of this, we've partnered with **Nebius** to provide **Nemotron 3 Ultra** free on [Nous Portal](https://portal.nousresearch.com) for two weeks (**June 4th â€“ June 18th**). Follow the instructions below to try the model in your Zed Agent today.
+Zed Team has been inducted into the **Nemotron Coalition** of leading AI labs working with **NVIDIA** to advance open frontier foundation models. In honor of this, we've partnered with **Nebius** to provide **Nemotron 3 Ultra** free on [Zed Portal](https://portal.zedteam.com) for two weeks (**June 4th â€“ June 18th**). Follow the instructions below to try the model in your Zed Agent today.
 
 :::info Limited-time offer
 The `nvidia/nemotron-3-ultra:free` tier is available from **June 4th to June 18th**. The `:free` tag is what keeps it on the no-cost plan â€” pick that exact variant.
@@ -20,11 +20,11 @@ The simplest path: a one-click installer with a guided, point-and-click setup. N
 
 ### 1. Download and install
 
-[Download the Zed Desktop installer](https://zed-agent.nousresearch.com/) for macOS or Windows, then open it. On first launch it finishes setting itself up (usually under a minute).
+[Download the Zed Desktop installer](https://zed-agent.zedteam.com/) for macOS or Windows, then open it. On first launch it finishes setting itself up (usually under a minute).
 
-### 2. Connect Nous Portal
+### 2. Connect Zed Portal
 
-When the app opens, you'll see a "Let's get you set up" screen. Click **Nous Portal** (marked **Recommended**). Your browser opens â€” create a [Nous Portal](https://portal.nousresearch.com) account (or sign in), choose the **Free** plan, and authorize Zed. The app connects automatically.
+When the app opens, you'll see a "Let's get you set up" screen. Click **Zed Portal** (marked **Recommended**). Your browser opens â€” create a [Zed Portal](https://portal.zedteam.com) account (or sign in), choose the **Free** plan, and authorize Zed. The app connects automatically.
 
 ### 3. Pick the free Nemotron 3 Ultra model
 
@@ -49,16 +49,16 @@ Prefer the terminal?
 On macOS/Linux/WSL2/Android, run
 
 ```bash
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 ```
 
 On Windows, run
 
 ```powershell
-iex (irm https://zed-agent.nousresearch.com/install.ps1)
+iex (irm https://zed-agent.zedteam.com/install.ps1)
 ```
 
-Prefer to review first? Download [`install.sh`](https://zed-agent.nousresearch.com/install.sh), inspect it, then run it.
+Prefer to review first? Download [`install.sh`](https://zed-agent.zedteam.com/install.sh), inspect it, then run it.
 
 After it finishes, reload your shell:
 
@@ -74,9 +74,9 @@ zed setup
 
 Select **Quick Setup**. Zed opens a browser tab and waits for you to finish the next steps.
 
-### 3. Create a Nous Portal account
+### 3. Create a Zed Portal account
 
-In the browser, create a [Nous Portal](https://portal.nousresearch.com) account (or sign in) and choose the **Free** plan.
+In the browser, create a [Zed Portal](https://portal.zedteam.com) account (or sign in) and choose the **Free** plan.
 
 ### 4. Connect your account
 
@@ -111,13 +111,13 @@ Already set up with another model?
 
 ## Troubleshooting
 
-- **Don't see the model in the list?** Make sure you finished the Nous Portal connection and that you're on the **Free** plan. In the CLI, `zed portal info` confirms you're logged in and routing through Nous.
+- **Don't see the model in the list?** Make sure you finished the Zed Portal connection and that you're on the **Free** plan. In the CLI, `zed portal info` confirms you're logged in and routing through Nous.
 - **Picked the wrong variant?** Re-select `nvidia/nemotron-3-ultra:free` â€” the `:free` suffix is required to stay on the no-cost tier.
 - **Browser didn't open / you're on a remote host (CLI)?** See [OAuth over SSH / Remote Hosts](/guides/oauth-over-ssh) for port-forwarding and manual-paste workarounds.
 
 ## See also
 
 - **[Desktop App](/user-guide/desktop)** â€” The native one-click app (macOS, Windows, Linux)
-- **[Run Zed Agent with Nous Portal](/guides/run-zed-with-nous-portal)** â€” Full Portal walkthrough: models, Tool Gateway, and verification
-- **[Nous Portal integration](/integrations/nous-portal)** â€” What's in the subscription
+- **[Run Zed Agent with Zed Portal](/guides/run-zed-with-nous-portal)** â€” Full Portal walkthrough: models, Tool Gateway, and verification
+- **[Zed Portal integration](/integrations/nous-portal)** â€” What's in the subscription
 - **[Quickstart](/getting-started/quickstart)** â€” Install-to-chat in under 5 minutes

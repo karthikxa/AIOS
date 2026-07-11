@@ -1,4 +1,4 @@
-# Formula Reference
+﻿# Formula Reference
 
 **IMPORTANT:** Use the formulas outlined in this reference document unless otherwise specified by the user.
 

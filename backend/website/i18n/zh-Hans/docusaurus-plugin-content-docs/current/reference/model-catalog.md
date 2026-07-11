@@ -1,19 +1,19 @@
 ﻿---
 sidebar_position: 11
 title: æ¨¡åž‹ç›®å½•
-description: è¿œç¨‹æ‰˜ç®¡çš„æ¸…å•æ–‡ä»¶ï¼Œé©±åŠ¨ OpenRouter å’Œ Nous Portal çš„ç²¾é€‰æ¨¡åž‹é€‰æ‹©å™¨åˆ—è¡¨ã€‚
+description: è¿œç¨‹æ‰˜ç®¡çš„æ¸…å•æ–‡ä»¶ï¼Œé©±åŠ¨ OpenRouter å’Œ Zed Portal çš„ç²¾é€‰æ¨¡åž‹é€‰æ‹©å™¨åˆ—è¡¨ã€‚
 ---
 
 # æ¨¡åž‹ç›®å½•
 
-Zed ä»Žæ‰˜ç®¡äºŽæ–‡æ¡£ç«™ç‚¹æ—çš„ JSON æ¸…å•ä¸­èŽ·å– **OpenRouter** å’Œ **Nous Portal** çš„ç²¾é€‰æ¨¡åž‹åˆ—è¡¨ã€‚è¿™æ ·ç»´æŠ¤è€…æ— éœ€å‘å¸ƒæ–°çš„ `zed-agent` ç‰ˆæœ¬å³å¯æ›´æ–°é€‰æ‹©å™¨åˆ—è¡¨ã€‚
+Zed ä»Žæ‰˜ç®¡äºŽæ–‡æ¡£ç«™ç‚¹æ—çš„ JSON æ¸…å•ä¸­èŽ·å– **OpenRouter** å’Œ **Zed Portal** çš„ç²¾é€‰æ¨¡åž‹åˆ—è¡¨ã€‚è¿™æ ·ç»´æŠ¤è€…æ— éœ€å‘å¸ƒæ–°çš„ `zed-agent` ç‰ˆæœ¬å³å¯æ›´æ–°é€‰æ‹©å™¨åˆ—è¡¨ã€‚
 
 å½“æ¸…å•ä¸å¯è¾¾æ—¶ï¼ˆç¦»çº¿ã€ç½‘ç»œå—é˜»ã€æ‰˜ç®¡æ•…éšœï¼‰ï¼ŒZed ä¼šé™é»˜å›žé€€åˆ°éš CLI ä¸€åŒå‘å¸ƒçš„ä»“åº“å†…ç½®å¿«ç…§ã€‚æ¸…å•æ°¸è¿œä¸ä¼šå¯¼è‡´é€‰æ‹©å™¨å´©æºƒâ€”â€”æœ€åæƒ…å†µä¸‹ï¼Œä½ çœ‹åˆ°çš„æ˜¯ä¸Žå·²å®‰è£…ç‰ˆæœ¬æ†ç»‘çš„åˆ—è¡¨ã€‚
 
 ## çº¿ä¸Šæ¸…å• URL
 
 ```
-https://zed-agent.nousresearch.com/docs/api/model-catalog.json
+https://zed-agent.zedteam.com/docs/api/model-catalog.json
 ```
 
 æ¯æ¬¡åˆå¹¶åˆ° `main` æ—¶ï¼Œé€šè¿‡çŽ°æœ‰çš„ `deploy-site.yml` GitHub Pages æµæ°´çº¿å‘å¸ƒã€‚çœŸå®žæ¥æºä½äºŽä»“åº“çš„ `website/static/api/model-catalog.json`ã€‚
@@ -48,7 +48,7 @@ https://zed-agent.nousresearch.com/docs/api/model-catalog.json
 
 - **`version`** â€” æ•´æ•°ç±»åž‹çš„ schema ç‰ˆæœ¬å·ã€‚æœªæ¥çš„ schema ä¼šé€’å¢žæ­¤å€¼ï¼›Zed æ‹’ç»å¤„ç†ç‰ˆæœ¬å·æœªçŸ¥çš„æ¸…å•ï¼Œå¹¶å›žé€€åˆ°ç¡¬ç¼–ç å¿«ç…§ã€‚
 - **`metadata`** â€” æ¸…å•ã€provider åŠæ¨¡åž‹çº§åˆ«çš„è‡ªç”±æ ¼å¼å­—å…¸ï¼Œæ”¯æŒä»»æ„é”®ã€‚Zed ä¼šå¿½ç•¥æœªçŸ¥å­—æ®µï¼Œå› æ­¤ä½ å¯ä»¥ä¸ºæ¡ç›®æ·»åŠ æ³¨è§£ï¼ˆå¦‚ `"tier": "paid"`ã€`"tags": [...]` ç­‰ï¼‰ï¼Œæ— éœ€åè°ƒ schema å˜æ›´ã€‚
-- **`description`** â€” ä»…é™ OpenRouterã€‚é©±åŠ¨é€‰æ‹©å™¨å¾½ç« æ–‡æœ¬ï¼ˆ`"recommended"`ã€`"free"` æˆ–ç©ºå­—ç¬¦ä¸²ï¼‰ã€‚Nous Portal ä¸ä½¿ç”¨æ­¤å­—æ®µâ€”â€”å…è´¹å±‚çº§çš„é™åˆ¶ç”± Portal çš„å®šä»·ç«¯ç‚¹å®žæ—¶å†³å®šã€‚
+- **`description`** â€” ä»…é™ OpenRouterã€‚é©±åŠ¨é€‰æ‹©å™¨å¾½ç« æ–‡æœ¬ï¼ˆ`"recommended"`ã€`"free"` æˆ–ç©ºå­—ç¬¦ä¸²ï¼‰ã€‚Zed Portal ä¸ä½¿ç”¨æ­¤å­—æ®µâ€”â€”å…è´¹å±‚çº§çš„é™åˆ¶ç”± Portal çš„å®šä»·ç«¯ç‚¹å®žæ—¶å†³å®šã€‚
 - **å®šä»·å’Œä¸Šä¸‹æ–‡é•¿åº¦**ä¸åœ¨æ¸…å•ä¸­ã€‚è¿™äº›æ•°æ®åœ¨èŽ·å–æ—¶æ¥è‡ªå„ provider çš„å®žæ—¶ APIï¼ˆ`/v1/models` ç«¯ç‚¹ã€models.devï¼‰ã€‚
 
 ## èŽ·å–è¡Œä¸º
@@ -68,7 +68,7 @@ https://zed-agent.nousresearch.com/docs/api/model-catalog.json
 ```yaml
 model_catalog:
   enabled: true
-  url: https://zed-agent.nousresearch.com/docs/api/model-catalog.json
+  url: https://zed-agent.zedteam.com/docs/api/model-catalog.json
   ttl_hours: 1
   providers: {}
 ```

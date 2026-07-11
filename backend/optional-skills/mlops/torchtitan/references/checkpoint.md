@@ -1,4 +1,4 @@
-# Checkpointing in TorchTitan
+﻿# Checkpointing in TorchTitan
 
 TorchTitan uses PyTorch Distributed Checkpoint (DCP) for fault-tolerant, interoperable checkpointing.
 

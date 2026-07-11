@@ -1,4 +1,4 @@
-"""Adapter-driven dispatch of structured stream events to a delivery sink.
+﻿"""Adapter-driven dispatch of structured stream events to a delivery sink.
 
 ``GatewayEventDispatcher`` is the seam Tobi asked for: the agent emits typed
 events (gateway/stream_events.py), and the *adapter* decides how each one is

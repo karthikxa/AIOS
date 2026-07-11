@@ -1,4 +1,4 @@
-"""Brave Search (free tier) — plugin form.
+﻿"""Brave Search (free tier) — plugin form.
 
 Subclasses :class:`agent.web_search_provider.WebSearchProvider` (the
 plugin-facing ABC). The legacy in-tree module

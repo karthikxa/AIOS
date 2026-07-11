@@ -25,7 +25,7 @@ That's it. `coder` is now its own Zed profile with its own config, memory, and s
 ## Creating a profile
 
 :::tip
-Quickest setup: run `zed setup --portal` inside the new profile to wire up models + tools at once. See [Nous Portal](/integrations/nous-portal).
+Quickest setup: run `zed setup --portal` inside the new profile to wire up models + tools at once. See [Zed Portal](/integrations/nous-portal).
 :::
 
 ### Blank profile

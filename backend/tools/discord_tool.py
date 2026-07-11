@@ -79,7 +79,7 @@ def _discord_request(
         headers={
             "Authorization": f"Bot {token}",
             "Content-Type": "application/json",
-            "User-Agent": "Zed-Agent (https://github.com/NousResearch/zed-agent)",
+            "User-Agent": "Zed-Agent (https://github.com/zedteam/zed-agent)",
         },
     )
 

@@ -1,4 +1,4 @@
-# Whisper Language Support Guide
+﻿# Whisper Language Support Guide
 
 Complete guide to Whisper's multilingual capabilities.
 

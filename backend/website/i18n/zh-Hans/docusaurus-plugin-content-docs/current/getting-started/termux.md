@@ -46,7 +46,7 @@ python -m pip install -e '.[termux]' -c constraints-termux.txt
 Zed çŽ°å·²å†…ç½® Termux æ„ŸçŸ¥çš„å®‰è£…è·¯å¾„ï¼š
 
 ```bash
-curl -fsSL https://zed-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://zed-agent.zedteam.com/install.sh | bash
 ```
 
 åœ¨ Termux ä¸Šï¼Œå®‰è£…ç¨‹åºä¼šè‡ªåŠ¨ï¼š
@@ -80,7 +80,7 @@ pkg install -y git python clang rust make pkg-config libffi openssl nodejs ripgr
 ### 2. å…‹éš† Zed
 
 ```bash
-git clone https://github.com/NousResearch/zed-agent.git
+git clone https://github.com/zedteam/zed-agent.git
 cd zed-agent
 ```
 

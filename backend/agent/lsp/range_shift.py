@@ -1,4 +1,4 @@
-"""Diff-aware line-shift map for cross-edit LSP delta filtering.
+﻿"""Diff-aware line-shift map for cross-edit LSP delta filtering.
 
 When an edit deletes or inserts lines in the middle of a file, every
 diagnostic below the edit point shifts to a new line number.  The

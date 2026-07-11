@@ -1,4 +1,4 @@
-# Training Custom Tokenizers
+﻿# Training Custom Tokenizers
 
 Complete guide to training tokenizers from scratch.
 

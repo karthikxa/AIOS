@@ -1,4 +1,4 @@
-"""Firecrawl cloud browser plugin — bundled, auto-loaded.
+﻿"""Firecrawl cloud browser plugin — bundled, auto-loaded.
 
 Distinct from ``plugins/web/firecrawl/`` (the web search/extract/crawl
 plugin); both share the FIRECRAWL_API_KEY but speak to different endpoints

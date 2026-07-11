@@ -1,4 +1,4 @@
-# HuggingFace Transformers Integration
+﻿# HuggingFace Transformers Integration
 
 ## Contents
 - Enabling Flash Attention in Transformers
