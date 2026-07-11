@@ -49,41 +49,11 @@ export function initChatBox(onSend) {
     })
     .catch(() => {});
 
-  // ── @ Mention: Google plugins with real colored SVGs when connected ─────
-  // Colored SVGs match the official Google branding
-  const COLORED_SVGS = {
-    gmail: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#4285F4" d="M6 10l18 13L42 10v28H6z"/><path fill="#EA4335" d="M6 10l18 13L42 10H6z"/><path fill="#C5221F" d="M6 10v28h4V18l14 10 14-10v20h4V10L24 23z"/><path fill="#34A853" d="M6 38V10l18 13z"/><path fill="#FBBC04" d="M42 10v28H38V18L24 31z"/></svg>',
-    drive: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M32 40H8L24 8l16 32z"/><path fill="#4285F4" d="M42 40H18L32 8l10 16.3L42 40z"/><path fill="#1A73E8" d="M34.4 24.3L44 40H24L34.4 24.3z"/><path fill="#FBBC04" d="M24 8L8 40h16L24 8z"/><path fill="#1A73E8" d="M34.4 24.3L44 40H24L34.4 24.3z"/></svg>',
-    calendar: '<svg width="16" height="16" viewBox="0 0 48 48"><rect fill="#4285F4" x="4" y="8" width="40" height="36" rx="4"/><rect fill="#fff" x="4" y="8" width="40" height="12" rx="4"/><rect fill="#EA4335" x="4" y="8" width="40" height="4" rx="4"/><path fill="#fff" d="M14 28h20v2H14zM14 34h12v2H14z"/></svg>',
-    tasks: '<svg width="16" height="16" viewBox="0 0 48 48"><circle fill="none" stroke="#4285F4" stroke-width="3" cx="24" cy="24" r="18"/><path fill="none" stroke="#34A853" stroke-width="3" stroke-linecap="round" d="M15 24l6 6 12-12"/></svg>',
-    contacts: '<svg width="16" height="16" viewBox="0 0 48 48"><circle fill="#4285F4" cx="24" cy="18" r="8"/><path fill="#4285F4" d="M8 42c0-8.8 7.2-16 16-16s16 7.2 16 16"/></svg>',
-    photos: '<svg width="16" height="16" viewBox="0 0 48 48"><rect fill="#FBBC04" x="4" y="4" width="40" height="40" rx="4"/><circle fill="#4285F4" cx="16" cy="18" r="5"/><path fill="#34A853" d="M4 32l12-10 8 6 8-4 12 8v6a4 4 0 01-4 4H8a4 4 0 01-4-4z"/></svg>',
-    youtube: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M43.2 13.4a4.8 4.8 0 00-3.4-3.4C36.8 9 24 9 24 9s-12.8 0-15.8 1a4.8 4.8 0 00-3.4 3.4C3.8 16.4 3.8 24 3.8 24s0 7.6 1.6 10.6a4.8 4.8 0 003.4 3.4c3 1 15.8 1 15.8 1s12.8 0 15.8-1a4.8 4.8 0 003.4-3.4c1.6-3 1.6-10.6 1.6-10.6s0-7.6-1.6-10.6z"/><path fill="#fff" d="M20 30.4V17.6l10.4 6.4-10.4 6.4z"/></svg>',
-    docs: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#4285F4" d="M14 4h20l10 10v30a2 2 0 01-2 2H14a2 2 0 01-2-2V6a2 2 0 012-2z"/><path fill="#4285F4" d="M34 4l10 10H36a2 2 0 01-2-2V4z"/><path fill="#fff" d="M18 18h12v2H18zM18 24h12v2H18zM18 30h8v2H18z"/></svg>',
-    sheets: '<svg width="16" height="16" viewBox="0 0 48 48"><rect fill="#34A853" x="4" y="4" width="40" height="40" rx="4"/><rect fill="#fff" x="4" y="4" width="40" height="40" rx="4" opacity=".15"/><path stroke="#fff" stroke-width="2" d="M4 18h40M4 30h40M18 4v40M30 4v40"/></svg>',
-    slides: '<svg width="16" height="16" viewBox="0 0 48 48"><rect fill="#FBBC04" x="4" y="6" width="40" height="28" rx="4"/><rect fill="#fff" x="6" y="8" width="36" height="24" rx="2"/><rect fill="#FBBC04" x="18" y="34" width="12" height="4" rx="2"/><rect fill="#FBBC04" x="14" y="38" width="20" height="3" rx="1.5"/></svg>',
-    chat: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#34A853" d="M24 4C12.95 4 4 12.95 4 24c0 4.3 1.4 8.3 3.7 11.6L4 44l8.9-3.3C15.7 42.6 19.6 44 24 44c11.05 0 20-8.95 20-20S35.05 4 24 4z"/><path fill="#fff" d="M16 18h16v2H16zM16 24h12v2H16z"/></svg>',
-    meet: '<svg width="16" height="16" viewBox="0 0 48 48"><rect fill="#4285F4" x="4" y="10" width="28" height="22" rx="4"/><path fill="#34A853" d="M32 20l12-6v16l-12-6z"/><circle fill="#fff" cx="18" cy="21" r="3"/><circle fill="#fff" cx="26" cy="21" r="3"/></svg>',
-    fit: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M38 12H28l-4 16-4-16H10l8 24h6l8-24z" opacity=".8"/><path fill="#4285F4" d="M44 12H34l-4 16-4-16H16l8 24h6l12-24z" opacity=".8"/><path fill="#34A853" d="M28 12H18l-4 16-4-16H0l8 24h6l14-24z" opacity=".8"/></svg>',
-    classroom: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#4285F4" d="M24 8L4 20l20 12 20-12L24 8z"/><path fill="#34A853" d="M4 20v14c0 4 8 8 20 8s20-4 20-8V20L24 32 4 20z"/><path fill="#FBBC04" d="M4 20v14c0 4 8 8 20 8V20L4 20z" opacity=".6"/></svg>',
-  };
-
-  // Monochrome fallback for disconnected plugins
-  const MONO_SVGS = {
-    gmail: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
-    drive: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg>',
-    calendar: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
-    tasks: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>',
-    contacts: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
-    photos: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/></svg>',
-    youtube: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/></svg>',
-    docs: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/></svg>',
-    sheets: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>',
-    slides: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
-    chat: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
-    meet: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="m15.5 7.5 5 5"/><rect x="4" y="6" width="16" height="12" rx="2"/></svg>',
-    fit: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
-    classroom: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+  // ── @ Mention: Google plugins with exact SVGs from plugins page assets ─
+  // These SVGs are copied from frontend/assets/plugins/*.svg (same as plugins page)
+  const PLUGIN_SVGS = {
+    gmail: '<svg width="16" height="16" viewBox="0 0 32 32"><path d="M2 12c0-3.5 0-5.2.7-6.6C3.3 4.2 4.2 3.3 5.4 2.7 6.7 2 8.5 2 12 2h8c3.5 0 5.3 0 6.6.7 1.2.6 2.1 1.5 2.7 2.7.6 1.3.7 3 .7 6.6v8c0 3.5 0 5.3-.7 6.6-.6 1.2-1.5 2.1-2.7 2.7C25.3 30 23.5 30 20 30h-8c-3.5 0-5.3 0-6.6-.7-1.2-.6-2.1-1.5-2.7-2.7C2 27.3 2 25.5 2 22v-10z" fill="#fff"/><path d="M22.1 8.5 16.1 13.2 9.9 8.5v6.5l6.1 4.8 6.1-4.8z" fill="#EA4335"/><path d="M23.6 7.4 22.1 8.5v6.8l5-3.8V9.2s-.6-3.3-3.4-1.8z" fill="#FBBC05"/><path d="M22.1 15.3v8.7h3.8s1.1-.1 1.9-1.3v-11.2z" fill="#34A853"/><path d="M9.9 24V15.1l-.1 0z" fill="#C5221F"/><path d="M9.9 8.5 8.4 7.4C5.6 5.9 5 9.2 5 9.2v2.3l4.9 5.6z" fill="#C5221F"/><path d="M9.9 8.5v6.5l.1.1V8.5z" fill="#C5221F"/><path d="M5 11.5v11.2c.1 1.2 1.2 1.3 1.2 1.3h3.8l-.1-11.3z" fill="#4285F4"/></svg>',
+    drive: '<svg width="16" height="16" viewBox="0 0 32 32"><path d="M2 12c0-3.5 0-5.2.7-6.6C3.3 4.2 4.2 3.3 5.4 2.7 6.7 2 8.5 2 12 2h8c3.5 0 5.3 0 6.6.7 1.2.6 2.1 1.5 2.7 2.7.6 1.3.7 3 .7 6.6v8c0 3.5 0 5.3-.7 6.6-.6 1.2-1.5 2.1-2.7 2.7C25.3 30 23.5 30 20 30h-8c-3.5 0-5.3 0-6.6-.7-1.2-.6-2.1-1.5-2.7-2.7C2 27.3 2 25.5 2 22v-10z" fill="#fff"/><path d="M16 12.5l-3.5-6.1 6.5-2.7-2.9 6.1z" fill="#188038"/><path d="M16 12.5 20.1 19.7h7l-6.5-12.1z" fill="#FBBC05"/><path d="M16 12.5l-4.1 7.2h-6.9c.1.8.4 1.3.4 1.3l2.6 4.5h13.4l2.8-4.5c0 0 .3-.5.3-1.3H12.5z" fill="#4285F4"/><path d="M11.9 19.7H5c.4.8 4 1.3 4 1.3l2.6 4.5L12 19.7z" fill="#1967D2"/><path d="M20.1 19.7h7c.4.8-4 1.3-4 1.3l-2.6 4.5L20 19.7z" fill="#EA4335"/></svg>',
   };
 
   let MENTION_ITEMS = [
@@ -113,7 +83,7 @@ export function initChatBox(onSend) {
         // Show only connected plugins with real colored Google SVGs
         MENTION_ITEMS = connected.map(item => ({
           ...item,
-          icon: COLORED_SVGS[item.id] || MONO_SVGS[item.id] || '◎',
+          icon: PLUGIN_SVGS[item.id] || MONO_SVGS[item.id] || '◎',
           connected: true,
         }));
       }
