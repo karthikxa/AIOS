@@ -9048,7 +9048,7 @@ input:checked + .toggle-slider:before {
   border: none !important;
   border-radius: 8px !important;
   background: transparent !important;
-  color: #6B7280 !important;
+  color: #4B5563 !important;
   font-weight: 600 !important;
   font-size: 13px !important;
   cursor: pointer !important;

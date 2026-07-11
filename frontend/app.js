@@ -60,19 +60,26 @@ const actionDescriptions = {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Initialize Sub-modules
+  // 1. Initialize Sub-modules (defer non-critical API calls to after first paint)
   initSidebar();
   initRouter();
-  initModelsPage();
-  initAgentPage();
-  initCreateAgentPage();
-  initEditAgentPage();
-  initVoicePage();
 
-  initModelSelector((newModel) => {
-  });
-  
-  initAgentComputer();
+  // Defer API-heavy initializations to after first paint
+  const deferInit = () => {
+    initModelsPage();
+    initAgentPage();
+    initCreateAgentPage();
+    initEditAgentPage();
+    initVoicePage();
+    initModelSelector((newModel) => {});
+    initAgentComputer();
+  };
+
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(deferInit, { timeout: 1000 });
+  } else {
+    setTimeout(deferInit, 50);
+  }
 
   let activeDropdown = null;
   function closeActiveDropdown() {
