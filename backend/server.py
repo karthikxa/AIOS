@@ -2181,91 +2181,33 @@ async def run_agent_now(agent_id: str):
         output_dir = ZED_HOME / "agent_output" / agent_id
         output_dir.mkdir(parents=True, exist_ok=True)
         try:
-            base_url = llm_base_url.rstrip("/")
-            if not base_url.endswith("/v1"):
-                base_url = base_url + "/v1"
-            url = f"{base_url}/chat/completions"
-            headers = {
-                "Authorization": f"Bearer {llm_api_key}",
-                "Content-Type": "application/json",
-            }
-            
-            # Tool calling loop
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ]
-            max_tool_rounds = 5
-            result = "No response"
-            status = "error"
-            
-            logger.info("Agent %s calling LLM at %s with model %s", agent_id, url, llm_model)
-            
-            for tool_round in range(max_tool_rounds):
-                body = {
-                    "model": llm_model,
-                    "messages": messages,
-                    "max_tokens": 4096,
-                }
-                resp = httpx.post(url, json=body, headers=headers, timeout=120.0)
-                logger.info("Agent %s LLM response status: %s", agent_id, resp.status_code)
-                
-                if resp.status_code != 200:
-                    error_text = resp.text[:500]
-                    logger.error("Agent %s LLM error: %s %s", agent_id, resp.status_code, error_text)
-                    result = f"LLM error {resp.status_code}: {error_text}"
-                    status = "error"
-                    break
-                
-                data = resp.json()
-                choice = data.get("choices", [{}])[0]
-                assistant_msg = choice.get("message", {})
-                
-                # If no tool calls, we're done
-                if not assistant_msg.get("tool_calls"):
-                    result = assistant_msg.get("content", "No response")
-                    status = "success"
-                    logger.info("Agent %s completed: %s", agent_id, result[:200])
-                    break
-                
-                # Add assistant message with tool calls
-                messages.append(assistant_msg)
-                
-                # Execute each tool call
-                for tool_call in assistant_msg["tool_calls"]:
-                    func = tool_call.get("function", {})
-                    func_name = func.get("name", "")
-                    func_args = json.loads(func.get("arguments", "{}"))
-                    
-                    # Call the backend's tool execution endpoint
-                    try:
-                        tool_resp = httpx.post(
-                            f"{base_url.replace('/v1', '')}/api/tools/execute",
-                            json={
-                                "tool": func_name,
-                                "args": func_args
-                            },
-                            headers={
-                                "Authorization": f"Bearer {llm_api_key}",
-                                "Content-Type": "application/json",
-                            },
-                            timeout=30.0,
-                        )
-                        tool_result = tool_resp.json() if tool_resp.status_code == 200 else {"error": f"Tool failed: {tool_resp.status_code}"}
-                    except Exception as tool_err:
-                        tool_result = {"error": str(tool_err)}
-                    
-                    # Add tool result to messages
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tool_call.get("id", ""),
-                        "content": json.dumps(tool_result)
-                    })
-            
+            # Use full AIAgent (same as chat endpoint) — skills, memory, tools, 90 rounds
+            resolved_model = llm_model if llm_model.lower() not in ("auto", "zed-pro", "") else "gemini-2.5-flash-lite"
+
+            agent_runner = AIAgent(
+                session_id=f"agent-{agent_id}",
+                session_db=session_db,
+                model=resolved_model,
+                quiet_mode=True,
+                verbose_logging=False,
+                base_url=os.environ.get("ZED_PRO_BASE_URL", "https://aios-lovat-two.vercel.app").rstrip("/"),
+                api_key=os.environ.get("ZED_PRO_API_KEY", os.environ.get("OPENAI_API_KEY", "no-key")),
+                credential_pool=credential_pool,
+            )
+
+            agent_result = agent_runner.run_conversation(
+                user_message=prompt,
+                system_message=system_prompt,
+            )
+
+            if isinstance(agent_result, dict):
+                result = agent_result.get("final_response", str(agent_result))
+                status = "success" if result else "error"
             else:
-                # Max rounds reached
-                result = "Max tool rounds reached"
-                status = "error"
+                result = str(agent_result)
+                status = "success"
+
+            logger.info("Agent %s completed: %s", agent_id, result[:200] if result else "empty")
             
             logger.info("Agent %s completed with %d tool rounds", agent_id, tool_round + 1)
 
