@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@assistant-ui/react": "^0.14.26",
+    "@assistant-ui/react-markdown": "^0.14.5",
     "@base-ui/react": "^1.6.0",
     "@radix-ui/react-aspect-ratio": "^1.1.11",
     "@radix-ui/react-avatar": "^1.2.2",
@@ -48,9 +49,12 @@
     "cmdk": "^1.1.1",
     "dompurify": "^3.4.11",
     "lucide-react": "^0.500.0",
+    "radix-ui": "^1.6.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-resizable-panels": "^4.12.1",
+    "remark-gfm": "^4.0.1",
+    "tw-shimmer": "^0.4.11",
     "vaul": "^1.1.2"
   }
 }
