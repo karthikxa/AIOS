@@ -97,84 +97,6 @@ body {
 }
 
 /* Sidebar Layout */
-/* ═══════════════════════════════════════════════════════════════════════════
-   GLOBAL CARD & BUTTON STYLES (shadcn/ui pattern)
-   Applied consistently across all pages
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* Card: rounded-xl, border, shadow */
-.ui-card,
-[class*="card"] {
-  border-radius: 12px !important;
-  border: 1px solid var(--border) !important;
-  background: var(--card) !important;
-  box-shadow: var(--shadow) !important;
-}
-
-/* Card Header */
-.ui-card-header,
-[class*="card-header"] {
-  padding: 24px 24px 0 24px !important;
-}
-
-/* Card Content */
-.ui-card-content,
-[class*="card-content"] {
-  padding: 24px !important;
-}
-
-/* Button: consistent look */
-button, .btn, [class*="btn-"] {
-  border-radius: var(--radius-button) !important;
-  font-family: 'Inter', sans-serif !important;
-  font-weight: 500 !important;
-  transition: all 0.15s ease !important;
-}
-
-/* Button variants */
-.btn-primary, .btn-primary[class] {
-  background: #000 !important;
-  color: #fff !important;
-  border: none !important;
-  padding: 10px 20px !important;
-  font-size: 14px !important;
-  border-radius: var(--radius-button) !important;
-}
-
-.btn-secondary, .btn-secondary[class] {
-  background: #F4F4F5 !important;
-  color: #18181B !important;
-  border: 1px solid var(--border) !important;
-  padding: 10px 20px !important;
-  font-size: 14px !important;
-  border-radius: var(--radius-button) !important;
-}
-
-.btn-outline, .btn-outline[class] {
-  background: transparent !important;
-  color: #18181B !important;
-  border: 1px solid var(--border) !important;
-  padding: 10px 20px !important;
-  font-size: 14px !important;
-  border-radius: var(--radius-button) !important;
-}
-
-.btn-ghost, .btn-ghost[class] {
-  background: transparent !important;
-  color: #18181B !important;
-  border: none !important;
-  padding: 10px 20px !important;
-  font-size: 14px !important;
-}
-
-/* Badge */
-.ui-badge, [class*="badge"] {
-  border-radius: 9999px !important;
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  padding: 2px 8px !important;
-}
-
 aside.sidebar {
   width: var(--sidebar-width);
   background-color: var(--bg-sidebar);
@@ -3393,7 +3315,7 @@ input:checked + .toggle-slider:before {
 }
 
 .models-bottom-actions .action-card {
-  border: none;
+  border: 1px solid #E4E4E7;
   border-radius: 12px;
   background-color: #FFFFFF;
   padding: 20px;
@@ -3402,6 +3324,7 @@ input:checked + .toggle-slider:before {
   gap: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,.1), 0 1px 2px -1px rgba(0,0,0,.1);
 }
 
 .models-bottom-actions .action-card::before {
@@ -3409,8 +3332,9 @@ input:checked + .toggle-slider:before {
 }
 
 .models-bottom-actions .action-card:hover {
-  border-color: #D1D5DB;
-  background-color: #FCFCFC;
+  border-color: #D4D4D8;
+  background-color: #FAFAFA;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
 .models-bottom-actions .action-card-icon {
@@ -4426,14 +4350,15 @@ input:checked + .toggle-slider:before {
 
 /* Schedule Table Container Card */
 .schedules-table-container-card {
-  border-radius: 24px;
-  border: 1px solid #E8E8E8;
+  border-radius: 12px;
+  border: 1px solid #E4E4E7;
   background: #FFFFFF;
   padding: 24px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,.1), 0 1px 2px -1px rgba(0,0,0,.1);
 }
 
 /* Controls */
@@ -4921,22 +4846,22 @@ input:checked + .toggle-slider:before {
 
 .plugin-card {
   background: #FFFFFF;
-  border: 1px solid #EAEAEA;
-  border-radius: 20px;
-  padding: 24px;
+  border: 1px solid #E4E4E7;
+  border-radius: 12px;
+  padding: 20px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 12px;
   position: relative;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,.1), 0 1px 2px -1px rgba(0,0,0,.1);
 }
 
 .plugin-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(99, 102, 241, 0.2);
-  box-shadow: 0 16px 32px rgba(99, 102, 241, 0.04), 0 2px 4px rgba(0, 0, 0, 0.01);
+  transform: translateY(-2px);
+  border-color: #D4D4D8;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
 .plugin-card-header {
@@ -5310,8 +5235,8 @@ input:checked + .toggle-slider:before {
 
 .agent-row-card-item {
   background: #FFFFFF;
-  border: 1px solid #EAEAEA;
-  border-radius: 16px;
+  border: 1px solid #E4E4E7;
+  border-radius: 12px;
   overflow: hidden;
   padding: 18px 24px;
   box-sizing: border-box;
@@ -5319,7 +5244,8 @@ input:checked + .toggle-slider:before {
   grid-template-columns: 2.2fr 1fr 1.6fr 1.2fr 0.3fr;
   align-items: center;
   gap: 20px;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,.1), 0 1px 2px -1px rgba(0,0,0,.1);
 }
 
 .agents-list-wrapper.grid-layout .agent-row-card-item {
@@ -5331,8 +5257,8 @@ input:checked + .toggle-slider:before {
 }
 
 .agent-row-card-item:hover {
-  border-color: #D1D1D1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  border-color: #D4D4D8;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
 .agent-item-main-col {
@@ -9809,16 +9735,17 @@ main.main-content:has(.center-container.is-empty) header.app-header {
   gap: 14px !important;
   padding: 20px !important;
   background: #FFFFFF !important;
-  border: 1px solid #E5E7EB !important;
-  border-radius: 16px !important;
+  border: 1px solid #E4E4E7 !important;
+  border-radius: 12px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,.1), 0 1px 2px -1px rgba(0,0,0,.1) !important;
 }
 
 .feature-card:hover {
   background: #FAFAFA !important;
-  border-color: #D1D5DB !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+  border-color: #D4D4D8 !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08) !important;
 }
 
 .feature-card-icon {
@@ -10091,16 +10018,17 @@ main.main-content.agent-split-mode .chat-messages-log {
   gap: 14px !important;
   padding: 20px !important;
   background: #FFFFFF !important;
-  border: 1px solid #E5E7EB !important;
-  border-radius: 16px !important;
+  border: 1px solid #E4E4E7 !important;
+  border-radius: 12px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,.1), 0 1px 2px -1px rgba(0,0,0,.1) !important;
 }
 
 .feature-card:hover {
   background: #FAFAFA !important;
-  border-color: #D1D5DB !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+  border-color: #D4D4D8 !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08) !important;
 }
 
 .feature-card-icon {
