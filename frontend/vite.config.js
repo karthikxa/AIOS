@@ -26,19 +26,19 @@ export default {
   server: {
     port: 8000,
     proxy: {
-      // Route /v1 to cloud LLM proxy (Render)
+      // Route /v1 to backend (which always uses AIAgent with tools, memory, skills)
       '/v1': {
-        target: 'https://server-llm-1.onrender.com',
+        target: 'https://backend-server-6ghr.onrender.com',
         changeOrigin: true,
         secure: true,
       },
-      // Route /api to cloud backend (Render)
+      // Route /api to backend
       '/api': {
         target: 'https://backend-server-6ghr.onrender.com',
         changeOrigin: true,
         secure: true,
       },
-      // Route /oauth to cloud backend (Render)
+      // Route /oauth to backend
       '/oauth': {
         target: 'https://backend-server-6ghr.onrender.com',
         changeOrigin: true,

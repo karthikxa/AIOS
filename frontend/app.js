@@ -3934,27 +3934,23 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           addProgressStep(`Step ${step + 1}: Thinking...`, 'active');
           progressIndex = progressBody ? progressBody.children.length : 0;
 
-          // Call LLM with tools via Vite proxy → backend → Render-deployed llm-proxy
+          // Call LLM with tools via backend AIAgent (unified path with tools, memory, skills)
           let llmData;
           let retries = 0;
           const maxRetries = 3;
           
           while (retries <= maxRetries && !stopped) {
             try {
-              const llmResp = await fetch('/v1/chat/completions', {
+              const llmResp = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  'Authorization': 'Bearer freellmapi-b8b35f76a87a2e3db4985258c26197a2f22ceabe528eb6ac',
                 },
                 body: JSON.stringify({
                   model: 'auto',
                   messages,
-                  tools: computerTools,
-                  tool_choice: 'auto',
-                  temperature: 0.1,
-                  max_tokens: 2048,
                   stream: true,
+                  dashboard_state: { mode: 'computer' },
                 }),
                 signal: abortController.signal,
               });
