@@ -1470,6 +1470,187 @@ async def execute_tool_endpoint(request: Request):
         return {"error": str(e)}
 
 
+# ── Priority 1: LLM Providers ────────────────────────────────────────────────
+@app.get("/api/providers")
+async def list_llm_providers():
+    """List all available LLM providers (OpenAI, Anthropic, Gemini, etc.)."""
+    try:
+        from providers import list_providers
+        providers = list_providers()
+        result = []
+        for p in providers:
+            result.append({
+                "id": p.name,
+                "name": getattr(p, 'display_name', p.name),
+                "requires_key": bool(getattr(p, 'api_key_env', None)),
+                "supports_tools": getattr(p, 'supports_tools', True),
+                "base_url": getattr(p, 'base_url', None),
+            })
+        return {"providers": result, "count": len(result)}
+    except Exception as e:
+        logger.warning("list_providers error: %s", e)
+        return {"providers": [], "count": 0, "error": str(e)}
+
+
+@app.get("/api/providers/{provider_name}")
+async def get_llm_provider(provider_name: str):
+    """Get details for a specific LLM provider."""
+    try:
+        from providers import get_provider_profile
+        profile = get_provider_profile(provider_name)
+        if not profile:
+            raise HTTPException(status_code=404, detail=f"Provider '{provider_name}' not found")
+        return {
+            "id": profile.name,
+            "name": getattr(profile, 'display_name', profile.name),
+            "base_url": getattr(profile, 'base_url', None),
+            "models": getattr(profile, 'models', []),
+            "requires_key": bool(getattr(profile, 'api_key_env', None)),
+            "api_key_env": getattr(profile, 'api_key_env', None),
+            "supports_tools": getattr(profile, 'supports_tools', True),
+            "supports_vision": getattr(profile, 'supports_vision', False),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Priority 3: Gmail Service (standalone fallback) ──────────────────────────
+@app.get("/api/gmail/status")
+async def gmail_status():
+    """Check Gmail connection status via standalone gmail_service."""
+    try:
+        from gmail_service import gmail_service
+        connected = gmail_service.is_connected("default")
+        return {"connected": connected, "provider": "gmail_service"}
+    except Exception as e:
+        return {"connected": False, "error": str(e)}
+
+
+@app.post("/api/gmail/send-direct")
+async def gmail_send_direct(request: Request):
+    """Send email via standalone gmail_service (fallback when OAuth plugin fails)."""
+    try:
+        from gmail_service import gmail_service
+        body = await request.json()
+        to = body.get("to", "")
+        subject = body.get("subject", "")
+        msg_body = body.get("body", "")
+        if not to or not subject:
+            raise HTTPException(400, "to and subject are required")
+        result = gmail_service.send_email("default", to, subject, msg_body)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/gmail/list-direct")
+async def gmail_list_direct(max_results: int = 10):
+    """List emails via standalone gmail_service."""
+    try:
+        from gmail_service import gmail_service
+        result = gmail_service.list_emails("default", max_results=max_results)
+        return result
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# ── Priority 4: Gateway Status ───────────────────────────────────────────────
+@app.get("/api/gateway/status")
+async def gateway_status():
+    """Show messaging gateway status and available platforms."""
+    platforms = []
+    gateway_dir = Path(__file__).resolve().parent / "gateway" / "platforms"
+    if gateway_dir.exists():
+        for f in sorted(gateway_dir.glob("*.py")):
+            if f.name.startswith("_") or f.name == "base.py":
+                continue
+            platforms.append({
+                "name": f.stem,
+                "file": f.name,
+                "status": "available",
+            })
+    # Check if gateway process is running
+    import subprocess
+    gateway_running = False
+    try:
+        result = subprocess.run(
+            ["pgrep", "-f", "gateway.run"],
+            capture_output=True, timeout=2
+        )
+        gateway_running = result.returncode == 0
+    except Exception:
+        pass
+    return {
+        "gateway_running": gateway_running,
+        "platforms": platforms,
+        "count": len(platforms),
+    }
+
+
+# ── Priority 5: Batch Runner ────────────────────────────────────────────────
+_batch_jobs: Dict[str, Any] = {}
+
+@app.post("/api/batch/run")
+async def start_batch_run(request: Request):
+    """Start a batch agent run on a JSONL dataset."""
+    try:
+        body = await request.json()
+        dataset_file = body.get("dataset_file", "")
+        run_name = body.get("run_name", f"batch-{int(time.time())}")
+        max_workers = body.get("max_workers", 4)
+
+        if not dataset_file:
+            raise HTTPException(400, "dataset_file is required")
+
+        import threading
+        from batch_runner import BatchRunner
+
+        job_id = f"batch-{uuid.uuid4().hex[:8]}"
+        _batch_jobs[job_id] = {"status": "starting", "run_name": run_name, "started_at": time.time()}
+
+        def _run_batch():
+            try:
+                _batch_jobs[job_id]["status"] = "running"
+                runner = BatchRunner(
+                    dataset_file=dataset_file,
+                    run_name=run_name,
+                    max_workers=max_workers,
+                )
+                runner.run()
+                _batch_jobs[job_id]["status"] = "completed"
+            except Exception as e:
+                _batch_jobs[job_id]["status"] = "failed"
+                _batch_jobs[job_id]["error"] = str(e)
+
+        t = threading.Thread(target=_run_batch, daemon=True)
+        t.start()
+
+        return {"job_id": job_id, "status": "started", "run_name": run_name}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/batch/status")
+async def batch_status():
+    """List all batch run statuses."""
+    return {"jobs": _batch_jobs, "count": len(_batch_jobs)}
+
+
+@app.get("/api/batch/status/{job_id}")
+async def batch_job_status(job_id: str):
+    """Get status of a specific batch run."""
+    job = _batch_jobs.get(job_id)
+    if not job:
+        raise HTTPException(404, "Job not found")
+    return job
+
+
 # ── Public API Tools (from public-api-lists) ────────────────────────────────────
 # Fetches 775+ free public APIs across 48 categories and makes them callable as tools
 _PUBLIC_API_LIST_URL = "https://public-api-lists.github.io/public-api-lists/api/all.json"
