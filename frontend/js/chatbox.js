@@ -104,7 +104,8 @@ export function initChatBox(onSend) {
   ];
 
   // Fetch connected plugins — only show connected ones with colored icons
-  fetch('/oauth/status?user_id=default')
+  const mentionUserId = localStorage.getItem('zed_user_id') || 'default';
+  fetch(`/oauth/status?user_id=${encodeURIComponent(mentionUserId)}`)
     .then(r => r.json())
     .then(status => {
       const connected = MENTION_ITEMS.filter(item => status[item.id]);
@@ -199,16 +200,40 @@ export function initChatBox(onSend) {
 
   function selectItem(item) {
     if (!chatPromptInput) return;
+
+    if (activeTrigger === '/') {
+      // For / commands: execute immediately by sending a message
+      closePopover();
+      chatPromptInput.value = '';
+      // Build the prompt based on the command
+      const commandPrompts = {
+        'agent': 'Switch to Agent mode and delegate this task to sub-agents.',
+        'computer': 'Switch to Computer mode for desktop automation.',
+        'memory': 'Show my memory entries.',
+        'skills': 'List all available skills.',
+        'schedule': 'Create a new scheduled task.',
+        'agents': 'List all my agents.',
+        'config': 'Show current configuration.',
+        'status': 'Check system status.',
+      };
+      const prompt = commandPrompts[item.id] || `Execute the ${item.id} command.`;
+      chatPromptInput.value = prompt;
+      // Trigger send
+      if (typeof onSend === 'function') onSend(prompt);
+      else chatPromptInput.dispatchEvent(new Event('input', { bubbles: true }));
+      return;
+    }
+
+    // For @ mentions: insert text and let user type
     const val = chatPromptInput.value;
     const cursorPos = chatPromptInput.selectionStart;
-    // Find the trigger character position
     const beforeCursor = val.substring(0, cursorPos);
     const triggerPos = beforeCursor.lastIndexOf(activeTrigger);
     if (triggerPos === -1) return;
 
     const before = val.substring(0, triggerPos);
     const after = val.substring(cursorPos);
-    const insertText = item.isCategory ? `${activeTrigger}${item.id} ` : `${activeTrigger}${item.id} `;
+    const insertText = `${activeTrigger}${item.id} `;
 
     chatPromptInput.value = before + insertText + after;
     const newPos = before.length + insertText.length;
