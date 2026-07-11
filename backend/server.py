@@ -525,6 +525,7 @@ async def lifespan(app: FastAPI):
                                 "model": _llm_model,
                                 "messages": messages,
                                 "max_tokens": 4096,
+                                "stream": False,
                                 **({"tools": tool_defs} if use_tools else {}),
                             },
                             headers={
@@ -610,6 +611,7 @@ async def lifespan(app: FastAPI):
                                 "model": _llm_model,
                                 "messages": [{"role": "user", "content": _prompt}],
                                 "max_tokens": 4096,
+                                "stream": False,
                             },
                             headers={
                                 "Authorization": f"Bearer {llm_api_key}",

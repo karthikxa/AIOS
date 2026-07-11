@@ -413,29 +413,43 @@ def _reload_tokens_from_db():
             "SELECT provider, access_token, refresh_token, scopes FROM connections"
         ).fetchall()
         generic_row = None
+        first_google_row = None
         for r in rows:
             provider = r["provider"]
             if provider == "google":
                 generic_row = r
                 continue
             plugin_key = _PROVIDER_TO_PLUGIN.get(provider, provider)
-            set_tokens(plugin_key, {
+            token_data = {
                 "token": r["access_token"],
                 "refresh_token": r["refresh_token"],
                 "token_uri": "https://oauth2.googleapis.com/token",
                 "client_id": GOOGLE_CLIENT_ID,
                 "client_secret": GOOGLE_CLIENT_SECRET,
                 "scopes": (r["scopes"] or "").split(),
-            })
-        if generic_row and not _google_tokens:
+            }
+            set_tokens(plugin_key, token_data)
+            if first_google_row is None and plugin_key in (
+                "gmail", "google-drive", "calendar", "google-contacts",
+                "google-photos", "youtube", "google-docs", "google-sheets",
+                "google-slides", "google-chat", "google-meet", "google-fit",
+                "google-classroom", "google-tasks",
+            ):
+                first_google_row = token_data
+
+        # Always populate "google-drive" — ALL tool handlers use _creds_for("google-drive")
+        # regardless of which specific Google service was connected
+        fallback = generic_row or first_google_row
+        if fallback:
             set_tokens("google-drive", {
-                "token": generic_row["access_token"],
-                "refresh_token": generic_row["refresh_token"],
+                "token": fallback["access_token"] if "access_token" in fallback else fallback["token"],
+                "refresh_token": fallback["refresh_token"],
                 "token_uri": "https://oauth2.googleapis.com/token",
                 "client_id": GOOGLE_CLIENT_ID,
                 "client_secret": GOOGLE_CLIENT_SECRET,
-                "scopes": (generic_row["scopes"] or "").split(),
+                "scopes": (fallback.get("scopes") or "").split() if isinstance(fallback.get("scopes"), str) else fallback.get("scopes", []),
             })
+
         count = _connections_db.execute("SELECT COUNT(*) as c FROM connections").fetchone()
         logger.info("Restored %s connection(s) from DB into memory", count["c"] if count else 0)
     except Exception as e:
@@ -534,6 +548,13 @@ def _creds_for(plugin_id: str):
     if cached:
         return cached
     tokens = get_tokens(plugin_id)
+    # Fallback: if "google-drive" not found, try any available Google connection
+    if not tokens and plugin_id == "google-drive":
+        for fallback_key in ("gmail", "google-drive", "calendar", "youtube",
+                             "google-contacts", "google-docs", "google-sheets"):
+            tokens = get_tokens(fallback_key)
+            if tokens:
+                break
     if not tokens:
         return None
     try:
