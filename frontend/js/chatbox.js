@@ -5,12 +5,49 @@ export function initChatBox(onSend) {
   const attachBtn = document.getElementById('attachBtn');
   const attachDropdown = document.getElementById('attachDropdown');
 
-  // ── Slash & Mention Popover ─────────────────────────────────────────
-  const SLASH_COMMANDS = [
-    { id: 'summarize', label: '/summarize', description: 'Summarize the conversation', icon: '📄' },
-    { id: 'translate', label: '/translate', description: 'Translate to another language', icon: '🌐' },
-    { id: 'search', label: '/search', description: 'Search the web', icon: '🔍' },
+  // ── Slash & Mention Popover (dynamic from backend) ────────────────────
+  // Fetch all tools from backend and build slash commands with monochrome icons
+  let SLASH_COMMANDS = [
+    // Built-in commands (always shown)
+    { id: 'agent', label: '/agent', description: 'Switch to Agent mode (delegation with sub-agents)', icon: '⬡' },
+    { id: 'computer', label: '/computer', description: 'Switch to Computer mode (desktop control)', icon: '◧' },
+    { id: 'memory', label: '/memory', description: 'View and manage persistent memory', icon: '◻' },
+    { id: 'skills', label: '/skills', description: 'Browse and activate skills', icon: '◎' },
+    { id: 'schedule', label: '/schedule', description: 'Create a scheduled task', icon: '◷' },
+    { id: 'agents', label: '/agents', description: 'Manage AI agents', icon: '◇' },
+    { id: 'config', label: '/config', description: 'View and update settings', icon: '⊞' },
+    { id: 'status', label: '/status', description: 'Check system status', icon: '◉' },
   ];
+
+  // Fetch tools from backend and add as slash commands
+  fetch('/api/tools')
+    .then(r => r.json())
+    .then(data => {
+      const toolIcons = {
+        gmail: '✉', drive: '▤', calendar: '▦', tasks: '☑', contacts: '⊕',
+        photos: '△', youtube: '▷', docs: '▤', sheets: '▦', slides: '▷',
+        chat: '◈', meet: '◎', fit: '◐', classroom: '◑',
+        web_search: '◎', web_extract: '◑', terminal: '▸', read_file: '▤',
+        write_file: '▤', search_files: '⌕', patch: '✎', memory: '◻',
+        session_search: '⌕', cronjob: '◷', todo: '☑', delegate_task: '◇',
+        clarify: '?', execute_code: '▸', vision_analyze: '◈', image_generate: '△',
+        text_to_speech: '♪', video_generate: '▷', skill_manage: '◎', skills_list: '◎',
+        skill_view: '◎', browser_navigate: '◎', browser_click: '◎',
+        process: '▸', concurrent_swarm: '◇', sequential_swarm: '◇',
+        hierarchical_swarm: '◇', swarm_router: '◇', graph_swarm: '◇',
+        heavy_swarm: '◇', forest_swarm: '◇', group_chat_swarm: '◇',
+        agent_rearrange_swarm: '◇', mixture_of_agents_swarm: '◇',
+      };
+      const backendTools = (data.tools || []).map(t => ({
+        id: t.function?.name || '',
+        label: '/' + (t.function?.name || ''),
+        description: (t.function?.description || '').slice(0, 60) || `Use ${t.function?.name}`,
+        icon: toolIcons[t.function?.name] || '◎',
+      }));
+      // Merge: built-in commands first, then all tools
+      SLASH_COMMANDS = [...SLASH_COMMANDS, ...backendTools];
+    })
+    .catch(() => {});
 
   const MENTION_ITEMS = [
     { id: 'tools', label: 'Tools', description: 'Browse available tools', icon: '🔧', isCategory: true },
@@ -73,9 +110,9 @@ export function initChatBox(onSend) {
         ${i === highlightedIndex ? 'background: #f3f4f6;' : ''}
       `;
       row.innerHTML = `
-        <span style="font-size: 16px; width: 24px; text-align: center;">${item.icon}</span>
+        <span style="font-size: 14px; width: 24px; text-align: center; color: #6b7280;">${item.icon}</span>
         <div style="flex: 1; min-width: 0;">
-          <div style="font-weight: 500; font-size: 14px;">${item.label}</div>
+          <div style="font-weight: 500; font-size: 14px; color: #111827;">${item.label}</div>
           <div style="font-size: 12px; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.description}</div>
         </div>
         ${item.isCategory ? '<span style="color: #9ca3af;">›</span>' : ''}
