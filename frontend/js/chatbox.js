@@ -49,34 +49,74 @@ export function initChatBox(onSend) {
     })
     .catch(() => {});
 
-  // ── @ Mention: Google plugins with official-style monochrome SVG icons ──
+  // ── @ Mention: Google plugins with real colored SVGs when connected ─────
+  // Colored SVGs match the official Google branding
+  const COLORED_SVGS = {
+    gmail: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#4285F4" d="M44 12l-4.2 24.3c-.3 1.6-1.4 2-2.8 2.1H9.8c-1.5-.1-2.6-.6-2.9-2.1L2.7 12c-.2-1.3.3-2.4 1.5-2.8L24 22.3 42.5 9.2c1.2.4 1.7 1.5 1.5 2.8z"/><path fill="#C5221F" d="M24 22.3L2.7 12c-.2-1.3.3-2.4 1.5-2.8L24 22.3z"/><path fill="#34A853" d="M24 22.3L42.5 9.2c1.2.4 1.7 1.5 1.5 2.8L24 22.3z"/><path fill="#FBBC04" d="M24 22.3L2.7 12l21.3 10.3z"/><path fill="#EA4335" d="M24 22.3l21.3-10.3-21.3-10.3z"/></svg>',
+    drive: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M32 40H8L24 8l16 32z"/><path fill="#4285F4" d="M42 40H18L32 8l10 16.3L42 40z"/><path fill="#1A73E8" d="M34.4 24.3L44 40H24L34.4 24.3z"/><path fill="#FBBC04" d="M24 8L8 40h16L24 8z"/><path fill="#1A73E8" d="M34.4 24.3L44 40H24L34.4 24.3z"/></svg>',
+    calendar: '<svg width="16" height="16" viewBox="0 0 48 48"><rect fill="#4285F4" x="4" y="8" width="40" height="36" rx="4"/><rect fill="#fff" x="4" y="8" width="40" height="12" rx="4"/><rect fill="#EA4335" x="4" y="8" width="40" height="4" rx="4"/><path fill="#fff" d="M14 28h20v2H14zM14 34h12v2H14z"/></svg>',
+    tasks: '<svg width="16" height="16" viewBox="0 0 48 48"><circle fill="none" stroke="#4285F4" stroke-width="3" cx="24" cy="24" r="18"/><path fill="none" stroke="#34A853" stroke-width="3" stroke-linecap="round" d="M15 24l6 6 12-12"/></svg>',
+    contacts: '<svg width="16" height="16" viewBox="0 0 48 48"><circle fill="#4285F4" cx="24" cy="18" r="8"/><path fill="#4285F4" d="M8 42c0-8.8 7.2-16 16-16s16 7.2 16 16"/></svg>',
+    photos: '<svg width="16" height="16" viewBox="0 0 48 48"><rect fill="#FBBC04" x="4" y="4" width="40" height="40" rx="4"/><circle fill="#4285F4" cx="16" cy="18" r="5"/><path fill="#34A853" d="M4 32l12-10 8 6 8-4 12 8v6a4 4 0 01-4 4H8a4 4 0 01-4-4z"/></svg>',
+    youtube: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M43.2 13.4a4.8 4.8 0 00-3.4-3.4C36.8 9 24 9 24 9s-12.8 0-15.8 1a4.8 4.8 0 00-3.4 3.4C3.8 16.4 3.8 24 3.8 24s0 7.6 1.6 10.6a4.8 4.8 0 003.4 3.4c3 1 15.8 1 15.8 1s12.8 0 15.8-1a4.8 4.8 0 003.4-3.4c1.6-3 1.6-10.6 1.6-10.6s0-7.6-1.6-10.6z"/><path fill="#fff" d="M20 30.4V17.6l10.4 6.4-10.4 6.4z"/></svg>',
+    docs: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#4285F4" d="M14 4h20l10 10v30a2 2 0 01-2 2H14a2 2 0 01-2-2V6a2 2 0 012-2z"/><path fill="#4285F4" d="M34 4l10 10H36a2 2 0 01-2-2V4z"/><path fill="#fff" d="M18 18h12v2H18zM18 24h12v2H18zM18 30h8v2H18z"/></svg>',
+    sheets: '<svg width="16" height="16" viewBox="0 0 48 48"><rect fill="#34A853" x="4" y="4" width="40" height="40" rx="4"/><rect fill="#fff" x="4" y="4" width="40" height="40" rx="4" opacity=".15"/><path stroke="#fff" stroke-width="2" d="M4 18h40M4 30h40M18 4v40M30 4v40"/></svg>',
+    slides: '<svg width="16" height="16" viewBox="0 0 48 48"><rect fill="#FBBC04" x="4" y="6" width="40" height="28" rx="4"/><rect fill="#fff" x="6" y="8" width="36" height="24" rx="2"/><rect fill="#FBBC04" x="18" y="34" width="12" height="4" rx="2"/><rect fill="#FBBC04" x="14" y="38" width="20" height="3" rx="1.5"/></svg>',
+    chat: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#34A853" d="M24 4C12.95 4 4 12.95 4 24c0 4.3 1.4 8.3 3.7 11.6L4 44l8.9-3.3C15.7 42.6 19.6 44 24 44c11.05 0 20-8.95 20-20S35.05 4 24 4z"/><path fill="#fff" d="M16 18h16v2H16zM16 24h12v2H16z"/></svg>',
+    meet: '<svg width="16" height="16" viewBox="0 0 48 48"><rect fill="#4285F4" x="4" y="10" width="28" height="22" rx="4"/><path fill="#34A853" d="M32 20l12-6v16l-12-6z"/><circle fill="#fff" cx="18" cy="21" r="3"/><circle fill="#fff" cx="26" cy="21" r="3"/></svg>',
+    fit: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M38 12H28l-4 16-4-16H10l8 24h6l8-24z" opacity=".8"/><path fill="#4285F4" d="M44 12H34l-4 16-4-16H16l8 24h6l12-24z" opacity=".8"/><path fill="#34A853" d="M28 12H18l-4 16-4-16H0l8 24h6l14-24z" opacity=".8"/></svg>',
+    classroom: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#4285F4" d="M24 8L4 20l20 12 20-12L24 8z"/><path fill="#34A853" d="M4 20v14c0 4 8 8 20 8s20-4 20-8V20L24 32 4 20z"/><path fill="#FBBC04" d="M4 20v14c0 4 8 8 20 8V20L4 20z" opacity=".6"/></svg>',
+  };
+
+  // Monochrome fallback for disconnected plugins
+  const MONO_SVGS = {
+    gmail: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
+    drive: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg>',
+    calendar: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+    tasks: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>',
+    contacts: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
+    photos: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/></svg>',
+    youtube: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/></svg>',
+    docs: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/></svg>',
+    sheets: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>',
+    slides: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+    chat: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    meet: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="m15.5 7.5 5 5"/><rect x="4" y="6" width="16" height="12" rx="2"/></svg>',
+    fit: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+    classroom: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+  };
+
   let MENTION_ITEMS = [
-    { id: 'gmail', label: 'Gmail', description: 'Send, read, search emails', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/><path d="M2 7l10 7 10-7"/></svg>' },
-    { id: 'drive', label: 'Drive', description: 'List, search, read files', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>' },
-    { id: 'calendar', label: 'Calendar', description: 'List, create, update events', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>' },
-    { id: 'tasks', label: 'Tasks', description: 'List, create, update tasks', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>' },
-    { id: 'contacts', label: 'Contacts', description: 'List, create, update contacts', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
-    { id: 'photos', label: 'Photos', description: 'List albums, media', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>' },
-    { id: 'youtube', label: 'YouTube', description: 'Search, get details, rate', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><path d="m9.75 15.02 5.75-3.27-5.75-3.27v6.54z"/></svg>' },
-    { id: 'docs', label: 'Docs', description: 'List, read, create documents', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>' },
-    { id: 'sheets', label: 'Sheets', description: 'List, read, create spreadsheets', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>' },
-    { id: 'slides', label: 'Slides', description: 'List, read, create presentations', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>' },
-    { id: 'chat', label: 'Chat', description: 'List spaces, send messages', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' },
-    { id: 'meet', label: 'Meet', description: 'Create meeting conferences', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 7.5 5 5"/><path d="M4 20h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/></svg>' },
-    { id: 'fit', label: 'Fit', description: 'Health and fitness data', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' },
-    { id: 'classroom', label: 'Classroom', description: 'Courses, assignments, students', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>' },
+    { id: 'gmail', label: 'Gmail', description: 'Send, read, search emails' },
+    { id: 'drive', label: 'Drive', description: 'List, search, read files' },
+    { id: 'calendar', label: 'Calendar', description: 'List, create, update events' },
+    { id: 'tasks', label: 'Tasks', description: 'List, create, update tasks' },
+    { id: 'contacts', label: 'Contacts', description: 'List, create, update contacts' },
+    { id: 'photos', label: 'Photos', description: 'List albums, media' },
+    { id: 'youtube', label: 'YouTube', description: 'Search, get details, rate' },
+    { id: 'docs', label: 'Docs', description: 'List, read, create documents' },
+    { id: 'sheets', label: 'Sheets', description: 'List, read, create spreadsheets' },
+    { id: 'slides', label: 'Slides', description: 'List, read, create presentations' },
+    { id: 'chat', label: 'Chat', description: 'List spaces, send messages' },
+    { id: 'meet', label: 'Meet', description: 'Create meeting conferences' },
+    { id: 'fit', label: 'Fit', description: 'Health and fitness data' },
+    { id: 'classroom', label: 'Classroom', description: 'Courses, assignments, students' },
   ];
 
-  // Fetch connected plugins from backend
+  // Fetch connected plugins — only show connected ones with colored icons
   fetch('/oauth/status?user_id=default')
     .then(r => r.json())
     .then(status => {
-      // Mark connected plugins with a checkmark
-      MENTION_ITEMS = MENTION_ITEMS.map(item => ({
-        ...item,
-        connected: !!status[item.id],
-        label: status[item.id] ? `${item.label} ✓` : item.label,
-      }));
+      const connected = MENTION_ITEMS.filter(item => status[item.id]);
+      if (connected.length > 0) {
+        // Show only connected plugins with real colored Google SVGs
+        MENTION_ITEMS = connected.map(item => ({
+          ...item,
+          icon: COLORED_SVGS[item.id] || MONO_SVGS[item.id] || '◎',
+          connected: true,
+        }));
+      }
+      // If nothing connected, show all with monochrome (so user knows what's available)
     })
     .catch(() => {});
 

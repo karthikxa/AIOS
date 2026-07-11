@@ -433,10 +433,10 @@ function renderTable(store) {
 
     const lastRunBadge = '';
 
-    const agentBadge = item.role
+    const agentBadge = (item.agentName || item.role)
       ? `<span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-           ${item.role}
+           ${item.agentName || item.role}
          </span>`
       : '';
 
