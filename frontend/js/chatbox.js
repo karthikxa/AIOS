@@ -49,10 +49,36 @@ export function initChatBox(onSend) {
     })
     .catch(() => {});
 
-  const MENTION_ITEMS = [
-    { id: 'tools', label: 'Tools', description: 'Browse available tools', icon: '🔧', isCategory: true },
-    { id: 'users', label: 'Users', description: 'Mention a user', icon: '👤', isCategory: true },
+  // ── @ Mention: Google plugins + services with monochrome SVG icons ──────
+  let MENTION_ITEMS = [
+    { id: 'gmail', label: 'Gmail', description: 'Send, read, search emails', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>' },
+    { id: 'drive', label: 'Google Drive', description: 'List, search, read files', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>' },
+    { id: 'calendar', label: 'Calendar', description: 'List, create, update events', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' },
+    { id: 'tasks', label: 'Tasks', description: 'List, create, update tasks', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>' },
+    { id: 'contacts', label: 'Contacts', description: 'List, create, update contacts', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+    { id: 'photos', label: 'Photos', description: 'List albums, media', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>' },
+    { id: 'youtube', label: 'YouTube', description: 'Search, get details, rate', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><path d="m9.75 15.02 5.75-3.27-5.75-3.27v6.54z"/></svg>' },
+    { id: 'docs', label: 'Docs', description: 'List, read, create documents', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>' },
+    { id: 'sheets', label: 'Sheets', description: 'List, read, create spreadsheets', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>' },
+    { id: 'slides', label: 'Slides', description: 'List, read, create presentations', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>' },
+    { id: 'chat', label: 'Google Chat', description: 'List spaces, send messages', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' },
+    { id: 'meet', label: 'Meet', description: 'Create meeting conferences', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="m16 2 5 5-5 5"/><path d="M21 7H9"/><path d="M21 17H9"/><path d="M9 2l-5 5 5 5"/></svg>' },
+    { id: 'fit', label: 'Fit', description: 'Health and fitness data', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' },
+    { id: 'classroom', label: 'Classroom', description: 'Courses, assignments, students', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>' },
   ];
+
+  // Fetch connected plugins from backend
+  fetch('/oauth/status?user_id=default')
+    .then(r => r.json())
+    .then(status => {
+      // Mark connected plugins with a checkmark
+      MENTION_ITEMS = MENTION_ITEMS.map(item => ({
+        ...item,
+        connected: !!status[item.id],
+        label: status[item.id] ? `${item.label} ✓` : item.label,
+      }));
+    })
+    .catch(() => {});
 
   let popover = null;
   let activeTrigger = null; // '/' or '@'
@@ -109,12 +135,15 @@ export function initChatBox(onSend) {
         transition: background 0.1s; outline: none;
         ${i === highlightedIndex ? 'background: #f3f4f6;' : ''}
       `;
+      // Render icon: SVG string or text symbol
+      const iconHtml = item.icon.startsWith('<svg') ? item.icon : `<span style="font-size: 14px; color: #6b7280;">${item.icon}</span>`;
       row.innerHTML = `
-        <span style="font-size: 14px; width: 24px; text-align: center; color: #6b7280;">${item.icon}</span>
+        <span style="width: 24px; text-align: center; display: flex; align-items: center; justify-content: center;">${iconHtml}</span>
         <div style="flex: 1; min-width: 0;">
           <div style="font-weight: 500; font-size: 14px; color: #111827;">${item.label}</div>
           <div style="font-size: 12px; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.description}</div>
         </div>
+        ${item.connected ? '<span style="color: #10b981; font-size: 12px;">●</span>' : ''}
         ${item.isCategory ? '<span style="color: #9ca3af;">›</span>' : ''}
       `;
       row.addEventListener('mouseenter', () => {

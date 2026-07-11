@@ -2044,11 +2044,27 @@ JSON Structure:
           name: p.name || p.id, version: p.version || '', desc: p.desc || ''
         }))
       };
+
+      // Detect @mentions in the user's message (e.g., @gmail, @drive, @calendar)
+      const lastMsg = apiMessages[apiMessages.length - 1]?.content || '';
+      const mentionMatches = lastMsg.match(/@(\w+)/g) || [];
+      const mentionedPlugins = mentionMatches.map(m => m.slice(1).toLowerCase());
+
+      // Detect active Google connections
+      const connectedPlugins = (pluginsStore?.installed || []).map(p => p.id || p.name);
+
       const body = JSON.stringify({
         model: 'auto',
         messages: apiMessages,
         stream: useStream,
-        dashboard_state: dashboardState
+        dashboard_state: {
+          ...dashboardState,
+          mentioned_plugins: mentionedPlugins,
+          connected_plugins: connectedPlugins,
+          mention_directive: mentionedPlugins.length > 0
+            ? `User mentioned: ${mentionedPlugins.join(', ')}. Use the ${mentionedPlugins.join(', ')} tools directly.`
+            : null,
+        }
       });
       const resp = await fetch('/api/chat', {
         method: 'POST',

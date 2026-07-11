@@ -285,8 +285,35 @@ def _build_full_system_prompt(system_msg: str, context_files: dict, soul_content
 
 
 def _enhance_system_prompt(system_msg: str, dashboard_state: Optional[Dict[str, Any]] = None) -> str:
-    """Append dashboard state and Google services info so the model is aware of the live dashboard."""
+    """Append dashboard state, mentions, and Google services info."""
     parts = [system_msg or ""]
+
+    # ── @Mention directive (highest priority) ─────────────────────────────
+    if dashboard_state:
+        mention_directive = dashboard_state.get("mention_directive")
+        mentioned = dashboard_state.get("mentioned_plugins", [])
+        if mention_directive:
+            parts.append(f"\n\n{mention_directive}")
+            # Tell the agent exactly which tools to use for the mentioned plugin
+            plugin_tool_map = {
+                "gmail": "Use gmail_list, gmail_read, gmail_send tools",
+                "drive": "Use drive_list, drive_search, drive_read tools",
+                "calendar": "Use calendar_list_events, calendar_create_event, calendar_update_event, calendar_delete_event tools",
+                "tasks": "Use tasks_list, tasks_create, tasks_update, tasks_delete tools",
+                "contacts": "Use contacts_list, contacts_create, contacts_update, contacts_delete tools",
+                "photos": "Use photos_list_albums, photos_list_media, photos_create_album tools",
+                "youtube": "Use youtube_search, youtube_video_details, youtube_rate_video, youtube_add_comment tools",
+                "docs": "Use docs_list, docs_read, docs_create, docs_update, docs_delete tools",
+                "sheets": "Use sheets_list, sheets_read, sheets_create, sheets_update, sheets_clear tools",
+                "slides": "Use slides_list, slides_read, slides_create, slides_delete tools",
+                "chat": "Use chat_list_spaces, chat_send_message, chat_delete_message tools",
+                "meet": "Use meet_create tool",
+                "fit": "Use fit_list_data_sources, fit_get_dataset tools",
+                "classroom": "Use classroom_list_courses, classroom_list_assignments, classroom_list_students tools",
+            }
+            for p in mentioned:
+                if p in plugin_tool_map:
+                    parts.append(f"- {plugin_tool_map[p]}")
 
     # ── Dashboard state awareness ────────────────────────────────────────
     if dashboard_state:
