@@ -77,9 +77,21 @@ _ZED_CORE_TOOLS = [
     "kanban_unblock",
     # Computer use (macOS, gated on cua-driver being installed via check_fn)
     "computer_use",
-    # Google OAuth tools — Gmail + Drive (gated on OAuth tokens via check_fn)
+    # Google OAuth tools — 47 tools across 13 services (gated on OAuth tokens via check_fn)
     "gmail_list", "gmail_read", "gmail_send",
     "drive_list", "drive_search", "drive_read",
+    "calendar_list_events", "calendar_create_event", "calendar_update_event", "calendar_delete_event",
+    "tasks_list", "tasks_create", "tasks_update", "tasks_delete",
+    "contacts_list", "contacts_create", "contacts_update", "contacts_delete",
+    "photos_list_albums", "photos_list_media", "photos_create_album",
+    "youtube_search", "youtube_video_details", "youtube_rate_video", "youtube_add_comment",
+    "docs_list", "docs_read", "docs_create", "docs_update", "docs_delete",
+    "sheets_list", "sheets_read", "sheets_create", "sheets_update", "sheets_clear",
+    "slides_list", "slides_read", "slides_create", "slides_delete",
+    "chat_list_spaces", "chat_send_message", "chat_delete_message",
+    "meet_create",
+    "fit_list_data_sources", "fit_get_dataset",
+    "classroom_list_courses", "classroom_list_assignments", "classroom_list_students",
     # Swarm orchestration — 10 patterns powered by delegate_task sub-agents
     "concurrent_swarm", "sequential_swarm", "hierarchical_swarm",
     "agent_rearrange_swarm", "graph_swarm", "mixture_of_agents_swarm",
@@ -266,9 +278,9 @@ TOOLSETS = {
     },
     
     "delegation": {
-        "description": "Spawn subagents with isolated context for complex subtasks",
+        "description": "Spawn subagents with isolated context for complex subtasks (supports swarm orchestration)",
         "tools": ["delegate_task"],
-        "includes": []
+        "includes": ["swarm"],
     },
 
     # "honcho" toolset removed — Honcho is now a memory provider plugin.
@@ -344,6 +356,78 @@ TOOLSETS = {
             "spotify_playback", "spotify_devices", "spotify_queue", "spotify_search",
             "spotify_playlists", "spotify_albums", "spotify_library",
         ],
+        "includes": []
+    },
+
+    # Google Workspace toolsets (47 tools across 13 services)
+    "gmail": {
+        "description": "Gmail email management — list, read, send emails",
+        "tools": ["gmail_list", "gmail_read", "gmail_send"],
+        "includes": []
+    },
+    "drive": {
+        "description": "Google Drive file management — list, search, read files",
+        "tools": ["drive_list", "drive_search", "drive_read"],
+        "includes": []
+    },
+    "calendar": {
+        "description": "Google Calendar — list, create, update, delete events",
+        "tools": ["calendar_list_events", "calendar_create_event", "calendar_update_event", "calendar_delete_event"],
+        "includes": []
+    },
+    "tasks": {
+        "description": "Google Tasks — list, create, update, delete tasks",
+        "tools": ["tasks_list", "tasks_create", "tasks_update", "tasks_delete"],
+        "includes": []
+    },
+    "contacts": {
+        "description": "Google Contacts — list, create, update, delete contacts",
+        "tools": ["contacts_list", "contacts_create", "contacts_update", "contacts_delete"],
+        "includes": []
+    },
+    "photos": {
+        "description": "Google Photos — list albums, list media, create albums",
+        "tools": ["photos_list_albums", "photos_list_media", "photos_create_album"],
+        "includes": []
+    },
+    "youtube": {
+        "description": "YouTube — search videos, get details, rate, comment",
+        "tools": ["youtube_search", "youtube_video_details", "youtube_rate_video", "youtube_add_comment"],
+        "includes": []
+    },
+    "docs": {
+        "description": "Google Docs — list, read, create, update, delete documents",
+        "tools": ["docs_list", "docs_read", "docs_create", "docs_update", "docs_delete"],
+        "includes": []
+    },
+    "sheets": {
+        "description": "Google Sheets — list, read, create, update, clear spreadsheets",
+        "tools": ["sheets_list", "sheets_read", "sheets_create", "sheets_update", "sheets_clear"],
+        "includes": []
+    },
+    "slides": {
+        "description": "Google Slides — list, read, create, delete presentations",
+        "tools": ["slides_list", "slides_read", "slides_create", "slides_delete"],
+        "includes": []
+    },
+    "chat": {
+        "description": "Google Chat — list spaces, send messages, delete messages",
+        "tools": ["chat_list_spaces", "chat_send_message", "chat_delete_message"],
+        "includes": []
+    },
+    "meet": {
+        "description": "Google Meet — create meeting conferences",
+        "tools": ["meet_create"],
+        "includes": []
+    },
+    "fit": {
+        "description": "Google Fit — list data sources, get datasets",
+        "tools": ["fit_list_data_sources", "fit_get_dataset"],
+        "includes": []
+    },
+    "classroom": {
+        "description": "Google Classroom — list courses, assignments, students",
+        "tools": ["classroom_list_courses", "classroom_list_assignments", "classroom_list_students"],
         "includes": []
     },
 
