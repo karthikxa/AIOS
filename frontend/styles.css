@@ -2450,7 +2450,7 @@ input:checked + .toggle-slider:before {
   }
 
   main.main-content:has(.center-container.is-empty) {
-    padding: 60px 10px 0 !important;
+    padding: 40px 10px 0 !important;
   }
 
   .center-container {
@@ -2458,24 +2458,110 @@ input:checked + .toggle-slider:before {
   }
 
   .center-container.is-empty {
-    padding: 80px 10px !important;
+    padding: 60px 10px !important;
   }
 
   .center-container.is-active .chat-container {
     padding: 0 10px !important;
   }
 
+  .hero-title {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  .hero-subtitle {
+    font-size: 16px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .hero-right-visual {
+    display: none !important;
+  }
+
+  /* ── Chat Box ─────────────────────────────────────── */
+  .chat-box {
+    min-height: auto !important;
+    padding: 10px 12px 8px 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .chat-prompt-input {
+    font-size: 16px !important;
+    min-height: 44px !important;
+    padding: 8px 0 !important;
+  }
+
+  /* ── Toolbar Row: stack on mobile ────────────────── */
+  .chat-toolbar-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin-top: 6px !important;
+  }
+
+  .chat-left-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .mode-capsule {
+    display: flex !important;
+    width: auto !important;
+  }
+
+  .mode-capsule-option {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+    gap: 4px !important;
+  }
+
+  .mode-capsule-option svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  /* ── Feature Cards ────────────────────────────────── */
+  .feature-cards-row {
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 0 4px !important;
+  }
+
+  .feature-card {
+    padding: 12px !important;
+    gap: 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .feature-card-icon {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+  }
+
+  .feature-card-content h3 {
+    font-size: 13px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .feature-card-content p {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* ── Pages ────────────────────────────────────────── */
   .models-page-view,
   .agent-page-view,
   .voice-page-view,
   .create-agent-page-view,
   .edit-agent-page-view {
-    padding: 20px 4px;
+    padding: 16px 4px;
   }
 
   .schedules-page-view,
   .plugins-page-view {
-    padding: 0 0 20px 0;
+    padding: 0 0 16px 0;
   }
 
   .chat-messages-view {
@@ -2484,58 +2570,7 @@ input:checked + .toggle-slider:before {
   }
 
   .chat-message.user .chat-message-bubble {
-    max-width: 82% !important;
-  }
-
-  .hero-title {
-    font-size: 28px;
-  }
-
-  .hero-right-visual {
-    display: none !important;
-  }
-
-  .feature-cards-row {
-    flex-direction: column !important;
-    gap: 10px !important;
-  }
-
-  .feature-card {
-    padding: 14px !important;
-    gap: 10px !important;
-  }
-
-  .feature-card-icon {
-    width: 32px !important;
-    height: 32px !important;
-  }
-
-  .feature-card-content h3 {
-    font-size: 14px !important;
-  }
-
-  .feature-card-content p {
-    font-size: 12px !important;
-  }
-
-  .chat-prompt-input {
-    font-size: 16px !important;
-    min-height: 48px !important;
-  }
-
-  .chat-box {
-    min-height: 60px !important;
-    border-radius: 12px !important;
-  }
-
-  .mode-capsule {
-    width: 100% !important;
-    justify-content: center !important;
-  }
-
-  .mode-capsule-option {
-    padding: 0 12px !important;
-    font-size: 12px !important;
+    max-width: 88% !important;
   }
 
   .plugins-hero-right-inner {
@@ -2544,17 +2579,11 @@ input:checked + .toggle-slider:before {
 
   .weekly-grid-card {
     width: 100% !important;
-    max-width: 280px;
+    max-width: 100%;
   }
 
   .app-card {
     max-width: 100%;
-  }
-
-  .perplexity-action-pill {
-    font-size: 12px !important;
-    padding: 6px 12px !important;
-    height: 30px !important;
   }
 
   .voice-filters-row {
@@ -2566,7 +2595,7 @@ input:checked + .toggle-slider:before {
     gap: 8px;
   }
   .models-usage-search input {
-    width: 140px;
+    width: 100%;
   }
 
   .schedules-table-controls {
@@ -2576,6 +2605,16 @@ input:checked + .toggle-slider:before {
   }
   .schedules-search-box {
     width: 100%;
+  }
+
+  /* ── Sidebar collapse on mobile ───────────────────── */
+  .sidebar {
+    transform: translateX(-100%) !important;
+    z-index: 1000 !important;
+  }
+
+  .sidebar.open {
+    transform: translateX(0) !important;
   }
 }
 
