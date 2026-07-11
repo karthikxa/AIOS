@@ -502,26 +502,108 @@ async def lifespan(app: FastAPI):
                     messages = [{"role": "user", "content": _prompt}]
                     max_tool_rounds = 5
                     result = "No response"
+                    status = "error"
+                    tool_rounds_used = 0
                     
-                    # Get tool definitions for the request - include ALL available tools
-                    # Disable tools when using Ollama provider (doesn't support tool calling)
-                    tools_enabled = True
-                    if "ollama" in _llm_model.lower():
-                        tools_enabled = False
-                    
-                    if tools_enabled:
-                        try:
-                            from model_tools import get_tool_definitions
-                            tool_defs = get_tool_definitions(
-                                enabled_toolsets=None  # None = all available tools
-                            )
-                        except Exception:
-                            tool_defs = []
-                    else:
+                    # Get tool definitions for the request
+                    try:
+                        from model_tools import get_tool_definitions
+                        tool_defs = get_tool_definitions(
+                            enabled_toolsets=None  # None = all available tools
+                        )
+                    except Exception:
                         tool_defs = []
                     
-                    # Skip tool calling loop if tools are disabled
-                    if not tools_enabled:
+                    use_tools = len(tool_defs) > 0
+                    
+                    # Tool calling loop (with automatic fallback to text-only)
+                    for tool_round in range(max_tool_rounds if use_tools else 0):
+                        tool_rounds_used = tool_round + 1
+                        resp = httpx.post(
+                            f"{llm_base_url}/v1/chat/completions",
+                            json={
+                                "model": _llm_model,
+                                "messages": messages,
+                                "max_tokens": 4096,
+                                **({"tools": tool_defs} if use_tools else {}),
+                            },
+                            headers={
+                                "Authorization": f"Bearer {llm_api_key}",
+                                "Content-Type": "application/json",
+                            },
+                            timeout=120.0,
+                        )
+                        
+                        # If provider rejects tools, fall back to text-only
+                        if use_tools and resp.status_code in (401, 422, 502):
+                            logger.warning("Provider rejected tools (%s), falling back to text-only", resp.status_code)
+                            use_tools = False
+                            resp = httpx.post(
+                                f"{llm_base_url}/v1/chat/completions",
+                                json={
+                                    "model": _llm_model,
+                                    "messages": [{"role": "user", "content": _prompt}],
+                                    "max_tokens": 4096,
+                                },
+                                headers={
+                                    "Authorization": f"Bearer {llm_api_key}",
+                                    "Content-Type": "application/json",
+                                },
+                                timeout=120.0,
+                            )
+                        
+                        if resp.status_code != 200:
+                            result = f"LLM error {resp.status_code}: {resp.text[:200]}"
+                            status = "error"
+                            break
+                        
+                        data = resp.json()
+                        choice = data.get("choices", [{}])[0]
+                        assistant_msg = choice.get("message", {})
+                        
+                        # If no tool calls, we're done
+                        if not assistant_msg.get("tool_calls"):
+                            result = assistant_msg.get("content", "No response")
+                            status = "success"
+                            break
+                        
+                        # Add assistant message with tool calls
+                        messages.append(assistant_msg)
+                        
+                        # Execute each tool call
+                        for tool_call in assistant_msg["tool_calls"]:
+                            func = tool_call.get("function", {})
+                            func_name = func.get("name", "")
+                            func_args = json.loads(func.get("arguments", "{}"))
+                            
+                            tool_resp = httpx.post(
+                                f"{llm_base_url}/api/tools/execute",
+                                json={
+                                    "tool": func_name,
+                                    "args": func_args
+                                },
+                                headers={
+                                    "Authorization": f"Bearer {llm_api_key}",
+                                    "Content-Type": "application/json",
+                                },
+                                timeout=30.0,
+                            )
+                            
+                            tool_result = tool_resp.json() if tool_resp.status_code == 200 else {"error": f"Tool failed: {tool_resp.status_code}"}
+                            
+                            messages.append({
+                                "role": "tool",
+                                "tool_call_id": tool_call.get("id", ""),
+                                "content": json.dumps(tool_result)
+                            })
+                    
+                    else:
+                        # Max rounds reached
+                        result = "Max tool rounds reached"
+                        status = "error"
+                    
+                    # Text-only fallback (when tools disabled before loop)
+                    if status == "error" and "Max tool rounds" not in result and tool_rounds_used == 0:
                         resp = httpx.post(
                             f"{llm_base_url}/v1/chat/completions",
                             json={
@@ -541,76 +623,8 @@ async def lifespan(app: FastAPI):
                         else:
                             result = f"LLM error {resp.status_code}: {resp.text[:200]}"
                             status = "error"
-                    else:
-                        for tool_round in range(max_tool_rounds):
-                            resp = httpx.post(
-                                f"{llm_base_url}/v1/chat/completions",
-                                json={
-                                    "model": _llm_model,
-                                    "messages": messages,
-                                    "max_tokens": 4096,
-                                    "tools": tool_defs,
-                                },
-                                headers={
-                                    "Authorization": f"Bearer {llm_api_key}",
-                                    "Content-Type": "application/json",
-                                },
-                                timeout=120.0,
-                            )
-                        
-                            if resp.status_code != 200:
-                                result = f"LLM error {resp.status_code}: {resp.text[:200]}"
-                                status = "error"
-                                break
-                            
-                            data = resp.json()
-                            choice = data.get("choices", [{}])[0]
-                            assistant_msg = choice.get("message", {})
-                            
-                            # If no tool calls, we're done
-                            if not assistant_msg.get("tool_calls"):
-                                result = assistant_msg.get("content", "No response")
-                                status = "success"
-                                break
-                            
-                            # Add assistant message with tool calls
-                            messages.append(assistant_msg)
-                            
-                            # Execute each tool call
-                            for tool_call in assistant_msg["tool_calls"]:
-                                func = tool_call.get("function", {})
-                                func_name = func.get("name", "")
-                                func_args = json.loads(func.get("arguments", "{}"))
-                                
-                                # Call the backend's tool execution endpoint
-                                tool_resp = httpx.post(
-                                    f"{llm_base_url}/api/tools/execute",
-                                    json={
-                                        "tool": func_name,
-                                        "args": func_args
-                                    },
-                                    headers={
-                                        "Authorization": f"Bearer {llm_api_key}",
-                                        "Content-Type": "application/json",
-                                    },
-                                    timeout=30.0,
-                                )
-                                
-                                tool_result = tool_resp.json() if tool_resp.status_code == 200 else {"error": f"Tool failed: {tool_resp.status_code}"}
-                                
-                                # Add tool result to messages
-                                messages.append({
-                                    "role": "tool",
-                                    "tool_call_id": tool_call.get("id", ""),
-                                    "content": json.dumps(tool_result)
-                                })
-                        
-                        else:
-                            # Max rounds reached
-                            result = "Max tool rounds reached"
-                            status = "error"
                     
-                    logger.info("Cron job '%s' completed with %d tool rounds", _job_name, tool_round + 1)
+                    logger.info("Cron job '%s' completed with %d tool rounds", _job_name, tool_rounds_used)
                 except Exception as e:
                     result = f"Execution failed: {e}"
                     status = "error"
