@@ -1181,8 +1181,34 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                 }
             }
         except Exception as e:
-            logger.exception("Error in non-streaming AIAgent loop")
-            raise HTTPException(status_code=500, detail=str(e))
+            logger.exception("Error in non-streaming AIAgent loop, trying fallback")
+            # Fallback: retry with simpler model
+            try:
+                fallback_model = "gemini-2.5-flash-lite"
+                fallback_agent = AIAgent(
+                    session_id=session_id,
+                    session_db=session_db,
+                    model=fallback_model,
+                    quiet_mode=True,
+                    verbose_logging=False,
+                    base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"),
+                    api_key=os.getenv("ZED_PRO_API_KEY", ""),
+                    credential_pool=credential_pool,
+                )
+                user_msg_text = request.messages[-1].content
+                result = fallback_agent.run_conversation(user_message=user_msg_text)
+                final_text = result.get("final_response", str(result))
+                return {
+                    "id": f"chatcmpl-{session_id}",
+                    "object": "chat.completion",
+                    "created": int(time.time()),
+                    "model": fallback_model,
+                    "choices": [{"index": 0, "message": {"role": "assistant", "content": final_text}, "finish_reason": "stop"}],
+                    "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+                }
+            except Exception as fallback_err:
+                logger.exception("Fallback also failed")
+                raise HTTPException(status_code=500, detail=f"Primary: {e}; Fallback: {fallback_err}")
 
 
 
@@ -2300,6 +2326,97 @@ async def stop_chat(session_id: str):
             pass
         return {"status": "stopped", "session_id": session_id}
     raise HTTPException(status_code=404, detail="Session not found")
+
+
+# ── Computer Desktop Agent (proxy to standalone agent at port 8765) ─────────
+DESKTOP_AGENT_URL = os.getenv("DESKTOP_AGENT_URL", "http://localhost:8765")
+
+@app.post("/api/desktop/task")
+async def desktop_task(request: Request):
+    """Submit a task to the computer-use desktop agent."""
+    try:
+        body = await request.json()
+        async with _http_client.post(f"{DESKTOP_AGENT_URL}/agent/inject", json=body, timeout=120.0) as resp:
+            return Response(content=resp.content, status_code=resp.status_code, media_type="application/json")
+    except Exception as e:
+        return {"error": str(e), "hint": "Desktop agent not running. Start with: python desktop-agent/start_agent.py"}
+
+@app.post("/api/desktop/execute")
+async def desktop_execute(request: Request):
+    """Execute a single action on the desktop agent."""
+    try:
+        body = await request.json()
+        async with _http_client.post(f"{DESKTOP_AGENT_URL}/agent/execute", json=body, timeout=30.0) as resp:
+            return Response(content=resp.content, status_code=resp.status_code, media_type="application/json")
+    except Exception as e:
+        return {"error": str(e), "hint": "Desktop agent not running"}
+
+@app.get("/api/desktop/screen")
+async def desktop_screen():
+    """Get current desktop screenshot."""
+    try:
+        async with _http_client.get(f"{DESKTOP_AGENT_URL}/agent/screen", timeout=10.0) as resp:
+            return Response(content=resp.content, status_code=resp.status_code, media_type="application/json")
+    except Exception as e:
+        return {"error": str(e), "hint": "Desktop agent not running"}
+
+@app.get("/api/desktop/plan")
+async def desktop_plan():
+    """Get current task plan from desktop agent."""
+    try:
+        async with _http_client.get(f"{DESKTOP_AGENT_URL}/agent/plan", timeout=10.0) as resp:
+            return Response(content=resp.content, status_code=resp.status_code, media_type="application/json")
+    except Exception as e:
+        return {"error": str(e), "hint": "Desktop agent not running"}
+
+@app.get("/api/desktop/status")
+async def desktop_status():
+    """Check if desktop agent is running."""
+    try:
+        async with _http_client.get(f"{DESKTOP_AGENT_URL}/health", timeout=5.0) as resp:
+            return {"running": resp.status_code == 200, "url": DESKTOP_AGENT_URL}
+    except Exception:
+        return {"running": False, "url": DESKTOP_AGENT_URL}
+
+
+# ── Browser Server (proxy to KasmVNC server at port 3000) ───────────────────
+BROWSER_SERVER_URL = os.getenv("BROWSER_SERVER_URL", "http://localhost:3000")
+
+@app.get("/api/browser/status")
+async def browser_status():
+    """Check if browser server is running."""
+    try:
+        async with _http_client.get(f"{BROWSER_SERVER_URL}/health", timeout=5.0) as resp:
+            return {"running": resp.status_code == 200, "url": BROWSER_SERVER_URL}
+    except Exception:
+        return {"running": False, "url": BROWSER_SERVER_URL}
+
+
+# ── Tool Calling Fallback ───────────────────────────────────────────────────
+@app.post("/api/chat/{session_id}/retry")
+async def retry_chat(session_id: str, request: Request):
+    """Retry a failed chat with fallback model."""
+    try:
+        body = await request.json()
+        user_msg = body.get("message", "")
+        fallback_model = body.get("fallback_model", "gemini-2.5-flash-lite")
+
+        agent = AIAgent(
+            session_id=session_id,
+            session_db=session_db,
+            model=fallback_model,
+            quiet_mode=True,
+            verbose_logging=False,
+            base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"),
+            api_key=os.getenv("ZED_PRO_API_KEY", ""),
+            credential_pool=credential_pool,
+        )
+
+        result = agent.run_conversation(user_message=user_msg)
+        final_text = result.get("final_response", str(result))
+        return {"response": final_text, "model": fallback_model, "status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ── Serve Dashboard static files (after all API routes) ───────────────────
