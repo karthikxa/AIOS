@@ -2488,11 +2488,54 @@ input:checked + .toggle-slider:before {
   }
 
   .hero-title {
-    font-size: 32px;
+    font-size: 28px;
   }
 
   .hero-right-visual {
     display: none !important;
+  }
+
+  .feature-cards-row {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .feature-card {
+    padding: 14px !important;
+    gap: 10px !important;
+  }
+
+  .feature-card-icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .feature-card-content h3 {
+    font-size: 14px !important;
+  }
+
+  .feature-card-content p {
+    font-size: 12px !important;
+  }
+
+  .chat-prompt-input {
+    font-size: 16px !important;
+    min-height: 48px !important;
+  }
+
+  .chat-box {
+    min-height: 60px !important;
+    border-radius: 12px !important;
+  }
+
+  .mode-capsule {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .mode-capsule-option {
+    padding: 0 12px !important;
+    font-size: 12px !important;
   }
 
   .plugins-hero-right-inner {
