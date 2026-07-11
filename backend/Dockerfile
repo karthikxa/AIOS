@@ -26,7 +26,8 @@ COPY pyproject.toml uv.lock ./
 RUN uv pip install --system --no-cache -e ".[google]" 2>/dev/null || \
     pip install --no-cache-dir -e ".[google]"
 
-# Copy the rest of the source
+# Copy the rest of the source (cache-bust to ensure new code is picked up)
+ARG BUILD_ID=1
 COPY . .
 
 # Render sets PORT env var; default to 10000 to match
