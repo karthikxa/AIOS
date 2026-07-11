@@ -18,9 +18,13 @@ This server:
 from __future__ import annotations
 
 import asyncio
+import base64
 import json
 import logging
 import os
+import shutil
+import stat
+import subprocess
 import sys
 import threading
 import time
@@ -126,7 +130,7 @@ from tools.registry import discover_builtin_tools
 
 # ── Config ──────────────────────────────────────────────────────────────────
 HOST = "0.0.0.0"
-PORT = 8642  # Vite proxies /v1/* and /api/* to this port
+PORT = int(os.getenv("PORT", "8642"))  # Render sets PORT=10000; local dev uses 8642
 
 # Upstream proxy endpoint configurations
 FREELLMAPI_URL = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1").rstrip("/") + "/chat/completions"
@@ -2417,6 +2421,400 @@ async def retry_chat(session_id: str, request: Request):
         return {"response": final_text, "model": fallback_model, "status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── File Management ───────────────────────────────────────────────────────────
+@app.get("/api/files")
+async def list_directory(path: Optional[str] = None):
+    """List directory contents."""
+    target = Path(path) if path else ZED_HOME
+    if not target.is_dir():
+        raise HTTPException(status_code=400, detail="Path is not a directory")
+    entries = []
+    for child in sorted(target.iterdir()):
+        try:
+            st = child.stat()
+            entries.append({
+                "name": child.name,
+                "path": str(child),
+                "is_directory": child.is_dir(),
+                "size": st.st_size if child.is_file() else None,
+                "mtime": st.st_mtime,
+            })
+        except PermissionError:
+            entries.append({"name": child.name, "path": str(child), "error": "permission denied"})
+    return {"path": str(target), "entries": entries, "count": len(entries)}
+
+
+@app.get("/api/files/{file_path:path}")
+async def read_file(file_path: str):
+    """Read a file's contents."""
+    target = Path(file_path)
+    if not target.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    if not target.is_file():
+        raise HTTPException(status_code=400, detail="Path is not a file")
+    try:
+        content = target.read_text(encoding="utf-8", errors="replace")
+        return {"path": str(target), "content": content, "size": target.stat().st_size}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/files/{file_path:path}")
+async def write_file(file_path: str, request: Request):
+    """Write content to a file."""
+    body = await request.json()
+    content = body.get("content", "")
+    target = Path(file_path)
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+        return {"ok": True, "path": str(target), "size": len(content.encode("utf-8"))}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/files/{file_path:path}")
+async def delete_file(file_path: str):
+    """Delete a file or directory."""
+    target = Path(file_path)
+    if not target.exists():
+        raise HTTPException(status_code=404, detail="Path not found")
+    try:
+        if target.is_dir():
+            shutil.rmtree(target)
+        else:
+            target.unlink()
+        return {"ok": True, "path": str(target)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Git Integration ───────────────────────────────────────────────────────────
+def _git_run(args: list, cwd: str = None) -> dict:
+    """Run a git command and return result."""
+    try:
+        result = subprocess.run(
+            ["git"] + args,
+            capture_output=True, text=True, timeout=10,
+            cwd=cwd or str(ZED_HOME),
+        )
+        return {"stdout": result.stdout.strip(), "stderr": result.stderr.strip(), "code": result.returncode}
+    except Exception as e:
+        return {"stdout": "", "stderr": str(e), "code": 1}
+
+
+@app.get("/api/git/status")
+async def git_status(path: Optional[str] = None):
+    """Get git status for a repository."""
+    cwd = path or str(ZED_HOME)
+    result = _git_run(["status", "--porcelain"], cwd=cwd)
+    return {"status": result["stdout"], "code": result["code"]}
+
+
+@app.get("/api/git/log")
+async def git_log(path: Optional[str] = None, limit: int = Query(20, le=100)):
+    """Get git log entries."""
+    cwd = path or str(ZED_HOME)
+    result = _git_run(["log", f"--max-count={limit}", "--pretty=format:%H|%an|%ae|%ai|%s"], cwd=cwd)
+    entries = []
+    if result["code"] == 0 and result["stdout"]:
+        for line in result["stdout"].splitlines():
+            parts = line.split("|", 4)
+            if len(parts) == 5:
+                entries.append({
+                    "hash": parts[0], "author": parts[1], "email": parts[2],
+                    "date": parts[3], "message": parts[4],
+                })
+    return {"entries": entries, "count": len(entries)}
+
+
+@app.get("/api/git/branches")
+async def git_branches(path: Optional[str] = None):
+    """List git branches."""
+    cwd = path or str(ZED_HOME)
+    result = _git_run(["branch", "-a"], cwd=cwd)
+    branches = []
+    current = None
+    if result["code"] == 0:
+        for line in result["stdout"].splitlines():
+            line = line.strip()
+            if line.startswith("* "):
+                current = line[2:]
+                branches.append(current)
+            elif line:
+                branches.append(line)
+    return {"branches": branches, "current": current, "count": len(branches)}
+
+
+@app.post("/api/git/commit")
+async def git_commit(path: Optional[str] = None, request: Request = None):
+    """Create a git commit."""
+    body = await request.json() if request else {}
+    message = body.get("message", "Dashboard commit")
+    cwd = path or str(ZED_HOME)
+    _git_run(["add", "-A"], cwd=cwd)
+    result = _git_run(["commit", "-m", message], cwd=cwd)
+    return {"stdout": result["stdout"], "code": result["code"]}
+
+
+# ── Memory Providers ──────────────────────────────────────────────────────────
+@app.get("/api/memory/providers")
+async def list_memory_providers():
+    """List available memory providers."""
+    providers = []
+    try:
+        from agent.memory_manager import MemoryManager
+        mgr = MemoryManager(zed_home=ZED_HOME)
+        available = mgr.list_providers() if hasattr(mgr, 'list_providers') else []
+        for p in available:
+            providers.append({"name": p.get("name", str(p)), "status": "available"})
+    except Exception:
+        pass
+    # Fallback: scan plugins/memory/ directory
+    if not providers:
+        mem_plugins_dir = Path(__file__).resolve().parent / "plugins" / "memory"
+        if mem_plugins_dir.exists():
+            for d in sorted(mem_plugins_dir.iterdir()):
+                if d.is_dir() and not d.name.startswith("_"):
+                    providers.append({"name": d.name, "status": "available"})
+    return {"providers": providers, "count": len(providers)}
+
+
+@app.post("/api/memory/providers/{name}/setup")
+async def setup_memory_provider(name: str, request: Request):
+    """Setup/configure a memory provider."""
+    body = await request.json() if request else {}
+    try:
+        from agent.memory_manager import MemoryManager
+        mgr = MemoryManager(zed_home=ZED_HOME)
+        if hasattr(mgr, 'setup_provider'):
+            mgr.setup_provider(name, config=body)
+        return {"status": "configured", "provider": name}
+    except Exception as e:
+        return {"status": "error", "provider": name, "error": str(e)}
+
+
+# ── Environment Variables ─────────────────────────────────────────────────────
+_SECRET_PATTERNS = {"key", "token", "secret", "password", "auth", "credential", "api"}
+
+def _mask_secret(key: str, value: str) -> str:
+    """Mask a value if the key looks like a secret."""
+    lower = key.lower()
+    if any(p in lower for p in _SECRET_PATTERNS):
+        if len(value) > 8:
+            return value[:4] + "*" * (len(value) - 8) + value[-4:]
+        return "****"
+    return value
+
+
+@app.get("/api/env")
+async def list_env_vars():
+    """List environment variables, masking secrets."""
+    env_vars = {}
+    for key, value in sorted(os.environ.items()):
+        env_vars[key] = _mask_secret(key, value)
+    return {"env": env_vars, "count": len(env_vars)}
+
+
+@app.post("/api/env")
+async def set_env_var(request: Request):
+    """Set an environment variable."""
+    body = await request.json()
+    key = body.get("key", "").strip()
+    value = body.get("value", "")
+    if not key:
+        raise HTTPException(status_code=400, detail="Key is required")
+    os.environ[key] = value
+    return {"ok": True, "key": key}
+
+
+@app.delete("/api/env/{key}")
+async def delete_env_var(key: str):
+    """Delete an environment variable."""
+    if key in os.environ:
+        del os.environ[key]
+        return {"ok": True, "key": key}
+    raise HTTPException(status_code=404, detail=f"Env var '{key}' not found")
+
+
+# ── Provider Validation ───────────────────────────────────────────────────────
+@app.post("/api/providers/{name}/validate")
+async def validate_provider(name: str):
+    """Validate that a provider is reachable and has a valid key."""
+    try:
+        from providers import get_provider_profile
+        profile = get_provider_profile(name)
+        if not profile:
+            return {"valid": False, "error": f"Provider '{name}' not found"}
+        api_key_env = getattr(profile, 'api_key_env', None)
+        if api_key_env and not os.environ.get(api_key_env):
+            return {"valid": False, "error": f"Missing env var: {api_key_env}"}
+        return {"valid": True, "provider": name}
+    except Exception as e:
+        return {"valid": False, "error": str(e)}
+
+
+# ── Session Search ────────────────────────────────────────────────────────────
+@app.get("/api/sessions/search")
+async def search_sessions(q: str = Query(..., min_length=1), limit: int = Query(20, le=100)):
+    """Search sessions by query string."""
+    if session_db is None:
+        return {"sessions": [], "count": 0}
+    try:
+        if hasattr(session_db, 'search_sessions'):
+            results = session_db.search_sessions(q, limit=limit)
+        else:
+            results = session_db.list_sessions_rich(limit=limit)
+        return {"sessions": results, "count": len(results), "query": q}
+    except Exception as e:
+        logger.warning("search_sessions error: %s", e)
+        return {"sessions": [], "count": 0, "error": str(e)}
+
+
+# ── Session Bulk Operations ───────────────────────────────────────────────────
+@app.post("/api/sessions/bulk-delete")
+async def bulk_delete_sessions(request: Request):
+    """Delete multiple sessions at once."""
+    body = await request.json()
+    session_ids = body.get("session_ids", [])
+    if not session_ids:
+        raise HTTPException(status_code=400, detail="session_ids is required")
+    deleted = 0
+    for sid in session_ids:
+        try:
+            if session_db:
+                session_db.delete_session(sid)
+                deleted += 1
+            _active_agents.pop(sid, None)
+        except Exception:
+            pass
+    return {"deleted": deleted, "total": len(session_ids)}
+
+
+@app.post("/api/sessions/empty/{session_id}")
+async def empty_session(session_id: str):
+    """Clear all messages from a session (keep the session shell)."""
+    if session_db is None:
+        raise HTTPException(status_code=503, detail="Session DB not ready")
+    try:
+        if hasattr(session_db, 'delete_messages'):
+            session_db.delete_messages(session_id)
+        return {"status": "emptied", "session_id": session_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── MCP Server Management ─────────────────────────────────────────────────────
+@app.get("/api/mcp/servers")
+async def list_mcp_servers():
+    """List configured MCP servers."""
+    mcp_config = ZED_HOME / "mcp.json"
+    servers = []
+    if mcp_config.exists():
+        try:
+            data = json.loads(mcp_config.read_text(encoding="utf-8"))
+            servers = data.get("mcpServers", data.get("servers", []))
+            if isinstance(servers, dict):
+                servers = [{"name": k, **v} for k, v in servers.items()]
+        except Exception:
+            pass
+    return {"servers": servers, "count": len(servers)}
+
+
+@app.post("/api/mcp/servers")
+async def add_mcp_server(request: Request):
+    """Add or update an MCP server configuration."""
+    body = await request.json()
+    name = body.get("name", "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Server name is required")
+    mcp_config = ZED_HOME / "mcp.json"
+    data = {}
+    if mcp_config.exists():
+        try:
+            data = json.loads(mcp_config.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    servers = data.get("mcpServers", data.get("servers", {}))
+    if isinstance(servers, list):
+        servers = {s.get("name", str(i)): s for i, s in enumerate(servers)}
+    servers[name] = {k: v for k, v in body.items() if k != "name"}
+    data["mcpServers"] = servers
+    mcp_config.parent.mkdir(parents=True, exist_ok=True)
+    mcp_config.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    return {"ok": True, "name": name}
+
+
+@app.delete("/api/mcp/servers/{name}")
+async def remove_mcp_server(name: str):
+    """Remove an MCP server configuration."""
+    mcp_config = ZED_HOME / "mcp.json"
+    if not mcp_config.exists():
+        raise HTTPException(status_code=404, detail="No MCP config found")
+    try:
+        data = json.loads(mcp_config.read_text(encoding="utf-8"))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to read MCP config")
+    servers = data.get("mcpServers", data.get("servers", {}))
+    if isinstance(servers, list):
+        servers = {s.get("name", str(i)): s for i, s in enumerate(servers)}
+    if name not in servers:
+        raise HTTPException(status_code=404, detail=f"MCP server '{name}' not found")
+    del servers[name]
+    data["mcpServers"] = servers
+    mcp_config.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    return {"ok": True, "deleted": name}
+
+
+# ── System Stats ──────────────────────────────────────────────────────────────
+@app.get("/api/system/stats")
+async def system_stats():
+    """Return system resource stats."""
+    import platform
+    stats = {
+        "platform": platform.system(),
+        "platform_release": platform.release(),
+        "python_version": platform.python_version(),
+        "pid": os.getpid(),
+        "zed_home": str(ZED_HOME),
+    }
+    # Memory usage (best-effort)
+    try:
+        import resource
+        usage = resource.getrusage(resource.RUSAGE_SELF)
+        stats["memory_rss_mb"] = usage.ru_maxrss / 1024  # Linux: bytes -> MB
+    except Exception:
+        pass
+    # Disk usage
+    try:
+        usage = shutil.disk_usage(str(ZED_HOME))
+        stats["disk_total_gb"] = round(usage.total / (1024**3), 2)
+        stats["disk_used_gb"] = round(usage.used / (1024**3), 2)
+        stats["disk_free_gb"] = round(usage.free / (1024**3), 2)
+    except Exception:
+        pass
+    # Session DB size
+    try:
+        db_path = ZED_HOME / "sessions.db"
+        if db_path.exists():
+            stats["session_db_size_mb"] = round(db_path.stat().st_size / (1024**2), 2)
+    except Exception:
+        pass
+    # Active sessions count
+    try:
+        if session_db:
+            sessions = session_db.list_sessions_rich(limit=500)
+            stats["total_sessions"] = len(sessions)
+            stats["active_sessions"] = sum(
+                1 for s in sessions
+                if s.get("ended_at") is None
+                and (time.time() - s.get("last_active", s.get("started_at", 0))) < 300
+            )
+    except Exception:
+        pass
+    return stats
 
 
 # ── Serve Dashboard static files (after all API routes) ───────────────────

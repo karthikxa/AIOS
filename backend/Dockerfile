@@ -33,8 +33,8 @@ COPY . .
 ENV PORT=10000
 ENV ZED_SERVER_PORT=10000
 # Set ZED_HOME to a writable path on Render (/data is the persistent disk mount,
-# but /tmp/.hermes works if no disk is attached — both are consistent at import time)
-ENV ZED_HOME=/tmp/.hermes
+# but /tmp/.zed works if no disk is attached — both are consistent at import time)
+ENV ZED_HOME=/tmp/.zed
 
 EXPOSE 10000
 
