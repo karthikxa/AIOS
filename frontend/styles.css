@@ -2521,6 +2521,21 @@ input:checked + .toggle-slider:before {
     height: 12px !important;
   }
 
+  /* ── Send + Mic buttons: bigger touch targets on mobile ─── */
+  .btn-send-capsule {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .voice-mic-btn {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .chat-right-wrapper {
+    gap: 10px !important;
+  }
+
   /* ── Feature Cards ────────────────────────────────── */
   .feature-cards-row {
     flex-direction: column !important;
