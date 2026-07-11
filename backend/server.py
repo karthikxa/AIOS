@@ -1231,6 +1231,22 @@ async def list_sessions(limit: int = Query(50, le=200)):
         return {"sessions": []}
 
 
+@app.get("/api/sessions/search")
+async def search_sessions(q: str = Query(..., min_length=1), limit: int = Query(20, le=100)):
+    """Search sessions by query string. Must be before /{session_id} route."""
+    if session_db is None:
+        return {"sessions": [], "count": 0}
+    try:
+        if hasattr(session_db, 'search_sessions'):
+            results = session_db.search_sessions(q, limit=limit)
+        else:
+            results = session_db.list_sessions_rich(limit=limit)
+        return {"sessions": results, "count": len(results), "query": q}
+    except Exception as e:
+        logger.warning("search_sessions error: %s", e)
+        return {"sessions": [], "count": 0, "error": str(e)}
+
+
 @app.post("/api/sessions")
 async def create_session(request: SessionCreateRequest):
     if session_db is None:
@@ -1727,20 +1743,36 @@ async def call_public_api(
 # ── Config ────────────────────────────────────────────────────────────────────
 @app.get("/api/config")
 async def get_config():
-    """Return current agent config."""
-    import yaml
+    """Return current agent config. Creates default if missing."""
     config_path = ZED_HOME / "config.yaml"
+    default_config = {
+        "model": "auto",
+        "agent": {"max_iterations": 90},
+        "memory": {"enabled": True},
+        "compression": {"enabled": True},
+    }
     try:
-        with open(config_path) as f:
-            config = yaml.safe_load(f)
+        import yaml
+        if config_path.exists():
+            with open(config_path) as f:
+                config = yaml.safe_load(f) or default_config
+        else:
+            config = default_config
+            # Create default config
+            try:
+                config_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(config_path, "w") as f:
+                    yaml.dump(config, f, default_flow_style=False)
+            except Exception:
+                pass
         # Mask any API keys
         if "providers" in config:
             for p in config["providers"].values():
-                if "api_key" in p:
+                if isinstance(p, dict) and "api_key" in p:
                     p["api_key"] = "***"
         return {"config": config, "config_path": str(config_path)}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"config": default_config, "config_path": str(config_path), "error": str(e)}
 
 
 @app.post("/api/config")
@@ -2377,8 +2409,8 @@ async def desktop_plan():
 async def desktop_status():
     """Check if desktop agent is running."""
     try:
-        async with _http_client.get(f"{DESKTOP_AGENT_URL}/health", timeout=5.0) as resp:
-            return {"running": resp.status_code == 200, "url": DESKTOP_AGENT_URL}
+        resp = await _http_client.get(f"{DESKTOP_AGENT_URL}/health", timeout=5.0)
+        return {"running": resp.status_code == 200, "url": DESKTOP_AGENT_URL}
     except Exception:
         return {"running": False, "url": DESKTOP_AGENT_URL}
 
@@ -2390,8 +2422,8 @@ BROWSER_SERVER_URL = os.getenv("BROWSER_SERVER_URL", "http://localhost:3000")
 async def browser_status():
     """Check if browser server is running."""
     try:
-        async with _http_client.get(f"{BROWSER_SERVER_URL}/health", timeout=5.0) as resp:
-            return {"running": resp.status_code == 200, "url": BROWSER_SERVER_URL}
+        resp = await _http_client.get(f"{BROWSER_SERVER_URL}/health", timeout=5.0)
+        return {"running": resp.status_code == 200, "url": BROWSER_SERVER_URL}
     except Exception:
         return {"running": False, "url": BROWSER_SERVER_URL}
 
@@ -2654,23 +2686,6 @@ async def validate_provider(name: str):
         return {"valid": True, "provider": name}
     except Exception as e:
         return {"valid": False, "error": str(e)}
-
-
-# ── Session Search ────────────────────────────────────────────────────────────
-@app.get("/api/sessions/search")
-async def search_sessions(q: str = Query(..., min_length=1), limit: int = Query(20, le=100)):
-    """Search sessions by query string."""
-    if session_db is None:
-        return {"sessions": [], "count": 0}
-    try:
-        if hasattr(session_db, 'search_sessions'):
-            results = session_db.search_sessions(q, limit=limit)
-        else:
-            results = session_db.list_sessions_rich(limit=limit)
-        return {"sessions": results, "count": len(results), "query": q}
-    except Exception as e:
-        logger.warning("search_sessions error: %s", e)
-        return {"sessions": [], "count": 0, "error": str(e)}
 
 
 # ── Session Bulk Operations ───────────────────────────────────────────────────
