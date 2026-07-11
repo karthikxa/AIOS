@@ -504,22 +504,30 @@ async def lifespan(app: FastAPI):
                     result = "No response"
                     
                     # Get tool definitions for the request - include ALL available tools
-                    try:
-                        from model_tools import get_tool_definitions
-                        tool_defs = get_tool_definitions(
-                            enabled_toolsets=None  # None = all available tools
-                        )
-                    except Exception:
+                    # Disable tools when using Ollama provider (doesn't support tool calling)
+                    tools_enabled = True
+                    if "ollama" in _llm_model.lower():
+                        tools_enabled = False
+                    
+                    if tools_enabled:
+                        try:
+                            from model_tools import get_tool_definitions
+                            tool_defs = get_tool_definitions(
+                                enabled_toolsets=None  # None = all available tools
+                            )
+                        except Exception:
+                            tool_defs = []
+                    else:
                         tool_defs = []
                     
-                    for tool_round in range(max_tool_rounds):
+                    # Skip tool calling loop if tools are disabled
+                    if not tools_enabled:
                         resp = httpx.post(
                             f"{llm_base_url}/v1/chat/completions",
                             json={
                                 "model": _llm_model,
-                                "messages": messages,
+                                "messages": [{"role": "user", "content": _prompt}],
                                 "max_tokens": 4096,
-                                "tools": tool_defs if tool_defs else None,
                             },
                             headers={
                                 "Authorization": f"Bearer {llm_api_key}",
@@ -527,6 +535,28 @@ async def lifespan(app: FastAPI):
                             },
                             timeout=120.0,
                         )
+                        if resp.status_code == 200:
+                            result = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "No response")
+                            status = "success"
+                        else:
+                            result = f"LLM error {resp.status_code}: {resp.text[:200]}"
+                            status = "error"
+                    else:
+                        for tool_round in range(max_tool_rounds):
+                            resp = httpx.post(
+                                f"{llm_base_url}/v1/chat/completions",
+                                json={
+                                    "model": _llm_model,
+                                    "messages": messages,
+                                    "max_tokens": 4096,
+                                    "tools": tool_defs,
+                                },
+                                headers={
+                                    "Authorization": f"Bearer {llm_api_key}",
+                                    "Content-Type": "application/json",
+                                },
+                                timeout=120.0,
+                            )
                         
                         if resp.status_code != 200:
                             result = f"LLM error {resp.status_code}: {resp.text[:200]}"
@@ -947,7 +977,11 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
     use_agent = bool(request.dashboard_state)  # only agentic mode uses AIAgent
 
     # Check if tools are enabled (from cron scheduler or agent runner)
+    # Disable tools when using Ollama provider (doesn't support tool calling)
     tools_enabled = request.tools and len(request.tools) > 0 if request.tools else False
+    model_name = (request.model or "auto").lower()
+    if "ollama" in model_name:
+        tools_enabled = False
 
     if not use_agent:
         payload = build_payload()
@@ -1055,6 +1089,25 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                     )
                 except Exception as e:
                     logger.exception("Tool calling loop error")
+                    raise HTTPException(status_code=500, detail=str(e))
+            else:
+                # No tools - direct proxy
+                try:
+                    resp = await _http_client.post(
+                        freellmapi_target,
+                        json=payload,
+                        headers=proxy_headers,
+                        timeout=120.0,
+                    )
+                    if not resp.is_success:
+                        logger.error("freellmapi error %s: %s", resp.status_code, resp.text[:500])
+                    return Response(
+                        content=resp.content,
+                        status_code=resp.status_code,
+                        media_type="application/json",
+                    )
+                except Exception as e:
+                    logger.exception("Direct proxy error")
                     raise HTTPException(status_code=500, detail=str(e))
             else:
                 try:
