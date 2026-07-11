@@ -52,7 +52,7 @@ export function initChatBox(onSend) {
   // ── @ Mention: Google plugins with real colored SVGs when connected ─────
   // Colored SVGs match the official Google branding
   const COLORED_SVGS = {
-    gmail: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#4285F4" d="M44 12l-4.2 24.3c-.3 1.6-1.4 2-2.8 2.1H9.8c-1.5-.1-2.6-.6-2.9-2.1L2.7 12c-.2-1.3.3-2.4 1.5-2.8L24 22.3 42.5 9.2c1.2.4 1.7 1.5 1.5 2.8z"/><path fill="#C5221F" d="M24 22.3L2.7 12c-.2-1.3.3-2.4 1.5-2.8L24 22.3z"/><path fill="#34A853" d="M24 22.3L42.5 9.2c1.2.4 1.7 1.5 1.5 2.8L24 22.3z"/><path fill="#FBBC04" d="M24 22.3L2.7 12l21.3 10.3z"/><path fill="#EA4335" d="M24 22.3l21.3-10.3-21.3-10.3z"/></svg>',
+    gmail: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#4285F4" d="M6 10l18 13L42 10v28H6z"/><path fill="#EA4335" d="M6 10l18 13L42 10H6z"/><path fill="#C5221F" d="M6 10v28h4V18l14 10 14-10v20h4V10L24 23z"/><path fill="#34A853" d="M6 38V10l18 13z"/><path fill="#FBBC04" d="M42 10v28H38V18L24 31z"/></svg>',
     drive: '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M32 40H8L24 8l16 32z"/><path fill="#4285F4" d="M42 40H18L32 8l10 16.3L42 40z"/><path fill="#1A73E8" d="M34.4 24.3L44 40H24L34.4 24.3z"/><path fill="#FBBC04" d="M24 8L8 40h16L24 8z"/><path fill="#1A73E8" d="M34.4 24.3L44 40H24L34.4 24.3z"/></svg>',
     calendar: '<svg width="16" height="16" viewBox="0 0 48 48"><rect fill="#4285F4" x="4" y="8" width="40" height="36" rx="4"/><rect fill="#fff" x="4" y="8" width="40" height="12" rx="4"/><rect fill="#EA4335" x="4" y="8" width="40" height="4" rx="4"/><path fill="#fff" d="M14 28h20v2H14zM14 34h12v2H14z"/></svg>',
     tasks: '<svg width="16" height="16" viewBox="0 0 48 48"><circle fill="none" stroke="#4285F4" stroke-width="3" cx="24" cy="24" r="18"/><path fill="none" stroke="#34A853" stroke-width="3" stroke-linecap="round" d="M15 24l6 6 12-12"/></svg>',
@@ -184,8 +184,6 @@ export function initChatBox(onSend) {
           <div style="font-weight: 500; font-size: 14px; color: #111827;">${item.label}</div>
           <div style="font-size: 12px; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.description}</div>
         </div>
-        ${item.connected ? '<span style="color: #10b981; font-size: 12px;">●</span>' : ''}
-        ${item.isCategory ? '<span style="color: #9ca3af;">›</span>' : ''}
       `;
       row.addEventListener('mouseenter', () => {
         highlightedIndex = i;
