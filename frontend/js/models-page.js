@@ -171,12 +171,14 @@ function renderView(state) {
       return `
         <div class="provider-card- Zed-style state-${p.status}">
           <div class="provider-card-header">
-            <div class="provider-logo-wrap ${p.logoClass || ''}">
-              ${logoHtml}
-            </div>
-            <div class="provider-info-wrap">
-              <h3>${p.name}</h3>
-              <p>${p.modelCount || 0} models</p>
+            <div class="provider-card-header-left">
+              <div class="provider-logo-wrap ${p.logoClass || ''}">
+                ${logoHtml}
+              </div>
+              <div class="provider-info-wrap">
+                <h3>${p.name}</h3>
+                <p>${p.modelCount || 0} models</p>
+              </div>
             </div>
             <div class="provider-action-wrap">
               ${actionHtml}

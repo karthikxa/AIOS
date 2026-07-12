@@ -2969,20 +2969,21 @@ input:checked + .toggle-slider:before {
 
 .provider-card- {
   background-color: #FFFFFF;
-  border: 1px solid #E8E8E8;
+  border: 1px solid #E4E4E7;
   border-radius: 12px;
-  padding: 18px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-  transition: all 0.25s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
 }
 
 .provider-card-:hover {
   transform: translateY(-2px);
-  border-color: #D1D5DB;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+  border-color: #A1A1AA;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
 }
 
 .provider-card-header {
@@ -2990,13 +2991,13 @@ input:checked + .toggle-slider:before {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 8px;
+  gap: 12px;
 }
 
 .provider-card-header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex: 1;
   min-width: 0;
 }
@@ -3055,15 +3056,18 @@ input:checked + .toggle-slider:before {
 }
 
 .provider-info-wrap h3 {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  color: #18181B;
+  color: #09090b;
   margin: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .provider-info-wrap p {
   font-size: 12px;
-  color: #71717A;
+  color: #71717a;
   margin: 0;
 }
 
@@ -3076,38 +3080,43 @@ input:checked + .toggle-slider:before {
 .provider-connect-btn {
   height: 32px;
   padding: 0 14px;
-  border-radius: 8px;
-  border: 1px solid #E4E4E7;
-  background-color: #FFFFFF;
-  font-size: 12.5px;
+  border-radius: 6px;
+  border: 1px solid #09090b;
+  background-color: #09090b;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  color: #18181B;
+  color: #ffffff;
   transition: all 0.15s ease;
   font-family: 'Inter', sans-serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .provider-connect-btn:hover {
-  background-color: #F4F4F5;
-  border-color: #D4D4D8;
+  background-color: #27272a;
+  border-color: #27272a;
 }
 
 .provider-options-btn {
   background: none;
-  border: none;
+  border: 1px solid #e4e4e7;
   cursor: pointer;
-  color: #6F6F6F;
+  color: #71717a;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
+  width: 32px;
+  height: 32px;
   border-radius: 6px;
   transition: all 0.2s ease;
 }
 
 .provider-options-btn:hover {
-  background-color: #F5F5F5;
-  color: #111111;
+  background-color: #f4f4f5;
+  color: #09090b;
+  border-color: #d4d4d8;
 }
 
 .provider-card-footer {
@@ -5481,11 +5490,11 @@ input:checked + .toggle-slider:before {
   width: 100%;
   max-width: 100%;
   margin: 8px auto 16px auto;
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
-  background: linear-gradient(140deg, #EDF0FF 0%, #EDEFFE 50%, #E8EEFF 100%);
-  border: 1px solid #D8DCFF;
-  box-shadow: 0 4px 20px rgba(91, 114, 255, 0.06);
+  background: radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 60%), linear-gradient(135deg, #FFFFFF 0%, #FAFAFD 100%);
+  border: 1px solid #EAEAEA;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.015), 0 1px 3px rgba(0, 0, 0, 0.01), inset 0 1px 0 #FFFFFF;
   display: grid;
   grid-template-columns: 1fr 1.85fr;
   min-height: 230px;
@@ -5506,21 +5515,21 @@ input:checked + .toggle-slider:before {
 
 .agent-hero-heading {
   font-family: 'Inter', sans-serif;
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 600;
   color: #111111;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   line-height: 1.25;
   margin: 0;
 }
 
 .agent-hero-body {
   font-family: 'Inter', sans-serif;
-  font-size: 13.5px;
-  color: #5B5F7A;
-  line-height: 1.6;
+  font-size: 14px;
+  color: #6F6F6F;
+  line-height: 1.5;
   margin: 0;
-  max-width: 280px;
+  max-width: 320px;
 }
 
 .agent-hero-explore-btn {
@@ -5528,16 +5537,16 @@ input:checked + .toggle-slider:before {
   align-items: center;
   gap: 8px;
   background: #FFFFFF;
-  border: 1px solid #C8CCE8;
+  border: 1px solid #E8E8E8;
   color: #111111;
-  height: 40px;
-  padding: 0 18px;
-  border-radius: 10px;
-  font-size: 13.5px;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-size: 14px;
   font-weight: 600;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(91, 114, 255, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   width: fit-content;
   margin-top: 6px;
@@ -5549,9 +5558,9 @@ input:checked + .toggle-slider:before {
 }
 
 .agent-hero-explore-btn:hover {
-  background: #F0F3FF;
-  border-color: #9BAAE8;
-  box-shadow: 0 6px 18px rgba(91, 114, 255, 0.1);
+  background: #FAFAFA;
+  border-color: #E8E8E8;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
   transform: translateY(-1px);
 }
 
