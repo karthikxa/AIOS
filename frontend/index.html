@@ -390,8 +390,6 @@
           </div>
           <!-- Expand -->
           <svg id="splitPaneExpandBtn" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-          <!-- Settings -->
-          <svg id="settingsSplitPaneBtn" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;" title="Set HF Space URL"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           <!-- Copy/Split -->
           <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor: pointer;"><rect x="8" y="2" width="14" height="14" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
           <!-- Close -->
@@ -418,15 +416,8 @@
           allow="clipboard-read; clipboard-write; fullscreen"
           referrerpolicy="no-referrer">
         </iframe>
-        <!-- View-only overlay: always on — blocks ALL mouse/keyboard from reaching iframe.
-             Only Zed Pro LLM can control the desktop via the agent API. -->
-        <div id="splitPaneViewOnlyOverlay" style="position:absolute;inset:0;z-index:20;cursor:default;display:block;user-select:none;">
-          <!-- View-only badge top-right -->
-          <div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:3px 8px;display:flex;align-items:center;gap:5px;">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21" stroke="#EF4444"/></svg>
-            <span style="font-size:10px;font-weight:600;color:#9CA3AF;font-family:'Inter',sans-serif;letter-spacing:0.5px;">VIEW ONLY</span>
-          </div>
-        </div>
+        <!-- Click-blocker overlay (transparent — no badge) -->
+        <div id="splitPaneViewOnlyOverlay" style="position:absolute;inset:0;z-index:20;cursor:default;display:block;user-select:none;"></div>
         <div id="desktopConnectingOverlay" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); color: #fff; font-size: 13px; font-family: 'Inter', sans-serif; flex-direction: column; gap: 10px; z-index: 100;">
           <div style="width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.15); border-top-color: #fff; border-radius: 50%; animation: subagent-spin 1s linear infinite;"></div>
           <span id="desktopConnectingMsg">Connecting to desktop...</span>

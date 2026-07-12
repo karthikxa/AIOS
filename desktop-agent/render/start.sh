@@ -136,7 +136,7 @@ log "[4/5] x11vnc live stream OK (PID ${X11VNC_PID})"
 # ─────────────────────────────────────────────────────────────────────────────
 websockify \
     --web=${NOVNC_WEB} \
-    --heartbeat=30 \
+    --heartbeat=25 \
     127.0.0.1:${WS_PORT} 127.0.0.1:${VNC_PORT} \
     > /tmp/agent-logs/websockify.log 2>&1 &
 WS_PID=$!
@@ -217,6 +217,33 @@ nginx -c /tmp/nginx.conf -s reload
 sleep 0.5
 log "[6/6] nginx full routing + CDP proxy active"
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Patch noVNC HTML: hide sidebar, "Connecting..." overlay, status bar
+# Makes reconnects invisible — user sees frozen frame instead of noVNC UI
+# ─────────────────────────────────────────────────────────────────────────────
+VNC_HTML="${NOVNC_WEB}/vnc.html"
+if [ -f "${VNC_HTML}" ]; then
+    # Hide: left sidebar, connecting overlay, status bar, connect button
+    HIDE_CSS='<style>
+#noVNC_control_bar_anchor,
+#noVNC_control_bar_handle,
+#noVNC_status,
+#noVNC_connect_controls,
+#noVNC_transition {
+  display: none !important;
+}
+#noVNC_container {
+  width: 100% !important;
+  height: 100% !important;
+}
+</style>'
+    # Only patch once (idempotent check)
+    if ! grep -q 'noVNC_control_bar_anchor' "${VNC_HTML}"; then
+        sed -i "s|</head>|${HIDE_CSS}</head>|" "${VNC_HTML}"
+        log "noVNC UI chrome hidden (sidebar + connecting overlay patched)"
+    fi
+fi
+
 echo ""
 echo "================================================"
 echo "  VNC DESKTOP READY — Service 1"
@@ -227,10 +254,18 @@ echo "  Health    : /health"
 echo "================================================"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Watchdog — restart crashed processes
+# Watchdog — restart crashed processes + self-ping to keep Render alive
 # ─────────────────────────────────────────────────────────────────────────────
+PING_COUNTER=0
 while true; do
     sleep 15
+    PING_COUNTER=$((PING_COUNTER + 1))
+
+    # Self-ping every ~14 min (56 × 15s) to prevent Render free-tier spindown
+    if [ $((PING_COUNTER % 56)) -eq 0 ]; then
+        curl -sf "http://localhost:${PORT}/health" > /dev/null 2>&1 || true
+        log "[KEEPALIVE] Self-ping sent"
+    fi
 
     if ! kill -0 $CHROME_PID 2>/dev/null; then
         log "[WATCHDOG] Chromium died — restarting"
@@ -254,7 +289,7 @@ while true; do
 
     if ! kill -0 $WS_PID 2>/dev/null; then
         log "[WATCHDOG] websockify died — restarting"
-        websockify --web=${NOVNC_WEB} --heartbeat=30 \
+        websockify --web=${NOVNC_WEB} --heartbeat=25 \
             127.0.0.1:${WS_PORT} 127.0.0.1:${VNC_PORT} \
             >> /tmp/agent-logs/websockify.log 2>&1 &
         WS_PID=$!
