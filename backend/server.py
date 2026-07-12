@@ -2333,8 +2333,8 @@ async def stop_chat(session_id: str):
     raise HTTPException(status_code=404, detail="Session not found")
 
 
-# ── Computer Desktop Agent (proxy to standalone agent at port 8765) ─────────
-DESKTOP_AGENT_URL = os.getenv("DESKTOP_AGENT_URL", "http://localhost:8765")
+# ── Computer Desktop Agent (proxy to standalone agent at port 4000) ─────────
+DESKTOP_AGENT_URL = os.getenv("DESKTOP_AGENT_URL", "http://localhost:4000")
 
 @app.post("/api/desktop/task")
 async def desktop_task(request: Request):

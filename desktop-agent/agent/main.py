@@ -1,10 +1,12 @@
-import asyncio, json, os, sys, traceback, time, base64, hashlib
+import asyncio, json, os, sys, traceback, time, base64, hashlib, subprocess
 from pathlib import Path
 from typing import Optional
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Query
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse, Response, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import httpx
+from playwright.async_api import async_playwright, Page, Browser, BrowserContext
 
 # Load .env from desktop-agent root
 try:
@@ -19,28 +21,68 @@ app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 LLM_KEY = os.environ.get("LLM_API_KEY", "no-auth")
-LLM_MODEL = os.environ.get("LLM_MODEL", "zed-pro")
+LLM_MODEL = os.environ.get("LLM_MODEL", "auto")
 LLM_BASE = os.environ.get("LLM_BASE_URL", "https://server-llm-1.onrender.com/v1")
-SANDBOX = os.environ.get("SANDBOX_URL", "http://localhost:8080")
 clients: list[WebSocket] = []
 
-# ── Sandbox API client ──────────────────────────────────────────────────────
+# ── Playwright browser state ────────────────────────────────────────────────
 
-async def sandbox_api(method: str, path: str, data: dict = None, timeout: int = 30) -> dict:
-    async with httpx.AsyncClient(timeout=timeout) as c:
-        url = f"{SANDBOX}{path}"
-        if method == "POST":
-            r = await c.post(url, json=data or {})
-        else:
-            r = await c.get(url)
-        r.raise_for_status()
-        return r.json()
+_playwright = None
+_browser: Optional[Browser] = None
+_context: Optional[BrowserContext] = None
+_page: Optional[Page] = None
 
-async def sandbox_get(path: str) -> dict:
-    return await sandbox_api("GET", path)
 
-async def sandbox_post(path: str, data: dict = None, timeout: int = 30) -> dict:
-    return await sandbox_api("POST", path, data, timeout)
+async def init_browser():
+    global _playwright, _browser, _context, _page
+    _playwright = await async_playwright().start()
+    _browser = await _playwright.chromium.launch(
+        headless=True,
+        args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"]
+    )
+    _context = await _browser.new_context(
+        viewport={"width": 1280, "height": 720},
+        user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    )
+    _page = await _context.new_page()
+    # Inject a branded ready page so there's never a black screen
+    await _page.set_content("""<!DOCTYPE html>
+<html><head><style>
+body { margin:0; background:#0a0a0a; display:flex; align-items:center; justify-content:center; height:100vh; font-family:monospace; color:#00ff88; }
+.box { text-align:center; }
+.box h1 { font-size:28px; margin-bottom:12px; }
+.box p { color:#888; font-size:14px; }
+.dot { width:12px; height:12px; border-radius:50%; background:#00ff88; display:inline-block; margin-right:8px; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+</style></head><body>
+<div class="box">
+  <h1><span class="dot"></span>Desktop Agent Ready</h1>
+  <p>Send a task to begin</p>
+</div>
+</body></html>""")
+    print("[Desktop Agent] Browser initialized")
+
+
+async def close_browser():
+    global _playwright, _browser, _context, _page
+    try:
+        if _page:
+            await _page.close()
+        if _context:
+            await _context.close()
+        if _browser:
+            await _browser.close()
+        if _playwright:
+            await _playwright.stop()
+    except Exception:
+        pass
+    print("[Desktop Agent] Browser closed")
+
+
+def get_page() -> Page:
+    if _page is None:
+        raise RuntimeError("Browser not initialized")
+    return _page
 
 
 # ── Action logger ───────────────────────────────────────────────────────────
@@ -80,7 +122,7 @@ class ActionLogger:
 
 class DynamicPlanner:
     def __init__(self):
-        self.subtasks: list[dict] = []  # [{id, description, status, result}]
+        self.subtasks: list[dict] = []
         self._counter = 0
 
     def add_subtask(self, description: str) -> dict:
@@ -133,7 +175,6 @@ class ContextCompressor:
     def compress_if_needed(self, messages: list[dict]) -> list[dict]:
         if len(messages) <= self.max_messages:
             return messages
-        # Keep system prompt + last N messages, summarize the rest
         system = [m for m in messages if m.get("role") == "system"]
         non_system = [m for m in messages if m.get("role") != "system"]
         keep_count = self.max_messages - len(system) - 2
@@ -164,11 +205,10 @@ class ContextCompressor:
 
 class FailureMemory:
     def __init__(self):
-        self.failures: list[dict] = []  # [{action, reason, timestamp}]
+        self.failures: list[dict] = []
 
     def record(self, action: str, reason: str):
         self.failures.append({"action": action, "reason": reason, "timestamp": time.time()})
-        # Keep last 10
         if len(self.failures) > 10:
             self.failures = self.failures[-10:]
 
@@ -184,45 +224,38 @@ class FailureMemory:
         return sum(1 for f in self.failures if f["action"] == action and f["reason"] == reason) >= threshold
 
 
-# ── Screenshot helper ───────────────────────────────────────────────────────
+# ── Playwright helpers ─────────────────────────────────────────────────────
 
 async def take_screenshot_base64() -> str:
-    """Take a screenshot and return as base64 PNG."""
     try:
-        async with httpx.AsyncClient(timeout=15) as c:
-            r = await c.get(f"{SANDBOX}/v1/browser/screenshot")
-            r.raise_for_status()
-            return base64.b64encode(r.content).decode()
+        screenshot = await get_page().screenshot(type="png")
+        return base64.b64encode(screenshot).decode()
     except Exception:
         return ""
 
 
-async def screenshot_mjpeg_stream(delay: float = 0.12):
-    """Stream sandbox screenshots as an MJPEG feed for the browser viewer."""
+async def screenshot_mjpeg_stream(delay: float = 0.5):
     boundary = "desktop-frame"
-    async with httpx.AsyncClient(timeout=20) as c:
-        while True:
-            try:
-                r = await c.get(f"{SANDBOX}/v1/browser/screenshot")
-                r.raise_for_status()
-                frame = r.content
-                yield (
-                    f"--{boundary}\r\n"
-                    "Content-Type: image/png\r\n"
-                    f"Content-Length: {len(frame)}\r\n\r\n"
-                ).encode() + frame + b"\r\n"
-                await asyncio.sleep(delay)
-            except asyncio.CancelledError:
-                raise
-            except Exception:
-                await asyncio.sleep(1.0)
+    while True:
+        try:
+            frame = await get_page().screenshot(type="jpeg", quality=70)
+            yield (
+                f"--{boundary}\r\n"
+                "Content-Type: image/jpeg\r\n"
+                f"Content-Length: {len(frame)}\r\n\r\n"
+            ).encode() + frame + b"\r\n"
+            await asyncio.sleep(delay)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            await asyncio.sleep(1.0)
+
 
 async def get_screenshot_hash(b64: str) -> str:
     return hashlib.md5(b64.encode()).hexdigest()[:12]
 
 
 async def screenshot_diff(before_b64: str, after_b64: str) -> str:
-    """Simple screenshot diff: compare hashes and describe change."""
     if not before_b64 or not after_b64:
         return "Could not capture screenshots for comparison."
     h_before = await get_screenshot_hash(before_b64)
@@ -232,14 +265,36 @@ async def screenshot_diff(before_b64: str, after_b64: str) -> str:
     return "CHANGED: Screen content changed after the action."
 
 
+# ── Element extraction (replaces sandbox /v1/browser/page/elements) ──────
+
+async def get_elements() -> list[dict]:
+    """Extract all interactive elements with bounding boxes via Playwright."""
+    return await get_page().evaluate("""() => {
+        const tags = 'a,button,input,textarea,select,[role=button],[role=link],[role=tab],[role=menuitem],label,[tabindex]';
+        const els = document.querySelectorAll(tags);
+        return Array.from(els).map((el, i) => {
+            const r = el.getBoundingClientRect();
+            return {
+                index: i,
+                tag: el.tagName.toLowerCase(),
+                text: (el.innerText || el.value || '').slice(0, 200),
+                role: el.getAttribute('role') || '',
+                href: el.getAttribute('href') || '',
+                placeholder: el.getAttribute('placeholder') || '',
+                is_visible: r.width > 0 && r.height > 0,
+                is_enabled: !el.disabled,
+                bounding_box: {x: r.x, y: r.y, width: r.width, height: r.height}
+            };
+        }).filter(e => e.is_visible);
+    }""")
+
+
 # ── Vision-grounded click resolver ──────────────────────────────────────────
 
 async def resolve_click_target(description: str) -> dict:
-    """Given a natural-language description, find the best matching element."""
     try:
-        resp = await sandbox_get("/v1/browser/page/elements")
-        els = resp.get("data", [])
-        if not isinstance(els, list):
+        els = await get_elements()
+        if not els:
             return {"error": "No elements found"}
 
         desc_lower = description.lower()
@@ -292,11 +347,9 @@ async def resolve_click_target(description: str) -> dict:
 # ── Set-of-marks annotator ─────────────────────────────────────────────────
 
 async def annotate_screenshot() -> str:
-    """Take a screenshot and overlay numbered markers on interactive elements. Returns description."""
     try:
-        resp = await sandbox_get("/v1/browser/page/elements")
-        els = resp.get("data", [])
-        if not isinstance(els, list):
+        els = await get_elements()
+        if not els:
             return "No elements to annotate"
 
         visible = [e for e in els if e.get("is_visible", True) and e.get("is_enabled", True)]
@@ -320,10 +373,9 @@ async def annotate_screenshot() -> str:
 
 async def get_page_url_and_title() -> tuple[str, str]:
     try:
-        url_r = await sandbox_post("/v1/browser/page/evaluate", {"expression": "location.href"})
-        title_r = await sandbox_post("/v1/browser/page/evaluate", {"expression": "document.title"})
-        url = url_r.get("data", "unknown") if url_r.get("success") else "unknown"
-        title = title_r.get("data", "unknown") if title_r.get("success") else "unknown"
+        page = get_page()
+        url = page.url or "unknown"
+        title = await page.title() or "unknown"
         return url, title
     except Exception:
         return "unknown", "unknown"
@@ -331,10 +383,15 @@ async def get_page_url_and_title() -> tuple[str, str]:
 
 async def get_tabs() -> list[dict]:
     try:
-        resp = await sandbox_get("/v1/browser/tabs")
-        tabs = resp.get("data", [])
-        if not isinstance(tabs, list):
-            tabs = []
+        pages = _context.pages if _context else []
+        tabs = []
+        for i, p in enumerate(pages):
+            tabs.append({
+                "index": i,
+                "title": await p.title() or "",
+                "url": p.url or "",
+                "is_active": p == _page,
+            })
         return tabs
     except Exception:
         return []
@@ -356,11 +413,7 @@ async def get_screen() -> str:
         if tabs:
             tabs_section = f"\nOpen tabs ({len(tabs)}):\n" + "\n".join(tab_lines) + "\n"
 
-        elements_resp = await sandbox_get("/v1/browser/page/elements")
-        els = elements_resp.get("data", [])
-        if not isinstance(els, list):
-            els = []
-
+        els = await get_elements()
         visible_els = [e for e in els if e.get("is_visible", True) and e.get("is_enabled", True)]
         el_lines = []
         for e in visible_els[:60]:
@@ -396,10 +449,55 @@ async def get_screen() -> str:
         return f"Error getting screen: {e}"
 
 
+# ── Shell & file helpers ────────────────────────────────────────────────────
+
+async def run_shell(command: str) -> str:
+    """Execute a shell command and return output."""
+    try:
+        proc = await asyncio.create_subprocess_shell(
+            command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+        )
+        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=30)
+        return stdout.decode(errors="replace")[-3000:]
+    except asyncio.TimeoutError:
+        proc.kill()
+        return f"Command timed out after 30s"
+    except Exception as e:
+        return f"Shell error: {e}"
+
+
+async def run_code_exec(code: str, language: str = "python") -> str:
+    """Execute code in a subprocess."""
+    try:
+        if language == "python":
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable, "-c", code,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            )
+        elif language in ("javascript", "node", "nodejs"):
+            proc = await asyncio.create_subprocess_exec(
+                "node", "-e", code,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            )
+        else:
+            return f"Unsupported language: {language}"
+        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=30)
+        return stdout.decode(errors="replace")[-3000:]
+    except asyncio.TimeoutError:
+        return "Code execution timed out after 30s"
+    except Exception as e:
+        return f"Code execution error: {e}"
+
+
 # ── Action executor ─────────────────────────────────────────────────────────
 
 async def execute_action(action: dict) -> str:
     a = action.get("action", "")
+    page = get_page()
     try:
         # ── Browser actions ─────────────────────────────────────────────
         if a == "get_screen":
@@ -407,51 +505,70 @@ async def execute_action(action: dict) -> str:
 
         elif a == "click":
             idx = int(action.get("index", action.get("ref", 0)))
-            await sandbox_post("/v1/browser/page/click", {"index": idx})
-            return f"Clicked element [{idx}]"
+            els = await get_elements()
+            visible = [e for e in els if e.get("is_visible", True) and e.get("is_enabled", True)]
+            if idx < len(visible):
+                bb = visible[idx].get("bounding_box", {})
+                x = bb.get("x", 0) + bb.get("width", 0) / 2
+                y = bb.get("y", 0) + bb.get("height", 0) / 2
+                await page.mouse.click(x, y)
+                return f"Clicked element [{idx}] at ({x:.0f},{y:.0f})"
+            return f"Element [{idx}] not found in visible elements"
 
         elif a == "type":
             idx = int(action.get("index", action.get("ref", 0)))
             text = action.get("text", "")
-            await sandbox_post("/v1/browser/page/fill", {"index": idx, "text": text})
-            return f'Typed "{text}" into element [{idx}]'
+            els = await get_elements()
+            visible = [e for e in els if e.get("is_visible", True) and e.get("is_enabled", True)]
+            if idx < len(visible):
+                bb = visible[idx].get("bounding_box", {})
+                x = bb.get("x", 0) + bb.get("width", 0) / 2
+                y = bb.get("y", 0) + bb.get("height", 0) / 2
+                await page.mouse.click(x, y)
+                await page.keyboard.press("Control+A")
+                await page.keyboard.type(text, delay=10)
+                return f'Typed "{text}" into element [{idx}]'
+            return f"Element [{idx}] not found"
 
         elif a == "press_key":
             key = action.get("key", "Enter")
-            await sandbox_post("/v1/browser/page/press_key", {"key": key})
+            await page.keyboard.press(key)
             return f"Pressed key: {key}"
 
         elif a == "hotkey":
             keys = action.get("keys", [])
-            await sandbox_post("/v1/browser/page/hot_key", {"keys": keys})
+            if len(keys) == 1:
+                await page.keyboard.press(keys[0])
+            else:
+                combo = "+".join(keys)
+                await page.keyboard.press(combo)
             return f"Pressed hotkey: {'+'.join(keys)}"
 
         elif a == "scroll":
             direction = action.get("direction", "down")
             amount = int(action.get("amount", 3))
-            await sandbox_post("/v1/browser/page/scroll", {"direction": direction, "amount": amount})
+            delta_y = 300 * amount if direction == "down" else -300 * amount
+            await page.mouse.wheel(0, delta_y)
             return f"Scrolled {direction} by {amount}"
 
         elif a == "navigate":
             url = action.get("url", "")
-            r = await sandbox_post("/v1/browser/page/navigate", {"url": url}, timeout=30)
-            d = r.get("data", {})
-            return f"Navigated to {d.get('url', url)} — title: {d.get('title', 'unknown')}"
+            await page.goto(url, wait_until="domcontentloaded", timeout=30000)
+            return f"Navigated to {page.url} — title: {await page.title()}"
 
         elif a == "evaluate":
             expr = action.get("expression", action.get("code", ""))
-            r = await sandbox_post("/v1/browser/page/evaluate", {"expression": expr})
-            return json.dumps(r.get("data", r), default=str)
+            result = await page.evaluate(expr)
+            return json.dumps(result, default=str) if not isinstance(result, str) else result
 
         # ── Tab management ─────────────────────────────────────────────
         elif a == "open_tab":
             url = action.get("url", "about:blank")
-            r = await sandbox_post("/v1/browser/tabs", {"action": "create"})
-            tab_data = r.get("data", {})
-            tab_index = tab_data.get("index", "?")
+            new_page = await _context.new_page()
             if url and url != "about:blank":
-                await sandbox_post("/v1/browser/page/navigate", {"url": url}, timeout=30)
-            return f"Opened new tab #{tab_index} and navigated to {url}"
+                await new_page.goto(url, wait_until="domcontentloaded", timeout=30000)
+            tab_idx = _context.pages.index(new_page)
+            return f"Opened new tab #{tab_idx} and navigated to {url}"
 
         elif a == "list_tabs":
             tabs = await get_tabs()
@@ -468,98 +585,86 @@ async def execute_action(action: dict) -> str:
 
         elif a == "switch_tab":
             tab_index = int(action.get("index", 0))
-            tabs = await get_tabs()
-            target_tab = None
-            for t in tabs:
-                if t.get("index") == tab_index:
-                    target_tab = t
-                    break
-            if not target_tab:
-                return f"Tab {tab_index} not found. Available tabs: {[t.get('index') for t in tabs]}"
-            target_url = target_tab.get("url", "")
-            if target_url and target_url != "about:blank":
-                await sandbox_post("/v1/browser/page/navigate", {"url": target_url}, timeout=30)
-                return f"Switched to tab {tab_index}: {target_tab.get('title', 'unknown')}"
-            else:
+            pages = _context.pages if _context else []
+            if 0 <= tab_index < len(pages):
+                target = pages[tab_index]
+                url = target.url or "about:blank"
+                if url != "about:blank":
+                    global _page
+                    _page = target
+                    return f"Switched to tab {tab_index}: {await target.title()}"
                 return f"Tab {tab_index} is blank, cannot switch"
+            return f"Tab {tab_index} not found. Available: {list(range(len(pages)))}"
 
         elif a == "close_tab":
-            tab_index = int(action.get("index", -1))
-            tabs = await get_tabs()
-            if len(tabs) <= 1:
+            pages = _context.pages if _context else []
+            if len(pages) <= 1:
                 return "Cannot close the last tab"
-            await sandbox_post("/v1/browser/page/evaluate", {"expression": "window.close()"})
-            return f"Closed tab {tab_index}"
+            tab_index = int(action.get("index", -1))
+            if 0 <= tab_index < len(pages):
+                target = pages[tab_index]
+                await target.close()
+                return f"Closed tab {tab_index}"
+            return f"Tab {tab_index} not found"
 
         # ── Shell & code execution ─────────────────────────────────────
         elif a == "shell":
             cmd = action.get("command", "")
-            r = await sandbox_post("/v1/bash/exec", {"command": cmd})
-            output = r.get("data", {})
-            if isinstance(output, dict):
-                return output.get("output", json.dumps(output))
-            return str(output)
+            return await run_shell(cmd)
 
         elif a == "run_code":
             code = action.get("code", "")
             language = action.get("language", "python")
-            if language == "python":
-                r = await sandbox_post("/v1/jupyter/execute", {"code": code, "session_id": "agent"})
-            elif language in ("javascript", "node", "nodejs"):
-                r = await sandbox_post("/v1/nodejs/execute", {"code": code})
-            else:
-                r = await sandbox_post("/v1/code/execute", {"code": code, "language": language})
-            output = r.get("data", {})
-            if isinstance(output, dict):
-                return output.get("output", json.dumps(output))
-            return str(output)
+            return await run_code_exec(code, language)
 
         # ── File system ────────────────────────────────────────────────
         elif a == "read_file":
             path = action.get("path", "")
-            r = await sandbox_post("/v1/file/read", {"path": path})
-            data = r.get("data", {})
-            if isinstance(data, dict):
-                return data.get("content", json.dumps(data))
-            return str(data)
+            try:
+                content = Path(path).read_text(encoding="utf-8", errors="replace")
+                return content[:5000]
+            except Exception as e:
+                return f"Error reading {path}: {e}"
 
         elif a == "write_file":
             path = action.get("path", "")
             content = action.get("content", "")
-            await sandbox_post("/v1/file/write", {"path": path, "content": content})
-            return f"Wrote {len(content)} bytes to {path}"
+            try:
+                Path(path).parent.mkdir(parents=True, exist_ok=True)
+                Path(path).write_text(content, encoding="utf-8")
+                return f"Wrote {len(content)} bytes to {path}"
+            except Exception as e:
+                return f"Error writing {path}: {e}"
 
         elif a == "list_files":
-            path = action.get("path", "/")
-            r = await sandbox_post("/v1/file/list", {"path": path})
-            data = r.get("data", {})
-            if isinstance(data, dict):
-                entries = data.get("entries", [])
-                return "\n".join([f"{'[DIR]' if e.get('is_dir') else '[FILE]'} {e.get('name', '?')}" for e in entries[:50]])
-            return str(data)
+            path = action.get("path", ".")
+            try:
+                entries = list(Path(path).iterdir())[:50]
+                lines = []
+                for e in sorted(entries, key=lambda x: (not x.is_dir(), x.name)):
+                    prefix = "[DIR]" if e.is_dir() else "[FILE]"
+                    lines.append(f"{prefix} {e.name}")
+                return "\n".join(lines) if lines else "Empty directory"
+            except Exception as e:
+                return f"Error listing {path}: {e}"
 
         elif a == "find_files":
             pattern = action.get("pattern", "*")
-            path = action.get("path", "/")
-            r = await sandbox_post("/v1/file/find", {"pattern": pattern, "path": path})
-            data = r.get("data", {})
-            if isinstance(data, dict):
-                files = data.get("files", [])
-                return "\n".join(files[:50]) if files else "No files found"
-            return str(data)
+            path = action.get("path", ".")
+            try:
+                files = list(Path(path).glob(pattern))[:50]
+                return "\n".join(str(f) for f in files) if files else "No files found"
+            except Exception as e:
+                return f"Error finding files: {e}"
 
         elif a == "search_files":
             query = action.get("query", "")
-            path = action.get("path", "/")
-            r = await sandbox_post("/v1/file/grep", {"query": query, "path": path})
-            data = r.get("data", {})
-            if isinstance(data, dict):
-                matches = data.get("matches", [])
-                lines = []
-                for m in matches[:30]:
-                    lines.append(f"{m.get('file', '?')}:{m.get('line', '?')}: {m.get('text', '')[:100]}")
-                return "\n".join(lines) if lines else "No matches found"
-            return str(data)
+            path = action.get("path", ".")
+            try:
+                result = await run_shell(f'find "{path}" -type f -exec grep -l "{query}" {{}} \\; 2>/dev/null | head -20')
+                return result if result.strip() else "No matches found"
+            except Exception as e:
+                return f"Error searching: {e}"
 
         # ── Package installation ───────────────────────────────────────
         elif a == "install_package":
@@ -578,11 +683,7 @@ async def execute_action(action: dict) -> str:
                 cmd = f"npm install -g {package}"
             else:
                 cmd = f"apt-get install -y {package}"
-            r = await sandbox_post("/v1/bash/exec", {"command": cmd})
-            output = r.get("data", {})
-            if isinstance(output, dict):
-                return output.get("output", json.dumps(output))
-            return str(output)
+            return await run_shell(cmd)
 
         # ── Screenshot & vision ────────────────────────────────────────
         elif a == "take_screenshot":
@@ -608,38 +709,38 @@ async def execute_action(action: dict) -> str:
 
         # ── Page perception ────────────────────────────────────────────
         elif a == "get_page_html":
-            r = await sandbox_get("/v1/browser/page/html")
-            data = r.get("data", "")
-            if isinstance(data, str):
-                return data[:5000]
-            return json.dumps(data)[:5000]
+            html = await page.content()
+            return html[:5000]
 
         elif a == "get_page_text":
-            r = await sandbox_get("/v1/browser/page/text")
-            data = r.get("data", "")
-            if isinstance(data, str):
-                return data[:5000]
-            return json.dumps(data)[:5000]
+            text = await page.inner_text("body")
+            return text[:5000]
 
         elif a == "get_page_markdown":
-            r = await sandbox_get("/v1/browser/page/markdown")
-            data = r.get("data", "")
-            if isinstance(data, str):
-                return data[:5000]
-            return json.dumps(data)[:5000]
+            text = await page.inner_text("body")
+            return text[:5000]
 
         elif a == "find_text":
             text = action.get("text", "")
-            r = await sandbox_post("/v1/browser/page/find_text", {"text": text})
-            data = r.get("data", {})
-            return json.dumps(data, default=str)[:2000]
+            count = await page.get_by_text(text).count()
+            return json.dumps({"found": count > 0, "count": count})
 
         elif a == "wait_for":
             wait_type = action.get("type", "load")
             value = action.get("value", "")
-            timeout_s = action.get("timeout", 10)
-            r = await sandbox_post("/v1/browser/page/wait", {"type": wait_type, "value": value, "timeout": timeout_s})
-            return f"Wait completed: {r.get('data', {})}"
+            timeout_s = action.get("timeout", 10) * 1000
+            try:
+                if wait_type == "selector":
+                    await page.wait_for_selector(value, timeout=timeout_s)
+                elif wait_type == "load":
+                    await page.wait_for_load_state("load", timeout=timeout_s)
+                elif wait_type == "url":
+                    await page.wait_for_url(value, timeout=timeout_s)
+                elif wait_type == "network_idle":
+                    await page.wait_for_load_state("networkidle", timeout=timeout_s)
+                return f"Wait completed: {wait_type}"
+            except Exception as e:
+                return f"Wait timed out: {e}"
 
         # ── Dynamic planner actions ────────────────────────────────────
         elif a == "add_subtask":
@@ -679,10 +780,6 @@ async def execute_action(action: dict) -> str:
         else:
             return f"Unknown action: {a}"
 
-    except httpx.TimeoutException:
-        return f"Action '{a}' timed out"
-    except httpx.HTTPStatusError as e:
-        return f"Action '{a}' HTTP error: {e.response.status_code} — {e.response.text[:200]}"
     except Exception as e:
         return f"Action '{a}' error: {e}"
 
@@ -694,7 +791,6 @@ _logger = ActionLogger()
 _compressor = ContextCompressor()
 _failures = FailureMemory()
 
-# Screenshots for diff comparison
 _screenshot_before = ""
 _screenshot_after = ""
 
@@ -702,63 +798,48 @@ _screenshot_after = ""
 # ── LLM caller (OpenAI-compatible, function calling) ────────────────────────
 
 COMPUTER_TOOLS = [
-    # ── Screen & perception ─────────────────────────────────────────
     {"type": "function", "function": {"name": "get_screen", "description": "Get the current screen: URL, title, open tabs, and all interactive elements with their index number, tag, text, role, and position. Call first and after major changes.", "parameters": {"type": "object", "properties": {}, "required": []}}},
     {"type": "function", "function": {"name": "take_screenshot", "description": "Capture a screenshot of the current screen. Returns base64 PNG.", "parameters": {"type": "object", "properties": {}, "required": []}}},
     {"type": "function", "function": {"name": "annotate_screen", "description": "Overlay numbered markers on all interactive elements in the current view. Use to identify elements by number.", "parameters": {"type": "object", "properties": {}, "required": []}}},
-    {"type": "function", "function": {"name": "resolve_click", "description": "Find the best element to click given a natural-language description (e.g. 'the search button', 'the email input'). Returns element index and coordinates.", "parameters": {"type": "object", "properties": {"description": {"type": "string", "description": "Natural language description of the element to click"}}, "required": ["description"]}}},
-    {"type": "function", "function": {"name": "screenshot_diff", "description": "Compare before/after screenshots to check if an action had visible effect. Pass 'before' and 'after' base64 strings, or leave empty to use current screen.", "parameters": {"type": "object", "properties": {"before": {"type": "string", "description": "Base64 screenshot before action (optional)"}, "after": {"type": "string", "description": "Base64 screenshot after action (optional)"}}, "required": []}}},
+    {"type": "function", "function": {"name": "resolve_click", "description": "Find the best element to click given a natural-language description.", "parameters": {"type": "object", "properties": {"description": {"type": "string", "description": "Natural language description of the element to click"}}, "required": ["description"]}}},
+    {"type": "function", "function": {"name": "screenshot_diff", "description": "Compare before/after screenshots to check if an action had visible effect.", "parameters": {"type": "object", "properties": {"before": {"type": "string"}, "after": {"type": "string"}}, "required": []}}},
     {"type": "function", "function": {"name": "get_page_html", "description": "Get the full HTML of the current page.", "parameters": {"type": "object", "properties": {}, "required": []}}},
     {"type": "function", "function": {"name": "get_page_text", "description": "Get all visible text from the current page.", "parameters": {"type": "object", "properties": {}, "required": []}}},
     {"type": "function", "function": {"name": "get_page_markdown", "description": "Get the current page content converted to Markdown.", "parameters": {"type": "object", "properties": {}, "required": []}}},
-    {"type": "function", "function": {"name": "find_text", "description": "Find occurrences of text on the page.", "parameters": {"type": "object", "properties": {"text": {"type": "string", "description": "Text to find"}}, "required": ["text"]}}},
-    {"type": "function", "function": {"name": "wait_for", "description": "Wait for a condition: selector, load, url, network_idle.", "parameters": {"type": "object", "properties": {"type": {"type": "string", "enum": ["selector", "load", "url", "network_idle"], "description": "Wait type"}, "value": {"type": "string", "description": "Value to wait for (selector, url pattern)"}, "timeout": {"type": "integer", "description": "Timeout in seconds (default 10)"}}, "required": ["type"]}}},
-
-    # ── Browser actions ─────────────────────────────────────────────
-    {"type": "function", "function": {"name": "click", "description": "Click an element by its index number (from get_screen).", "parameters": {"type": "object", "properties": {"index": {"type": "integer", "description": "Element index from get_screen"}}, "required": ["index"]}}},
-    {"type": "function", "function": {"name": "type", "description": "Type text into an input/textarea element by its index.", "parameters": {"type": "object", "properties": {"index": {"type": "integer", "description": "Element index from get_screen"}, "text": {"type": "string", "description": "Text to type"}}, "required": ["index", "text"]}}},
-    {"type": "function", "function": {"name": "press_key", "description": "Press a keyboard key.", "parameters": {"type": "object", "properties": {"key": {"type": "string", "description": "Key name: Enter, Tab, Escape, Backspace, ArrowDown, etc."}}, "required": ["key"]}}},
-    {"type": "function", "function": {"name": "hotkey", "description": "Press a keyboard shortcut (e.g. ctrl+c, alt+tab).", "parameters": {"type": "object", "properties": {"keys": {"type": "array", "items": {"type": "string"}, "description": "Keys to press together"}}, "required": ["keys"]}}},
-    {"type": "function", "function": {"name": "scroll", "description": "Scroll the page.", "parameters": {"type": "object", "properties": {"direction": {"type": "string", "enum": ["up", "down"]}, "amount": {"type": "integer", "description": "Scroll amount (default 3)"}}, "required": ["direction"]}}},
-    {"type": "function", "function": {"name": "navigate", "description": "Navigate the browser to a URL.", "parameters": {"type": "object", "properties": {"url": {"type": "string", "description": "Full URL including https://"}}, "required": ["url"]}}},
-    {"type": "function", "function": {"name": "evaluate", "description": "Run JavaScript in the page and return the result.", "parameters": {"type": "object", "properties": {"expression": {"type": "string", "description": "JavaScript expression to evaluate"}}, "required": ["expression"]}}},
-
-    # ── Tab management ─────────────────────────────────────────────
-    {"type": "function", "function": {"name": "open_tab", "description": "Open a new browser tab and navigate to a URL.", "parameters": {"type": "object", "properties": {"url": {"type": "string", "description": "URL to open"}}, "required": []}}},
+    {"type": "function", "function": {"name": "find_text", "description": "Find occurrences of text on the page.", "parameters": {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]}}},
+    {"type": "function", "function": {"name": "wait_for", "description": "Wait for a condition: selector, load, url, network_idle.", "parameters": {"type": "object", "properties": {"type": {"type": "string", "enum": ["selector", "load", "url", "network_idle"]}, "value": {"type": "string"}, "timeout": {"type": "integer"}}, "required": ["type"]}}},
+    {"type": "function", "function": {"name": "click", "description": "Click an element by its index number (from get_screen).", "parameters": {"type": "object", "properties": {"index": {"type": "integer"}}, "required": ["index"]}}},
+    {"type": "function", "function": {"name": "type", "description": "Type text into an input/textarea element by its index.", "parameters": {"type": "object", "properties": {"index": {"type": "integer"}, "text": {"type": "string"}}, "required": ["index", "text"]}}},
+    {"type": "function", "function": {"name": "press_key", "description": "Press a keyboard key.", "parameters": {"type": "object", "properties": {"key": {"type": "string"}}, "required": ["key"]}}},
+    {"type": "function", "function": {"name": "hotkey", "description": "Press a keyboard shortcut (e.g. Control+A, Alt+Tab).", "parameters": {"type": "object", "properties": {"keys": {"type": "array", "items": {"type": "string"}}}, "required": ["keys"]}}},
+    {"type": "function", "function": {"name": "scroll", "description": "Scroll the page.", "parameters": {"type": "object", "properties": {"direction": {"type": "string", "enum": ["up", "down"]}, "amount": {"type": "integer"}}, "required": ["direction"]}}},
+    {"type": "function", "function": {"name": "navigate", "description": "Navigate the browser to a URL.", "parameters": {"type": "object", "properties": {"url": {"type": "string"}}, "required": ["url"]}}},
+    {"type": "function", "function": {"name": "evaluate", "description": "Run JavaScript in the page and return the result.", "parameters": {"type": "object", "properties": {"expression": {"type": "string"}}, "required": ["expression"]}}},
+    {"type": "function", "function": {"name": "open_tab", "description": "Open a new browser tab and navigate to a URL.", "parameters": {"type": "object", "properties": {"url": {"type": "string"}}, "required": []}}},
     {"type": "function", "function": {"name": "list_tabs", "description": "List all open browser tabs.", "parameters": {"type": "object", "properties": {}, "required": []}}},
-    {"type": "function", "function": {"name": "switch_tab", "description": "Switch to a specific tab by index.", "parameters": {"type": "object", "properties": {"index": {"type": "integer", "description": "Tab index"}}, "required": ["index"]}}},
-    {"type": "function", "function": {"name": "close_tab", "description": "Close a specific tab by index.", "parameters": {"type": "object", "properties": {"index": {"type": "integer", "description": "Tab index to close"}}, "required": ["index"]}}},
-
-    # ── Shell & code execution ─────────────────────────────────────
-    {"type": "function", "function": {"name": "shell", "description": "Execute a shell command (bash). Use for system operations, installing packages, running scripts, etc.", "parameters": {"type": "object", "properties": {"command": {"type": "string", "description": "Shell command to run"}}, "required": ["command"]}}},
-    {"type": "function", "function": {"name": "run_code", "description": "Execute code in a sandboxed runtime. Supports Python (Jupyter kernel) or JavaScript (Node.js).", "parameters": {"type": "object", "properties": {"code": {"type": "string", "description": "Code to execute"}, "language": {"type": "string", "enum": ["python", "javascript"], "description": "Language (default: python)"}}, "required": ["code"]}}},
-
-    # ── File system ────────────────────────────────────────────────
-    {"type": "function", "function": {"name": "read_file", "description": "Read the contents of a file in the sandbox.", "parameters": {"type": "object", "properties": {"path": {"type": "string", "description": "Absolute file path"}}, "required": ["path"]}}},
-    {"type": "function", "function": {"name": "write_file", "description": "Write content to a file in the sandbox (creates or overwrites).", "parameters": {"type": "object", "properties": {"path": {"type": "string", "description": "Absolute file path"}, "content": {"type": "string", "description": "File content to write"}}, "required": ["path", "content"]}}},
-    {"type": "function", "function": {"name": "list_files", "description": "List files and directories at a path.", "parameters": {"type": "object", "properties": {"path": {"type": "string", "description": "Directory path (default: /)"}}, "required": []}}},
-    {"type": "function", "function": {"name": "find_files", "description": "Find files by name pattern (glob).", "parameters": {"type": "object", "properties": {"pattern": {"type": "string", "description": "Glob pattern (e.g. *.py, **/*.json)"}, "path": {"type": "string", "description": "Search root path"}}, "required": ["pattern"]}}},
-    {"type": "function", "function": {"name": "search_files", "description": "Search for text within files (grep).", "parameters": {"type": "object", "properties": {"query": {"type": "string", "description": "Text or regex to search for"}, "path": {"type": "string", "description": "Directory to search in"}}, "required": ["query"]}}},
-
-    # ── Package installation ───────────────────────────────────────
-    {"type": "function", "function": {"name": "install_package", "description": "Install a package via pip, npm, or apt. Auto-detects manager from package name.", "parameters": {"type": "object", "properties": {"package": {"type": "string", "description": "Package name to install"}, "manager": {"type": "string", "enum": ["auto", "pip", "npm", "apt"], "description": "Package manager (default: auto)"}}, "required": ["package"]}}},
-
-    # ── Dynamic planner ────────────────────────────────────────────
-    {"type": "function", "function": {"name": "add_subtask", "description": "Add a subtask to the dynamic plan. Use to break complex tasks into steps.", "parameters": {"type": "object", "properties": {"description": {"type": "string", "description": "Subtask description"}}, "required": ["description"]}}},
-    {"type": "function", "function": {"name": "update_subtask", "description": "Update a subtask's status (pending/active/completed/failed/skipped).", "parameters": {"type": "object", "properties": {"task_id": {"type": "integer", "description": "Subtask ID"}, "status": {"type": "string", "enum": ["active", "completed", "failed", "skipped"], "description": "New status"}, "result": {"type": "string", "description": "Result or notes"}}, "required": ["task_id", "status"]}}},
-    {"type": "function", "function": {"name": "remove_subtask", "description": "Remove a subtask from the plan.", "parameters": {"type": "object", "properties": {"task_id": {"type": "integer", "description": "Subtask ID to remove"}}, "required": ["task_id"]}}},
-    {"type": "function", "function": {"name": "reorder_subtasks", "description": "Reorder subtasks by providing IDs in the desired order.", "parameters": {"type": "object", "properties": {"order": {"type": "array", "items": {"type": "integer"}, "description": "List of subtask IDs in desired order"}}, "required": ["order"]}}},
+    {"type": "function", "function": {"name": "switch_tab", "description": "Switch to a specific tab by index.", "parameters": {"type": "object", "properties": {"index": {"type": "integer"}}, "required": ["index"]}}},
+    {"type": "function", "function": {"name": "close_tab", "description": "Close a specific tab by index.", "parameters": {"type": "object", "properties": {"index": {"type": "integer"}}, "required": ["index"]}}},
+    {"type": "function", "function": {"name": "shell", "description": "Execute a shell command (bash). Use for system operations, installing packages, running scripts.", "parameters": {"type": "object", "properties": {"command": {"type": "string"}}, "required": ["command"]}}},
+    {"type": "function", "function": {"name": "run_code", "description": "Execute code. Supports Python or JavaScript.", "parameters": {"type": "object", "properties": {"code": {"type": "string"}, "language": {"type": "string", "enum": ["python", "javascript"]}}, "required": ["code"]}}},
+    {"type": "function", "function": {"name": "read_file", "description": "Read the contents of a file.", "parameters": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}}},
+    {"type": "function", "function": {"name": "write_file", "description": "Write content to a file (creates or overwrites).", "parameters": {"type": "object", "properties": {"path": {"type": "string"}, "content": {"type": "string"}}, "required": ["path", "content"]}}},
+    {"type": "function", "function": {"name": "list_files", "description": "List files and directories at a path.", "parameters": {"type": "object", "properties": {"path": {"type": "string"}}, "required": []}}},
+    {"type": "function", "function": {"name": "find_files", "description": "Find files by name pattern (glob).", "parameters": {"type": "object", "properties": {"pattern": {"type": "string"}, "path": {"type": "string"}}, "required": ["pattern"]}}},
+    {"type": "function", "function": {"name": "search_files", "description": "Search for text within files (grep).", "parameters": {"type": "object", "properties": {"query": {"type": "string"}, "path": {"type": "string"}}, "required": ["query"]}}},
+    {"type": "function", "function": {"name": "install_package", "description": "Install a package via pip, npm, or apt.", "parameters": {"type": "object", "properties": {"package": {"type": "string"}, "manager": {"type": "string", "enum": ["auto", "pip", "npm", "apt"]}}, "required": ["package"]}}},
+    {"type": "function", "function": {"name": "add_subtask", "description": "Add a subtask to the dynamic plan.", "parameters": {"type": "object", "properties": {"description": {"type": "string"}}, "required": ["description"]}}},
+    {"type": "function", "function": {"name": "update_subtask", "description": "Update a subtask's status.", "parameters": {"type": "object", "properties": {"task_id": {"type": "integer"}, "status": {"type": "string", "enum": ["active", "completed", "failed", "skipped"]}, "result": {"type": "string"}}, "required": ["task_id", "status"]}}},
+    {"type": "function", "function": {"name": "remove_subtask", "description": "Remove a subtask from the plan.", "parameters": {"type": "object", "properties": {"task_id": {"type": "integer"}}, "required": ["task_id"]}}},
+    {"type": "function", "function": {"name": "reorder_subtasks", "description": "Reorder subtasks by providing IDs in the desired order.", "parameters": {"type": "object", "properties": {"order": {"type": "array", "items": {"type": "integer"}}}, "required": ["order"]}}},
     {"type": "function", "function": {"name": "get_plan", "description": "View the current task plan and subtask statuses.", "parameters": {"type": "object", "properties": {}, "required": []}}},
-
-    # ── Done ──────────────────────────────────────────────────────
-    {"type": "function", "function": {"name": "done", "description": "Mark the task as complete and provide a summary.", "parameters": {"type": "object", "properties": {"summary": {"type": "string", "description": "Detailed summary of what was accomplished"}}, "required": ["summary"]}}},
+    {"type": "function", "function": {"name": "done", "description": "Mark the task as complete and provide a summary.", "parameters": {"type": "object", "properties": {"summary": {"type": "string"}}, "required": ["summary"]}}},
 ]
 
 
 SYSTEM_PROMPT = """You are a computer-use AI agent with browser, terminal, and file system access.
 
 ## CRITICAL RULES
-1. When asked to OPEN a website, VISIT a site, or BROWSE — you MUST use the "navigate" tool to go to the URL in the browser. NEVER use shell commands like curl/wget for this. The user wants to SEE the website in their browser.
+1. When asked to OPEN a website, VISIT a site, or BROWSE — you MUST use the "navigate" tool to go to the URL in the browser. NEVER use shell commands like curl/wget for this.
 2. After navigating, use "get_screen" to see what's on the page, then interact with elements using "click", "type", etc.
 3. Use "shell" ONLY for: installing packages, running system commands, checking disk/network, file operations NOT available via browser.
 4. Use "run_code" for: data processing, calculations, script execution.
@@ -804,16 +885,6 @@ def reset_agent_state():
     _screenshot_after = ""
 
 
-async def maximize_browser():
-    """Try to maximize the browser window in the sandbox to fill the desktop."""
-    try:
-        await sandbox_post("/v1/browser/page/evaluate", {
-            "expression": "try { window.moveTo(0, 0); window.resizeTo(screen.availWidth, screen.availHeight); 'maximized'; } catch(e) { 'error: ' + e.message; }"
-        })
-    except Exception:
-        pass
-
-
 # ── LLM caller ──────────────────────────────────────────────────────────────
 
 async def call_llm_with_tools(messages: list[dict]) -> dict:
@@ -821,7 +892,6 @@ async def call_llm_with_tools(messages: list[dict]) -> dict:
     if LLM_KEY and LLM_KEY != "no-auth":
         headers["Authorization"] = f"Bearer {LLM_KEY}"
 
-    # Compress context if too long
     messages = _compressor.compress_if_needed(messages)
 
     async with httpx.AsyncClient(timeout=120) as c:
@@ -859,17 +929,15 @@ async def broadcast(msg: dict):
 
 async def run_agent(task: str):
     reset_agent_state()
-    await maximize_browser()
     await broadcast({"type": "system", "text": f"Task: {task}"})
     await broadcast({"type": "plan", "plan": _planner.to_dict()})
     messages = [{"role": "user", "content": task}]
 
-    max_steps = 20  # Soft limit — agent decides when to stop
+    max_steps = 20
 
     for step in range(max_steps):
         await broadcast({"type": "thinking", "text": f"Step {step + 1}: Thinking..."})
 
-        # Add failure context if any
         failure_ctx = _failures.get_context()
         if failure_ctx and step > 0:
             messages.append({"role": "system", "content": failure_ctx})
@@ -903,26 +971,20 @@ async def run_agent(task: str):
 
             await broadcast({"type": "action", "text": f"Executing: {fn_name}", "action": fn_name, "params": fn_args})
 
-            # Take screenshot before action for diff
             _screenshot_before = await take_screenshot_base64()
 
-            # Execute
             t0 = time.time()
             result = await execute_action({"action": fn_name, **fn_args})
             elapsed = round(time.time() - t0, 2)
 
-            # Take screenshot after
             _screenshot_after = await take_screenshot_base64()
 
-            # Log action
             success = "error" not in result.lower() and "timed out" not in result.lower()
             _logger.log(fn_name, fn_args, result, success, _screenshot_before, _screenshot_after)
 
-            # Record failures
             if not success:
                 _failures.record(fn_name, result[:200])
 
-            # Broadcast result
             await broadcast({
                 "type": "screen",
                 "text": result[:2000],
@@ -932,13 +994,9 @@ async def run_agent(task: str):
                 "step": step + 1,
             })
 
-            # Broadcast updated plan
             await broadcast({"type": "plan", "plan": _planner.to_dict()})
-
-            # Broadcast action log
             await broadcast({"type": "action_log", "log": _logger.get_summary()})
 
-            # Feed result back to LLM
             messages.append({
                 "role": "tool",
                 "tool_call_id": tc.get("id", ""),
@@ -953,7 +1011,7 @@ async def run_agent(task: str):
     await broadcast({"type": "system", "text": "Agent loop ended (step budget reached)."})
 
 
-# ── WebSocket endpoint ──────────────────────────────────────────────────────
+# ── WebSocket endpoints ─────────────────────────────────────────────────────
 
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
@@ -981,6 +1039,35 @@ async def ws_endpoint(ws: WebSocket):
     finally:
         if ws in clients:
             clients.remove(ws)
+
+
+@app.websocket("/ws/video")
+async def ws_video(ws: WebSocket):
+    """Live video stream — pushes Playwright JPEG frames at 15fps over WebSocket binary."""
+    await ws.accept()
+    fps = 15
+    interval = 1.0 / fps
+    last_good_frame = None
+    try:
+        while True:
+            try:
+                if _page:
+                    frame = await _page.screenshot(type="jpeg", quality=60)
+                    last_good_frame = frame
+                    await ws.send_bytes(frame)
+                elif last_good_frame:
+                    await ws.send_bytes(last_good_frame)
+            except Exception:
+                if last_good_frame:
+                    try:
+                        await ws.send_bytes(last_good_frame)
+                    except Exception:
+                        break
+            await asyncio.sleep(interval)
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        pass
 
 
 # ── REST endpoints ──────────────────────────────────────────────────────────
@@ -1038,4 +1125,31 @@ async def agent_log():
 
 @app.get("/health")
 def health():
-    return JSONResponse({"status": "ok"})
+    return JSONResponse({"status": "ok", "browser": _browser is not None})
+
+
+# ── Serve frontend ──────────────────────────────────────────────────────────
+
+_FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+
+@app.get("/", response_class=HTMLResponse)
+async def serve_frontend():
+    index = _FRONTEND_DIR / "index.html"
+    if index.exists():
+        return HTMLResponse(content=index.read_text(encoding="utf-8"))
+    return HTMLResponse(content="<h1>Frontend not found</h1>", status_code=404)
+
+
+# ── Lifecycle hooks ─────────────────────────────────────────────────────────
+
+@app.on_event("startup")
+async def on_startup():
+    try:
+        await init_browser()
+    except Exception as e:
+        print(f"[Desktop Agent] Failed to init browser: {e}")
+
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    await close_browser()
