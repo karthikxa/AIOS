@@ -587,7 +587,7 @@ function openCreateScheduleSidebar() {
           </div>
 
           <div class="zed-modal-field">
-            <label>Agent (optional)</label>
+            <label>Agent</label>
             <div class="sched-agent-search" id="agentSearchWrapper">
               <input type="text" id="schedAgentInput" placeholder="Search or type agent name…" autocomplete="off">
               <div class="sched-agent-dropdown" id="schedAgentOptions">
@@ -774,6 +774,13 @@ function openCreateScheduleSidebar() {
     }
     if (!agentId) {
       window.showToast && window.showToast('Please select an agent.', 'warning');
+      overlay.querySelector('#schedAgentInput').focus();
+      return;
+    }
+    // Check if this agent already has a schedule
+    const existingSchedule = schedulesStore.schedules.find(s => s.agentId === agentId);
+    if (existingSchedule) {
+      window.showToast && window.showToast(`This agent already has a schedule: "${existingSchedule.name}".`, 'warning');
       overlay.querySelector('#schedAgentInput').focus();
       return;
     }
