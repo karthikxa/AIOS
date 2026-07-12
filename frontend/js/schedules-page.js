@@ -371,7 +371,7 @@ function renderPremiumVisualGrid(freq = 'daily') {
     let cells = `<div class="grid-cell cell-time">${time}</div>`;
     for (let i = 0; i < 7; i++) {
       if (t && i === 0) {
-        cells += `<div class="grid-cell"><div class="grid-task-card ${t.color}" style="left: 4px; right: -30px;"><div class="task-card-icon-row">${iconSvgs[t.icon]}<span class="task-title">${t.title}</span></div><span class="task-time">${time}</span></div></div>`;
+        cells += `<div class="grid-cell"><div class="grid-task-card ${t.color}"><span class="task-title">${t.title}</span><span class="task-time">${time}</span></div></div>`;
       } else {
         cells += '<div class="grid-cell"></div>';
       }
