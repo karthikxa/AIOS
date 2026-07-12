@@ -169,6 +169,7 @@ http {
     default_type application/octet-stream;
     access_log off;
     client_max_body_size 10m;
+    absolute_redirect off;    # prevents nginx adding :4000 to redirect URLs
 
     server {
         listen ${PORT};
