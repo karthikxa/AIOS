@@ -3918,24 +3918,20 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           // Load the noVNC live stream into the split-pane iframe from browser-server-1.
           const desktopFrame = document.getElementById('desktopFrame');
           if (desktopFrame) {
-            const vncUrl = (localStorage.getItem('vnc_url') || 'https://browser-server-1.onrender.com/vnc.html?autoconnect=1&resize=scale&quality=6&path=websockify&bell=0&show_dot=0&toolbar=0');
+            // autoconnect=true (not =1), reconnect=true so it never shows the Connect button
+            const vncUrl = (localStorage.getItem('vnc_url') ||
+              'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=1000&resize=scale&quality=6&path=websockify&bell=false&show_dot=false');
+            desktopFrame.src = vncUrl;
             desktopFrame.style.display = 'block';
-            desktopFrame.onload = () => {
-              // Hide connecting overlay once VNC iframe is loaded
+            // Show LIVE badge immediately — noVNC handles reconnect itself
+            const liveBadge = document.getElementById('splitPaneLiveBadge');
+            if (liveBadge) liveBadge.style.display = 'flex';
+            // Hide the connecting overlay once VNC iframe loads
+            desktopFrame.addEventListener('load', function onLoad() {
               const overlay = document.getElementById('desktopConnectingOverlay');
               if (overlay) overlay.style.display = 'none';
-              // Show LIVE badge
-              const liveBadge = document.getElementById('splitPaneLiveBadge');
-              if (liveBadge) liveBadge.style.display = 'flex';
-              // Inject CSS into noVNC iframe to hide its toolbar and fill 100%
-              try {
-                const iframeDoc = desktopFrame.contentDocument || desktopFrame.contentWindow.document;
-                const style = iframeDoc.createElement('style');
-                style.textContent = '#noVNC_control_bar_anchor, #noVNC_connect_controls, #noVNC_status { display: none !important; } body, html { margin:0; padding:0; overflow:hidden; background:#000; } #noVNC_container { width:100vw !important; height:100vh !important; }';
-                iframeDoc.head.appendChild(style);
-              } catch(e) { /* cross-origin: skip style injection */ }
-            };
-            desktopFrame.src = vncUrl;
+              desktopFrame.removeEventListener('load', onLoad);
+            });
           }
 
           // Send task — agent runs fully server-side, stream shows progress
