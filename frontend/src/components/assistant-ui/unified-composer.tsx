@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   AssistantRuntimeProvider,
   ComposerPrimitive,
@@ -34,11 +34,12 @@ const SendIcon = () => (
   </svg>
 );
 
-const MicIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+const MicIcon = ({ recording }: { recording?: boolean }) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={recording ? "#DC2626" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
     <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
     <line x1="12" y1="19" x2="12" y2="22"/>
+    {recording && <circle cx="12" cy="12" r="10" stroke="#DC2626" strokeWidth="1" fill="none" opacity="0.3"/>}
   </svg>
 );
 
@@ -48,6 +49,25 @@ const PlusIcon = () => (
     <line x1="5" y1="12" x2="19" y2="12"/>
   </svg>
 );
+
+const XIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
+
+const FileIcon = ({ type }: { type: string }) => {
+  const icons: Record<string, string> = {
+    image: "🖼",
+    pdf: "📄",
+    text: "📝",
+    code: "💻",
+    audio: "🎵",
+    video: "🎬",
+  };
+  return <span style={{ fontSize: 14 }}>{icons[type] || "📎"}</span>;
+};
 
 // ── Model Selector Dropdown ──────────────────────────────────────────────
 function ModelDropdown({ selected, onSelect }: { selected: string; onSelect: (m: string) => void }) {
@@ -107,23 +127,94 @@ function ModelDropdown({ selected, onSelect }: { selected: string; onSelect: (m:
 // ── Mode Toggle (Agent / Computer) ──────────────────────────────────────
 function ModeToggle({ mode, onModeChange }: { mode: string; onModeChange: (m: string) => void }) {
   return (
-    <div className="flex items-center border border-gray-200 rounded-full overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="flex items-center border border-[rgba(0,0,0,0.08)] rounded-full overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
       <button
         onClick={() => onModeChange("agent")}
-        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${mode === "agent" ? "bg-black text-white" : "text-gray-600 hover:bg-gray-50"}`}
+        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${mode === "agent" ? "bg-[#000000] text-white" : "text-[#6B7280] hover:bg-[rgba(0,0,0,0.05)]"}`}
       >
         <AgentIcon />
         <span>Agent</span>
       </button>
       <button
         onClick={() => onModeChange("computer")}
-        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${mode === "computer" ? "bg-black text-white" : "text-gray-600 hover:bg-gray-50"}`}
+        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${mode === "computer" ? "bg-[#000000] text-white" : "text-[#6B7280] hover:bg-[rgba(0,0,0,0.05)]"}`}
       >
         <ComputerIcon />
         <span>Computer</span>
       </button>
     </div>
   );
+}
+
+// ── File Attachment Preview ──────────────────────────────────────────────
+function FilePreview({ file, onRemove }: { file: File; onRemove: () => void }) {
+  const getMimeType = (name: string) => {
+    if (/\.(jpg|jpeg|png|gif|svg|webp)$/i.test(name)) return "image";
+    if (/\.pdf$/i.test(name)) return "pdf";
+    if (/\.(txt|md|csv|json|xml|html|css|js|py|ts)$/i.test(name)) return "text";
+    if (/\.(mp3|wav|ogg)$/i.test(name)) return "audio";
+    if (/\.(mp4|webm)$/i.test(name)) return "video";
+    return "file";
+  };
+
+  const size = file.size < 1024 ? `${file.size} B`
+    : file.size < 1024 * 1024 ? `${(file.size / 1024).toFixed(1)} KB`
+    : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+
+  return (
+    <div className="flex items-center gap-3 px-3 py-2 bg-white border border-[rgba(0,0,0,0.08)] rounded-xl" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#F4F4F5]">
+        <FileIcon type={getMimeType(file.name)} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-xs font-medium text-[#18181B] truncate">{file.name}</div>
+        <div className="text-[11px] text-[#71717A]">{size}</div>
+      </div>
+      <button onClick={onRemove} className="flex items-center justify-center w-6 h-6 rounded-full hover:bg-[#F4F4F5] text-[#71717A] transition-colors">
+        <XIcon />
+      </button>
+    </div>
+  );
+}
+
+// ── Voice Input Hook ────────────────────────────────────────────────────
+function useVoiceInput(onTranscript: (text: string) => void) {
+  const [recording, setRecording] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const toggle = useCallback(() => {
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+      alert("Speech recognition not supported in this browser.");
+      return;
+    }
+
+    if (recording) {
+      recognitionRef.current?.stop();
+      setRecording(false);
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      onTranscript(transcript);
+      setRecording(false);
+    };
+
+    recognition.onerror = () => setRecording(false);
+    recognition.onend = () => setRecording(false);
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setRecording(true);
+  }, [recording, onTranscript]);
+
+  return { recording, toggle };
 }
 
 // ── Main Unified Composer ────────────────────────────────────────────────
@@ -135,17 +226,40 @@ function ComposerUI({ mode, onModeChange, model, onModelChange }: {
 }) {
   const slash = unstable_useSlashCommandAdapter({ commands: [] });
   const mention = unstable_useMentionAdapter();
+  const [files, setFiles] = useState<File[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const { recording, toggle: toggleVoice } = useVoiceInput((text) => {
+    if (textareaRef.current) {
+      textareaRef.current.value += text;
+      textareaRef.current.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
+
+  const handleFileAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+      e.target.value = "";
+    }
+  };
+
+  const handleFileRemove = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const textarea = form?.querySelector("textarea") as HTMLTextAreaElement | null;
     const text = textarea?.value?.trim();
-    if (text) {
+    if (text || files.length > 0) {
       window.dispatchEvent(
-        new CustomEvent("react-composer-send", { detail: { text, mode, model } })
+        new CustomEvent("react-composer-send", {
+          detail: { text, mode, model, files: files.map(f => ({ name: f.name, size: f.size, type: f.type })) }
+        })
       );
       if (textarea) textarea.value = "";
+      setFiles([]);
     }
   };
 
@@ -155,23 +269,45 @@ function ComposerUI({ mode, onModeChange, model, onModelChange }: {
       className="w-full rounded-[24px] border border-[rgba(0,0,0,0.08)] bg-[#F4F4F5] relative"
       style={{ fontFamily: "'Inter', sans-serif", boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
     >
+      {/* File previews */}
+      {files.length > 0 && (
+        <div className="flex flex-wrap gap-2 px-4 pt-3">
+          {files.map((f, i) => (
+            <FilePreview key={i} file={f} onRemove={() => handleFileRemove(i)} />
+          ))}
+        </div>
+      )}
+
       <ComposerPrimitive.Input
+        ref={textareaRef as any}
         placeholder="Ask anything..."
         rows={1}
-        className="min-h-[44px] w-full resize-none bg-transparent px-4 pt-3 pb-2 text-sm focus:outline-none text-[#1F2937] placeholder-[#8E8E93]"
+        className={`w-full resize-none bg-transparent px-4 ${files.length > 0 ? 'pt-2' : 'pt-3'} pb-2 text-sm focus:outline-none text-[#1F2937] placeholder-[#8E8E93]`}
       />
+
       <div className="flex items-center justify-between px-3 pb-3">
         <div className="flex items-center gap-2">
-          <button className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-[rgba(0,0,0,0.05)] text-[#6B7280] transition-colors" title="Attach file">
+          {/* Attach file */}
+          <label className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-[rgba(0,0,0,0.05)] text-[#6B7280] transition-colors cursor-pointer">
             <PlusIcon />
-          </button>
+            <input type="file" className="hidden" multiple onChange={handleFileAdd}
+              accept=".txt,.md,.csv,.json,.xml,.html,.css,.js,.py,.ts,.jpg,.jpeg,.png,.gif,.svg,.pdf,.doc,.docx,.xls,.xlsx" />
+          </label>
+          {/* Mode toggle */}
           <ModeToggle mode={mode} onModeChange={onModeChange} />
         </div>
         <div className="flex items-center gap-2">
+          {/* Model selector */}
           <ModelDropdown selected={model} onSelect={onModelChange} />
-          <button className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-[rgba(0,0,0,0.05)] text-[#6B7280] transition-colors" title="Voice input">
-            <MicIcon />
+          {/* Voice input */}
+          <button
+            onClick={toggleVoice}
+            className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${recording ? 'bg-red-50 text-[#DC2626]' : 'hover:bg-[rgba(0,0,0,0.05)] text-[#6B7280]'}`}
+            title={recording ? "Stop recording" : "Voice input"}
+          >
+            <MicIcon recording={recording} />
           </button>
+          {/* Send button */}
           <button type="submit" className="flex items-center justify-center w-8 h-8 rounded-full bg-[#000000] text-white hover:bg-[#1A1A1A] transition-colors">
             <SendIcon />
           </button>
