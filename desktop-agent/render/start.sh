@@ -43,7 +43,7 @@ log "[0/6] nginx placeholder OK — port ${PORT} held"
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. Xvfb — virtual display
 # ─────────────────────────────────────────────────────────────────────────────
-Xvfb :99 -screen 0 1024x576x16 -nolisten tcp -noreset \
+Xvfb :99 -screen 0 1024x576x24 -nolisten tcp -noreset \
     > /tmp/agent-logs/xvfb.log 2>&1 &
 XVFB_PID=$!
 
@@ -84,6 +84,12 @@ DISPLAY=:99 chromium \
     --no-first-run \
     --no-default-browser-check \
     --metrics-recording-only \
+    --disable-background-timer-throttling \
+    --disable-backgrounding-occluded-windows \
+    --disable-renderer-backgrounding \
+    --disable-hang-monitor \
+    --disable-prompt-on-repost \
+    --memory-pressure-off \
     --kiosk \
     --window-size=1024,576 \
     --remote-debugging-port=${CDP_PORT} \
@@ -178,9 +184,9 @@ http {
     server {
         listen ${PORT};
 
-        # ── Root: redirect to noVNC with autoconnect params ──
+        # ── Root: redirect to noVNC — quality=9, no scale blur ──
         location = / {
-            return 302 /vnc.html?autoconnect=1&resize=scale&quality=6&path=websockify;
+            return 302 /vnc.html?autoconnect=1&quality=9&compression=2&path=websockify;
         }
 
         # ── Live WebSocket VNC stream (noVNC connects here) ──
