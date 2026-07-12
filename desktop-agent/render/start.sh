@@ -88,7 +88,7 @@ DISPLAY=:99 chromium \
     --window-size=1280,720 \
     --remote-debugging-port=${CDP_PORT} \
     --remote-debugging-address=127.0.0.1 \
-    "about:blank" \
+    "https://www.google.com" \
     > /tmp/agent-logs/chromium.log 2>&1 &
 CHROME_PID=$!
 
