@@ -217,14 +217,14 @@
             <!-- File Preview Chips (On top of input field) -->
             <div id="filePreviewChips" style="display: none; gap: 6px; flex-wrap: wrap; width: 100%; padding: 12px 16px 4px 16px;"></div>
 
-            <!-- Top Portion: Center Input Field -->
+            <!-- Top Portion: Center Input Field (React UnifiedComposer replaces this) -->
             <div class="chat-input-center-wrapper">
-              <textarea class="chat-prompt-input" id="chatPromptInput" placeholder="Message Zed..."></textarea>
+              <textarea class="chat-prompt-input" id="chatPromptInput" placeholder="Message Zed..." style="display: none;"></textarea>
               <div id="composer-trigger-popover-root"></div>
             </div>
 
-            <!-- Bottom Portion: Toolbar actions row -->
-            <div class="chat-toolbar-row">
+            <!-- Bottom Portion: Toolbar actions row (hidden when React composer is active) -->
+            <div class="chat-toolbar-row" style="display: none;">
               
               <!-- Left Items: Plus Attachment & Mode Select Pill -->
               <div class="chat-left-wrapper">

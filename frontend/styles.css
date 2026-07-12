@@ -9223,7 +9223,8 @@ input:checked + .toggle-slider:before {
 }
 
 .chat-input-center-wrapper #composer-trigger-popover-root {
-  display: none;
+  display: block !important;
+  width: 100% !important;
 }
 
 .chat-box .chat-prompt-input {
