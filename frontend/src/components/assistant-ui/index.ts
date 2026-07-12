@@ -7,3 +7,7 @@ export { MentionComposer } from "./mention-composer";
 export { CombinedComposer } from "./combined-composer";
 export { ComposerTriggerPopoverMount } from "./composer-trigger-popover-mount";
 export { BranchPicker } from "./branch-picker";
+export { UnifiedComposer } from "./unified-composer";
+export { ThreadHistory } from "./thread-history";
+export { Sources } from "./sources";
+export { FileCard, FileList } from "./file";

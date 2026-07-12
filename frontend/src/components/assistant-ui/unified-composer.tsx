@@ -10,6 +10,9 @@ import {
   useLocalRuntime,
   type Unstable_SlashCommand,
 } from "@assistant-ui/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // ── Icons (monochrome, stroke-based) ────────────────────────────────────
 const AgentIcon = () => (
@@ -94,9 +97,11 @@ function ModelDropdown({ selected, onSelect }: { selected: string; onSelect: (m:
 
   return (
     <div ref={ref} className="relative">
-      <button
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#6B7280] hover:bg-[rgba(0,0,0,0.05)] transition-colors"
+        className="flex items-center gap-1.5 rounded-lg text-xs font-medium text-[#6B7280] hover:bg-[rgba(0,0,0,0.05)]"
         style={{ fontFamily: "'Inter', sans-serif" }}
       >
         <span>{current.icon}</span>
@@ -104,19 +109,20 @@ function ModelDropdown({ selected, onSelect }: { selected: string; onSelect: (m:
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <polyline points="6 9 12 15 18 9"/>
         </svg>
-      </button>
+      </Button>
       {open && (
-        <div className="absolute bottom-full left-0 mb-2 bg-white border border-[rgba(0,0,0,0.08)] rounded-xl shadow-lg py-1 min-w-[160px] z-50"
+        <div className="absolute bottom-full left-0 mb-2 bg-white border border-[rgba(0,0,0,0.08)] rounded-xl shadow-xl py-1 min-w-[160px] z-50"
           style={{ fontFamily: "'Inter', sans-serif" }}>
           {models.map(m => (
-            <button
+            <Button
               key={m.id}
+              variant="ghost"
               onClick={() => { onSelect(m.id); setOpen(false); }}
-              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-[#F4F4F5] transition-colors ${m.id === selected ? 'bg-[#F4F4F5] font-medium' : ''}`}
+              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left justify-start rounded-none hover:bg-[#F4F4F5] ${m.id === selected ? 'bg-[#F4F4F5] font-medium' : ''}`}
             >
               <span>{m.icon}</span>
               <span>{m.label}</span>
-            </button>
+            </Button>
           ))}
         </div>
       )}
@@ -128,20 +134,24 @@ function ModelDropdown({ selected, onSelect }: { selected: string; onSelect: (m:
 function ModeToggle({ mode, onModeChange }: { mode: string; onModeChange: (m: string) => void }) {
   return (
     <div className="flex items-center border border-[rgba(0,0,0,0.08)] rounded-full overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <button
+      <Button
+        variant={mode === "agent" ? "default" : "ghost"}
+        size="sm"
         onClick={() => onModeChange("agent")}
-        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${mode === "agent" ? "bg-[#000000] text-white" : "text-[#6B7280] hover:bg-[rgba(0,0,0,0.05)]"}`}
+        className={`flex items-center gap-1.5 text-xs font-medium ${mode === "agent" ? "bg-[#000000] text-white hover:bg-[#1A1A1A]" : "text-[#6B7280] hover:bg-[rgba(0,0,0,0.05)]"}`}
       >
         <AgentIcon />
         <span>Agent</span>
-      </button>
-      <button
+      </Button>
+      <Button
+        variant={mode === "computer" ? "default" : "ghost"}
+        size="sm"
         onClick={() => onModeChange("computer")}
-        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors ${mode === "computer" ? "bg-[#000000] text-white" : "text-[#6B7280] hover:bg-[rgba(0,0,0,0.05)]"}`}
+        className={`flex items-center gap-1.5 text-xs font-medium ${mode === "computer" ? "bg-[#000000] text-white hover:bg-[#1A1A1A]" : "text-[#6B7280] hover:bg-[rgba(0,0,0,0.05)]"}`}
       >
         <ComputerIcon />
         <span>Computer</span>
-      </button>
+      </Button>
     </div>
   );
 }
@@ -162,7 +172,7 @@ function FilePreview({ file, onRemove }: { file: File; onRemove: () => void }) {
     : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2 bg-white border border-[rgba(0,0,0,0.08)] rounded-xl" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="flex items-center gap-3 px-3 py-2 bg-white border border-[rgba(0,0,0,0.08)] rounded-xl shadow-sm" style={{ fontFamily: "'Inter', sans-serif" }}>
       <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#F4F4F5]">
         <FileIcon type={getMimeType(file.name)} />
       </div>
@@ -170,9 +180,9 @@ function FilePreview({ file, onRemove }: { file: File; onRemove: () => void }) {
         <div className="text-xs font-medium text-[#18181B] truncate">{file.name}</div>
         <div className="text-[11px] text-[#71717A]">{size}</div>
       </div>
-      <button onClick={onRemove} className="flex items-center justify-center w-6 h-6 rounded-full hover:bg-[#F4F4F5] text-[#71717A] transition-colors">
+      <Button variant="ghost" size="icon" onClick={onRemove} className="flex items-center justify-center w-6 h-6 rounded-full text-[#71717A]">
         <XIcon />
-      </button>
+      </Button>
     </div>
   );
 }
@@ -266,8 +276,8 @@ function ComposerUI({ mode, onModeChange, model, onModelChange }: {
   return (
     <ComposerPrimitive.Root
       onSubmit={handleSubmit}
-      className="w-full rounded-[24px] border border-[rgba(0,0,0,0.08)] bg-[#F4F4F5] relative"
-      style={{ fontFamily: "'Inter', sans-serif", boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
+      className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#F4F4F5] relative shadow-sm"
+      style={{ fontFamily: "'Inter', sans-serif" }}
     >
       {/* File previews */}
       {files.length > 0 && (
@@ -300,17 +310,23 @@ function ComposerUI({ mode, onModeChange, model, onModelChange }: {
           {/* Model selector */}
           <ModelDropdown selected={model} onSelect={onModelChange} />
           {/* Voice input */}
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={toggleVoice}
-            className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${recording ? 'bg-red-50 text-[#DC2626]' : 'hover:bg-[rgba(0,0,0,0.05)] text-[#6B7280]'}`}
+            className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${recording ? 'bg-red-50 text-[#DC2626] hover:bg-red-100' : 'hover:bg-[rgba(0,0,0,0.05)] text-[#6B7280]'}`}
             title={recording ? "Stop recording" : "Voice input"}
           >
             <MicIcon recording={recording} />
-          </button>
+          </Button>
           {/* Send button */}
-          <button type="submit" className="flex items-center justify-center w-8 h-8 rounded-full bg-[#000000] text-white hover:bg-[#1A1A1A] transition-colors">
+          <Button
+            type="submit"
+            size="icon"
+            className="flex items-center justify-center w-8 h-8 rounded-full bg-[#000000] text-white hover:bg-[#1A1A1A] shadow-md"
+          >
             <SendIcon />
-          </button>
+          </Button>
         </div>
       </div>
 
