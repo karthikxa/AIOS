@@ -55,9 +55,13 @@ until [ -S /tmp/.X11-unix/X99 ]; do
     fi
 done
 
-# ── ANTI-BLACK-SCREEN: solid background before x11vnc ever reads the display ──
-xsetroot -display :99 -solid '#0d0d0d'
-log "[1/6] Xvfb ready + background set (no black screen)"
+# ── ANTI-BLACK-SCREEN: solid background immediately — xsetroot is in x11-xserver-utils
+if command -v xsetroot > /dev/null 2>&1; then
+    xsetroot -display :99 -solid '#0d0d0d'
+    log "[1/6] Xvfb ready + background set (no black screen)"
+else
+    log "[1/6] Xvfb ready (xsetroot not found — openbox will set BG)"
+fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. openbox — prevents raw X11 artifact frames appearing in stream
@@ -107,6 +111,7 @@ x11vnc \
     -forever \
     -nopw \
     -rfbport ${VNC_PORT} \
+    -localhost \
     -xdamage \
     -shared \
     -quiet \
@@ -122,7 +127,7 @@ log "[4/6] x11vnc live stream OK (PID ${X11VNC_PID})"
 websockify \
     --web=${NOVNC_WEB} \
     --heartbeat=30 \
-    ${WS_PORT} 127.0.0.1:${VNC_PORT} \
+    127.0.0.1:${WS_PORT} 127.0.0.1:${VNC_PORT} \
     > /tmp/agent-logs/websockify.log 2>&1 &
 WS_PID=$!
 sleep 0.5
@@ -238,7 +243,7 @@ while true; do
     if ! kill -0 $X11VNC_PID 2>/dev/null; then
         log "[WATCHDOG] x11vnc died — restarting"
         x11vnc -display :99 -forever -nopw -rfbport ${VNC_PORT} \
-            -xdamage -shared -quiet -noxrecord \
+            -localhost -xdamage -shared -quiet -noxrecord \
             >> /tmp/agent-logs/x11vnc.log 2>&1 &
         X11VNC_PID=$!
     fi
@@ -246,7 +251,7 @@ while true; do
     if ! kill -0 $WS_PID 2>/dev/null; then
         log "[WATCHDOG] websockify died — restarting"
         websockify --web=${NOVNC_WEB} --heartbeat=30 \
-            ${WS_PORT} 127.0.0.1:${VNC_PORT} \
+            127.0.0.1:${WS_PORT} 127.0.0.1:${VNC_PORT} \
             >> /tmp/agent-logs/websockify.log 2>&1 &
         WS_PID=$!
     fi

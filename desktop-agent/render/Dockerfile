@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # ── Virtual framebuffer ──────────────────────────────────
     xvfb \
     x11-utils \
+    x11-xserver-utils \
     xdotool \
     # ── Window manager (prevents black-screen/artifact frames) ─
     openbox \
