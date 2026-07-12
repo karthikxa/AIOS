@@ -604,8 +604,8 @@ function openCreateScheduleSidebar() {
 
           <div class="zed-modal-field">
             <label for="schedFrequency">Frequency</label>
-            <select id="schedFrequency" style="height:38px;padding:0 10px;border-radius:10px;border:1px solid rgba(0,0,0,0.08);font-size:13px;font-family:'Inter',sans-serif;background:#FFF;outline:none;width:100%;">
-              <option value="minutely">Every minute (testing)</option>
+            <select id="schedFrequency" style="height:38px;padding:0 10px;border-radius:8px;border:1px solid #E4E4E7;font-size:13px;font-family:'Inter',sans-serif;background:#FFF;outline:none;width:100%;cursor:pointer;color:#18181B;transition:border-color 0.15s;" onfocus="this.style.borderColor='#A1A1AA'" onblur="this.style.borderColor='#E4E4E7'">
+              <option value="minutely">Every minute</option>
               <option value="hourly">Every hour</option>
               <option value="daily" selected>Daily</option>
               <option value="weekly">Weekly</option>
