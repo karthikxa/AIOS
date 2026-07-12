@@ -3830,7 +3830,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         updateStatus('Agent starting...', '0 / ?');
 
         // ── HF Space endpoint ───────────────────────────────────────────
-        const hfUrl = (localStorage.getItem('hf_space_url') || 'https://bkarthikeyan-browser-agent-stream.hf.space').replace(/\/$/, '');
+        const hfUrl = (localStorage.getItem('hf_space_url') || 'https://browser-server-2.onrender.com').replace(/\/$/, '');
         let agentStep = 0;
         const maxSteps = 15;
         let progressIndex = 0;

@@ -785,6 +785,7 @@ async def get_stream():
 # ── WebSocket server ──
 @app.websocket("/ws/agent")
 async def ws_agent(websocket: WebSocket):
+    global active_task
     await websocket.accept()
     clients.append(websocket)
     # Send current state immediately on connect
@@ -792,8 +793,16 @@ async def ws_agent(websocket: WebSocket):
     await websocket.send_json({"type": "action_log", "log": _logger.get_summary()})
     try:
         while True:
-            # Keep socket alive
-            await websocket.receive_text()
+            raw = await websocket.receive_text()
+            try:
+                msg = json.loads(raw)
+                # Frontend sends {type: 'message', text: '<task>'} to start the agent
+                if msg.get("type") == "message" and msg.get("text"):
+                    if active_task and not active_task.done():
+                        active_task.cancel()
+                    active_task = asyncio.create_task(run_agent(msg["text"]))
+            except Exception:
+                pass
     except WebSocketDisconnect:
         if websocket in clients:
             clients.remove(websocket)
