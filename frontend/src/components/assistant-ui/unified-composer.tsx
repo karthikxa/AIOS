@@ -76,7 +76,7 @@ function ModelDropdown({ selected, onSelect }: { selected: string; onSelect: (m:
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#6B7280] hover:bg-[rgba(0,0,0,0.05)] transition-colors"
         style={{ fontFamily: "'Inter', sans-serif" }}
       >
         <span>{current.icon}</span>
@@ -86,13 +86,13 @@ function ModelDropdown({ selected, onSelect }: { selected: string; onSelect: (m:
         </svg>
       </button>
       {open && (
-        <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-xl shadow-lg py-1 min-w-[160px] z-50"
+        <div className="absolute bottom-full left-0 mb-2 bg-white border border-[rgba(0,0,0,0.08)] rounded-xl shadow-lg py-1 min-w-[160px] z-50"
           style={{ fontFamily: "'Inter', sans-serif" }}>
           {models.map(m => (
             <button
               key={m.id}
               onClick={() => { onSelect(m.id); setOpen(false); }}
-              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors ${m.id === selected ? 'bg-gray-50 font-medium' : ''}`}
+              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-[#F4F4F5] transition-colors ${m.id === selected ? 'bg-[#F4F4F5] font-medium' : ''}`}
             >
               <span>{m.icon}</span>
               <span>{m.label}</span>
@@ -152,27 +152,27 @@ function ComposerUI({ mode, onModeChange, model, onModelChange }: {
   return (
     <ComposerPrimitive.Root
       onSubmit={handleSubmit}
-      className="w-full rounded-2xl border border-gray-200 bg-gray-50 relative"
-      style={{ fontFamily: "'Inter', sans-serif" }}
+      className="w-full rounded-[24px] border border-[rgba(0,0,0,0.08)] bg-[#F4F4F5] relative"
+      style={{ fontFamily: "'Inter', sans-serif", boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
     >
       <ComposerPrimitive.Input
         placeholder="Ask anything..."
         rows={1}
-        className="min-h-[44px] w-full resize-none bg-transparent px-4 pt-3 pb-2 text-sm focus:outline-none text-gray-900 placeholder-gray-400"
+        className="min-h-[44px] w-full resize-none bg-transparent px-4 pt-3 pb-2 text-sm focus:outline-none text-[#1F2937] placeholder-[#8E8E93]"
       />
       <div className="flex items-center justify-between px-3 pb-3">
         <div className="flex items-center gap-2">
-          <button className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-200 text-gray-500 transition-colors" title="Attach file">
+          <button className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-[rgba(0,0,0,0.05)] text-[#6B7280] transition-colors" title="Attach file">
             <PlusIcon />
           </button>
           <ModeToggle mode={mode} onModeChange={onModeChange} />
         </div>
         <div className="flex items-center gap-2">
           <ModelDropdown selected={model} onSelect={onModelChange} />
-          <button className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-200 text-gray-500 transition-colors" title="Voice input">
+          <button className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-[rgba(0,0,0,0.05)] text-[#6B7280] transition-colors" title="Voice input">
             <MicIcon />
           </button>
-          <button type="submit" className="flex items-center justify-center w-8 h-8 rounded-full bg-black text-white hover:bg-gray-800 transition-colors">
+          <button type="submit" className="flex items-center justify-center w-8 h-8 rounded-full bg-[#000000] text-white hover:bg-[#1A1A1A] transition-colors">
             <SendIcon />
           </button>
         </div>
