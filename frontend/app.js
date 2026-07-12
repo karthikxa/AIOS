@@ -3918,12 +3918,24 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           // Load the noVNC live stream into the split-pane iframe from browser-server-1.
           const desktopFrame = document.getElementById('desktopFrame');
           if (desktopFrame) {
-            const vncUrl = (localStorage.getItem('vnc_url') || 'https://browser-server-1.onrender.com/vnc.html?autoconnect=1&resize=scale&quality=6&path=websockify');
-            desktopFrame.src = vncUrl;
+            const vncUrl = (localStorage.getItem('vnc_url') || 'https://browser-server-1.onrender.com/vnc.html?autoconnect=1&resize=scale&quality=6&path=websockify&bell=0&show_dot=0&toolbar=0');
             desktopFrame.style.display = 'block';
-            // Hide the connecting overlay
-            const overlay = document.getElementById('desktopConnectingOverlay');
-            if (overlay) overlay.style.display = 'none';
+            desktopFrame.onload = () => {
+              // Hide connecting overlay once VNC iframe is loaded
+              const overlay = document.getElementById('desktopConnectingOverlay');
+              if (overlay) overlay.style.display = 'none';
+              // Show LIVE badge
+              const liveBadge = document.getElementById('splitPaneLiveBadge');
+              if (liveBadge) liveBadge.style.display = 'flex';
+              // Inject CSS into noVNC iframe to hide its toolbar and fill 100%
+              try {
+                const iframeDoc = desktopFrame.contentDocument || desktopFrame.contentWindow.document;
+                const style = iframeDoc.createElement('style');
+                style.textContent = '#noVNC_control_bar_anchor, #noVNC_connect_controls, #noVNC_status { display: none !important; } body, html { margin:0; padding:0; overflow:hidden; background:#000; } #noVNC_container { width:100vw !important; height:100vh !important; }';
+                iframeDoc.head.appendChild(style);
+              } catch(e) { /* cross-origin: skip style injection */ }
+            };
+            desktopFrame.src = vncUrl;
           }
 
           // Send task — agent runs fully server-side, stream shows progress

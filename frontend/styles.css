@@ -9918,12 +9918,12 @@ main.main-content.computer-split-mode .chat-messages-log {
 }
 
 main.main-content.computer-split-mode #computerSplitPane {
-  width: 40% !important;
+  width: 42% !important;
   display: flex !important;
   flex-direction: column !important;
   height: 100% !important;
   flex-shrink: 0 !important;
-  background: #FFFFFF !important;
+  background: #0a0a0a !important;
   box-sizing: border-box !important;
 }
 
@@ -10201,12 +10201,12 @@ main.main-content.computer-split-mode .chat-messages-log {
 }
 
 main.main-content.computer-split-mode #computerSplitPane {
-  width: 40% !important;
+  width: 42% !important;
   display: flex !important;
   flex-direction: column !important;
   height: 100% !important;
   flex-shrink: 0 !important;
-  background: #FFFFFF !important;
+  background: #0a0a0a !important;
   box-sizing: border-box !important;
 }
 
@@ -10641,7 +10641,7 @@ main.main-content.computer-split-mode #computerSplitPane {
 
 /* Fixed computer-mode panel sizing */
 main.main-content.computer-split-mode #computerSplitPane {
-  width: clamp(420px, 36vw, 560px) !important;
+  width: clamp(420px, 42vw, 620px) !important;
   height: 100% !important;
   min-height: 0 !important;
   overflow: hidden !important;
@@ -10651,9 +10651,10 @@ main.main-content.computer-split-mode #computerSplitPane {
   padding-left: 0 !important;
   margin-right: 0 !important;
   margin-left: 0 !important;
-  border-right: 1px solid #E5E7EB !important;
-  background: #FFFFFF !important;
-  box-shadow: -1px 0 0 rgba(17, 24, 39, 0.03) !important;
+  border-right: none !important;
+  border-left: 1px solid rgba(255,255,255,0.05) !important;
+  background: #0a0a0a !important;
+  box-shadow: none !important;
 }
 
 main.main-content.computer-split-mode .center-container {
