@@ -2536,13 +2536,40 @@ JSON Structure:
     // ── Install Plugin ─────────────────────────────────────────────
     const pluginMatch = lower.match(/(?:install|connect|add)\s+(?:the\s+)?(?:plugin\s+)?(.+)/i);
     if (pluginMatch && !agentMatch && !schedMatch) {
-      const pluginName = pluginMatch[1].trim();
-      const popular = pluginsStore.popular.find(p => p.name.toLowerCase() === pluginName.toLowerCase());
+      const inputPluginName = pluginMatch[1].trim().toLowerCase();
+      let resolvedId = null;
+      if (inputPluginName.includes('gmail')) resolvedId = 'gmail';
+      else if (inputPluginName.includes('drive')) resolvedId = 'google-drive';
+      else if (inputPluginName.includes('calendar')) resolvedId = 'calendar';
+      else if (inputPluginName.includes('sheet')) resolvedId = 'google-sheets';
+      else if (inputPluginName.includes('doc')) resolvedId = 'google-docs';
+      else if (inputPluginName.includes('task')) resolvedId = 'google-tasks';
+      else if (inputPluginName.includes('contact')) resolvedId = 'google-contacts';
+      else if (inputPluginName.includes('chat')) resolvedId = 'google-chat';
+      else if (inputPluginName.includes('meet')) resolvedId = 'google-meet';
+      else if (inputPluginName.includes('photo')) resolvedId = 'google-photos';
+      else if (inputPluginName.includes('fit') || inputPluginName.includes('fitness')) resolvedId = 'google-fit';
+      else if (inputPluginName.includes('class')) resolvedId = 'google-classroom';
+      else if (inputPluginName.includes('youtube')) resolvedId = 'youtube';
+
+      let popular = null;
+      if (resolvedId) {
+        popular = pluginsStore.popular.find(p => p.id === resolvedId);
+      } else {
+        popular = pluginsStore.popular.find(p => p.name.toLowerCase() === inputPluginName);
+      }
+
       if (popular) {
         pluginsStore.install(popular.id);
         results.push(`Installed plugin "${popular.name}"`);
+        if (resolvedId) {
+          setTimeout(() => {
+            appendMessage('assistant', `Please connect your Google account to enable the ${popular.name} plugin: [CONNECT:${popular.id}]`);
+          }, 400);
+        }
       } else {
-        const plugin = pluginsStore.addPlugin({ name: pluginName, desc: `Custom ${pluginName} plugin.` });
+        const originalName = pluginMatch[1].trim();
+        const plugin = pluginsStore.addPlugin({ name: originalName, desc: `Custom ${originalName} plugin.` });
         results.push(`Added plugin "${plugin.name}"`);
       }
     }
