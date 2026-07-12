@@ -37,14 +37,7 @@ const SendIcon = () => (
   </svg>
 );
 
-const MicIcon = ({ recording }: { recording?: boolean }) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={recording ? "#DC2626" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-    <line x1="12" y1="19" x2="12" y2="22"/>
-    {recording && <circle cx="12" cy="12" r="10" stroke="#DC2626" strokeWidth="1" fill="none" opacity="0.3"/>}
-  </svg>
-);
+
 
 const PlusIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -187,45 +180,7 @@ function FilePreview({ file, onRemove }: { file: File; onRemove: () => void }) {
   );
 }
 
-// ── Voice Input Hook ────────────────────────────────────────────────────
-function useVoiceInput(onTranscript: (text: string) => void) {
-  const [recording, setRecording] = useState(false);
-  const recognitionRef = useRef<any>(null);
 
-  const toggle = useCallback(() => {
-    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
-      alert("Speech recognition not supported in this browser.");
-      return;
-    }
-
-    if (recording) {
-      recognitionRef.current?.stop();
-      setRecording(false);
-      return;
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = "en-US";
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      onTranscript(transcript);
-      setRecording(false);
-    };
-
-    recognition.onerror = () => setRecording(false);
-    recognition.onend = () => setRecording(false);
-
-    recognitionRef.current = recognition;
-    recognition.start();
-    setRecording(true);
-  }, [recording, onTranscript]);
-
-  return { recording, toggle };
-}
 
 // ── Main Unified Composer ────────────────────────────────────────────────
 const noopAdapter = { async *stream() {} };
@@ -239,12 +194,7 @@ function ComposerUI({ mode, onModeChange, model, onModelChange }: {
   const [files, setFiles] = useState<File[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { recording, toggle: toggleVoice } = useVoiceInput((text) => {
-    if (textareaRef.current) {
-      textareaRef.current.value += text;
-      textareaRef.current.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-  });
+
 
   const handleFileAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -309,16 +259,7 @@ function ComposerUI({ mode, onModeChange, model, onModelChange }: {
         <div className="flex items-center gap-2">
           {/* Model selector */}
           <ModelDropdown selected={model} onSelect={onModelChange} />
-          {/* Voice input */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleVoice}
-            className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${recording ? 'bg-red-50 text-[#DC2626] hover:bg-red-100' : 'hover:bg-[rgba(0,0,0,0.05)] text-[#6B7280]'}`}
-            title={recording ? "Stop recording" : "Voice input"}
-          >
-            <MicIcon recording={recording} />
-          </Button>
+
           {/* Send button */}
           <Button
             type="submit"

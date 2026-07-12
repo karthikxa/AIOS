@@ -1,12 +1,10 @@
-// Router to handle top-level view switching (Chat vs Models vs Voice)
+// Router to handle top-level view switching (Chat vs Models)
 
 export function initRouter() {
   const navItems = document.querySelectorAll('.nav-item');
   const modelsPageView = document.getElementById('modelsPageView');
   const schedulesPageView = document.getElementById('schedulesPageView');
   const pluginsPageView = document.getElementById('pluginsPageView');
-  const voicePageView = document.getElementById('voicePageView');
-  const libraryPageView = document.getElementById('libraryPageView');
   const appHeader = document.querySelector('.app-header');
   const centerContainer = document.querySelector('.center-container');
   const mainContent = document.getElementById('mainContent');
@@ -46,8 +44,6 @@ export function initRouter() {
     if (modelsPageView) modelsPageView.style.display = 'none';
     if (schedulesPageView) schedulesPageView.style.display = 'none';
     if (pluginsPageView) pluginsPageView.style.display = 'none';
-    if (voicePageView) voicePageView.style.display = 'none';
-    if (libraryPageView) libraryPageView.style.display = 'none';
     if (document.getElementById('agentPageView')) document.getElementById('agentPageView').style.display = 'none';
     showCenterContainer();
   }
@@ -87,8 +83,6 @@ export function initRouter() {
         if (modelsPageView) modelsPageView.style.display = 'block';
         if (schedulesPageView) schedulesPageView.style.display = 'none';
         if (pluginsPageView) pluginsPageView.style.display = 'none';
-        if (voicePageView) voicePageView.style.display = 'none';
-        if (libraryPageView) libraryPageView.style.display = 'none';
         if (document.getElementById('agentPageView')) document.getElementById('agentPageView').style.display = 'none';
         hideCenterContainer();
       } else if (item.id === 'navScheduled') {
@@ -96,8 +90,6 @@ export function initRouter() {
         if (modelsPageView) modelsPageView.style.display = 'none';
         if (schedulesPageView) schedulesPageView.style.display = 'flex';
         if (pluginsPageView) pluginsPageView.style.display = 'none';
-        if (voicePageView) voicePageView.style.display = 'none';
-        if (libraryPageView) libraryPageView.style.display = 'none';
         if (document.getElementById('agentPageView')) document.getElementById('agentPageView').style.display = 'none';
         hideCenterContainer();
       } else if (item.id === 'navPlugins') {
@@ -105,8 +97,6 @@ export function initRouter() {
         if (modelsPageView) modelsPageView.style.display = 'none';
         if (schedulesPageView) schedulesPageView.style.display = 'none';
         if (pluginsPageView) pluginsPageView.style.display = 'flex';
-        if (voicePageView) voicePageView.style.display = 'none';
-        if (libraryPageView) libraryPageView.style.display = 'none';
         if (document.getElementById('agentPageView')) document.getElementById('agentPageView').style.display = 'none';
         hideCenterContainer();
       } else if (item.id === 'navAgent') {
@@ -114,30 +104,10 @@ export function initRouter() {
         if (modelsPageView) modelsPageView.style.display = 'none';
         if (schedulesPageView) schedulesPageView.style.display = 'none';
         if (pluginsPageView) pluginsPageView.style.display = 'none';
-        if (voicePageView) voicePageView.style.display = 'none';
-        if (libraryPageView) libraryPageView.style.display = 'none';
         if (document.getElementById('agentPageView')) document.getElementById('agentPageView').style.display = 'flex';
         hideCenterContainer();
-      } else if (item.id === 'navVoice') {
-        // Transition to Voice view
-        if (modelsPageView) modelsPageView.style.display = 'none';
-        if (schedulesPageView) schedulesPageView.style.display = 'none';
-        if (pluginsPageView) pluginsPageView.style.display = 'none';
-        if (voicePageView) voicePageView.style.display = 'flex';
-        if (libraryPageView) libraryPageView.style.display = 'none';
-        if (document.getElementById('agentPageView')) document.getElementById('agentPageView').style.display = 'none';
-        hideCenterContainer();
-      } else if (item.id === 'navLibrary') {
-        // Transition to Library view
-        if (modelsPageView) modelsPageView.style.display = 'none';
-        if (schedulesPageView) schedulesPageView.style.display = 'none';
-        if (pluginsPageView) pluginsPageView.style.display = 'none';
-        if (voicePageView) voicePageView.style.display = 'none';
-        if (libraryPageView) libraryPageView.style.display = 'block';
-        if (document.getElementById('agentPageView')) document.getElementById('agentPageView').style.display = 'none';
-        hideCenterContainer();
       } else {
-        // Transition to Chat view (New Task, Library, etc.)
+        // Transition to Chat view (New Task, etc.)
         showChatView();
       }
     });

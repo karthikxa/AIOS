@@ -8,7 +8,6 @@ import { initModelsPage } from './js/models-page.js';
 import { initAgentPage, agentsStore } from './js/agent-page.js';
 import { initCreateAgentPage } from './js/create-agent-page.js';
 import { initEditAgentPage } from './js/edit-agent-page.js';
-import { initVoicePage } from './js/voice-page.js';
 import { modelsStore } from './js/models-store.js';
 
 import { pluginsStore } from './js/plugins-page.js';
@@ -70,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initAgentPage();
     initCreateAgentPage();
     initEditAgentPage();
-    initVoicePage();
     initModelSelector((newModel) => {});
     initAgentComputer();
   };
@@ -4808,57 +4806,7 @@ Here are the current findings:
     }
   });
 
-  // ── Voice Input ──────────────────────────────────────────────────────
-  let mediaRecorder = null;
-  let audioChunks = [];
-  let isRecording = false;
-  const voiceBtn = document.getElementById('voiceInputBtn');
 
-  if (voiceBtn && 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognition = null;
-
-    voiceBtn.addEventListener('click', () => {
-      if (isRecording) {
-        if (recognition) { recognition.stop(); recognition = null; }
-        voiceBtn.classList.remove('voice-recording');
-        isRecording = false;
-        return;
-      }
-      recognition = new SpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.interimResults = true;
-      recognition.continuous = true;
-
-      recognition.onresult = (event) => {
-        let transcript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript;
-        }
-        chatPromptInput.value = transcript;
-      };
-
-      recognition.onerror = () => {
-        voiceBtn.classList.remove('voice-recording');
-        isRecording = false;
-        recognition = null;
-      };
-
-      recognition.onend = () => {
-        voiceBtn.classList.remove('voice-recording');
-        isRecording = false;
-        recognition = null;
-      };
-
-      recognition.start();
-      voiceBtn.classList.add('voice-recording');
-      isRecording = true;
-    });
-  } else {
-    voiceBtn.title = 'Voice input not supported in this browser';
-    voiceBtn.style.opacity = '0.4';
-    voiceBtn.style.cursor = 'not-allowed';
-  }
 
   // ── File Upload ──────────────────────────────────────────────────────
   const fileInput = document.getElementById('fileInput');
