@@ -501,17 +501,16 @@ function toggleRowMenu(triggerBtn, id) {
   menu.style.cssText = `
     position: fixed;
     background: #FFFFFF;
-    border: 1px solid #E5E7EB;
+    border: 1px solid #E4E4E7;
     border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    padding: 6px;
-    min-width: 180px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+    padding: 4px;
+    min-width: 160px;
     z-index: 9999;
     display: flex;
     flex-direction: column;
     gap: 2px;
     font-family: 'Inter', -apple-system, sans-serif;
-    animation: menuFadeIn 0.15s ease-out;
   `;
 
   const rect = triggerBtn.getBoundingClientRect();
@@ -519,13 +518,14 @@ function toggleRowMenu(triggerBtn, id) {
   menu.style.left = `${Math.max(4, rect.right - 180)}px`;
 
   const actions = [
-    { action: 'run-now',       label: 'Run now',    icon: '▶',  color: '#111827' },
-    { action: 'edit',          label: 'Edit',        icon: '✏️', color: '#111827' },
-    { action: 'toggle-status', label: isAct ? 'Pause' : 'Activate', icon: isAct ? '⏸' : '▶', color: '#111827' },
-    { action: 'delete',        label: 'Delete',      icon: '🗑', color: '#EF4444' },
+    { action: 'run-now',       label: 'Run now',    icon: '▶',  color: '#059669' },
+    { action: 'edit',          label: 'Edit',        icon: '✏', color: '#18181B' },
+    { action: 'toggle-status', label: isAct ? 'Pause' : 'Activate', icon: isAct ? '⏸' : '▶', color: '#18181B' },
+    { action: 'delete',        label: 'Delete',      icon: '🗑', color: '#DC2626' },
   ];
 
-  menu.innerHTML = actions.map(a => `
+  menu.innerHTML = actions.map((a, i) => `
+    ${i === actions.length - 1 ? '<div style="height: 1px; background: #E4E4E7; margin: 2px 8px;"></div>' : ''}
     <button class="sched-menu-item" data-action="${a.action}" style="
       display: flex; align-items: center; gap: 8px;
       background: none; border: none; text-align: left; padding: 8px 12px;
@@ -537,7 +537,7 @@ function toggleRowMenu(triggerBtn, id) {
   document.body.appendChild(menu);
 
   menu.querySelectorAll('.sched-menu-item').forEach(btnEl => {
-    btnEl.addEventListener('mouseenter', () => btnEl.style.backgroundColor = '#F9FAFB');
+    btnEl.addEventListener('mouseenter', () => btnEl.style.backgroundColor = '#F4F4F5');
     btnEl.addEventListener('mouseleave', () => btnEl.style.backgroundColor = 'transparent');
     btnEl.addEventListener('click', e => {
       e.stopPropagation();

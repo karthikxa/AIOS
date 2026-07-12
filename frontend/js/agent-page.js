@@ -428,11 +428,11 @@ function toggleAgentRowMenu(triggerBtn, id) {
   menu.style.cssText = `
     position: absolute;
     background: #FFFFFF;
-    border: 1px solid #EAEAEA;
+    border: 1px solid #E4E4E7;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    padding: 6px;
-    min-width: 140px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+    padding: 4px;
+    min-width: 160px;
     z-index: 1000;
     display: flex;
     flex-direction: column;
@@ -446,22 +446,23 @@ function toggleAgentRowMenu(triggerBtn, id) {
 
   menu.innerHTML = `
     <button class="agent-menu-item" data-action="run-now" style="
-      background: none; border: none; text-align: left; padding: 8px 12px; font-size: 13px; color: #059669; cursor: pointer; border-radius: 8px; font-weight: 550; font-family: inherit; width: 100%;
+      background: none; border: none; text-align: left; padding: 8px 12px; font-size: 13px; color: #059669; cursor: pointer; border-radius: 8px; font-weight: 500; font-family: inherit; width: 100%; transition: background 0.1s;
     ">
       Run Now
     </button>
     <button class="agent-menu-item" data-action="toggle-status" style="
-      background: none; border: none; text-align: left; padding: 8px 12px; font-size: 13px; color: #111111; cursor: pointer; border-radius: 8px; font-weight: 550; font-family: inherit; width: 100%;
+      background: none; border: none; text-align: left; padding: 8px 12px; font-size: 13px; color: #18181B; cursor: pointer; border-radius: 8px; font-weight: 500; font-family: inherit; width: 100%; transition: background 0.1s;
     ">
       ${isAct ? 'Stop Agent' : 'Start Agent'}
     </button>
     <button class="agent-menu-item" data-action="edit" style="
-      background: none; border: none; text-align: left; padding: 8px 12px; font-size: 13px; color: #111111; cursor: pointer; border-radius: 8px; font-weight: 550; font-family: inherit; width: 100%;
+      background: none; border: none; text-align: left; padding: 8px 12px; font-size: 13px; color: #18181B; cursor: pointer; border-radius: 8px; font-weight: 500; font-family: inherit; width: 100%; transition: background 0.1s;
     ">
       Edit Agent
     </button>
+    <div style="height: 1px; background: #E4E4E7; margin: 2px 8px;"></div>
     <button class="agent-menu-item" data-action="delete" style="
-      background: none; border: none; text-align: left; padding: 8px 12px; font-size: 13px; color: #E11D48; cursor: pointer; border-radius: 8px; font-weight: 550; font-family: inherit; width: 100%;
+      background: none; border: none; text-align: left; padding: 8px 12px; font-size: 13px; color: #DC2626; cursor: pointer; border-radius: 8px; font-weight: 500; font-family: inherit; width: 100%; transition: background 0.1s;
     ">
       Delete Agent
     </button>
@@ -473,7 +474,7 @@ function toggleAgentRowMenu(triggerBtn, id) {
   items.forEach(btnEl => {
     btnEl.addEventListener('mouseenter', () => {
       const action = btnEl.getAttribute('data-action');
-      btnEl.style.backgroundColor = action === 'delete' ? '#FFF5F5' : '#FAFAFA';
+      btnEl.style.backgroundColor = action === 'delete' ? '#FEF2F2' : '#F4F4F5';
     });
     btnEl.addEventListener('mouseleave', () => {
       btnEl.style.backgroundColor = 'transparent';
