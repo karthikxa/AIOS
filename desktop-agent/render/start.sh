@@ -159,7 +159,7 @@ log "[6/6] FastAPI agent ready"
 #   /websockify    → websockify WebSocket VNC (live stream)
 #   /api/          → FastAPI agent REST API
 # ─────────────────────────────────────────────────────────────────────────────
-cat > /tmp/nginx_full.conf << NGINX_FULL
+cat > /tmp/nginx.conf << NGINX_FULL
 worker_processes 1;
 pid /tmp/nginx.pid;
 error_log /tmp/agent-logs/nginx.log warn;
@@ -208,7 +208,7 @@ http {
 }
 NGINX_FULL
 
-nginx -c /tmp/nginx_full.conf -s reload
+nginx -s reload
 sleep 0.5
 log "[7/7] nginx full routing reloaded"
 
