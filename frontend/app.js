@@ -3915,11 +3915,11 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         if (usingWs && agentWs) {
           toggleComputerSplit(true);
 
-          // Load the Selkies WebRTC stream into the split-pane iframe.
-          // The stream shows EVERYTHING live at 30fps — no polling needed.
+          // Load the noVNC live stream into the split-pane iframe from browser-server-1.
           const desktopFrame = document.getElementById('desktopFrame');
           if (desktopFrame) {
-            desktopFrame.src = hfUrl + '/stream/';
+            const vncUrl = (localStorage.getItem('vnc_url') || 'https://browser-server-1.onrender.com/vnc.html?autoconnect=1&resize=scale&quality=6&path=websockify');
+            desktopFrame.src = vncUrl;
             desktopFrame.style.display = 'block';
             // Hide the connecting overlay
             const overlay = document.getElementById('desktopConnectingOverlay');
@@ -5109,16 +5109,16 @@ Here are the current findings:
     // ── Priority 2: HF Space cloud desktop (noVNC via WebSocket) ───────
     const hfSpaceUrl = localStorage.getItem('hf_space_url');
     if (hfSpaceUrl) {
-      // noVNC: WebSocket-based VNC stream — works in any browser/iframe
-      // Cross-origin WebSockets are NOT blocked by browsers (unlike cookies/WebRTC TURN)
-      const baseUrl = hfSpaceUrl.replace(/\/$/, '');
+      // VNC stream comes from browser-server-1, agent API from browser-server-2
+      const agentUrl = hfSpaceUrl.replace(/\/$/, '');
+      const vncUrl = localStorage.getItem('vnc_url') || 'https://browser-server-1.onrender.com/vnc.html?autoconnect=1&resize=scale&quality=6&path=websockify';
       desktopFrame.style.display = 'block';
-      // Load noVNC HTML5 client with autoconnect params
-      desktopFrame.src = baseUrl + '/stream/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=2000&quality=6&compression=2&view_only=false&show_dot=true';
+      // Load noVNC HTML5 client from the VNC server
+      desktopFrame.src = vncUrl;
       // Update URL in header
       const urlEl = document.getElementById('splitPaneHeaderUrl');
       if (urlEl) {
-        urlEl.innerHTML = `<a href="${baseUrl}" target="_blank" style="color:#3B82F6;text-decoration:none;">${baseUrl}</a>`;
+        urlEl.innerHTML = `<a href="${agentUrl}" target="_blank" style="color:#3B82F6;text-decoration:none;">${agentUrl}</a>`;
       }
       // Hide connecting overlay once iframe loads (noVNC connects via WebSocket)
       desktopFrame.onload = () => {
@@ -5145,8 +5145,8 @@ Here are the current findings:
     if (thumbnailFrame) {
       const hfSpaceUrl2 = localStorage.getItem('hf_space_url');
       if (hfSpaceUrl2) {
-        // Load Selkies /stream/ directly — no screenshot polling
-        thumbnailFrame.src = hfSpaceUrl2.replace(/\/$/, '') + '/stream/';
+        // Load noVNC from browser-server-1 (VNC server)
+        thumbnailFrame.src = localStorage.getItem('vnc_url') || 'https://browser-server-1.onrender.com/vnc.html?autoconnect=1&resize=scale&quality=6&path=websockify';
       } else {
         thumbnailFrame.src = getVncBaseUrl() + '/vnc/index.html?autoconnect=true&resize=scale&reconnect=1&path=websockify';
       }
