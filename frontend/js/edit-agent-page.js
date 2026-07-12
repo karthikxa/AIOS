@@ -133,8 +133,17 @@ export function initEditAgentPage() {
   // Save changes button logic
   const btnSave = document.getElementById('btnEditAgentSave');
   btnSave?.addEventListener('click', () => {
+    console.log('[Edit] Save clicked, currentEditingAgentId:', currentEditingAgentId);
+    console.log('[Edit] State:', JSON.stringify(state));
+    
     if (!state.name.trim()) {
       showToast('Please enter an agent name.', 'warning');
+      return;
+    }
+
+    if (!currentEditingAgentId) {
+      console.error('[Edit] No agent ID to update');
+      showToast('Error: No agent selected for editing.', 'error');
       return;
     }
 
@@ -274,13 +283,21 @@ export function initEditAgentPage() {
 }
 
 export function openEditAgentPage(agentId) {
+  console.log('[Edit] Opening edit page for agent:', agentId);
   const editPage = document.getElementById('editAgentPageView');
   const agentPage = document.getElementById('agentPageView');
-  if (!editPage || !agentPage) return;
+  if (!editPage || !agentPage) {
+    console.error('[Edit] Edit page or agent page not found');
+    return;
+  }
 
   const agent = agentsStore.agents.find(a => a.id === agentId);
-  if (!agent) return;
+  if (!agent) {
+    console.error('[Edit] Agent not found:', agentId);
+    return;
+  }
 
+  console.log('[Edit] Agent found:', agent.name);
   currentEditingAgentId = agentId;
   state.name = agent.name;
   state.desc = agent.desc;

@@ -83,6 +83,7 @@ class AgentsStore {
 
   async updateAgent(id, data) {
     try {
+      console.log('[Agents] Updating agent:', id, data);
       const res = await fetch(`/api/agents/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -96,14 +97,22 @@ class AgentsStore {
           status: data.status || 'active'
         })
       });
+      console.log('[Agents] Update response:', res.status);
       if (res.ok) {
         const result = await res.json();
+        console.log('[Agents] Update result:', result);
         const idx = this.agents.findIndex(a => a.id === id);
         if (idx !== -1) this.agents[idx] = result.agent;
         this.notify();
+        if (window.showToast) window.showToast('Agent updated successfully!', 'success');
+      } else {
+        const err = await res.text();
+        console.error('[Agents] Update failed:', res.status, err);
+        if (window.showToast) window.showToast('Update failed: ' + err, 'error');
       }
     } catch (e) {
-      console.warn('[Agents] Update failed:', e);
+      console.error('[Agents] Update failed:', e);
+      if (window.showToast) window.showToast('Update failed: ' + e.message, 'error');
     }
   }
 
