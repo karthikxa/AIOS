@@ -208,7 +208,7 @@ http {
 }
 NGINX_FULL
 
-nginx -s reload
+nginx -c /tmp/nginx.conf -s reload
 sleep 0.5
 log "[7/7] nginx full routing reloaded"
 
