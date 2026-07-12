@@ -22,6 +22,7 @@ from contextlib import asynccontextmanager
 import aiohttp
 import websockets
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import JSONResponse, StreamingResponse, Response, HTMLResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -775,6 +776,10 @@ async def agent_plan():
 @app.get("/agent/log")
 async def agent_log():
     return _logger.to_dict()
+@app.get("/stream")
+@app.get("/stream/")
+async def get_stream():
+    return RedirectResponse(url=DESKTOP_URL + "/")
 
 
 # ── WebSocket server ──
