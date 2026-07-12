@@ -43,7 +43,7 @@ log "[0/6] nginx placeholder OK — port ${PORT} held"
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. Xvfb — virtual display
 # ─────────────────────────────────────────────────────────────────────────────
-Xvfb :99 -screen 0 1280x720x24 -nolisten tcp -noreset \
+Xvfb :99 -screen 0 1024x576x16 -nolisten tcp -noreset \
     > /tmp/agent-logs/xvfb.log 2>&1 &
 XVFB_PID=$!
 
@@ -85,7 +85,7 @@ DISPLAY=:99 chromium \
     --no-default-browser-check \
     --metrics-recording-only \
     --kiosk \
-    --window-size=1280,720 \
+    --window-size=1024,576 \
     --remote-debugging-port=${CDP_PORT} \
     --remote-debugging-address=127.0.0.1 \
     "https://www.google.com" \
@@ -113,6 +113,10 @@ x11vnc \
     -rfbport ${VNC_PORT} \
     -localhost \
     -xdamage \
+    -wait 40 \
+    -defer 40 \
+    -nosel \
+    -noprimary \
     -shared \
     -quiet \
     -noxrecord \
