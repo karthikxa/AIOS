@@ -224,6 +224,12 @@ log "[6/6] nginx full routing + CDP proxy active"
 # ─────────────────────────────────────────────────────────────────────────────
 VNC_HTML="${NOVNC_WEB}/vnc.html"
 if [ -f "${VNC_HTML}" ]; then
+    log "[7/7] Using stock noVNC client with native reconnect"
+fi
+
+# Keep the old customization as non-executing reference only. Stock noVNC is
+# required here because custom DOM mutations can block the remote canvas.
+if false && [ -f "${VNC_HTML}" ]; then
     if ! grep -q 'novnc_hide_patch_v8' "${VNC_HTML}"; then
         log "Patching noVNC HTML - safe native reconnect (v8)..."
         python3 - "${VNC_HTML}" <<'PYEOF'
