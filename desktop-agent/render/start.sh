@@ -177,7 +177,7 @@ http {
 
         # ── Live WebSocket VNC stream ──
         location /websockify {
-            proxy_pass http://127.0.0.1:${WS_PORT}/websockify;
+            proxy_pass http://127.0.0.1:${WS_PORT}/;
             proxy_http_version 1.1;
             proxy_set_header Upgrade \$http_upgrade;
             proxy_set_header Connection "upgrade";
