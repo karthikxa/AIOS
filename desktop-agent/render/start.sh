@@ -218,39 +218,39 @@ sleep 0.5
 log "[6/6] nginx full routing + CDP proxy active"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Patch noVNC HTML: hide sidebar, "Connecting..." overlay, status bar
+# Patch noVNC HTML: hide sidebar, freeze last frame on disconnect, silent reconnect
 # Uses Python for reliable multi-line string injection (sed fails with newlines)
 # ─────────────────────────────────────────────────────────────────────────────
 VNC_HTML="${NOVNC_WEB}/vnc.html"
 if [ -f "${VNC_HTML}" ]; then
-    if ! grep -q 'novnc_hide_patch_v4' "${VNC_HTML}"; then
-        log "Patching noVNC HTML to hide sidebar and connecting overlay (v4)..."
+    if ! grep -q 'novnc_hide_patch_v5' "${VNC_HTML}"; then
+        log "Patching noVNC HTML — canvas freeze + silent reconnect (v5)..."
         python3 - "${VNC_HTML}" <<'PYEOF'
-import sys
+import sys, re
 path = sys.argv[1]
 with open(path, 'r', encoding='utf-8') as f:
     html = f.read()
 
 # Remove any older patch versions to avoid duplicates
-import re
 html = re.sub(r'<style>\s*/\* novnc_hide_patch_v[0-9]+ \*/.*?</style>', '', html, flags=re.DOTALL)
+html = re.sub(r'<script>\s*/\* novnc_hide_patch_v[0-9]+_js \*/.*?</script>', '', html, flags=re.DOTALL)
 
-HIDE_STYLE = """<style>
-/* novnc_hide_patch_v4 */
-/* Hide entire left control bar anchor, handle, and expanded panel */
+PATCH = """<style>
+/* novnc_hide_patch_v5 */
+/* ── Hide entire left control bar ── */
 #noVNC_control_bar_anchor,
 #noVNC_control_bar_handle,
 #noVNC_control_bar,
 #noVNC_side_panel,
 .noVNC_open,
 .noVNC_control_bar,
-/* Hide connecting/disconnecting overlays */
+/* ── Hide connect / disconnect overlays ── */
 #noVNC_transition,
 #noVNC_connect_controls,
 #noVNC_connect_button,
-/* Hide status text bar */
+/* ── Hide status bar ── */
 #noVNC_status,
-/* Hide any floating toolbar buttons */
+/* ── Hide floating toolbar buttons ── */
 #noVNC_extra_keys,
 #noVNC_clipboard_button,
 #noVNC_keyboard_button,
@@ -258,7 +258,6 @@ HIDE_STYLE = """<style>
 #noVNC_fullscreen_button,
 #noVNC_view_only_button,
 #noVNC_clipboard,
-/* Generic noVNC button bar */
 .noVNC_button_group,
 .noVNC_group {
   display: none !important;
@@ -271,10 +270,8 @@ HIDE_STYLE = """<style>
   max-height: 0 !important;
   overflow: hidden !important;
 }
-/* Make canvas fill the full viewport */
-#noVNC_container,
-#app,
-body {
+/* ── Canvas fills full viewport ── */
+#noVNC_container, #app, body {
   width: 100vw !important;
   height: 100vh !important;
   margin: 0 !important;
@@ -285,52 +282,137 @@ body {
 #noVNC_canvas {
   width: 100% !important;
   height: 100% !important;
+  display: block !important;
 }
 </style>
 <script>
-/* novnc_hide_patch_v4_js */
-(function hideSidebar() {
-  function removeNovncUI() {
-    var ids = [
-      'noVNC_control_bar_anchor','noVNC_control_bar_handle','noVNC_control_bar',
-      'noVNC_side_panel','noVNC_status','noVNC_transition','noVNC_connect_controls',
-      'noVNC_connect_button','noVNC_extra_keys','noVNC_clipboard','noVNC_clipboard_button',
-      'noVNC_keyboard_button','noVNC_toggle_extra_keys_button','noVNC_fullscreen_button',
-      'noVNC_view_only_button'
-    ];
-    ids.forEach(function(id) {
+/* novnc_hide_patch_v5_js */
+(function() {
+  'use strict';
+
+  /* ── 1. Hide all noVNC UI elements, run repeatedly via MutationObserver ── */
+  var UI_IDS = [
+    'noVNC_control_bar_anchor','noVNC_control_bar_handle','noVNC_control_bar',
+    'noVNC_side_panel','noVNC_status','noVNC_transition','noVNC_connect_controls',
+    'noVNC_connect_button','noVNC_extra_keys','noVNC_clipboard','noVNC_clipboard_button',
+    'noVNC_keyboard_button','noVNC_toggle_extra_keys_button','noVNC_fullscreen_button',
+    'noVNC_view_only_button'
+  ];
+  function hideUI() {
+    UI_IDS.forEach(function(id) {
       var el = document.getElementById(id);
-      if (el) el.style.cssText = 'display:none!important;width:0!important;height:0!important;';
+      if (el) el.style.cssText = 'display:none!important;width:0!important;height:0!important;opacity:0!important;';
     });
-    document.querySelectorAll('.noVNC_button_group,.noVNC_group,.noVNC_open').forEach(function(el) {
-      el.style.cssText = 'display:none!important;width:0!important;height:0!important;';
+    document.querySelectorAll('.noVNC_button_group,.noVNC_group,.noVNC_open,.noVNC_control_bar').forEach(function(el) {
+      el.style.cssText = 'display:none!important;width:0!important;height:0!important;opacity:0!important;';
     });
   }
-  document.addEventListener('DOMContentLoaded', removeNovncUI);
-  setTimeout(removeNovncUI, 500);
-  setTimeout(removeNovncUI, 1500);
-  setTimeout(removeNovncUI, 3000);
-  var obs = new MutationObserver(removeNovncUI);
   document.addEventListener('DOMContentLoaded', function() {
-    obs.observe(document.body, { childList: true, subtree: true });
+    hideUI();
+    var obs = new MutationObserver(hideUI);
+    obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class','style'] });
   });
+  [500, 1000, 2000, 4000].forEach(function(t) { setTimeout(hideUI, t); });
+
+  /* ── 2. Canvas freeze — save last rendered frame, restore on clear/disconnect ── */
+  var _savedPixels = null;
+  var _canvas = null;
+  var _ctx = null;
+  var _connected = false;
+
+  function setupCanvasFreeze() {
+    _canvas = document.getElementById('noVNC_canvas');
+    if (!_canvas) { setTimeout(setupCanvasFreeze, 300); return; }
+    _ctx = _canvas.getContext('2d');
+    if (!_ctx) return;
+
+    /* Snapshot canvas every 1s while pixels are non-empty (i.e. connected) */
+    setInterval(function() {
+      try {
+        if (_canvas.width > 10 && _canvas.height > 10) {
+          var data = _ctx.getImageData(0, 0, _canvas.width, _canvas.height);
+          /* Only save if the frame is not all-black (avoid saving disconnect frame) */
+          var d = data.data;
+          var sum = 0;
+          for (var i = 0; i < Math.min(d.length, 4000); i += 4) sum += d[i] + d[i+1] + d[i+2];
+          if (sum > 1000) { _savedPixels = data; _connected = true; }
+        }
+      } catch(e) {}
+    }, 1000);
+
+    /* Override clearRect — restore frozen frame instead of going black */
+    var _origClear = _ctx.clearRect.bind(_ctx);
+    _ctx.clearRect = function(x, y, w, h) {
+      if (_savedPixels) {
+        try { _ctx.putImageData(_savedPixels, 0, 0); return; } catch(e) {}
+      }
+      _origClear(x, y, w, h);
+    };
+
+    /* Override fillRect with black — same trick */
+    var _origFill = _ctx.fillRect.bind(_ctx);
+    _ctx.fillRect = function(x, y, w, h) {
+      var style = _ctx.fillStyle;
+      if (_savedPixels && (style === '#000' || style === '#000000' || style === 'black' || style === 'rgb(0,0,0)')) {
+        try { _ctx.putImageData(_savedPixels, 0, 0); return; } catch(e) {}
+      }
+      _origFill(x, y, w, h);
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', setupCanvasFreeze);
+  setTimeout(setupCanvasFreeze, 200);
+
+  /* ── 3. Intercept WebSocket — hide disconnect events from noVNC UI ── */
+  var _OrigWS = window.WebSocket;
+  window.WebSocket = function(url, protocols) {
+    var ws = protocols ? new _OrigWS(url, protocols) : new _OrigWS(url);
+
+    /* Intercept 'close' event — prevent noVNC from seeing it as fatal disconnect */
+    var _origAddEL = ws.addEventListener.bind(ws);
+    ws.addEventListener = function(type, listener, opts) {
+      if (type === 'close') {
+        _origAddEL(type, function(evt) {
+          /* Suppress the 'close' UI update — noVNC will auto-reconnect via reconnect=true param */
+          hideUI();
+          if (_savedPixels && _canvas && _ctx) {
+            try { _ctx.putImageData(_savedPixels, 0, 0); } catch(e) {}
+          }
+          listener(evt);
+          setTimeout(hideUI, 100);
+          setTimeout(hideUI, 500);
+        }, opts);
+        return;
+      }
+      _origAddEL(type, listener, opts);
+    };
+
+    return ws;
+  };
+  window.WebSocket.prototype = _OrigWS.prototype;
+  window.WebSocket.CONNECTING = _OrigWS.CONNECTING;
+  window.WebSocket.OPEN = _OrigWS.OPEN;
+  window.WebSocket.CLOSING = _OrigWS.CLOSING;
+  window.WebSocket.CLOSED = _OrigWS.CLOSED;
+
 })();
 </script>"""
 
 if '</head>' in html:
-    html = html.replace('</head>', HIDE_STYLE + '\n</head>', 1)
+    html = html.replace('</head>', PATCH + '\n</head>', 1)
 else:
-    html = HIDE_STYLE + html
+    html = PATCH + html
 
 with open(path, 'w', encoding='utf-8') as f:
     f.write(html)
-print("noVNC HTML patched successfully (v4)")
+print("noVNC HTML patched successfully (v5 — canvas freeze + silent reconnect)")
 PYEOF
-        log "noVNC UI chrome hidden (sidebar + connecting overlay patched with v4)"
+        log "noVNC UI hidden + canvas freeze active (v5)"
     else
-        log "noVNC HTML already patched (v4 tag found), skipping"
+        log "noVNC HTML already patched (v5 tag found), skipping"
     fi
 fi
+
 
 
 echo ""
