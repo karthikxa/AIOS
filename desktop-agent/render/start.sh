@@ -75,9 +75,10 @@ log "[2/5] openbox OK"
 # ─────────────────────────────────────────────────────────────────────────────
 DISPLAY=:99 chromium \
     --no-sandbox \
-    --disable-gpu \
     --disable-dev-shm-usage \
-    --disable-software-rasterizer \
+    --use-gl=swiftshader \
+    --enable-gpu-rasterization \
+    --ignore-gpu-blocklist \
     --disable-extensions \
     --disable-background-networking \
     --disable-sync \
@@ -119,6 +120,7 @@ x11vnc \
     -rfbport ${VNC_PORT} \
     -localhost \
     -xdamage \
+    -threads \
     -wait 30 \
     -defer 30 \
     -nosel \
@@ -225,6 +227,30 @@ log "[6/6] nginx full routing + CDP proxy active"
 VNC_HTML="${NOVNC_WEB}/vnc.html"
 if [ -f "${VNC_HTML}" ]; then
     log "[7/7] Using stock noVNC client with native reconnect"
+    if ! grep -q 'novnc_canvas_rect_v9' "${VNC_HTML}"; then
+        python3 - "${VNC_HTML}" <<'PYEOF'
+import re
+import sys
+
+path = sys.argv[1]
+with open(path, 'r', encoding='utf-8') as source:
+    html = source.read()
+
+# Remove the legacy dynamic patch before applying a static, geometry-only fix.
+html = re.sub(r'<style>\s*/\* novnc_hide_patch_v[0-9]+ \*/.*?</style>', '', html, flags=re.DOTALL)
+html = re.sub(r'<script>\s*/\* novnc_hide_patch_v[0-9]+_js \*/.*?</script>', '', html, flags=re.DOTALL)
+
+patch = '''<style>/* novnc_canvas_rect_v9 */
+#noVNC_container, #noVNC_canvas { border-radius: 0 !important; }
+#noVNC_container { overflow: hidden !important; }
+</style>'''
+html = html.replace('</head>', patch + '\n</head>', 1)
+
+with open(path, 'w', encoding='utf-8') as target:
+    target.write(html)
+PYEOF
+        log "[7/7] Applied rectangular noVNC canvas fix (v9)"
+    fi
 fi
 
 # Keep the old customization as non-executing reference only. Stock noVNC is
@@ -450,7 +476,8 @@ while true; do
 
     if ! kill -0 $CHROME_PID 2>/dev/null; then
         log "[WATCHDOG] Chromium died — restarting"
-        DISPLAY=:99 chromium --no-sandbox --disable-gpu --disable-dev-shm-usage \
+        DISPLAY=:99 chromium --no-sandbox --disable-dev-shm-usage \
+            --use-gl=swiftshader --enable-gpu-rasterization --ignore-gpu-blocklist \
             --disable-extensions --no-first-run --kiosk --window-size=1280,720 \
             --disable-background-timer-throttling --disable-renderer-backgrounding \
             --memory-pressure-off \
@@ -462,7 +489,7 @@ while true; do
     if ! kill -0 $X11VNC_PID 2>/dev/null; then
         log "[WATCHDOG] x11vnc died — restarting"
         x11vnc -display :99 -forever -nopw -rfbport ${VNC_PORT} \
-            -localhost -xdamage -wait 30 -defer 30 \
+            -localhost -xdamage -threads -wait 30 -defer 30 \
             -nosel -noprimary -shared -quiet -noxrecord \
             >> /tmp/agent-logs/x11vnc.log 2>&1 &
         X11VNC_PID=$!
