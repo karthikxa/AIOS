@@ -13,7 +13,13 @@ export VNC_PORT=5900
 export WS_PORT=6080
 export CDP_PORT=9222
 export AGENT_SECRET="${AGENT_SECRET:-}"
-NOVNC_WEB=/usr/share/novnc
+if [ ! -d "/tmp/novnc" ]; then
+    log "Copying noVNC to writable /tmp/novnc..."
+    mkdir -p /tmp/novnc
+    cp -r /usr/share/novnc/* /tmp/novnc/ 2>/dev/null || true
+fi
+NOVNC_WEB=/tmp/novnc
+
 
 mkdir -p /tmp/agent-logs
 log() { echo "[$(date '+%H:%M:%S')] $*"; }
