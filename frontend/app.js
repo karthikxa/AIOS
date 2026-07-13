@@ -5154,19 +5154,12 @@ Here are the current findings:
       };
     }
 
-    // Also load the stream into the thumbnail VNC frame
-    const thumbnailFrame = document.getElementById('thumbnailFrame');
+    // NOTE: Thumbnail frame intentionally NOT loaded with a separate VNC connection.
+    // Opening a second noVNC WebSocket to the same VNC server causes websockify to drop
+    // the first (main) connection, making the main desktop panel show "Connecting..." mid-task.
+    // The main desktopFrame already shows the live stream — thumbnail is redundant here.
     const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
-    if (thumbnailFrame) {
-      const hfSpaceUrl2 = localStorage.getItem('hf_space_url');
-      if (hfSpaceUrl2) {
-        // Load noVNC from browser-server-1 (VNC server)
-        thumbnailFrame.src = localStorage.getItem('vnc_url') || 'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=500&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
-      } else {
-        thumbnailFrame.src = getVncBaseUrl() + '/vnc/index.html?autoconnect=true&resize=scale&reconnect=1&path=websockify';
-      }
-      if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'none';
-    }
+    if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'none';
   }
 
   // ── Pre-load VNC immediately on page init ───────────────────────────────
@@ -5281,7 +5274,8 @@ Here are the current findings:
       }
       
       desktopPollStopped = false;
-      desktopStreamStarted = false;
+      // Only start the stream if not already started — do NOT reset desktopStreamStarted
+      // here because resetting it every tool-call caused VNC to re-init and show "Connecting..."
       startDesktopStream();
     } else {
       mainContent.classList.remove('computer-split-mode');
