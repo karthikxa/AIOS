@@ -172,7 +172,7 @@ http {
 
         # ── noVNC autoconnect — quality=9, no blur scaling ──
         location = / {
-            return 302 /vnc.html?autoconnect=1&quality=9&compression=2&path=websockify;
+            return 302 /vnc.html?autoconnect=true&reconnect=true&reconnect_delay=500&resize=scale&quality=9&compression=2&path=websockify&bell=false&show_dot=false;
         }
 
         # ── Live WebSocket VNC stream ──
@@ -225,6 +225,7 @@ VNC_HTML="${NOVNC_WEB}/vnc.html"
 if [ -f "${VNC_HTML}" ]; then
     # Hide: left sidebar, connecting overlay, status bar, connect button
     HIDE_CSS='<style>
+/* novnc_hide_patch_v3 */
 #noVNC_control_bar_anchor,
 #noVNC_control_bar_handle,
 #noVNC_control_bar,
@@ -244,10 +245,11 @@ if [ -f "${VNC_HTML}" ]; then
   left: 0 !important;
 }
 </style>'
-    # Only patch once (idempotent check)
-    if ! grep -q 'noVNC_control_bar_anchor' "${VNC_HTML}"; then
+    # Only patch once (idempotent check) using version tag v3
+    if ! grep -q 'novnc_hide_patch_v3' "${VNC_HTML}"; then
+        # If it had v2 or older hidden styles, clean them up or append new
         sed -i "s|</head>|${HIDE_CSS}</head>|" "${VNC_HTML}"
-        log "noVNC UI chrome hidden (sidebar + connecting overlay patched)"
+        log "noVNC UI chrome hidden (sidebar + connecting overlay patched with v3)"
     fi
 fi
 
