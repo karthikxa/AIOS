@@ -5104,13 +5104,18 @@ Here are the current findings:
     const savedUrl = localStorage.getItem('kasm_url');
     if (!savedUrl) return null;
 
-    // A local noVNC address is valid only for a locally served frontend.  If it
-    // was saved during local development, it cannot be reached by a deployed
-    // page after refresh and would otherwise replace the Render VNC stream.
+    // Kasm is a local-only desktop option.  A deployed frontend must always
+    // use vnc_url (the stream service) rather than a legacy kasm_url, which
+    // may point at the agent API and leave noVNC permanently "Connecting".
+    if (!isLocal) {
+      localStorage.removeItem('kasm_url');
+      return null;
+    }
+
     try {
       const hostname = new URL(savedUrl, window.location.href).hostname;
       const isLoopback = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
-      if (!isLocal && isLoopback) {
+      if (!isLoopback) {
         localStorage.removeItem('kasm_url');
         return null;
       }
@@ -5474,7 +5479,9 @@ Here are the current findings:
   if (settingsSplitPaneBtn) {
     settingsSplitPaneBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const currentKasm = localStorage.getItem('kasm_url') || CORRECT_KASM_URL;
+      const currentKasm = isLocal
+        ? (localStorage.getItem('kasm_url') || CORRECT_KASM_URL)
+        : (localStorage.getItem('vnc_url') || DEFAULT_CLOUD_VNC_URL);
       const url = prompt(
         'Desktop URL\n\n• Local Kasm:  https://localhost:6901\n• HF Space:   https://your-space.hf.space\n\nLeave blank to reset to default Kasm URL.',
         currentKasm
@@ -5482,18 +5489,26 @@ Here are the current findings:
       if (url !== null) {
         const trimmed = url.trim();
         if (trimmed) {
-          if (trimmed.includes('localhost') || trimmed.includes('127.0.0.1')) {
+          if (isLocal && (trimmed.includes('localhost') || trimmed.includes('127.0.0.1'))) {
             localStorage.setItem('kasm_url', trimmed);
             localStorage.removeItem('hf_space_url');
           } else if (trimmed.includes('.hf.space')) {
             localStorage.setItem('hf_space_url', trimmed);
             localStorage.removeItem('kasm_url');
+          } else if (trimmed.includes('browser-server-2.onrender.com')) {
+            localStorage.setItem('hf_space_url', trimmed);
+            localStorage.removeItem('kasm_url');
           } else {
-            localStorage.setItem('kasm_url', trimmed);
+            localStorage.setItem('vnc_url', trimmed);
+            localStorage.removeItem('kasm_url');
           }
         } else {
-          localStorage.setItem('kasm_url', CORRECT_KASM_URL);
-          localStorage.removeItem('hf_space_url');
+          if (isLocal) {
+            localStorage.setItem('kasm_url', CORRECT_KASM_URL);
+            localStorage.removeItem('hf_space_url');
+          } else {
+            localStorage.removeItem('vnc_url');
+          }
         }
         desktopStreamStarted = false;
         toggleComputerSplit(false);
