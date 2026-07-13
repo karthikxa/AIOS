@@ -5100,6 +5100,28 @@ Here are the current findings:
     localStorage.setItem('kasm_url_version', KASM_URL_VERSION);
   }
 
+  function getSavedDesktopUrl() {
+    const savedUrl = localStorage.getItem('kasm_url');
+    if (!savedUrl) return null;
+
+    // A local noVNC address is valid only for a locally served frontend.  If it
+    // was saved during local development, it cannot be reached by a deployed
+    // page after refresh and would otherwise replace the Render VNC stream.
+    try {
+      const hostname = new URL(savedUrl, window.location.href).hostname;
+      const isLoopback = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+      if (!isLocal && isLoopback) {
+        localStorage.removeItem('kasm_url');
+        return null;
+      }
+    } catch (_) {
+      localStorage.removeItem('kasm_url');
+      return null;
+    }
+
+    return savedUrl;
+  }
+
 
   function updateSplitPaneUrl(content) {
     const urlEl = document.getElementById('splitPaneHeaderUrl');
@@ -5150,7 +5172,7 @@ Here are the current findings:
     desktopStreamStarted = true;
 
     // ── Priority 1: Kasm / noVNC URL (local desktop) ───────────────────
-    const kasmUrl = localStorage.getItem('kasm_url');
+    const kasmUrl = getSavedDesktopUrl();
     if (kasmUrl) {
       desktopFrame.style.display = 'block';
       loadDesktopFrame(kasmUrl);
@@ -5168,9 +5190,9 @@ Here are the current findings:
 
     // ── Priority 2: HF Space cloud desktop (noVNC via WebSocket) ───────
     const hfSpaceUrl = localStorage.getItem('hf_space_url');
-    if (hfSpaceUrl) {
+    if (hfSpaceUrl || !isLocal) {
       // VNC stream comes from browser-server-1, agent API from browser-server-2
-      const agentUrl = hfSpaceUrl.replace(/\/$/, '');
+      const agentUrl = hfSpaceUrl ? hfSpaceUrl.replace(/\/$/, '') : '';
       const vncUrl = getCloudVncUrl();
       // Re-entering Computer mode keeps the existing VNC socket. Only a
       // configured endpoint change is allowed to reload the iframe.
@@ -5178,7 +5200,7 @@ Here are the current findings:
       desktopFrame.style.display = 'block';
       // Update URL in header
       const urlEl = document.getElementById('splitPaneHeaderUrl');
-      if (urlEl) {
+      if (urlEl && agentUrl) {
         urlEl.innerHTML = `<a href="${agentUrl}" target="_blank" style="color:#3B82F6;text-decoration:none;">${agentUrl}</a>`;
       }
       // Hide connecting overlay once iframe loads (noVNC connects via WebSocket)
@@ -5213,7 +5235,7 @@ Here are the current findings:
   // The connection stays alive in the background between tab switches.
   (function preloadVnc() {
     if (!desktopFrame) return;
-    const vncUrl = localStorage.getItem('kasm_url') || getCloudVncUrl();
+    const vncUrl = getSavedDesktopUrl() || getCloudVncUrl();
     loadDesktopFrame(vncUrl);
     desktopFrame.addEventListener('load', () => {
       if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
@@ -5285,6 +5307,7 @@ Here are the current findings:
     const shouldShow = show !== undefined ? show : !isOpen;
     
     if (shouldShow) {
+      localStorage.setItem('computer_split_open', 'true');
       mainContent.classList.add('computer-split-mode');
       computerSplitPane.style.display = 'flex';
 
@@ -5323,6 +5346,7 @@ Here are the current findings:
       // here because resetting it every tool-call caused VNC to re-init and show "Connecting..."
       startDesktopStream();
     } else {
+      localStorage.setItem('computer_split_open', 'false');
       mainContent.classList.remove('computer-split-mode');
       computerSplitPane.style.display = 'none';
       stopDesktopPolling();
@@ -5358,6 +5382,7 @@ Here are the current findings:
     const computerSplitPane = document.getElementById('computerSplitPane');
 
     if (shouldShow) {
+      localStorage.setItem('computer_split_open', 'false');
       mainContent.classList.add('agent-split-mode');
       agentSplitPane.style.display = 'flex';
       if (computerSplitPane) computerSplitPane.style.display = 'none';
@@ -5366,6 +5391,12 @@ Here are the current findings:
       mainContent.classList.remove('agent-split-mode');
       agentSplitPane.style.display = 'none';
     }
+  }
+
+  // Restore the Computer pane after a page reload.  The iframe reconnects to
+  // the same cloud noVNC URL; Chrome itself remains on the browser service.
+  if (localStorage.getItem('computer_split_open') === 'true') {
+    requestAnimationFrame(() => toggleComputerSplit(true));
   }
 
   if (modeCapsule) {
