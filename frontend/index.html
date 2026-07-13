@@ -416,8 +416,6 @@
           allow="clipboard-read; clipboard-write; fullscreen"
           referrerpolicy="no-referrer">
         </iframe>
-        <!-- noVNC sidebar masking overlay — covers the left-edge control bar strip (cross-origin iframe; CSS can't penetrate) -->
-        <div id="vncSidebarMask" style="position:absolute;top:0;left:0;width:52px;height:100%;z-index:10;background:#000;pointer-events:none;"></div>
         <!-- Click-blocker overlay (transparent — no badge) -->
         <div id="splitPaneViewOnlyOverlay" style="position:absolute;inset:0;z-index:20;cursor:default;display:block;user-select:none;"></div>
         <!-- Connecting overlay hidden by default — VNC loads instantly from iframe src above -->
