@@ -10384,8 +10384,8 @@ main.main-content.computer-split-mode #computerSplitPane {
    left edge instead of covering it with a black mask, so the desktop fills
    the entire viewport without exposing noVNC controls. */
 #desktopFrame {
-  width: calc(100% + 52px) !important;
-  margin-left: -52px !important;
+  width: 100% !important;
+  margin-left: 0 !important;
 }
 
 #vncSidebarMask {
