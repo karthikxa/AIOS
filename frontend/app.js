@@ -3664,7 +3664,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       clearAllToolIndicators();
       clearActiveSteps();
       // Remove typing indicator - computer mode shows its own progress
-      const typingMsg = chatMessagesLog.querySelector('.typing-placeholder')?.closest('.chat-message');
+      const typingMsg = chatMessagesLog.querySelector('.typing-indicator, .typing-placeholder')?.closest('.chat-message');
       if (typingMsg) typingMsg.remove();
       // Keep stop button visible for computer mode
       showStopButton(true);
@@ -3866,7 +3866,8 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
                 updateStatus('\u26a1 ' + desc, (m.step || agentStep) + ' / ' + maxSteps);
                 addProgressStep(desc, 'active');
               } else if (m.type === 'result') {
-                updateStatus('\u2713 ' + m.action + ' [' + (m.action_ms || 0) + 'ms]', (m.step || agentStep) + ' / ' + maxSteps);
+                const desc = actionDescriptions[m.action] || m.action;
+                updateStatus('\u2713 ' + desc, (m.step || agentStep) + ' / ' + maxSteps);
                 if (m.result && m.result.startsWith('URL:')) {
                   const urlLine = m.result.split('\n')[0].replace('URL: ', '').trim();
                   const urlEl = document.getElementById('splitPaneHeaderUrl');
@@ -3879,7 +3880,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
               } else if (m.type === 'done') {
                 wsFinished = true;
                 appendMessage('assistant', m.summary || 'Task complete.');
-                updateStatus('\u2705 Done [' + (m.total_ms || 0) + 'ms, ' + (m.steps || maxSteps) + ' steps]', '\u2713');
+                updateStatus('\u2705 Done (' + (m.steps || maxSteps) + ' steps)', '\u2713');
                 addProgressStep('Task complete', 'done');
                 wsQueue.push({ done: true });
               } else if (m.type === 'error') {
@@ -4133,7 +4134,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
               streamingMsg.classList.remove('streaming-assistant-msg');
             } else {
               // Fallback: remove typing placeholder and append
-              const existingTypingMsg = chatMessagesLog.querySelector('.typing-placeholder')?.closest('.chat-message');
+              const existingTypingMsg = chatMessagesLog.querySelector('.typing-indicator, .typing-placeholder')?.closest('.chat-message');
               if (existingTypingMsg) {
                 existingTypingMsg.remove();
               }

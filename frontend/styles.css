@@ -10572,11 +10572,12 @@ main.main-content.computer-split-mode #computerSplitPane {
    ================================================================ */
 
 .progress-step-block {
-  margin-bottom: 6px !important;
+  margin-bottom: 10px !important;
   border: 1px solid #E5E7EB !important;
   border-radius: 8px !important;
   background: #FAFBFC !important;
   overflow: hidden !important;
+  flex-shrink: 0 !important;
 }
 
 .progress-step-header {
