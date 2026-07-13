@@ -3920,7 +3920,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           if (desktopFrame) {
             // autoconnect=true (not =1), reconnect=true so it never shows the Connect button
             const vncUrl = (localStorage.getItem('vnc_url') ||
-              'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=1000&resize=scale&quality=6&path=websockify&bell=false&show_dot=false');
+              'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=0&resize=scale&quality=6&path=websockify&bell=false&show_dot=false');
             desktopFrame.src = vncUrl;
             desktopFrame.style.display = 'block';
             // Show LIVE badge immediately — noVNC handles reconnect itself
@@ -5124,7 +5124,7 @@ Here are the current findings:
       // VNC stream comes from browser-server-1, agent API from browser-server-2
       const agentUrl = hfSpaceUrl.replace(/\/$/, '');
       const vncUrl = localStorage.getItem('vnc_url') ||
-        'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=500&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
+        'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=0&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
       // Only set src if not already loaded (prevents reload on re-enter)
       if (!desktopFrame.src || desktopFrame.src === 'about:blank' || desktopFrame.src === window.location.href) {
         desktopFrame.src = vncUrl;
@@ -5184,7 +5184,7 @@ Here are the current findings:
     if (document.visibilityState === 'visible' && desktopFrame) {
       if (!desktopFrame.src || desktopFrame.src === 'about:blank' || desktopFrame.src === window.location.href) {
         const vncUrl = localStorage.getItem('vnc_url') ||
-          'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=500&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
+          'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=0&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
         desktopFrame.src = vncUrl;
         desktopFrame.style.display = 'block';
       }

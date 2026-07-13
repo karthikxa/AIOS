@@ -172,7 +172,7 @@ http {
 
         # ── noVNC autoconnect — quality=9, no blur scaling ──
         location = / {
-            return 302 /vnc.html?autoconnect=true&reconnect=true&reconnect_delay=500&resize=scale&quality=9&compression=2&path=websockify&bell=false&show_dot=false;
+            return 302 /vnc.html?autoconnect=true&reconnect=true&reconnect_delay=0&resize=scale&quality=9&compression=2&path=websockify&bell=false&show_dot=false;
         }
 
         # ── Live WebSocket VNC stream ──
@@ -218,13 +218,13 @@ sleep 0.5
 log "[6/6] nginx full routing + CDP proxy active"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Patch noVNC HTML: hide sidebar, freeze last frame on disconnect, silent reconnect
-# Uses Python for reliable multi-line string injection (sed fails with newlines)
+# Patch noVNC HTML: hide sidebar, keep WS alive with client ping, instant reconnect
+# v6: NO canvas freeze — live stream always. WebSocket kept alive by 20s ping.
 # ─────────────────────────────────────────────────────────────────────────────
 VNC_HTML="${NOVNC_WEB}/vnc.html"
 if [ -f "${VNC_HTML}" ]; then
-    if ! grep -q 'novnc_hide_patch_v5' "${VNC_HTML}"; then
-        log "Patching noVNC HTML — canvas freeze + silent reconnect (v5)..."
+    if ! grep -q 'novnc_hide_patch_v6' "${VNC_HTML}"; then
+        log "Patching noVNC HTML — always-live WS keepalive (v6)..."
         python3 - "${VNC_HTML}" <<'PYEOF'
 import sys, re
 path = sys.argv[1]
@@ -236,7 +236,7 @@ html = re.sub(r'<style>\s*/\* novnc_hide_patch_v[0-9]+ \*/.*?</style>', '', html
 html = re.sub(r'<script>\s*/\* novnc_hide_patch_v[0-9]+_js \*/.*?</script>', '', html, flags=re.DOTALL)
 
 PATCH = """<style>
-/* novnc_hide_patch_v5 */
+/* novnc_hide_patch_v6 */
 /* ── Hide entire left control bar ── */
 #noVNC_control_bar_anchor,
 #noVNC_control_bar_handle,
@@ -270,7 +270,7 @@ PATCH = """<style>
   max-height: 0 !important;
   overflow: hidden !important;
 }
-/* ── Canvas fills full viewport ── */
+/* ── Canvas fills full viewport — live always ── */
 #noVNC_container, #app, body {
   width: 100vw !important;
   height: 100vh !important;
@@ -286,11 +286,11 @@ PATCH = """<style>
 }
 </style>
 <script>
-/* novnc_hide_patch_v5_js */
+/* novnc_hide_patch_v6_js */
 (function() {
   'use strict';
 
-  /* ── 1. Hide all noVNC UI elements, run repeatedly via MutationObserver ── */
+  /* ── 1. Hide all noVNC UI elements via MutationObserver ── */
   var UI_IDS = [
     'noVNC_control_bar_anchor','noVNC_control_bar_handle','noVNC_control_bar',
     'noVNC_side_panel','noVNC_status','noVNC_transition','noVNC_connect_controls',
@@ -312,88 +312,85 @@ PATCH = """<style>
     var obs = new MutationObserver(hideUI);
     obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class','style'] });
   });
-  [500, 1000, 2000, 4000].forEach(function(t) { setTimeout(hideUI, t); });
+  [300, 800, 1500, 3000, 6000].forEach(function(t) { setTimeout(hideUI, t); });
 
-  /* ── 2. Canvas freeze — save last rendered frame, restore on clear/disconnect ── */
-  var _savedPixels = null;
-  var _canvas = null;
-  var _ctx = null;
-  var _connected = false;
-
-  function setupCanvasFreeze() {
-    _canvas = document.getElementById('noVNC_canvas');
-    if (!_canvas) { setTimeout(setupCanvasFreeze, 300); return; }
-    _ctx = _canvas.getContext('2d');
-    if (!_ctx) return;
-
-    /* Snapshot canvas every 1s while pixels are non-empty (i.e. connected) */
-    setInterval(function() {
-      try {
-        if (_canvas.width > 10 && _canvas.height > 10) {
-          var data = _ctx.getImageData(0, 0, _canvas.width, _canvas.height);
-          /* Only save if the frame is not all-black (avoid saving disconnect frame) */
-          var d = data.data;
-          var sum = 0;
-          for (var i = 0; i < Math.min(d.length, 4000); i += 4) sum += d[i] + d[i+1] + d[i+2];
-          if (sum > 1000) { _savedPixels = data; _connected = true; }
-        }
-      } catch(e) {}
-    }, 1000);
-
-    /* Override clearRect — restore frozen frame instead of going black */
-    var _origClear = _ctx.clearRect.bind(_ctx);
-    _ctx.clearRect = function(x, y, w, h) {
-      if (_savedPixels) {
-        try { _ctx.putImageData(_savedPixels, 0, 0); return; } catch(e) {}
-      }
-      _origClear(x, y, w, h);
-    };
-
-    /* Override fillRect with black — same trick */
-    var _origFill = _ctx.fillRect.bind(_ctx);
-    _ctx.fillRect = function(x, y, w, h) {
-      var style = _ctx.fillStyle;
-      if (_savedPixels && (style === '#000' || style === '#000000' || style === 'black' || style === 'rgb(0,0,0)')) {
-        try { _ctx.putImageData(_savedPixels, 0, 0); return; } catch(e) {}
-      }
-      _origFill(x, y, w, h);
-    };
-  }
-
-  document.addEventListener('DOMContentLoaded', setupCanvasFreeze);
-  setTimeout(setupCanvasFreeze, 200);
-
-  /* ── 3. Intercept WebSocket — hide disconnect events from noVNC UI ── */
+  /* ── 2. WebSocket interceptor — keepalive ping + suppress disconnect UI ── */
   var _OrigWS = window.WebSocket;
   window.WebSocket = function(url, protocols) {
     var ws = protocols ? new _OrigWS(url, protocols) : new _OrigWS(url);
+    var _pingTimer = null;
 
-    /* Intercept 'close' event — prevent noVNC from seeing it as fatal disconnect */
+    /* Start a ping every 20s to prevent idle timeout (browsers kill WS after ~60s idle) */
+    function startPing() {
+      if (_pingTimer) clearInterval(_pingTimer);
+      _pingTimer = setInterval(function() {
+        try {
+          if (ws.readyState === 1) { /* OPEN */
+            /* Send a WebSocket ping frame via a 0-byte binary message */
+            ws.send(new Uint8Array(0));
+          }
+        } catch(e) {}
+      }, 20000);
+    }
+
+    /* Intercept addEventListener to hook open/close events */
     var _origAddEL = ws.addEventListener.bind(ws);
     ws.addEventListener = function(type, listener, opts) {
-      if (type === 'close') {
+      if (type === 'open') {
+        /* On connect: start keepalive ping, hide UI */
         _origAddEL(type, function(evt) {
-          /* Suppress the 'close' UI update — noVNC will auto-reconnect via reconnect=true param */
+          startPing();
           hideUI();
-          if (_savedPixels && _canvas && _ctx) {
-            try { _ctx.putImageData(_savedPixels, 0, 0); } catch(e) {}
-          }
           listener(evt);
-          setTimeout(hideUI, 100);
-          setTimeout(hideUI, 500);
+        }, opts);
+        return;
+      }
+      if (type === 'close') {
+        /* On disconnect: stop ping, hide UI immediately, let noVNC auto-reconnect */
+        _origAddEL(type, function(evt) {
+          if (_pingTimer) { clearInterval(_pingTimer); _pingTimer = null; }
+          /* Suppress connecting UI — hide overlay so user sees black momentarily */
+          hideUI();
+          listener(evt);
+          /* noVNC will reconnect with reconnect_delay=0, hide UI again after reconnect */
+          setTimeout(hideUI, 50);
+          setTimeout(hideUI, 200);
+          setTimeout(hideUI, 600);
+          setTimeout(hideUI, 1500);
         }, opts);
         return;
       }
       _origAddEL(type, listener, opts);
     };
 
+    /* Also hook via onopen/onclose property setters */
+    var _onopen = null, _onclose = null;
+    Object.defineProperty(ws, 'onopen', {
+      get: function() { return _onopen; },
+      set: function(fn) {
+        _onopen = fn;
+        _origAddEL('open', function(evt) { startPing(); hideUI(); if (_onopen) _onopen(evt); });
+      }
+    });
+    Object.defineProperty(ws, 'onclose', {
+      get: function() { return _onclose; },
+      set: function(fn) {
+        _onclose = fn;
+        _origAddEL('close', function(evt) {
+          if (_pingTimer) { clearInterval(_pingTimer); _pingTimer = null; }
+          hideUI();
+          if (_onclose) _onclose(evt);
+          setTimeout(hideUI, 50); setTimeout(hideUI, 300); setTimeout(hideUI, 800);
+        });
+      }
+    });
+
     return ws;
   };
-  window.WebSocket.prototype = _OrigWS.prototype;
-  window.WebSocket.CONNECTING = _OrigWS.CONNECTING;
-  window.WebSocket.OPEN = _OrigWS.OPEN;
-  window.WebSocket.CLOSING = _OrigWS.CLOSING;
-  window.WebSocket.CLOSED = _OrigWS.CLOSED;
+  /* Copy static properties from native WebSocket */
+  ['prototype','CONNECTING','OPEN','CLOSING','CLOSED'].forEach(function(k) {
+    try { window.WebSocket[k] = _OrigWS[k]; } catch(e) {}
+  });
 
 })();
 </script>"""
@@ -405,11 +402,11 @@ else:
 
 with open(path, 'w', encoding='utf-8') as f:
     f.write(html)
-print("noVNC HTML patched successfully (v5 — canvas freeze + silent reconnect)")
+print("noVNC HTML patched successfully (v6 — WS keepalive ping, always live)")
 PYEOF
-        log "noVNC UI hidden + canvas freeze active (v5)"
+        log "noVNC always-live WS keepalive patch active (v6)"
     else
-        log "noVNC HTML already patched (v5 tag found), skipping"
+        log "noVNC HTML already patched (v6 tag found), skipping"
     fi
 fi
 
