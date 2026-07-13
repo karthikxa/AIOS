@@ -224,8 +224,8 @@ log "[6/6] nginx full routing + CDP proxy active"
 # ─────────────────────────────────────────────────────────────────────────────
 VNC_HTML="${NOVNC_WEB}/vnc.html"
 if [ -f "${VNC_HTML}" ]; then
-    if ! grep -q 'novnc_hide_patch_v7' "${VNC_HTML}"; then
-        log "Patching noVNC HTML - native WebSocket reconnect (v7)..."
+    if ! grep -q 'novnc_hide_patch_v8' "${VNC_HTML}"; then
+        log "Patching noVNC HTML - safe native reconnect (v8)..."
         python3 - "${VNC_HTML}" <<'PYEOF'
 import sys, re
 path = sys.argv[1]
@@ -237,7 +237,7 @@ html = re.sub(r'<style>\s*/\* novnc_hide_patch_v[0-9]+ \*/.*?</style>', '', html
 html = re.sub(r'<script>\s*/\* novnc_hide_patch_v[0-9]+_js \*/.*?</script>', '', html, flags=re.DOTALL)
 
 PATCH = """<style>
-/* novnc_hide_patch_v7 */
+/* novnc_hide_patch_v8 */
 /* ── Hide entire left control bar ── */
 #noVNC_control_bar_anchor,
 #noVNC_control_bar_handle,
@@ -287,7 +287,7 @@ PATCH = """<style>
 }
 </style>
 <script>
-/* novnc_hide_patch_v7_js */
+/* novnc_hide_patch_v8_js */
 (function() {
   'use strict';
 
@@ -311,7 +311,9 @@ PATCH = """<style>
   document.addEventListener('DOMContentLoaded', function() {
     hideUI();
     var obs = new MutationObserver(hideUI);
-    obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class','style'] });
+    // Watching style changes here creates a feedback loop because hideUI()
+    // itself writes inline styles. Watch only newly added noVNC elements.
+    obs.observe(document.body, { childList: true, subtree: true });
   });
   [300, 800, 1500, 3000, 6000].forEach(function(t) { setTimeout(hideUI, t); });
 
@@ -407,11 +409,11 @@ else:
 
 with open(path, 'w', encoding='utf-8') as f:
     f.write(html)
-print("noVNC HTML patched successfully (v7 - native WebSocket reconnect)")
+print("noVNC HTML patched successfully (v8 - safe native reconnect)")
 PYEOF
-        log "noVNC native WebSocket reconnect patch active (v7)"
+        log "noVNC safe native reconnect patch active (v8)"
     else
-        log "noVNC HTML already patched (v7 tag found), skipping"
+        log "noVNC HTML already patched (v8 tag found), skipping"
     fi
 fi
 
