@@ -225,7 +225,7 @@ log "[6/6] nginx full routing + CDP proxy active"
 VNC_HTML="${NOVNC_WEB}/vnc.html"
 if [ -f "${VNC_HTML}" ]; then
     if ! grep -q 'novnc_hide_patch_v7' "${VNC_HTML}"; then
-        log "Patching noVNC HTML — always-live WS keepalive (v6)..."
+        log "Patching noVNC HTML - native WebSocket reconnect (v7)..."
         python3 - "${VNC_HTML}" <<'PYEOF'
 import sys, re
 path = sys.argv[1]
@@ -407,11 +407,11 @@ else:
 
 with open(path, 'w', encoding='utf-8') as f:
     f.write(html)
-print("noVNC HTML patched successfully (v6 — WS keepalive ping, always live)")
+print("noVNC HTML patched successfully (v7 - native WebSocket reconnect)")
 PYEOF
-        log "noVNC always-live WS keepalive patch active (v6)"
+        log "noVNC native WebSocket reconnect patch active (v7)"
     else
-        log "noVNC HTML already patched (v6 tag found), skipping"
+        log "noVNC HTML already patched (v7 tag found), skipping"
     fi
 fi
 
