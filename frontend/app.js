@@ -5119,10 +5119,13 @@ Here are the current findings:
     if (hfSpaceUrl) {
       // VNC stream comes from browser-server-1, agent API from browser-server-2
       const agentUrl = hfSpaceUrl.replace(/\/$/, '');
-      const vncUrl = localStorage.getItem('vnc_url') || 'https://browser-server-1.onrender.com/vnc.html?autoconnect=1&resize=scale&quality=6&path=websockify';
+      const vncUrl = localStorage.getItem('vnc_url') ||
+        'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=500&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
+      // Only set src if not already loaded (prevents reload on re-enter)
+      if (!desktopFrame.src || desktopFrame.src === 'about:blank' || desktopFrame.src === window.location.href) {
+        desktopFrame.src = vncUrl;
+      }
       desktopFrame.style.display = 'block';
-      // Load noVNC HTML5 client from the VNC server
-      desktopFrame.src = vncUrl;
       // Update URL in header
       const urlEl = document.getElementById('splitPaneHeaderUrl');
       if (urlEl) {
@@ -5132,8 +5135,8 @@ Here are the current findings:
       desktopFrame.onload = () => {
         if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
       };
-      // Fallback: hide overlay after 10s (noVNC may take a few seconds to handshake)
-      setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 10000);
+      // Fallback: hide overlay after 5s
+      setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 5000);
     } else {
       // Live noVNC stream from sandbox
       const sandboxUrl = getVncBaseUrl();
@@ -5161,6 +5164,37 @@ Here are the current findings:
       if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'none';
     }
   }
+
+  // ── Pre-load VNC immediately on page init ───────────────────────────────
+  // Chrome is visible the moment the user opens Computer mode (no cold start).
+  // The connection stays alive in the background between tab switches.
+  (function preloadVnc() {
+    if (!desktopFrame) return;
+    if (desktopFrame.src && desktopFrame.src !== 'about:blank' && desktopFrame.src !== window.location.href) return;
+    const vncUrl = localStorage.getItem('vnc_url') ||
+      'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=500&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
+    desktopFrame.src = vncUrl;
+    desktopFrame.addEventListener('load', () => {
+      if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
+    }, { once: true });
+    // Fallback hide
+    setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 5000);
+  })();
+
+  // ── Reconnect on tab visibility restore ──────────────────────────────────
+  // If the VNC WebSocket dropped while the tab was hidden, reload the URL.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && desktopFrame) {
+      if (!desktopFrame.src || desktopFrame.src === 'about:blank' || desktopFrame.src === window.location.href) {
+        const vncUrl = localStorage.getItem('vnc_url') ||
+          'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=500&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
+        desktopFrame.src = vncUrl;
+        desktopFrame.style.display = 'block';
+      }
+      // Ensure overlay is hidden after returning to tab
+      setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 2000);
+    }
+  });
 
   function startScreenshotPolling() {
     if (desktopPollInterval) return;
@@ -5192,7 +5226,8 @@ Here are the current findings:
     const img = document.getElementById('desktopScreenshotImg');
     if (img) img.remove();
     if (desktopFrame) desktopFrame.style.display = '';
-    // Stop thumbnail VNC stream
+    // Keep VNC connection alive — do NOT reset desktopFrame.src to about:blank
+    // Only reset thumbnail (not the main frame)
     const thumbnailFrame = document.getElementById('thumbnailFrame');
     const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
     if (thumbnailFrame) thumbnailFrame.src = 'about:blank';
