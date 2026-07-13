@@ -1,7 +1,0 @@
-{
-  "database": "dolt",
-  "backend": "dolt",
-  "dolt_mode": "embedded",
-  "dolt_database": "freellmpool",
-  "project_id": "2f80c548-27ad-4954-9e33-9c8f30cb1ed9"
-}

@@ -172,7 +172,7 @@ http {
 
         # ── noVNC autoconnect — quality=9, no blur scaling ──
         location = / {
-            return 302 /vnc.html?autoconnect=true&reconnect=true&reconnect_delay=0&resize=scale&quality=9&compression=2&path=websockify&bell=false&show_dot=false;
+            return 302 /vnc.html?autoconnect=true&reconnect=true&reconnect_delay=1000&resize=scale&quality=9&compression=2&path=websockify&bell=false&show_dot=false;
         }
 
         # ── Live WebSocket VNC stream ──
@@ -214,6 +214,7 @@ http {
 NGINX_FULL
 
 nginx -c /tmp/nginx.conf -s reload
+NGINX_PID="$(cat /tmp/nginx.pid)"
 sleep 0.5
 log "[6/6] nginx full routing + CDP proxy active"
 
@@ -223,7 +224,7 @@ log "[6/6] nginx full routing + CDP proxy active"
 # ─────────────────────────────────────────────────────────────────────────────
 VNC_HTML="${NOVNC_WEB}/vnc.html"
 if [ -f "${VNC_HTML}" ]; then
-    if ! grep -q 'novnc_hide_patch_v6' "${VNC_HTML}"; then
+    if ! grep -q 'novnc_hide_patch_v7' "${VNC_HTML}"; then
         log "Patching noVNC HTML — always-live WS keepalive (v6)..."
         python3 - "${VNC_HTML}" <<'PYEOF'
 import sys, re
@@ -236,7 +237,7 @@ html = re.sub(r'<style>\s*/\* novnc_hide_patch_v[0-9]+ \*/.*?</style>', '', html
 html = re.sub(r'<script>\s*/\* novnc_hide_patch_v[0-9]+_js \*/.*?</script>', '', html, flags=re.DOTALL)
 
 PATCH = """<style>
-/* novnc_hide_patch_v6 */
+/* novnc_hide_patch_v7 */
 /* ── Hide entire left control bar ── */
 #noVNC_control_bar_anchor,
 #noVNC_control_bar_handle,
@@ -286,7 +287,7 @@ PATCH = """<style>
 }
 </style>
 <script>
-/* novnc_hide_patch_v6_js */
+/* novnc_hide_patch_v7_js */
 (function() {
   'use strict';
 
@@ -313,6 +314,10 @@ PATCH = """<style>
     obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class','style'] });
   });
   [300, 800, 1500, 3000, 6000].forEach(function(t) { setTimeout(hideUI, t); });
+
+  // Leave the browser WebSocket implementation untouched. noVNC already
+  // handles reconnects, while wrapping it changes protocol behavior.
+  return;
 
   /* ── 2. WebSocket interceptor — keepalive ping + suppress disconnect UI ── */
   var _OrigWS = window.WebSocket;
@@ -352,7 +357,7 @@ PATCH = """<style>
           /* Suppress connecting UI — hide overlay so user sees black momentarily */
           hideUI();
           listener(evt);
-          /* noVNC will reconnect with reconnect_delay=0, hide UI again after reconnect */
+          /* noVNC reconnect handling is intentionally bypassed by the return above. */
           setTimeout(hideUI, 50);
           setTimeout(hideUI, 200);
           setTimeout(hideUI, 600);
@@ -461,5 +466,11 @@ while true; do
             127.0.0.1:${WS_PORT} 127.0.0.1:${VNC_PORT} \
             >> /tmp/agent-logs/websockify.log 2>&1 &
         WS_PID=$!
+    fi
+
+    if ! kill -0 $NGINX_PID 2>/dev/null; then
+        log "[WATCHDOG] nginx died; restarting the relay without restarting Chromium"
+        nginx -c /tmp/nginx.conf
+        NGINX_PID="$(cat /tmp/nginx.pid)"
     fi
 done

@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     x11vnc \
     websockify novnc \
-    nginx \
+    nginx python3-minimal \
     curl fonts-liberation ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 

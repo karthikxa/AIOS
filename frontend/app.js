@@ -3915,23 +3915,16 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         if (usingWs && agentWs) {
           toggleComputerSplit(true);
 
-          // Load the noVNC live stream into the split-pane iframe from browser-server-1.
+          // Ensure the noVNC iframe is attached without replacing a live stream.
           const desktopFrame = document.getElementById('desktopFrame');
           if (desktopFrame) {
-            // autoconnect=true (not =1), reconnect=true so it never shows the Connect button
-            const vncUrl = (localStorage.getItem('vnc_url') ||
-              'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=0&resize=scale&quality=6&path=websockify&bell=false&show_dot=false');
-            desktopFrame.src = vncUrl;
+            // Replacing src here closes a healthy VNC socket for every task.
+            // Only attach when the endpoint actually changed or is blank.
+            startDesktopStream();
             desktopFrame.style.display = 'block';
             // Show LIVE badge immediately — noVNC handles reconnect itself
             const liveBadge = document.getElementById('splitPaneLiveBadge');
             if (liveBadge) liveBadge.style.display = 'flex';
-            // Hide the connecting overlay once VNC iframe loads
-            desktopFrame.addEventListener('load', function onLoad() {
-              const overlay = document.getElementById('desktopConnectingOverlay');
-              if (overlay) overlay.style.display = 'none';
-              desktopFrame.removeEventListener('load', onLoad);
-            });
           }
 
           // Send task — agent runs fully server-side, stream shows progress
@@ -5027,6 +5020,8 @@ Here are the current findings:
   let desktopPollInterval = null;
   let desktopPollStopped = false;
   const DEFAULT_HF_SPACE_URL = 'https://browser-server-2.onrender.com';
+  const DEFAULT_CLOUD_VNC_URL =
+    'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=1000&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
   const LEGACY_HF_SPACE_URLS = new Set([
     'https://bkarthikeyan-desktop-agent.hf.space',
     'https://bkarthikeyan-browser-agent-stream.hf.space',
@@ -5041,15 +5036,53 @@ Here are the current findings:
     localStorage.setItem('hf_space_url', DEFAULT_HF_SPACE_URL);
   }
 
-  // Clear legacy vnc_url if stored with autoconnect=1 parameters
-  const savedVncUrl = localStorage.getItem('vnc_url') || '';
-  if (savedVncUrl && (savedVncUrl.includes('autoconnect=1') || !savedVncUrl.includes('bell=false'))) {
-    localStorage.removeItem('vnc_url');
+  function normalizeVncUrl(rawUrl) {
+    try {
+      const url = new URL(rawUrl, window.location.href);
+      url.searchParams.set('autoconnect', 'true');
+      url.searchParams.set('reconnect', 'true');
+      // A zero-delay reconnect can overlap sockets during a server wake-up.
+      // One second is still responsive while allowing the prior socket to close.
+      const reconnectDelay = Number.parseInt(url.searchParams.get('reconnect_delay'), 10);
+      if (!Number.isFinite(reconnectDelay) || reconnectDelay < 750) {
+        url.searchParams.set('reconnect_delay', '1000');
+      }
+      url.searchParams.set('path', url.searchParams.get('path') || 'websockify');
+      url.searchParams.set('bell', 'false');
+      url.searchParams.set('show_dot', 'false');
+      return url.href;
+    } catch (error) {
+      console.warn('[desktop-stream] Invalid VNC URL; using the default stream', error);
+      return DEFAULT_CLOUD_VNC_URL;
+    }
+  }
+
+  function getCloudVncUrl() {
+    return normalizeVncUrl(localStorage.getItem('vnc_url') || DEFAULT_CLOUD_VNC_URL);
+  }
+
+  function sameUrl(first, second) {
+    try {
+      return new URL(first, window.location.href).href === new URL(second, window.location.href).href;
+    } catch (_) {
+      return first === second;
+    }
+  }
+
+  function loadDesktopFrame(sourceUrl) {
+    if (!desktopFrame || !sourceUrl) return false;
+    const nextUrl = normalizeVncUrl(sourceUrl);
+    const currentUrl = desktopFrame.getAttribute('src') || '';
+    if (currentUrl && currentUrl !== 'about:blank' && sameUrl(currentUrl, nextUrl)) {
+      return false;
+    }
+    desktopFrame.src = nextUrl;
+    return true;
   }
 
   // On localhost: set/update noVNC URL (versioned so it auto-updates when URL changes)
-  const KASM_URL_VERSION = '3';
-  const CORRECT_KASM_URL = 'http://localhost:6902/vnc.html?autoconnect=true&password=headless&resize=scale&reconnect=true';
+  const KASM_URL_VERSION = '4';
+  const CORRECT_KASM_URL = 'http://localhost:6902/vnc.html?autoconnect=true&password=headless&resize=scale&reconnect=true&reconnect_delay=1000';
   if (isLocal && localStorage.getItem('kasm_url_version') !== KASM_URL_VERSION) {
     localStorage.setItem('kasm_url', CORRECT_KASM_URL);
     localStorage.setItem('kasm_url_version', KASM_URL_VERSION);
@@ -5098,14 +5131,17 @@ Here are the current findings:
   }
 
   function startDesktopStream() {
-    if (desktopStreamStarted || !desktopFrame) return;
+    if (!desktopFrame) return;
+    const currentSource = desktopFrame.getAttribute('src') || '';
+    const frameIsBlank = !currentSource || currentSource === 'about:blank';
+    if (desktopStreamStarted && !frameIsBlank) return;
     desktopStreamStarted = true;
 
     // ── Priority 1: Kasm / noVNC URL (local desktop) ───────────────────
     const kasmUrl = localStorage.getItem('kasm_url');
     if (kasmUrl) {
       desktopFrame.style.display = 'block';
-      desktopFrame.src = kasmUrl;
+      loadDesktopFrame(kasmUrl);
       const urlEl = document.getElementById('splitPaneHeaderUrl');
       if (urlEl) { urlEl.textContent = kasmUrl; urlEl.href = kasmUrl; urlEl.style.display = 'inline'; }
       const browserLabel = document.getElementById('splitPaneBrowserLabel');
@@ -5123,12 +5159,10 @@ Here are the current findings:
     if (hfSpaceUrl) {
       // VNC stream comes from browser-server-1, agent API from browser-server-2
       const agentUrl = hfSpaceUrl.replace(/\/$/, '');
-      const vncUrl = localStorage.getItem('vnc_url') ||
-        'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=0&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
-      // Only set src if not already loaded (prevents reload on re-enter)
-      if (!desktopFrame.src || desktopFrame.src === 'about:blank' || desktopFrame.src === window.location.href) {
-        desktopFrame.src = vncUrl;
-      }
+      const vncUrl = getCloudVncUrl();
+      // Re-entering Computer mode keeps the existing VNC socket. Only a
+      // configured endpoint change is allowed to reload the iframe.
+      loadDesktopFrame(vncUrl);
       desktopFrame.style.display = 'block';
       // Update URL in header
       const urlEl = document.getElementById('splitPaneHeaderUrl');
@@ -5144,7 +5178,7 @@ Here are the current findings:
     } else {
       // Live noVNC stream from sandbox
       const sandboxUrl = getVncBaseUrl();
-      desktopFrame.src = sandboxUrl + '/vnc/index.html?autoconnect=true&resize=scale&reconnect=1&path=websockify';
+      loadDesktopFrame(sandboxUrl + '/vnc/index.html?autoconnect=true&resize=scale&reconnect=true&reconnect_delay=1000&path=websockify');
       desktopFrame.onload = () => {
         if (desktopConnectingOverlay) {
           desktopConnectingOverlay.style.display = 'none';
@@ -5167,10 +5201,8 @@ Here are the current findings:
   // The connection stays alive in the background between tab switches.
   (function preloadVnc() {
     if (!desktopFrame) return;
-    if (desktopFrame.src && desktopFrame.src !== 'about:blank' && desktopFrame.src !== window.location.href) return;
-    const vncUrl = localStorage.getItem('vnc_url') ||
-      'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=500&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
-    desktopFrame.src = vncUrl;
+    const vncUrl = localStorage.getItem('kasm_url') || getCloudVncUrl();
+    loadDesktopFrame(vncUrl);
     desktopFrame.addEventListener('load', () => {
       if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
     }, { once: true });
@@ -5179,37 +5211,38 @@ Here are the current findings:
   })();
 
   // ── Reconnect on tab visibility restore ──────────────────────────────────
-  // If the VNC WebSocket dropped while the tab was hidden, reload the URL.
+  // Keep the existing iframe on tab restore; noVNC reconnects its own socket.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && desktopFrame) {
-      if (!desktopFrame.src || desktopFrame.src === 'about:blank' || desktopFrame.src === window.location.href) {
-        const vncUrl = localStorage.getItem('vnc_url') ||
-          'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=0&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
-        desktopFrame.src = vncUrl;
-        desktopFrame.style.display = 'block';
-      }
-      // Ensure overlay is hidden after returning to tab
-      setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 2000);
+      // Do not reload a connected iframe after a tab switch. noVNC's own
+      // reconnect logic has the live canvas and session state it needs.
+      startDesktopStream();
+      desktopFrame.style.display = 'block';
     }
   });
 
   function startScreenshotPolling() {
     if (desktopPollInterval) return;
-    desktopFrame.src = 'about:blank';
+    // Keep the VNC canvas visible until the fallback has a real frame.  Clearing
+    // the iframe first causes the black flash this fallback was meant to avoid.
     if (desktopConnectingOverlay) {
       desktopConnectingOverlay.innerHTML = '<span style="font-size: 13px; color: #999;">Desktop connected</span>';
       setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 500);
     }
     // Poll screenshot every 2s and display as image
-    desktopFrame.style.display = 'none';
+    desktopFrame.style.display = 'block';
     const img = document.createElement('img');
     img.id = 'desktopScreenshotImg';
     img.style.width = '100%';
     img.style.height = '100%';
     img.style.objectFit = 'contain';
     img.style.background = '#000';
+    img.style.position = 'absolute';
+    img.style.inset = '0';
+    img.style.display = 'none';
     const container = desktopFrame.parentElement;
     if (container) container.appendChild(img);
+    img.addEventListener('load', () => { img.style.display = 'block'; }, { once: true });
     desktopPollInterval = setInterval(() => {
       img.src = 'http://127.0.0.1:7777/screenshot?_t=' + Date.now();
     }, 2000);
@@ -5398,7 +5431,7 @@ Here are the current findings:
   if (settingsSplitPaneBtn) {
     settingsSplitPaneBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const currentKasm = localStorage.getItem('kasm_url') || 'http://localhost:6902/vnc.html?autoconnect=true&password=headless&resize=scale&reconnect=true';
+      const currentKasm = localStorage.getItem('kasm_url') || CORRECT_KASM_URL;
       const url = prompt(
         'Desktop URL\n\n• Local Kasm:  https://localhost:6901\n• HF Space:   https://your-space.hf.space\n\nLeave blank to reset to default Kasm URL.',
         currentKasm
@@ -5416,7 +5449,7 @@ Here are the current findings:
             localStorage.setItem('kasm_url', trimmed);
           }
         } else {
-          localStorage.setItem('kasm_url', 'http://localhost:6902/vnc.html?autoconnect=true&password=headless&resize=scale&reconnect=true');
+          localStorage.setItem('kasm_url', CORRECT_KASM_URL);
           localStorage.removeItem('hf_space_url');
         }
         desktopStreamStarted = false;
