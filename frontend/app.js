@@ -3837,6 +3837,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         let agentWs = null;
         let usingWs = false;
         const wsQueue = [];
+        let wsFinished = false;
 
         // Try WebSocket first (real-time push, <5ms latency on HF)
         const wsProto = hfUrl.startsWith('https://') ? 'wss://' : 'ws://';
@@ -3876,19 +3877,29 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
                 const placeholder = document.querySelector('.typing-placeholder');
                 if (placeholder) placeholder.textContent += m.text;
               } else if (m.type === 'done') {
+                wsFinished = true;
                 appendMessage('assistant', m.summary || 'Task complete.');
                 updateStatus('\u2705 Done [' + (m.total_ms || 0) + 'ms, ' + (m.steps || maxSteps) + ' steps]', '\u2713');
                 addProgressStep('Task complete', 'done');
                 wsQueue.push({ done: true });
               } else if (m.type === 'error') {
+                wsFinished = true;
                 appendMessage('assistant', '\u274c ' + m.text);
                 wsQueue.push({ error: m.text });
               } else if (m.type === 'agent_end') {
+                wsFinished = true;
                 wsQueue.push({ done: true });
               }
             } catch (e) { console.error('[agent-ws]', e); }
           };
-          agentWs.onerror = agentWs.onclose = () => { usingWs = false; };
+          agentWs.onerror = () => {
+            usingWs = false;
+            if (!wsFinished) wsQueue.push({ error: 'Agent connection failed.' });
+          };
+          agentWs.onclose = () => {
+            usingWs = false;
+            if (!wsFinished) wsQueue.push({ error: 'Agent connection closed before completing.' });
+          };
         }
 
         async function executeOnAgent(action) {

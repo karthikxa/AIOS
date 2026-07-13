@@ -10380,6 +10380,18 @@ main.main-content.computer-split-mode #computerSplitPane {
   object-fit: cover !important;
 }
 
+/* The noVNC toolbar is rendered inside a cross-origin iframe. Crop its
+   left edge instead of covering it with a black mask, so the desktop fills
+   the entire viewport without exposing noVNC controls. */
+#desktopFrame {
+  width: calc(100% + 52px) !important;
+  margin-left: -52px !important;
+}
+
+#vncSidebarMask {
+  display: none !important;
+}
+
 /* Screenshot image fills viewport with no gaps */
 #desktopScreenshotImg {
   width: 100% !important;

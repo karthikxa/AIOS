@@ -634,6 +634,9 @@ async def call_llm_with_tools(messages: list[dict]) -> dict:
 
 async def run_agent(task: str):
     global _planner, _logger, _failures, _compressor
+    started_at = time.time()
+    final_summary = "The task reached its step limit before it could finish."
+    completed = False
     _planner = DynamicPlanner()
     _logger = ActionLogger()
     _failures = FailureMemory()
@@ -656,6 +659,7 @@ async def run_agent(task: str):
             ])
         except Exception as e:
             await broadcast({"type": "error", "text": f"LLM client call failed: {e}"})
+            final_summary = f"I couldn't complete the task because the language model request failed: {e}"
             break
 
         tool_calls = assistant_msg.get("tool_calls") or []
@@ -663,6 +667,8 @@ async def run_agent(task: str):
             text = assistant_msg.get("content", "Done.")
             await broadcast({"type": "assistant", "text": text})
             await broadcast({"type": "system", "text": "Agent finished task execution."})
+            final_summary = text
+            completed = True
             break
 
         messages.append(assistant_msg)
@@ -676,6 +682,11 @@ async def run_agent(task: str):
                 fn_args = {}
 
             await broadcast({"type": "action", "text": f"Executing: {fn_name}", "action": fn_name, "params": fn_args})
+
+            if fn_name == "done":
+                final_summary = fn_args.get("summary") or "Task complete."
+                completed = True
+                break
 
             # Screenshots are not loaded as streams, but we capture base64 before/after for logging
             t0 = time.time()
@@ -706,8 +717,12 @@ async def run_agent(task: str):
                 "content": result,
             })
 
-            if fn_name == "done":
-                break
+        if completed:
+            break
+
+    total_ms = round((time.time() - started_at) * 1000)
+    await broadcast({"type": "done", "summary": final_summary, "total_ms": total_ms})
+    await broadcast({"type": "agent_end", "total_ms": total_ms})
 
 
 # ─────────────────────────────────────────────────────────────────────────────
