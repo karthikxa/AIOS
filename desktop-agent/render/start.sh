@@ -219,39 +219,119 @@ log "[6/6] nginx full routing + CDP proxy active"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Patch noVNC HTML: hide sidebar, "Connecting..." overlay, status bar
-# Makes reconnects invisible — user sees frozen frame instead of noVNC UI
+# Uses Python for reliable multi-line string injection (sed fails with newlines)
 # ─────────────────────────────────────────────────────────────────────────────
 VNC_HTML="${NOVNC_WEB}/vnc.html"
 if [ -f "${VNC_HTML}" ]; then
-    # Hide: left sidebar, connecting overlay, status bar, connect button
-    HIDE_CSS='<style>
-/* novnc_hide_patch_v3 */
+    if ! grep -q 'novnc_hide_patch_v4' "${VNC_HTML}"; then
+        log "Patching noVNC HTML to hide sidebar and connecting overlay (v4)..."
+        python3 - "${VNC_HTML}" <<'PYEOF'
+import sys
+path = sys.argv[1]
+with open(path, 'r', encoding='utf-8') as f:
+    html = f.read()
+
+# Remove any older patch versions to avoid duplicates
+import re
+html = re.sub(r'<style>\s*/\* novnc_hide_patch_v[0-9]+ \*/.*?</style>', '', html, flags=re.DOTALL)
+
+HIDE_STYLE = """<style>
+/* novnc_hide_patch_v4 */
+/* Hide entire left control bar anchor, handle, and expanded panel */
 #noVNC_control_bar_anchor,
 #noVNC_control_bar_handle,
 #noVNC_control_bar,
+#noVNC_side_panel,
 .noVNC_open,
-#noVNC_status,
+.noVNC_control_bar,
+/* Hide connecting/disconnecting overlays */
+#noVNC_transition,
 #noVNC_connect_controls,
-#noVNC_transition {
+#noVNC_connect_button,
+/* Hide status text bar */
+#noVNC_status,
+/* Hide any floating toolbar buttons */
+#noVNC_extra_keys,
+#noVNC_clipboard_button,
+#noVNC_keyboard_button,
+#noVNC_toggle_extra_keys_button,
+#noVNC_fullscreen_button,
+#noVNC_view_only_button,
+#noVNC_clipboard,
+/* Generic noVNC button bar */
+.noVNC_button_group,
+.noVNC_group {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
+  pointer-events: none !important;
   width: 0 !important;
   height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
 }
-#noVNC_container {
+/* Make canvas fill the full viewport */
+#noVNC_container,
+#app,
+body {
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: #000 !important;
+}
+#noVNC_canvas {
   width: 100% !important;
   height: 100% !important;
-  left: 0 !important;
 }
-</style>'
-    # Only patch once (idempotent check) using version tag v3
-    if ! grep -q 'novnc_hide_patch_v3' "${VNC_HTML}"; then
-        # If it had v2 or older hidden styles, clean them up or append new
-        sed -i "s|</head>|${HIDE_CSS}</head>|" "${VNC_HTML}"
-        log "noVNC UI chrome hidden (sidebar + connecting overlay patched with v3)"
+</style>
+<script>
+/* novnc_hide_patch_v4_js */
+(function hideSidebar() {
+  function removeNovncUI() {
+    var ids = [
+      'noVNC_control_bar_anchor','noVNC_control_bar_handle','noVNC_control_bar',
+      'noVNC_side_panel','noVNC_status','noVNC_transition','noVNC_connect_controls',
+      'noVNC_connect_button','noVNC_extra_keys','noVNC_clipboard','noVNC_clipboard_button',
+      'noVNC_keyboard_button','noVNC_toggle_extra_keys_button','noVNC_fullscreen_button',
+      'noVNC_view_only_button'
+    ];
+    ids.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.cssText = 'display:none!important;width:0!important;height:0!important;';
+    });
+    document.querySelectorAll('.noVNC_button_group,.noVNC_group,.noVNC_open').forEach(function(el) {
+      el.style.cssText = 'display:none!important;width:0!important;height:0!important;';
+    });
+  }
+  document.addEventListener('DOMContentLoaded', removeNovncUI);
+  setTimeout(removeNovncUI, 500);
+  setTimeout(removeNovncUI, 1500);
+  setTimeout(removeNovncUI, 3000);
+  var obs = new MutationObserver(removeNovncUI);
+  document.addEventListener('DOMContentLoaded', function() {
+    obs.observe(document.body, { childList: true, subtree: true });
+  });
+})();
+</script>"""
+
+if '</head>' in html:
+    html = html.replace('</head>', HIDE_STYLE + '\n</head>', 1)
+else:
+    html = HIDE_STYLE + html
+
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(html)
+print("noVNC HTML patched successfully (v4)")
+PYEOF
+        log "noVNC UI chrome hidden (sidebar + connecting overlay patched with v4)"
+    else
+        log "noVNC HTML already patched (v4 tag found), skipping"
     fi
 fi
+
 
 echo ""
 echo "================================================"
