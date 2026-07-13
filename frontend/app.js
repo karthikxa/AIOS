@@ -4699,12 +4699,9 @@ Here are the current findings:
         }
       }
 
-      const escapedPrompt = promptText.replace(/'/g, "\\'");
       const errorContent = `
-        <div class="error-bubble" style="display: flex; flex-direction: column; gap: 8px;">
-          <span class="error-title">Connection Failed</span>
-          <span class="error-desc">${DOMPurify.sanitize(err.message)}</span>
-          <button class="retry-btn" onclick="window.triggerQuickAction('${escapedPrompt}')" style="margin-top: 4px; padding: 6px 12px; font-size: 12px; background: #EF4444; color: white; border: none; border-radius: 6px; cursor: pointer; width: fit-content; font-weight: 600; font-family: inherit; transition: background 0.15s;">✕ Retry Message</button>
+        <div style="color: #EF4444; font-family: inherit; font-size: 13px; font-weight: 500;">
+          Failed to connect to desktop agent.
         </div>
       `;
 
@@ -5029,9 +5026,10 @@ Here are the current findings:
   let desktopStreamStarted = false;
   let desktopPollInterval = null;
   let desktopPollStopped = false;
-  const DEFAULT_HF_SPACE_URL = 'https://bkarthikeyan-browser-agent-stream.hf.space';
+  const DEFAULT_HF_SPACE_URL = 'https://browser-server-2.onrender.com';
   const LEGACY_HF_SPACE_URLS = new Set([
     'https://bkarthikeyan-desktop-agent.hf.space',
+    'https://bkarthikeyan-browser-agent-stream.hf.space',
   ]);
 
   // Set default HF Space URL only on non-localhost (cloud mode)
@@ -5157,7 +5155,7 @@ Here are the current findings:
       const hfSpaceUrl2 = localStorage.getItem('hf_space_url');
       if (hfSpaceUrl2) {
         // Load noVNC from browser-server-1 (VNC server)
-        thumbnailFrame.src = localStorage.getItem('vnc_url') || 'https://browser-server-1.onrender.com/vnc.html?autoconnect=1&resize=scale&quality=6&path=websockify';
+        thumbnailFrame.src = localStorage.getItem('vnc_url') || 'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=500&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
       } else {
         thumbnailFrame.src = getVncBaseUrl() + '/vnc/index.html?autoconnect=true&resize=scale&reconnect=1&path=websockify';
       }

@@ -227,14 +227,21 @@ if [ -f "${VNC_HTML}" ]; then
     HIDE_CSS='<style>
 #noVNC_control_bar_anchor,
 #noVNC_control_bar_handle,
+#noVNC_control_bar,
+.noVNC_open,
 #noVNC_status,
 #noVNC_connect_controls,
 #noVNC_transition {
   display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 #noVNC_container {
   width: 100% !important;
   height: 100% !important;
+  left: 0 !important;
 }
 </style>'
     # Only patch once (idempotent check)
