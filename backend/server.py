@@ -425,6 +425,14 @@ async def lifespan(app: FastAPI):
     logger.info("  Upstream: %s", FREELLMAPI_URL)
     logger.info("=" * 60)
 
+    # Clean up orphaned swarm temp dirs from crashed runs
+    try:
+        from tools.swarms_tool import cleanup_orphaned_workspaces
+        cleanup_orphaned_workspaces()
+        logger.info("Orphaned swarm workspaces cleaned up")
+    except Exception:
+        pass
+
     _http_client = httpx.AsyncClient(timeout=httpx.Timeout(120.0, connect=10.0))
 
     # Session DB
@@ -2436,6 +2444,55 @@ async def rate_limit_status():
         return get_rate_limiter_stats()
     except Exception:
         return {"status": "not_initialized"}
+
+
+@app.get("/healthz")
+async def healthz():
+    """Lightweight health check — always 200 if process is alive."""
+    return {"status": "ok"}
+
+
+@app.get("/readyz")
+async def readyz():
+    """Readiness check — verifies key subsystems are functional."""
+    import resource
+    rss_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+    container_limit = int(os.environ.get("CONTAINER_LIMIT_MB", "512"))
+    checks = {
+        "memory_ok": rss_mb < (container_limit - 150),
+        "rss_mb": round(rss_mb, 1),
+        "container_limit_mb": container_limit,
+    }
+    ok = checks["memory_ok"]
+    return JSONResponse(status_code=200 if ok else 503, content=checks)
+
+
+@app.get("/api/circuit-breakers")
+async def circuit_breaker_status():
+    """Check per-provider circuit breaker status."""
+    try:
+        from agent.circuit_breaker import get_all_breakers_stats
+        return get_all_breakers_stats()
+    except Exception:
+        return {}
+
+
+@app.post("/api/swarm")
+async def start_swarm_check(request: Request):
+    """Pre-flight check before swarm — returns 503 if at capacity."""
+    import resource
+    rss_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+    container_limit = int(os.environ.get("CONTAINER_LIMIT_MB", "512"))
+    if rss_mb > (container_limit - 200):
+        return JSONResponse(
+            status_code=503,
+            content={
+                "error": "At memory capacity, please retry shortly.",
+                "retry_after_s": 15,
+                "rss_mb": round(rss_mb, 1),
+            },
+        )
+    return {"status": "ok", "rss_mb": round(rss_mb, 1)}
 
 
 # ── Tool Calling Fallback ───────────────────────────────────────────────────

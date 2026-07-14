@@ -5,10 +5,13 @@ instead of the external swarms library. Each worker runs as a full AIAgent with
 all tools, spawned via delegate_task internally.
 """
 
+import contextlib
+import glob
 import json
 import logging
 import os
 import re
+import shutil
 import tempfile
 import time
 from pathlib import Path
@@ -17,6 +20,51 @@ from typing import Any, Dict, List, Optional, Tuple
 from tools.registry import registry, tool_error
 
 logger = logging.getLogger(__name__)
+
+# ── Memory-aware worker capping ─────────────────────────────────────────────
+ESTIMATED_MB_PER_WORKER = 15
+SAFETY_MARGIN_MB = 150
+
+
+def _get_current_rss_mb() -> float:
+    try:
+        import resource
+        return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+    except Exception:
+        return 200  # fallback on Windows
+
+
+def _max_safe_workers() -> int:
+    container_limit = int(os.environ.get("CONTAINER_LIMIT_MB", "512"))
+    available = container_limit - SAFETY_MARGIN_MB - _get_current_rss_mb()
+    return max(1, int(available / ESTIMATED_MB_PER_WORKER))
+
+
+def _cap_by_memory(requested: int) -> int:
+    cap = _max_safe_workers()
+    if requested > cap:
+        logger.warning("worker_count_capped_by_memory requested=%d capped_to=%d", requested, cap)
+        return cap
+    return requested
+
+
+# ── Safe temp-dir lifecycle ──────────────────────────────────────────────────
+
+@contextlib.asynccontextmanager
+async def swarm_workspace():
+    """Temp dir that is guaranteed cleanup even on crash."""
+    workdir = tempfile.mkdtemp(prefix=f"swarm_{int(time.time())}_")
+    try:
+        yield workdir
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
+
+
+def cleanup_orphaned_workspaces():
+    """Sweep orphaned swarm_* temp dirs from crashed runs."""
+    tmp = tempfile.gettempdir()
+    for d in glob.glob(os.path.join(tmp, "swarm_*")):
+        shutil.rmtree(d, ignore_errors=True)
 
 # Module-level stagger delay set by swarm_router_task before calling handlers.
 # Read by _run_tasks to avoid hammering API rate limits with concurrent workers.
@@ -917,11 +965,8 @@ def _auto_worker_count(task: str, swarm_type: str) -> int:
     }.get(swarm_type, 1.0)
 
     raw = int(score * pattern_mult)
-    if raw < 3:
-        return 3
-    if raw > 250:
-        return 250
-    return raw
+    raw = max(3, min(raw, 250))
+    return _cap_by_memory(raw)
 
 
 def _generate_workers(count: int, swarm_type: str, task: str) -> Optional[List[Dict[str, str]]]:
