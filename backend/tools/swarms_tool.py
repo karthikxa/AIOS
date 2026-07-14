@@ -965,8 +965,11 @@ def _auto_worker_count(task: str, swarm_type: str) -> int:
     }.get(swarm_type, 1.0)
 
     raw = int(score * pattern_mult)
-    raw = max(3, min(raw, 250))
-    return _cap_by_memory(raw)
+    if raw < 3:
+        return 3
+    if raw > 250:
+        return 250
+    return raw
 
 
 def _generate_workers(count: int, swarm_type: str, task: str) -> Optional[List[Dict[str, str]]]:
