@@ -1,4 +1,4 @@
-﻿"""
+"""
 Configuration management for Zed Agent.
 
 Config files are stored in ~/.zed/ for easy access:
@@ -1920,11 +1920,8 @@ DEFAULT_CONFIG = {
                                      # (floor 30s) to enforce a hard cap.
         "reasoning_effort": "",  # reasoning effort for subagents: "xhigh", "high", "medium",
                                  # "low", "minimal", "none" (empty = inherit parent's level)
-        "max_concurrent_children": 15,  # max parallel children per batch; floor of 1 enforced, no ceiling.
-                                        # 15 balances real swarm parallelism against free-tier rate limits
-                                        # (most free providers allow 10-60 req/min). Each child routes
-                                        # independently through freellmapi, so 15 children spread across
-                                        # 15+ different models automatically. Raise to 250 for paid providers.
+        "max_concurrent_children": 250,  # max parallel children per batch; floor of 1 enforced, no ceiling.
+                                        # 250 enables full swarm — all 250 preloaded agents run simultaneously.
         "max_async_children": 3,  # max concurrent background (background=true) subagents; new dispatches rejected at capacity
         # Orchestrator role controls (see tools/delegate_tool.py:_get_max_spawn_depth
         # and _get_orchestrator_enabled).  Floored at 1, no upper ceiling â€”

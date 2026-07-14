@@ -1386,7 +1386,37 @@ JSON Structure:
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'Decomposing task...';
 
     // Map subagents to Swarm object structure
-    const HUMAN_NAMES = ['Summer', 'Allen', 'Logan', 'Aria', 'Carter', 'Brooke'];
+    const HUMAN_NAMES = [
+      // 125 Female agents
+      'Summer', 'Aria', 'Brooke', 'Chloe', 'Diana', 'Elena', 'Fiona', 'Grace', 'Hannah', 'Iris',
+      'Jade', 'Kira', 'Luna', 'Maya', 'Nora', 'Olivia', 'Piper', 'Quinn', 'Rosa', 'Sophia',
+      'Tara', 'Uma', 'Vera', 'Wren', 'Xena', 'Yara', 'Zara', 'Aaliyah', 'Bella', 'Carmen',
+      'Dahlia', 'Elise', 'Faith', 'Gia', 'Harper', 'Indigo', 'Jasmine', 'Keira', 'Lydia', 'Mila',
+      'Nadia', 'Opal', 'Pearl', 'Rae', 'Sage', 'Tessa', 'Una', 'Violet', 'Willow', 'Ximena',
+      'Yvette', 'Zoe', 'Athena', 'Bianca', 'Celine', 'Daphne', 'Esme', 'Flora', 'Gemma', 'Hazel',
+      'Isla', 'Juno', 'Kaia', 'Lena', 'Mabel', 'Nina', 'Olive', 'Phoebe', 'Riley', 'Stella',
+      'Thea', 'Ursa', 'Valentina', 'Willa', 'Xiomara', 'Yolanda', 'Adele', 'Brinley', 'Cora',
+      'Delia', 'Etta', 'Freya', 'Gloria', 'Helena', 'Ivy', 'Josephine', 'Kelsey', 'Lila', 'Maeve',
+      'Nell', 'Petra', 'Raven', 'Sienna', 'Talia', 'Undine', 'Vivian', 'Brynn', 'Catalina',
+      'Demi', 'Elsa', 'Faye', 'Greta', 'Holly', 'Irene', 'Juliet', 'Aurora', 'Lorelei', 'Mira',
+      'Ophelia', 'Savannah', 'Tiffany', 'Celeste', 'Daisy', 'Evangeline', 'Liliana', 'Margot',
+      'Seraphina', 'Cecilia', 'Genevieve', 'Penelope', 'Adriana', 'Camille',
+      // 125 Male agents
+      'Allen', 'Logan', 'Carter', 'Blake', 'Damon', 'Ethan', 'Felix', 'Gavin', 'Hugo', 'Isaac',
+      'Jake', 'Kai', 'Liam', 'Mason', 'Noah', 'Oscar', 'Parker', 'Rex', 'Theo', 'Uriah',
+      'Vince', 'Wesley', 'Xavier', 'York', 'Zane', 'Archer', 'Beckett', 'Callum', 'Dane', 'Ellis',
+      'Finn', 'Griffin', 'Hector', 'Ivan', 'Jasper', 'Knox', 'Leon', 'Marcus', 'Nolan', 'Orion',
+      'Phoenix', 'Reed', 'Silas', 'Tristan', 'Upton', 'Victor', 'Wyatt', 'Atlas', 'Brooks', 'Chase',
+      'Drew', 'Flynn', 'Gage', 'Heath', 'Jude', 'Lachlan', 'Micah', 'Nash', 'Owen', 'Pierce',
+      'Rocco', 'Sawyer', 'Thane', 'Ulric', 'Vance', 'Wilder', 'Xander', 'Yates', 'Bennett', 'Cyrus',
+      'Dalton', 'Emmett', 'Garrett', 'Holden', 'Jax', 'Kaleb', 'Levi', 'Magnus', 'Neil', 'Otis',
+      'Rhett', 'Sterling', 'Tobias', 'Urie', 'Wells', 'Alden', 'Blaine', 'Crew', 'Dashiell', 'Ezra',
+      'Forrest', 'Grant', 'Harris', 'Langston', 'Mitchell', 'Preston', 'Rodger', 'Tate', 'Warner',
+      'Banks', 'Colt', 'Drake', 'Elias', 'Finley', 'Hendrix', 'Jett', 'Lennon', 'Murphy', 'Nico',
+      'Orlando', 'Samson', 'Troy', 'Dominique', 'Francesca', 'Giovanna', 'Leona',
+      'Marina', 'Octavia', 'Ramona', 'Selene', 'Veronica', 'Annika', 'Celestine', 'Caspian',
+      'Dorian', 'Emerson', 'Fletcher', 'Gideon'
+    ];
     subAgents = subAgents.map((a, i) => ({
       idx: i,
       idStr: String(i + 1).padStart(2, '0'),
