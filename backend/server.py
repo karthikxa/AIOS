@@ -406,8 +406,10 @@ context_files = {}
 soul_content = ""
 
 # ── Concurrency + rate limiting ─────────────────────────────────────────────
-_MAX_CONCURRENT_AGENTS = 10  # max simultaneous agent loops (prevents Render OOM)
-_agent_semaphore = asyncio.Semaphore(_MAX_CONCURRENT_AGENTS)
+# No hard cap — the token bucket rate limiter handles throttling naturally.
+# All 250 agents share the rate limit pool (60 req/min). The LLM decides
+# how many to spawn based on task complexity. Each agent waits for its token
+# instead of being rejected.
 _agent_status: Dict[str, Dict[str, Any]] = {}  # session_id -> {status, result, ...}
 
 
@@ -1059,17 +1061,17 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
         # Track status for polling
         _agent_status[session_id] = {"status": "running", "started_at": time.time()}
 
-        async def _semaphored_agent():
-            async with _agent_semaphore:
-                # Rate limit before hitting LLM
-                try:
-                    from agent.token_bucket import rate_limit_acquire
-                    await rate_limit_acquire(1)
-                except Exception:
-                    pass
-                await asyncio.to_thread(run_agent_thread)
+        async def _rate_limited_agent():
+            # Rate limit: each agent acquires a token before hitting the LLM.
+            # All 250 agents share the same bucket — natural throttling.
+            try:
+                from agent.token_bucket import rate_limit_acquire
+                await rate_limit_acquire(1)
+            except Exception:
+                pass
+            await asyncio.to_thread(run_agent_thread)
 
-        agent_task = asyncio.create_task(_semaphored_agent())
+        agent_task = asyncio.create_task(_rate_limited_agent())
 
         async def event_stream():
             try:

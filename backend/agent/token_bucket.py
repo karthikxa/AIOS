@@ -84,8 +84,8 @@ class TokenBucket:
 
 
 def get_rate_limiter(
-    rate_per_minute: int = 60,
-    burst: int = 10,
+    rate_per_minute: int = 300,
+    burst: int = 50,
 ) -> TokenBucket:
     """Get or create the global rate limiter singleton."""
     global _bucket
