@@ -43,6 +43,7 @@ dependencies = [
   # user picks that backend. Smaller `dependencies` = smaller blast
   # radius for the next supply-chain attack.
   "openai==2.24.0",
+  "ddgs>=9.0.0,<10",
   "certifi==2026.5.20",
   "python-dotenv==1.2.2",
   "fire==0.7.1",
