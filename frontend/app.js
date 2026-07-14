@@ -1294,9 +1294,9 @@ Return ONLY a valid JSON object. No explanation, no markdown. Just the JSON.
 
 JSON Structure:
 {
-  "thoughts": "Your detailed reasoning/thought process (2-3 sentences) analyzing the prompt and describing how you will tackle it.",
-  "introText": "A friendly introductory paragraph (1-2 sentences) explaining to the user what you are going to do and that you are creating sub-agents.",
-  "transitionText": "A transition paragraph (1-2 sentences) explaining that the sub-agents have been created and what they are now doing in parallel.",
+  "thoughts": "Your detailed reasoning/thought process analyzing the prompt and how you will tackle it.",
+  "introText": "A friendly introductory paragraph explaining to the user what you are going to do.",
+  "transitionText": "A transition paragraph explaining the sub-agents have been created.",
   "subagents": [
     {
       "name": "Role Name (e.g. Competitor Landscape Researcher, Pricing Analyst)",
@@ -1306,29 +1306,39 @@ JSON Structure:
   ]
 }` },
         { role: 'user', content: promptText }
-      ], null, null, null, null, true);
+      ], null, null, null, null, false);
     } catch (err) {
       console.error('Task decomposition error:', err);
     }
 
-    // Parse sub-agents and text details
+    // Parse sub-agents and text details — handle multiple JSON formats
     let parsedData = {};
     try {
-      const jsonMatch = rawContent.match(/\{[\s\S]*?\}/);
+      // Try to find JSON block in the response (may have surrounding text)
+      const jsonMatch = rawContent.match(/```json\s*([\s\S]*?)```/) || rawContent.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        parsedData = JSON.parse(jsonMatch[0]);
+        const jsonStr = jsonMatch[1] || jsonMatch[0];
+        parsedData = JSON.parse(jsonStr);
       } else {
         parsedData = JSON.parse(rawContent);
       }
     } catch (err) {
+      // If JSON parsing fails, try to extract useful info from the raw text
       console.error('JSON parsing failed:', err);
+      try {
+        // Last resort: try the entire response as JSON
+        parsedData = JSON.parse(rawContent);
+      } catch (e) {
+        // Use raw response as intro text
+        parsedData.introText = rawContent.slice(0, 500);
+      }
     }
 
-    // Create dynamic fallbacks using promptText so it is never static or hardcoded
+    // Create dynamic fallbacks using promptText — never static
     const cleanPrompt = promptText.length > 40 ? promptText.slice(0, 40) + '...' : promptText;
-    const thoughtsText = parsedData.thoughts || `Decomposing analysis task: "${promptText}". Planning parallel research tracks to query target indices, verify details, and compile comprehensive comparison structures.`;
-    const introText = parsedData.introText || `I'll analyze the request for "${cleanPrompt}" by creating specialized sub-agents to investigate different aspects in parallel. Let me start by spawning the sub-agents and assigning their research tasks.`;
-    const transitionText = parsedData.transitionText || `I've successfully created the specialized sub-agents. They are now actively gathering and analyzing information in parallel.`;
+    const thoughtsText = parsedData.thoughts || `Analyzing: "${promptText}". Breaking this into parallel research tracks.`;
+    const introText = parsedData.introText || `Let me break down "${cleanPrompt}" into specialized sub-agents working in parallel.`;
+    const transitionText = parsedData.transitionText || `Sub-agents are now active and working on their assigned tasks.`;
     let subAgents = parsedData.subagents || parsedData.subAgents;
 
     // Safety Fallback: Guarantee we always have a clean list of subagents
@@ -1345,7 +1355,7 @@ JSON Structure:
       type: 'active',
       label: 'Thinking...',
       statusText: '',
-      contentHtml: 'Analyzing task structure and determining optimal agent allocation...',
+      contentHtml: `Analyzing task structure for: "${cleanPrompt}"...`,
       isExpanded: true
     });
     blocksContainer.appendChild(cotSection);
