@@ -15,7 +15,6 @@ COPY app.py .
 
 ENV PORT=10000
 ENV DESKTOP_URL=https://browser-server-1.onrender.com
-ENV AGENT_SECRET=changeme
 
 EXPOSE 10000
 CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port ${PORT} --log-level warning"]

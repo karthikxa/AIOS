@@ -13,6 +13,10 @@ export VNC_PORT=5900
 export WS_PORT=6080
 export CDP_PORT=9222
 export AGENT_SECRET="${AGENT_SECRET:-}"
+if [ -z "${AGENT_SECRET}" ] || [ "${AGENT_SECRET}" = "changeme" ]; then
+    echo "[FATAL] AGENT_SECRET must be a non-default shared secret."
+    exit 1
+fi
 if [ ! -d "/tmp/novnc" ]; then
     log "Copying noVNC to writable /tmp/novnc..."
     mkdir -p /tmp/novnc

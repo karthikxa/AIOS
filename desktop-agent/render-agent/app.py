@@ -732,6 +732,8 @@ cdp = CDPClient()
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    if not AGENT_SECRET or AGENT_SECRET == "changeme":
+        raise RuntimeError("AGENT_SECRET must be set to a non-default value on both browser services")
     await cdp.connect()
     yield
 
