@@ -116,40 +116,89 @@ until curl -sf http://127.0.0.1:${CDP_PORT}/json/version > /dev/null 2>&1; do
 done
 log "[3/5] Chromium + CDP ready (${COUNT} probes)"
 
+VNC_HEALTH_FILE="/tmp/vnc-health.json"
+
+wait_for_vnc_handshake() {
+    python3 - "${VNC_PORT}" <<'PYEOF'
+import socket
+import sys
+
+try:
+    with socket.create_connection(("127.0.0.1", int(sys.argv[1])), timeout=2) as conn:
+        conn.settimeout(2)
+        greeting = conn.recv(12)
+    sys.exit(0 if greeting.startswith(b"RFB ") else 1)
+except OSError:
+    sys.exit(1)
+PYEOF
+}
+
+start_x11vnc() {
+    rm -f "${VNC_HEALTH_FILE}"
+    x11vnc \
+        -display :99 \
+        -forever \
+        -nopw \
+        -rfbport ${VNC_PORT} \
+        -localhost \
+        -xdamage \
+        -threads \
+        -wait 30 \
+        -defer 30 \
+        -nosel \
+        -noprimary \
+        -shared \
+        -quiet \
+        -noxrecord \
+        > /tmp/agent-logs/x11vnc.log 2>&1 &
+    X11VNC_PID=$!
+
+    for _ in $(seq 1 30); do
+        if wait_for_vnc_handshake; then
+            printf '{"status":"ok","service":"vnc-desktop","resolution":"1280x720"}\n' > "${VNC_HEALTH_FILE}"
+            log "[4/5] x11vnc RFB handshake ready (PID ${X11VNC_PID})"
+            return 0
+        fi
+        if ! kill -0 "${X11VNC_PID}" 2>/dev/null; then
+            break
+        fi
+        sleep 0.2
+    done
+
+    log "[ERROR] x11vnc did not provide an RFB handshake"
+    tail -20 /tmp/agent-logs/x11vnc.log 2>/dev/null || true
+    return 1
+}
+
+start_websockify() {
+    websockify \
+        --web=${NOVNC_WEB} \
+        --heartbeat=25 \
+        127.0.0.1:${WS_PORT} 127.0.0.1:${VNC_PORT} \
+        > /tmp/agent-logs/websockify.log 2>&1 &
+    WS_PID=$!
+    sleep 0.3
+    if ! kill -0 "${WS_PID}" 2>/dev/null; then
+        log "[ERROR] websockify failed to start"
+        tail -20 /tmp/agent-logs/websockify.log 2>/dev/null || true
+        return 1
+    fi
+    log "[5/5] websockify bridge ready (PID ${WS_PID})"
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 4. x11vnc — live capture, localhost only
 # ─────────────────────────────────────────────────────────────────────────────
-x11vnc \
-    -display :99 \
-    -forever \
-    -nopw \
-    -rfbport ${VNC_PORT} \
-    -localhost \
-    -xdamage \
-    -threads \
-    -wait 30 \
-    -defer 30 \
-    -nosel \
-    -noprimary \
-    -shared \
-    -quiet \
-    -noxrecord \
-    > /tmp/agent-logs/x11vnc.log 2>&1 &
-X11VNC_PID=$!
-sleep 0.8
-log "[4/5] x11vnc live stream OK (PID ${X11VNC_PID})"
+if ! start_x11vnc; then
+    exit 1
+fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 5. websockify — WebSocket bridge, localhost only
 # ─────────────────────────────────────────────────────────────────────────────
-websockify \
-    --web=${NOVNC_WEB} \
-    --heartbeat=25 \
-    127.0.0.1:${WS_PORT} 127.0.0.1:${VNC_PORT} \
-    > /tmp/agent-logs/websockify.log 2>&1 &
-WS_PID=$!
-sleep 0.5
-log "[5/5] websockify WebSocket bridge OK (PID ${WS_PID})"
+if ! start_websockify; then
+    exit 1
+fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Full nginx:
@@ -173,9 +222,12 @@ http {
     server {
         listen ${PORT};
 
-        location /health {
-            return 200 '{"status":"ok","service":"vnc-desktop","resolution":"1280x720"}';
-            add_header Content-Type application/json;
+        location = /health {
+            if (!-f /tmp/vnc-health.json) {
+                return 503;
+            }
+            alias /tmp/vnc-health.json;
+            default_type application/json;
         }
 
         # ── noVNC autoconnect — quality=9, no blur scaling ──
@@ -492,21 +544,28 @@ while true; do
         CHROME_PID=$!
     fi
 
-    if ! kill -0 $X11VNC_PID 2>/dev/null; then
-        log "[WATCHDOG] x11vnc died — restarting"
-        x11vnc -display :99 -forever -nopw -rfbport ${VNC_PORT} \
-            -localhost -xdamage -threads -wait 30 -defer 30 \
-            -nosel -noprimary -shared -quiet -noxrecord \
-            >> /tmp/agent-logs/x11vnc.log 2>&1 &
-        X11VNC_PID=$!
+    if ! kill -0 $X11VNC_PID 2>/dev/null || ! wait_for_vnc_handshake; then
+        log "[WATCHDOG] x11vnc is unavailable — restarting the VNC chain"
+        rm -f "${VNC_HEALTH_FILE}"
+        if kill -0 $X11VNC_PID 2>/dev/null; then
+            kill $X11VNC_PID 2>/dev/null || true
+            wait $X11VNC_PID 2>/dev/null || true
+        fi
+        if kill -0 $WS_PID 2>/dev/null; then
+            kill $WS_PID 2>/dev/null || true
+            wait $WS_PID 2>/dev/null || true
+        fi
+        if ! start_x11vnc || ! start_websockify; then
+            log "[WATCHDOG] VNC chain restart failed; exiting so Render can replace the instance"
+            exit 1
+        fi
     fi
 
     if ! kill -0 $WS_PID 2>/dev/null; then
         log "[WATCHDOG] websockify died — restarting"
-        websockify --web=${NOVNC_WEB} --heartbeat=25 \
-            127.0.0.1:${WS_PORT} 127.0.0.1:${VNC_PORT} \
-            >> /tmp/agent-logs/websockify.log 2>&1 &
-        WS_PID=$!
+        if ! start_websockify; then
+            exit 1
+        fi
     fi
 
     if ! kill -0 $NGINX_PID 2>/dev/null; then

@@ -14,6 +14,7 @@ import { pluginsStore } from './js/plugins-page.js';
 import { schedulesStore } from './js/schedules-page.js';
 import DOMPurify from 'dompurify';
 import { renderMarkdown, extractCodeBlocks, isMaskedKey, normalizeBaseUrl, TasksStore } from './src/utils.js';
+import { buildAgentWebSocketUrl } from './src/desktop-connection.js';
 import { parseReasoningToCoT, createCoTLiveRenderer } from './js/chain-of-thought.js';
 
 const tasksStore = new TasksStore();
@@ -3840,10 +3841,8 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         let wsFinished = false;
 
         // Try WebSocket first (real-time push, <5ms latency on HF)
-        const wsProto = hfUrl.startsWith('https://') ? 'wss://' : 'ws://';
-        const wsBase = hfUrl.replace(/^https?:\/\//, '');
         try {
-          agentWs = new WebSocket(wsProto + wsBase + '/ws/agent');
+          agentWs = new WebSocket(buildAgentWebSocketUrl(hfUrl));
           await new Promise((resolve, reject) => {
             const t = setTimeout(() => reject(new Error('WS timeout')), 3000);
             agentWs.onopen  = () => { clearTimeout(t); usingWs = true; resolve(); };
@@ -5158,15 +5157,14 @@ Here are the current findings:
     // If HF Space is configured, use its WebSocket endpoint
     const hfUrl = localStorage.getItem('hf_space_url');
     if (hfUrl) {
-      const base = hfUrl.replace(/\/$/, '').replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
-      return base + '/ws';
+      return buildAgentWebSocketUrl(hfUrl);
     }
     // Otherwise use desktop_agent_url or localhost default
     let agentUrl = localStorage.getItem('desktop_agent_url');
     if (agentUrl) return agentUrl;
     const host = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? window.location.hostname : '127.0.0.1';
-    return `ws://${host}:8765/ws`;
+    return `ws://${host}:8765/ws/agent`;
   }
 
   function startDesktopStream() {
