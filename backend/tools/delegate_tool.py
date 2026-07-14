@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Delegate Tool -- Subagent Architecture
 
@@ -1645,6 +1645,15 @@ def _run_single_child(
                 task_id=child_task_id,
                 stream_callback=_relay_child_text,
             )
+
+        # Rate limit: acquire token before spawning child to prevent API overload
+        try:
+            from agent.token_bucket import rate_limit_acquire
+            wait_time = await rate_limit_acquire(1)
+            if wait_time > 0:
+                logger.info("Rate limiter: waited %.1fs before spawning child %d", wait_time, task_index)
+        except Exception as e:
+            logger.debug("Rate limiter bypass: %s", e)
 
         _child_future = _timeout_executor.submit(_run_with_thread_capture)
         try:

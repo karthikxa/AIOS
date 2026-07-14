@@ -1,4 +1,4 @@
-﻿"""Swarm orchestration patterns powered by delegate_task sub-agent spawning.
+"""Swarm orchestration patterns powered by delegate_task sub-agent spawning.
 
 All 10 patterns use the native sub-agent system (up to 250 concurrent workers)
 instead of the external swarms library. Each worker runs as a full AIAgent with
@@ -7,8 +7,11 @@ all tools, spawned via delegate_task internally.
 
 import json
 import logging
+import os
 import re
+import tempfile
 import time
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from tools.registry import registry, tool_error
@@ -30,6 +33,54 @@ def _get_spawn_delay() -> int:
 
 
 # ---------------------------------------------------------------------------
+# Shared memory for swarm workers
+# ---------------------------------------------------------------------------
+
+def _create_swarm_shared_memory(task_id: str) -> Optional[str]:
+    """Create a temporary shared memory directory for swarm workers.
+    Returns the directory path or None on failure."""
+    try:
+        shared_dir = tempfile.mkdtemp(prefix=f"swarm_{task_id}_")
+        logger.info("Created shared memory: %s", shared_dir)
+        return shared_dir
+    except Exception as e:
+        logger.warning("Failed to create shared memory: %s", e)
+        return None
+
+
+def _cleanup_swarm_shared_memory(shared_dir: Optional[str]) -> None:
+    """Remove shared memory directory after swarm completes."""
+    if not shared_dir:
+        return
+    try:
+        import shutil
+        shutil.rmtree(shared_dir, ignore_errors=True)
+        logger.info("Cleaned up shared memory: %s", shared_dir)
+    except Exception as e:
+        logger.debug("Shared memory cleanup failed: %s", e)
+
+
+def _read_swarm_shared_memory(shared_dir: Optional[str]) -> str:
+    """Read all worker findings from shared memory. Returns combined text."""
+    if not shared_dir:
+        return ""
+    try:
+        shared_path = Path(shared_dir)
+        if not shared_path.exists():
+            return ""
+        findings = []
+        for f in sorted(shared_path.glob("worker_*.md")):
+            content = f.read_text(encoding="utf-8", errors="replace").strip()
+            if content:
+                worker_name = f.stem.replace("worker_", "").replace("_", " ")
+                findings.append(f"[{worker_name}]\n{content}")
+        return "\n\n---\n\n".join(findings) if findings else ""
+    except Exception as e:
+        logger.debug("Failed to read shared memory: %s", e)
+        return ""
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -39,6 +90,7 @@ def _build_worker_goal(
     task: str,
     previous_output: Optional[str] = None,
     extra_context: Optional[str] = None,
+    shared_memory_dir: Optional[str] = None,
 ) -> str:
     """Build a goal string for a sub-agent worker with context."""
     parts = [
@@ -52,6 +104,16 @@ def _build_worker_goal(
         parts.extend(["", "## Context", extra_context])
     if previous_output:
         parts.extend(["", "## Previous Stage Output (use as input)", previous_output])
+    if shared_memory_dir:
+        safe_name = worker_name.replace(" ", "_").replace("/", "_")
+        findings_path = os.path.join(shared_memory_dir, f"worker_{safe_name}.md")
+        parts.extend([
+            "",
+            "## Shared Workspace",
+            f"You have access to a shared workspace at: {shared_memory_dir}",
+            f"Write your key findings, data, and analysis to: {findings_path}",
+            "Other workers can read your file. Be thorough — your output feeds into the final synthesis.",
+        ])
     parts.extend([
         "",
         "Complete this task from your assigned role. Provide a thorough, well-structured response "
@@ -234,23 +296,39 @@ def concurrent_swarm(task: str, workers: Optional[List[Dict]] = None,
     effective_loops = max(1, min(max_loops, 5))
     current_context = task
 
+    # Create shared memory for workers to share findings
+    task_id = f"concurrent_{int(time.time())}"
+    shared_dir = _create_swarm_shared_memory(task_id)
+
     for loop in range(effective_loops):
         task_list = [
             {
-                "goal": _build_worker_goal(w["name"], w["system_prompt"], task)
+                "goal": _build_worker_goal(
+                    w["name"], w["system_prompt"], task,
+                    shared_memory_dir=shared_dir,
+                )
                 + (f"\n\n## Previous Round Synthesis\n{current_context[:3000]}" if loop > 0 else "")
             }
             for w in worker_list
         ]
         result = _run_tasks(task_list, parent_agent)
         if "error" in result:
+            _cleanup_swarm_shared_memory(shared_dir)
             return json.dumps({"error": result["error"], "type": "ConcurrentWorkflow", "loop": loop})
 
         summaries = [r.get("summary", "") for r in result.get("results", [])]
         combined = "\n\n---\n\n".join(
             f"[{w['name']}]\n{s}" for w, s in zip(worker_list, summaries) if s
         )
+
+        # Merge shared memory findings into the result
+        shared_findings = _read_swarm_shared_memory(shared_dir)
+        if shared_findings:
+            combined += f"\n\n---\n\n## Shared Worker Findings\n{shared_findings}"
+
         current_context = combined
+
+    _cleanup_swarm_shared_memory(shared_dir)
 
     return json.dumps({
         "status": "ok",
@@ -258,6 +336,7 @@ def concurrent_swarm(task: str, workers: Optional[List[Dict]] = None,
         "worker_count": len(worker_list),
         "loops": effective_loops,
         "type": "ConcurrentWorkflow",
+        "shared_memory": shared_dir is not None,
     })
 
 

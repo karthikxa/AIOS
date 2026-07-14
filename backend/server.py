@@ -405,6 +405,11 @@ credential_pool = None
 context_files = {}
 soul_content = ""
 
+# ── Concurrency + rate limiting ─────────────────────────────────────────────
+_MAX_CONCURRENT_AGENTS = 10  # max simultaneous agent loops (prevents Render OOM)
+_agent_semaphore = asyncio.Semaphore(_MAX_CONCURRENT_AGENTS)
+_agent_status: Dict[str, Dict[str, Any]] = {}  # session_id -> {status, result, ...}
+
 
 
 # ── Lifespan ─────────────────────────────────────────────────────────────────
@@ -1051,7 +1056,20 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                 logger.exception("Error running AIAgent loop")
                 loop.call_soon_threadsafe(q.put_nowait, ("error", str(e)))
 
-        agent_task = asyncio.create_task(asyncio.to_thread(run_agent_thread))
+        # Track status for polling
+        _agent_status[session_id] = {"status": "running", "started_at": time.time()}
+
+        async def _semaphored_agent():
+            async with _agent_semaphore:
+                # Rate limit before hitting LLM
+                try:
+                    from agent.token_bucket import rate_limit_acquire
+                    await rate_limit_acquire(1)
+                except Exception:
+                    pass
+                await asyncio.to_thread(run_agent_thread)
+
+        agent_task = asyncio.create_task(_semaphored_agent())
 
         async def event_stream():
             try:
@@ -1122,6 +1140,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                         }
                         yield f"data: {json.dumps(chunk)}\n\n"
                     elif event_type == "done":
+                        _agent_status[session_id] = {"status": "completed", "result": val, "finished_at": time.time()}
                         chunk = {
                             "id": f"chatcmpl-{session_id}",
                             "object": "chat.completion.chunk",
@@ -1133,6 +1152,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                         yield "data: [DONE]\n\n"
                         break
                     elif event_type == "error":
+                        _agent_status[session_id] = {"status": "error", "error": val, "finished_at": time.time()}
                         err_chunk = {"error": {"message": val, "type": "agent_error"}}
                         yield f"data: {json.dumps(err_chunk)}\n\n"
                         yield "data: [DONE]\n\n"
@@ -2395,6 +2415,25 @@ async def browser_status():
         return {"running": resp.status_code == 200, "url": BROWSER_SERVER_URL}
     except Exception:
         return {"running": False, "url": BROWSER_SERVER_URL}
+
+
+@app.get("/api/agent/status/{session_id}")
+async def agent_status(session_id: str):
+    """Check status of a running agent session. For frontend polling."""
+    status = _agent_status.get(session_id)
+    if not status:
+        return {"status": "not_found", "session_id": session_id}
+    return {"session_id": session_id, **status}
+
+
+@app.get("/api/rate-limit")
+async def rate_limit_status():
+    """Check rate limiter status."""
+    try:
+        from agent.token_bucket import get_rate_limiter_stats
+        return get_rate_limiter_stats()
+    except Exception:
+        return {"status": "not_initialized"}
 
 
 # ── Tool Calling Fallback ───────────────────────────────────────────────────
