@@ -2061,6 +2061,46 @@ JSON Structure:
     Object.keys(_activeToolIndicators).forEach(hideToolIndicator);
   }
 
+  const LLM_PROXY_URL = 'https://server-llm-1-0r64.onrender.com';
+  const LLM_PROXY_KEY = 'freellmapi-b8b35f76a87a2e3db4985258c26197a2f22ceabe528eb6ac';
+
+  async function _callLLMProxyDirect(messages, useStream, onToken, signal) {
+    const resp = await fetch(`${LLM_PROXY_URL}/v1/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${LLM_PROXY_KEY}` },
+      body: JSON.stringify({ model: 'auto', messages, stream: useStream }),
+      signal
+    });
+    if (!resp.ok) throw new Error(`LLM proxy error ${resp.status}`);
+    if (useStream && resp.body) {
+      let full = '';
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed === 'data: [DONE]') continue;
+          if (trimmed.startsWith('data: ')) {
+            try {
+              const d = JSON.parse(trimmed.slice(6));
+              const content = d.choices?.[0]?.delta?.content;
+              if (content && onToken) onToken(content);
+            } catch (e) {}
+          }
+        }
+      }
+      return full;
+    }
+    const d = await resp.json();
+    return d.choices?.[0]?.message?.content || '';
+  }
+
   async function callRealAPI(model, messages, onToken, signal, onReasoning, onToolUsage, skipAgent = false) {
     const settings = model.settings || {};
     const apiKey = settings.apiKey || '';
@@ -2119,8 +2159,13 @@ JSON Structure:
         signal
       });
       if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ detail: resp.statusText }));
-        throw new Error(err.detail || `Zed Pro API error ${resp.status}`);
+        const errBody = await resp.json().catch(() => ({ detail: resp.statusText }));
+        // Fallback: call LLM proxy directly when backend is down (503/502/504)
+        if (resp.status >= 500) {
+          console.warn(`[fallback] Backend ${resp.status}, calling LLM proxy directly`);
+          return await _callLLMProxyDirect(apiMessages, useStream, onToken, signal);
+        }
+        throw new Error(errBody.detail || `Zed Pro API error ${resp.status}`);
       }
       if (useStream && resp.body) {
         let full = '';
@@ -4746,9 +4791,34 @@ Here are the current findings:
       const errorMsg = (err.message || '').toLowerCase();
       let errorContent;
       if (effectiveMode === 'computer') {
+        // Desktop agent failed — fall back to normal chat via LLM proxy
+        console.warn('[computer-fallback] Desktop agent failed, falling back to chat:', err.message);
+        try {
+          const fallbackReply = await _callLLMProxyDirect(conversationHistory, true, onTokenCb, abortController.signal);
+          if (fallbackReply && bubble && bubble.parentNode) {
+            let textContainer = bubble.querySelector('.cot-response-text-container');
+            if (!textContainer) {
+              textContainer = document.createElement('div');
+              textContainer.className = 'cot-response-text-container';
+              bubble.appendChild(textContainer);
+            }
+            textContainer.innerHTML = renderMarkdown(fallbackReply);
+            bubble.classList.remove('error-bubble');
+            conversationHistory.push({ role: 'assistant', content: fallbackReply });
+            const active = tasksStore.tasks.find(t => t.id === tasksStore.activeId);
+            if (active) active.messages.push({ role: 'assistant', content: fallbackReply });
+            tasksStore.notify();
+            showStopButton(false);
+            clearAllToolIndicators();
+            window.dispatchEvent(new CustomEvent('agent-typing-end'));
+            return;
+          }
+        } catch (fallbackErr) {
+          console.error('[computer-fallback] Fallback also failed:', fallbackErr);
+        }
         errorContent = `
           <div style="color: #EF4444; font-family: inherit; font-size: 13px; font-weight: 500;">
-            Failed to connect to desktop agent.
+            Desktop agent unavailable. ${err.message || 'Please try again.'}
           </div>
         `;
       } else if (errorMsg.includes('desktop') || errorMsg.includes('agent') || errorMsg.includes('connect')) {
