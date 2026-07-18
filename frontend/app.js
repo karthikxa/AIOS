@@ -4743,11 +4743,27 @@ Here are the current findings:
         }
       }
 
-      const errorContent = `
-        <div style="color: #EF4444; font-family: inherit; font-size: 13px; font-weight: 500;">
-          Failed to connect to desktop agent.
-        </div>
-      `;
+      const errorMsg = (err.message || '').toLowerCase();
+      let errorContent;
+      if (effectiveMode === 'computer') {
+        errorContent = `
+          <div style="color: #EF4444; font-family: inherit; font-size: 13px; font-weight: 500;">
+            Failed to connect to desktop agent.
+          </div>
+        `;
+      } else if (errorMsg.includes('desktop') || errorMsg.includes('agent') || errorMsg.includes('connect')) {
+        errorContent = `
+          <div style="color: #EF4444; font-family: inherit; font-size: 13px; font-weight: 500;">
+            Connection error: ${err.message || 'Unable to reach the server. Please try again.'}
+          </div>
+        `;
+      } else {
+        errorContent = `
+          <div style="color: #EF4444; font-family: inherit; font-size: 13px; font-weight: 500;">
+            ${err.message || 'Something went wrong. Please try again.'}
+          </div>
+        `;
+      }
 
       if (err.name === 'AbortError') {
         let textContainer = bubble ? bubble.querySelector('.cot-response-text-container') : null;
