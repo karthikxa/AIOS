@@ -2071,7 +2071,10 @@ JSON Structure:
       body: JSON.stringify({ model: 'auto', messages, stream: useStream }),
       signal
     });
-    if (!resp.ok) throw new Error(`LLM proxy error ${resp.status}`);
+    if (!resp.ok) {
+      const errText = await resp.text().catch(() => '');
+      throw new Error(`LLM proxy error ${resp.status}: ${errText.slice(0, 200)}`);
+    }
     if (useStream && resp.body) {
       let full = '';
       const reader = resp.body.getReader();
@@ -2090,7 +2093,7 @@ JSON Structure:
             try {
               const d = JSON.parse(trimmed.slice(6));
               const content = d.choices?.[0]?.delta?.content;
-              if (content && onToken) onToken(content);
+              if (content) { full += content; if (onToken) onToken(content); }
             } catch (e) {}
           }
         }

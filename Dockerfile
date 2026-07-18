@@ -32,6 +32,9 @@ RUN mkdir -p server/data
 
 RUN npm run build -w server
 RUN npm prune --omit=dev
+# Create a minimal client/dist so the server doesn't error on dashboard route
+RUN mkdir -p client/dist && echo '<!DOCTYPE html><html><body><h1>API Server Running</h1><p>Use /v1/chat/completions endpoint.</p></body></html>' > client/dist/index.html
+
 
 # ── Stage 3: Runtime ──────────────────────────────────────────────────────────
 FROM ${NODE_IMAGE} AS runtime
@@ -46,6 +49,7 @@ COPY --from=build --chown=node:node /app/shared ./shared
 COPY --from=build --chown=node:node /app/server/package.json ./server/package.json
 COPY --from=build --chown=node:node /app/server/dist ./server/dist
 COPY --from=build --chown=node:node /app/server/data ./server/data
+COPY --from=build --chown=node:node /app/client/dist ./client/dist
 
 RUN chmod 700 /app/server/data
 
