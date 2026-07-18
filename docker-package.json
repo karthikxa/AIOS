@@ -1,0 +1,12 @@
+{
+  "name": "freellmapi",
+  "private": true,
+  "workspaces": ["shared", "server"],
+  "scripts": {
+    "build": "npm run build -w server",
+    "build:server": "npm run build -w server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
