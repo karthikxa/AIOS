@@ -2112,103 +2112,15 @@ JSON Structure:
     const isZedPro = (model.provider || '') === 'Zed Pro';
     const apiMessages = [...messages];
 
-    // ── Zed Pro: route through backend AIAgent with full tools + dashboard awareness ──
+    // ── Zed Pro: call LLM proxy directly (no backend required) ──
     if (isZedPro && !skipAgent) {
       const useStream = !!onToken;
-      const dashboardState = {
-        activeModel: modelsStore.getState().activeModel,
-        models: (modelsStore.getState().models || []).map(m => ({
-          name: m.name, provider: m.provider, status: m.status
-        })),
-        agents: (agentsStore?.agents || []).map(a => ({
-          name: a.name, model: a.model, desc: a.desc, status: a.status
-        })),
-        schedules: (schedulesStore?.schedules || []).map(s => ({
-          name: s.name, schedule: s.frequency, enabled: s.status === 'active'
-        })),
-        plugins: (pluginsStore?.installed || []).map(p => ({
-          name: p.name || p.id, version: p.version || '', desc: p.desc || ''
-        }))
-      };
-
-      // Detect @mentions in the user's message (e.g., @gmail, @drive, @calendar)
-      const lastMsg = apiMessages[apiMessages.length - 1]?.content || '';
-      const mentionMatches = lastMsg.match(/@(\w+)/g) || [];
-      const mentionedPlugins = mentionMatches.map(m => m.slice(1).toLowerCase());
-
-      // Detect active Google connections
-      const connectedPlugins = (pluginsStore?.installed || []).map(p => p.id || p.name);
-
-      const body = JSON.stringify({
-        model: 'auto',
-        messages: apiMessages,
-        stream: useStream,
-        dashboard_state: {
-          ...dashboardState,
-          mentioned_plugins: mentionedPlugins,
-          connected_plugins: connectedPlugins,
-          mention_directive: mentionedPlugins.length > 0
-            ? `User mentioned: ${mentionedPlugins.join(', ')}. Use the ${mentionedPlugins.join(', ')} tools directly.`
-            : null,
-        }
-      });
-      const resp = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-        signal
-      });
-      if (!resp.ok) {
-        const errBody = await resp.json().catch(() => ({ detail: resp.statusText }));
-        // Fallback: call LLM proxy directly when backend is down (503/502/504)
-        if (resp.status >= 500) {
-          console.warn(`[fallback] Backend ${resp.status}, calling LLM proxy directly`);
-          try {
-            return await _callLLMProxyDirect(apiMessages, useStream, onToken, signal);
-          } catch (proxyErr) {
-            console.error('[fallback] Proxy also failed:', proxyErr);
-            throw new Error('Backend is waking up. Please try again in a few seconds.');
-          }
-        }
-        throw new Error(errBody.detail || `Zed Pro API error ${resp.status}`);
+      try {
+        return await _callLLMProxyDirect(apiMessages, useStream, onToken, signal);
+      } catch (err) {
+        console.error('[Zed Pro] LLM proxy call failed:', err);
+        throw new Error('Could not reach the AI service. Please check your connection and try again.');
       }
-      if (useStream && resp.body) {
-        let full = '';
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed || trimmed === 'data: [DONE]') continue;
-            if (trimmed.startsWith('data: ')) {
-              let parsed = null;
-              try {
-                parsed = JSON.parse(trimmed.slice(6));
-                if (parsed.error) {
-                  throw new Error(parsed.error.message || JSON.stringify(parsed.error));
-                }
-                const delta = parsed.choices?.[0]?.delta?.content || '';
-                const reasoningDelta = parsed.choices?.[0]?.delta?.reasoning_content || '';
-                const toolUsage = parsed.choices?.[0]?.delta?.tool_usage;
-                if (delta) { full += delta; onToken(delta); }
-                if (reasoningDelta && typeof onReasoning === 'function') onReasoning(reasoningDelta);
-                if (toolUsage && typeof onToolUsage === 'function') onToolUsage(toolUsage);
-              } catch (e) {
-                if (parsed && parsed.error) throw e;
-              }
-            }
-          }
-        }
-        return full;
-      }
-      const data = await resp.json();
-      return data.choices?.[0]?.message?.content || data.response || 'No response';
     }
 
     // ── Google Gemini ──────────────────────────────────────────────────────────
