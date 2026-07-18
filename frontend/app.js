@@ -2163,7 +2163,12 @@ JSON Structure:
         // Fallback: call LLM proxy directly when backend is down (503/502/504)
         if (resp.status >= 500) {
           console.warn(`[fallback] Backend ${resp.status}, calling LLM proxy directly`);
-          return await _callLLMProxyDirect(apiMessages, useStream, onToken, signal);
+          try {
+            return await _callLLMProxyDirect(apiMessages, useStream, onToken, signal);
+          } catch (proxyErr) {
+            console.error('[fallback] Proxy also failed:', proxyErr);
+            throw new Error('Backend is waking up. Please try again in a few seconds.');
+          }
         }
         throw new Error(errBody.detail || `Zed Pro API error ${resp.status}`);
       }
