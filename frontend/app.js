@@ -5247,20 +5247,17 @@ Here are the current findings:
     // ── Priority 1: Kasm / noVNC URL (local desktop) ───────────────────
     const kasmUrl = getSavedDesktopUrl();
     if (kasmUrl) {
-      // noVNC WebSocket fails in iframes — open in popup window instead
-      window.open(kasmUrl, 'zed-desktop', 'width=1920,height=1080,resizable=yes');
-      // Show info in the panel
-      if (desktopFrame) {
-        const infoDiv = document.createElement('div');
-        infoDiv.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:#0a0a0a;';
-        infoDiv.innerHTML = '<div style="font-size:28px">&#128421;&#65039;</div><div style="font-size:16px;font-weight:600;color:#fff">Desktop Opened in Window</div><div style="font-size:13px;color:#888;text-align:center;max-width:300px">The 4K virtual desktop is open in a separate popup window. Click below to bring it back.</div><button onclick="window.open(\'''' + kasmUrl + '\',\''zed-desktop\')" style="background:#0078d4;color:#fff;border:none;padding:10px 24px;border-radius:6px;cursor:pointer;font-weight:600">Open Desktop</button>';
-        desktopFrame.parentNode.replaceChild(infoDiv, desktopFrame);
-        desktopFrame = infoDiv;
-      }
+      desktopFrame.style.display = 'block';
+      loadDesktopFrame(kasmUrl);
       const urlEl = document.getElementById('splitPaneHeaderUrl');
       if (urlEl) { urlEl.textContent = kasmUrl; urlEl.href = kasmUrl; urlEl.style.display = 'inline'; }
       const browserLabel = document.getElementById('splitPaneBrowserLabel');
       if (browserLabel) browserLabel.textContent = 'Zed is using Desktop';
+      const msgEl = document.getElementById('desktopConnectingMsg');
+      if (msgEl) msgEl.textContent = 'Connecting to desktop at ' + new URL(kasmUrl).host + '…';
+      desktopFrame.onload = () => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; };
+      // noVNC is cross-origin so onload may not fire — hide overlay after 4s
+      setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 4000);
       return;
     }
 
