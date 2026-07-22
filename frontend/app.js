@@ -5210,7 +5210,7 @@ Here are the current findings:
     if (agentUrl) return agentUrl;
     const host = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? window.location.hostname : '127.0.0.1';
-    return `ws://${host}:8765/ws/agent`;
+    return `ws://${host}:4000/ws`;
   }
 
   function startDesktopStream() {
@@ -5219,6 +5219,30 @@ Here are the current findings:
     const frameIsBlank = !currentSource || currentSource === 'about:blank';
     if (desktopStreamStarted && !frameIsBlank) return;
     desktopStreamStarted = true;
+
+    // ── Priority 0: Local desktop agent MJPEG stream (pyautogui, full OS) ──
+    if (isLocal) {
+      const agentUrl = 'http://localhost:4000';
+      fetch(agentUrl + '/health').then(r => r.json()).then(d => {
+        if (d.status === 'ok' && d.platform === 'win32') {
+          // Replace iframe with MJPEG img for full desktop stream
+          const img = document.createElement('img');
+          img.id = 'desktopFrame';
+          img.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;display:block;';
+          img.src = agentUrl + '/stream.mjpeg';
+          img.alt = 'Desktop Agent Live Stream';
+          desktopFrame.parentNode.replaceChild(img, desktopFrame);
+          desktopFrame = img;
+          // Update header
+          const urlEl = document.getElementById('splitPaneHeaderUrl');
+          if (urlEl) { urlEl.textContent = 'Local Desktop (' + (d.screen || '1920x1080') + ')'; urlEl.style.display = 'inline'; }
+          const browserLabel = document.getElementById('splitPaneBrowserLabel');
+          if (browserLabel) browserLabel.textContent = 'Zed is using Desktop';
+          if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
+          return;
+        }
+      }).catch(() => {});
+    }
 
     // ── Priority 1: Kasm / noVNC URL (local desktop) ───────────────────
     const kasmUrl = getSavedDesktopUrl();
@@ -5284,6 +5308,8 @@ Here are the current findings:
   // The connection stays alive in the background between tab switches.
   (function preloadVnc() {
     if (!desktopFrame) return;
+    // Skip VNC preload when local desktop agent is available
+    if (isLocal) return;
     const vncUrl = getSavedDesktopUrl() || getCloudVncUrl();
     loadDesktopFrame(vncUrl);
     desktopFrame.addEventListener('load', () => {
