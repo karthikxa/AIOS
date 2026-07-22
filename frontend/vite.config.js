@@ -49,9 +49,9 @@ export default {
         target: 'http://127.0.0.1:8765',
         changeOrigin: true,
       },
-      // Proxy VNC (noVNC on port 6901) — no auth, plain HTTP
+      // Proxy KasmVNC (noVNC on port 6901) — no auth, plain HTTP
       '/kasm': {
-        target: 'http://127.0.0.1:6902',
+        target: 'http://127.0.0.1:6901',
         changeOrigin: true,
         ws: true,
         rewrite: (path) => path.replace(/^\/kasm/, '') || '/',
