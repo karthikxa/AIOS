@@ -5247,17 +5247,21 @@ Here are the current findings:
     // ── Priority 1: Kasm / noVNC URL (local desktop) ───────────────────
     const kasmUrl = getSavedDesktopUrl();
     if (kasmUrl) {
-      desktopFrame.style.display = 'block';
-      loadDesktopFrame(kasmUrl);
+      // noVNC WebSocket fails in iframes — open in popup window instead
+      window.open(kasmUrl, 'zed-desktop', 'width=1920,height=1080,resizable=yes');
+      // Show status in the Computer panel
+      if (desktopFrame && desktopFrame.parentNode) {
+        const statusDiv = document.createElement('div');
+        statusDiv.style.cssText = 'width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:linear-gradient(135deg,#0a0a2e,#1a1a4e);';
+        statusDiv.innerHTML = '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0078d4,#00bcf2);display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 4px 20px rgba(0,120,212,0.3)">&#128421;&#65039;</div><div style="font-size:18px;font-weight:700;color:#fff;font-family:Inter,sans-serif">4K Desktop Active</div><div style="font-size:13px;color:#888;max-width:280px;text-align:center;line-height:1.5">Virtual Linux desktop running at 3840x2160 with Xfce, Chromium, and full OS access.</div><button onclick="window.open(\'' + kasmUrl + '\',\'zed-desktop\',\'width=1920,height=1080,resizable=yes\')" style="background:linear-gradient(135deg,#0078d4,#00a4ef);color:#fff;border:none;padding:12px 28px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 2px 8px rgba(0,120,212,0.3)">Open Desktop Window</button><div style="font-size:11px;color:#555">Connected to KasmVNC at ' + new URL(kasmUrl).host + '</div>';
+        desktopFrame.parentNode.replaceChild(statusDiv, desktopFrame);
+        desktopFrame = statusDiv;
+      }
       const urlEl = document.getElementById('splitPaneHeaderUrl');
       if (urlEl) { urlEl.textContent = kasmUrl; urlEl.href = kasmUrl; urlEl.style.display = 'inline'; }
       const browserLabel = document.getElementById('splitPaneBrowserLabel');
       if (browserLabel) browserLabel.textContent = 'Zed is using Desktop';
-      const msgEl = document.getElementById('desktopConnectingMsg');
-      if (msgEl) msgEl.textContent = 'Connecting to desktop at ' + new URL(kasmUrl).host + '…';
-      desktopFrame.onload = () => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; };
-      // noVNC is cross-origin so onload may not fire — hide overlay after 4s
-      setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 4000);
+      if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
       return;
     }
 
