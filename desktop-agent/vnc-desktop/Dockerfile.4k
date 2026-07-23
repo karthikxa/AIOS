@@ -1,0 +1,10 @@
+FROM accetto/ubuntu-vnc-xfce-g3:latest
+
+# Set 4K resolution
+ENV USER=testuser
+ENV PW=desktop
+ENV DISPLAY_WIDTH=3840
+ENV DISPLAY_HEIGHT=2160
+
+# Expose noVNC on 6080 and VNC on 5900
+EXPOSE 5900 6080

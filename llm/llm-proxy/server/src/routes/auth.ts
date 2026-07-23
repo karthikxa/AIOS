@@ -26,18 +26,7 @@ const credentialsSchema = z.object({
 // distributed store; this just blunts online password guessing.
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 15 * 60 * 1000;
-const MAX_TRACKED_ACCOUNTS = 1000;
 const attempts = new Map<string, { count: number; lockedUntil: number }>();
-
-// Periodic cleanup: purge expired lockout entries every 5 minutes so the map
-// doesn't grow unboundedly under dictionary attack.
-const PRUNE_INTERVAL = 5 * 60 * 1000;
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, a] of attempts) {
-    if (a.lockedUntil <= now && a.count === 0) attempts.delete(key);
-  }
-}, PRUNE_INTERVAL).unref();
 
 function isLockedOut(email: string): boolean {
   const a = attempts.get(email.toLowerCase());
@@ -52,11 +41,6 @@ function recordFailure(email: string): void {
     a.count = 0;
   }
   attempts.set(key, a);
-  // Evict the oldest entry when the map grows beyond limit.
-  if (attempts.size > MAX_TRACKED_ACCOUNTS) {
-    const first = attempts.keys().next().value;
-    if (first !== undefined) attempts.delete(first);
-  }
 }
 function clearFailures(email: string): void {
   attempts.delete(email.toLowerCase());

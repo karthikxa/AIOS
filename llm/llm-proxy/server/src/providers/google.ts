@@ -230,24 +230,8 @@ async function imageUrlToInlineData(url: string): Promise<{ mimeType: string; da
     try {
       const res = await proxyFetch(url, undefined, 'google');
       if (!res.ok) return null;
-      const contentLength = res.headers.get('content-length');
-      if (contentLength && Number(contentLength) > MAX_IMAGE_BYTES) return null;
-      // Stream the response with a size cap to avoid OOM on large responses.
-      const reader = res.body?.getReader();
-      if (!reader) return null;
-      const chunks: Uint8Array[] = [];
-      let total = 0;
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        total += value.length;
-        if (total > MAX_IMAGE_BYTES) {
-          reader.cancel();
-          return null;
-        }
-        chunks.push(value);
-      }
-      const buf = Buffer.concat(chunks);
+      const buf = Buffer.from(await res.arrayBuffer());
+      if (buf.length === 0 || buf.length > MAX_IMAGE_BYTES) return null;
       const mimeType = res.headers.get('content-type')?.split(';')[0]?.trim() || 'image/jpeg';
       return { mimeType, data: buf.toString('base64') };
     } catch {
@@ -512,13 +496,8 @@ export class GoogleProvider extends BaseProvider {
 
     const seenToolCallKeys = new Set<string>();
 
-    const INACTIVITY_TIMEOUT_MS = 90_000;
-
     while (true) {
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Google stream stalled: no data for 90s (timeout)')), INACTIVITY_TIMEOUT_MS)
-      );
-      const { done, value } = await Promise.race([reader.read(), timeout]);
+      const { done, value } = await reader.read();
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });

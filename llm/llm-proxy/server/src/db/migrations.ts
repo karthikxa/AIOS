@@ -32,9 +32,7 @@ export function migrateDbSchema(db: Database.Database) {
   migrateModelsV23FreeTierAudit(db);
   migrateModelsV24ZenRefresh(db);
   migrateModelsV25ZenDeadPromos(db);
-  migrateModelsV26Anthropic(db);
-  // V25 is the LAST model-data migration (V26 is an exception — new provider
-  // plumbing requires baseline seed data). Since the Premium live catalog
+  // V25 is the LAST model-data migration. Since the Premium live catalog
   // shipped (June 2026), model/limit DATA is maintained in the published
   // catalog (served signed by the catalog service) and reaches installs via
   // catalog-sync — premium on the live tier within ~12h, free at the monthly
@@ -49,7 +47,6 @@ export function migrateDbSchema(db: Database.Database) {
   migrateQuirksV1(db);
   ensureUnifiedKey(db);
   migrateProfilesInit(db);
-  migrateTokenBudgetsV1(db);
 }
 
 function createTables(db: Database.Database) {
@@ -117,13 +114,6 @@ function createTables(db: Database.Database) {
       expires_at_ms INTEGER NOT NULL,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       PRIMARY KEY (platform, model_id, key_id)
-    );
-
-    CREATE TABLE IF NOT EXISTS key_token_budgets (
-      key_id INTEGER PRIMARY KEY,
-      budget_remaining REAL NOT NULL DEFAULT 0,
-      last_refill_at INTEGER NOT NULL DEFAULT 0,
-      total_granted REAL NOT NULL DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS fallback_config (
@@ -323,6 +313,9 @@ function seedModels(db: Database.Database) {
  */
 function migrateModels(db: Database.Database) {
   // 1) Replace outdated models in-place (preserves fallback_config & any references)
+  const renames: Array<[string, string, string, string, number, string, number | null, number | null, number]> = [
+    // platform, oldModelId, newModelId, newDisplayName, intelligenceRank, monthlyBudget, rpdLimit, contextWindow, sizeLabelPriority(unused)
+  ];
   const renameStmt = db.prepare(`
     UPDATE models
        SET model_id = ?, display_name = ?, intelligence_rank = ?,
@@ -1777,10 +1770,10 @@ function migrateModelsV22Tools(db: Database.Database) {
  *     existing bigmodel.cn key; structured tool_calls + vision verified.
  *   - openrouter nemotron-3-ultra-550b-a55b:free — 1M ctx, currently the
  *     biggest free model anywhere, but generation takes 180s+ even on trivial
- *     prompts (heavily congested), so it stays seeded enabled=0. Flip it on when
+ *     prompts (heavily congested), so it's seeded enabled=0. Flip it on when
  *     it serves sanely. (Tools were unverifiable on the OR route while it
  *     hangs; V24 verified the model family's structured tool_calls via Zen's
- *     dedicated endpoint and added the V22 rule.)
+ *     dedicated endpoint and added the V22 rule, so this seed is now 1.)
  *   - openrouter llama-3.2-3b-instruct:free and
  *     dolphin-mistral-24b-venice-edition:free — both heavily contended
  *     (persistent upstream 429s at probe time) but real routes; no tools.
@@ -1899,31 +1892,6 @@ function migrateModelsV25ZenDeadPromos(db: Database.Database) {
   ];
   const apply = db.transaction(() => {
     for (const [p, m] of disables) disable.run(p, m);
-  });
-  apply();
-}
-
-/**
- * V26 (2026-06-18): Anthropic provider — seed Claude model catalog.
- * Provider plumbing exception to the "V25 is the last model-data migration"
- * rule: a new provider has no rows to catalog-sync, so this migration gives
- * it a baseline. Idempotent via INSERT OR IGNORE.
- */
-function migrateModelsV26Anthropic(db: Database.Database) {
-  const insert = db.prepare(`
-    INSERT OR IGNORE INTO models
-      (platform, model_id, display_name, intelligence_rank, speed_rank, size_label,
-       rpm_limit, rpd_limit, tpm_limit, tpd_limit, monthly_token_budget, context_window,
-       enabled, supports_vision, supports_tools)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-  const additions: Array<[string, string, string, number, number, string, number | null, number | null, number | null, number | null, string, number | null, number, number, number]> = [
-    ['anthropic', 'claude-sonnet-4-20250514', 'Claude Sonnet 4',      1, 6, 'Frontier', null, null, null, null, '~6M', 200000, 1, 1, 1],
-    ['anthropic', 'claude-haiku-3-20250313',  'Claude Haiku 3',      7, 2, 'Large',   null, null, null, null, '~6M', 200000, 1, 1, 1],
-  ];
-  const apply = db.transaction(() => {
-    for (const a of additions) insert.run(...a);
-    backfillFallback(db);
   });
   apply();
 }
@@ -2244,29 +2212,6 @@ function migrateProfilesInit(db: Database.Database) {
       SET emoji = '⚙️'
       WHERE type = 'default' AND emoji != '⚙️'
     `).run();
-  }
-}
-
-const TOKEN_BUDGET_REFILL_AMOUNT = 1_800_000_000;
-const TOKEN_BUDGET_REFILL_INTERVAL_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
-
-function migrateTokenBudgetsV1(db: Database.Database) {
-  // Seed an initial 1.8B budget for every existing key that doesn't have one.
-  // The refill-on-access logic in the token-budget service handles subsequent
-  // 3-day refills.
-  const keys = db.prepare("SELECT id FROM api_keys WHERE enabled = 1").all() as { id: number }[];
-  const now = Date.now();
-  const insert = db.prepare(`
-    INSERT OR IGNORE INTO key_token_budgets (key_id, budget_remaining, last_refill_at, total_granted)
-    VALUES (?, ?, ?, ?)
-  `);
-  for (const key of keys) {
-    insert.run(key.id, TOKEN_BUDGET_REFILL_AMOUNT, now, TOKEN_BUDGET_REFILL_AMOUNT);
-  }
-  if (keys.length > 0) {
-    console.log(`[token-budget] Seeded ${keys.length} key(s) with initial ${(TOKEN_BUDGET_REFILL_AMOUNT / 1e9).toFixed(1)}B token budget`);
-  } else {
-    console.log('[token-budget] Table ready — budget rows are auto-created on first use');
   }
 }
 

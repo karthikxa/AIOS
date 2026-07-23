@@ -5139,7 +5139,7 @@ Here are the current findings:
 
   // On localhost: set/update noVNC URL (versioned so it auto-updates when URL changes)
   const KASM_URL_VERSION = '7';
-  const CORRECT_KASM_URL = 'http://localhost:6901/vnc.html?autoconnect=true&password=desktop&resize=scale&reconnect=true&reconnect_delay=1000';
+  const CORRECT_KASM_URL = 'http://localhost:6901/vnc.html?autoconnect=true&password=headless&resize=scale&reconnect=true&reconnect_delay=1000';
   if (isLocal && localStorage.getItem('kasm_url_version') !== KASM_URL_VERSION) {
     localStorage.setItem('kasm_url', CORRECT_KASM_URL);
     localStorage.setItem('kasm_url_version', KASM_URL_VERSION);

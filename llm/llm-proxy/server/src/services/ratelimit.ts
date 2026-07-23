@@ -33,8 +33,7 @@ const DAY = 24 * 60 * MINUTE;
 function withDb<T>(fn: (db: RateLimitDb) => T): T | undefined {
   try {
     return fn(getDb());
-  } catch (e) {
-    console.warn('[ratelimit] DB operation failed, falling back to in-memory:', e instanceof Error ? e.message : e);
+  } catch {
     return undefined;
   }
 }
@@ -48,15 +47,11 @@ function recordUsage(
   now: number,
 ) {
   withDb(db => {
-    const insert = db.prepare(`
+    db.prepare(`
       INSERT INTO rate_limit_usage (platform, model_id, key_id, kind, tokens, created_at_ms)
       VALUES (?, ?, ?, ?, ?, ?)
-    `);
-    const cleanup = db.prepare('DELETE FROM rate_limit_usage WHERE created_at_ms <= ?');
-    db.transaction(() => {
-      insert.run(platform, modelId, keyId, kind, tokens, now);
-      cleanup.run(now - DAY);
-    })();
+    `).run(platform, modelId, keyId, kind, tokens, now);
+    db.prepare('DELETE FROM rate_limit_usage WHERE created_at_ms <= ?').run(now - DAY);
   });
 }
 
@@ -124,7 +119,7 @@ function requestCount(
   const persisted = countPersistedRequests(platform, modelId, keyId, windowMs, now);
   if (persisted !== undefined) return persisted;
   const type = windowMs === MINUTE ? 'rpm' : 'rpd';
-  return memoryRequestCount(`${keyId}:${platform}:${modelId}:${type}`, windowMs, now);
+  return memoryRequestCount(`${platform}:${modelId}:${keyId}:${type}`, windowMs, now);
 }
 
 function tokenCount(
@@ -137,7 +132,7 @@ function tokenCount(
   const persisted = sumPersistedTokens(platform, modelId, keyId, windowMs, now);
   if (persisted !== undefined) return persisted;
   const type = windowMs === MINUTE ? 'tpm' : 'tpd';
-  return memoryTokenCount(`${keyId}:${platform}:${modelId}:${type}`, windowMs, now);
+  return memoryTokenCount(`${platform}:${modelId}:${keyId}:${type}`, windowMs, now);
 }
 
 export function canMakeRequest(
@@ -228,10 +223,10 @@ export function providerDailyRequestCount(platform: string, keyId: number, now =
   const persisted = countPersistedProviderRequests(platform, keyId, DAY, now);
   if (persisted !== undefined) return persisted;
   // DB-unavailable fallback: sum the per-model rpd windows for this platform+key.
-  // Map key format is "keyId:platform:modelId:rpd" so startsWith/endsWith is unambiguous.
+  // Window key format is "platform:modelId:keyId:rpd" (modelId may contain ':').
   let total = 0;
   for (const [key, w] of windows) {
-    if (key.startsWith(`${keyId}:${platform}:`) && key.endsWith(':rpd')) {
+    if (key.startsWith(`${platform}:`) && key.endsWith(`:${keyId}:rpd`)) {
       total += pruneTimestamps(w.timestamps, DAY, now).length;
     }
   }
@@ -249,10 +244,10 @@ export function canUseProvider(platform: string, keyId: number, now = Date.now()
 export function recordRequest(platform: string, modelId: string, keyId: number) {
   const now = Date.now();
 
-  const rpmKey = `${keyId}:${platform}:${modelId}:rpm`;
+  const rpmKey = `${platform}:${modelId}:${keyId}:rpm`;
   getWindow(rpmKey).timestamps.push(now);
 
-  const rpdKey = `${keyId}:${platform}:${modelId}:rpd`;
+  const rpdKey = `${platform}:${modelId}:${keyId}:rpd`;
   getWindow(rpdKey).timestamps.push(now);
 
   recordUsage(platform, modelId, keyId, 'request', 0, now);
@@ -266,10 +261,10 @@ export function recordTokens(
 ) {
   const now = Date.now();
 
-  const tpmKey = `${keyId}:${platform}:${modelId}:tpm`;
+  const tpmKey = `${platform}:${modelId}:${keyId}:tpm`;
   getWindow(tpmKey).tokenTimestamps.push({ ts: now, tokens });
 
-  const tpdKey = `${keyId}:${platform}:${modelId}:tpd`;
+  const tpdKey = `${platform}:${modelId}:${keyId}:tpd`;
   getWindow(tpdKey).tokenTimestamps.push({ ts: now, tokens });
 
   recordUsage(platform, modelId, keyId, 'tokens', tokens, now);

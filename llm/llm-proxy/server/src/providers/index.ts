@@ -1,6 +1,5 @@
 import type { Platform } from '@freellmapi/shared/types.js';
 import type { BaseProvider } from './base.js';
-import { AnthropicProvider } from './anthropic.js';
 import { GoogleProvider } from './google.js';
 import { OpenAICompatProvider } from './openai-compat.js';
 import { CohereProvider } from './cohere.js';
@@ -11,9 +10,6 @@ const providers = new Map<Platform, BaseProvider>();
 function register(provider: BaseProvider) {
   providers.set(provider.platform, provider);
 }
-
-// Anthropic — Claude models via api.anthropic.com
-register(new AnthropicProvider());
 
 // Google - unique Gemini API format
 register(new GoogleProvider());

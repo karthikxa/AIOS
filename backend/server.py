@@ -700,11 +700,34 @@ async def lifespan(app: FastAPI):
     _cron_thread = threading.Thread(target=_cron_loop, name="cron-daemon", daemon=True)
     _cron_thread.start()
 
+    # ── LLM Proxy Keepalive — prevent Render from sleeping the proxy ────────
+    # The LLM proxy (server-llm-1.onrender.com) is a separate Render free-tier
+    # service. Without periodic traffic, Render spins it down after ~15 min.
+    # This background task pings it every 5 minutes to keep it alive.
+    _keepalive_stop = threading.Event()
+
+    def _keepalive_loop():
+        proxy_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
+        ping_url = proxy_url.replace("/v1", "") if "/v1" in proxy_url else proxy_url
+        ping_url = ping_url.rstrip("/") + "/healthz"
+        logger.info("LLM proxy keepalive started — pinging %s every 5 min", ping_url)
+        while not _keepalive_stop.is_set():
+            try:
+                r = httpx.get(ping_url, timeout=10.0)
+                logger.debug("LLM proxy keepalive: %s", r.status_code)
+            except Exception as e:
+                logger.warning("LLM proxy keepalive failed: %s", e)
+            _keepalive_stop.wait(timeout=300)  # 5 minutes
+
+    _keepalive_thread = threading.Thread(target=_keepalive_loop, name="proxy-keepalive", daemon=True)
+    _keepalive_thread.start()
+
     logger.info("Zed Pro backend ready — http://127.0.0.1:%s", PORT)
     yield
 
     logger.info("Stopping cron scheduler daemon...")
     _cron_stop.set()
+    _keepalive_stop.set()
 
     if _http_client:
         await _http_client.aclose()
@@ -2449,7 +2472,16 @@ async def rate_limit_status():
 @app.get("/healthz")
 async def healthz():
     """Lightweight health check — always 200 if process is alive."""
-    return {"status": "ok"}
+    # Also check LLM proxy connectivity
+    proxy_ok = False
+    try:
+        proxy_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
+        ping_url = proxy_url.replace("/v1", "") if "/v1" in proxy_url else proxy_url
+        r = await _http_client.get(f"{ping_url.rstrip('/')}/healthz", timeout=5.0)
+        proxy_ok = r.status_code == 200
+    except Exception:
+        pass
+    return {"status": "ok", "llm_proxy": "up" if proxy_ok else "down"}
 
 
 @app.get("/readyz")

@@ -3,7 +3,6 @@ import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { getDb, setSetting } from '../db/index.js';
 import { listEmbeddingModels, getDefaultFamily, type EmbeddingModelRow } from '../services/embeddings.js';
-import { quotaWindowDays } from '../lib/budget.js';
 
 export const embeddingsRouter = Router();
 
@@ -83,29 +82,28 @@ embeddingsRouter.put('/', (req: Request, res: Response) => {
 });
 
 // Per-family usage: requests today (most embedding quotas are daily/RPM) and
-// tokens this quota window, from the tagged request log.
+// tokens this calendar month, from the tagged request log.
 embeddingsRouter.get('/usage', (_req: Request, res: Response) => {
   const db = getDb();
-  const windowDays = quotaWindowDays();
   const usage = db.prepare(`
     SELECT em.family,
            COALESCE(SUM(CASE WHEN r.created_at >= datetime('now', 'start of day') THEN 1 ELSE 0 END), 0) AS requests_today,
-           COALESCE(SUM(CASE WHEN r.created_at >= datetime('now', '-${windowDays} days') THEN r.input_tokens ELSE 0 END), 0) AS tokens_window
+           COALESCE(SUM(CASE WHEN r.created_at >= datetime('now', 'start of month') THEN r.input_tokens ELSE 0 END), 0) AS tokens_month
     FROM embedding_models em
     LEFT JOIN requests r
       ON r.request_type = 'embedding'
      AND r.status = 'success'
      AND r.platform = em.platform
      AND r.model_id = em.model_id
-     AND r.created_at >= datetime('now', '-${windowDays} days')
+     AND r.created_at >= datetime('now', 'start of month')
     GROUP BY em.family
-  `).all() as { family: string; requests_today: number; tokens_window: number }[];
+  `).all() as { family: string; requests_today: number; tokens_month: number }[];
 
   res.json({
     families: usage.map(u => ({
       family: u.family,
       requestsToday: u.requests_today,
-      tokensWindow: u.tokens_window,
+      tokensMonth: u.tokens_month,
     })),
   });
 });

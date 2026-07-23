@@ -39,20 +39,20 @@ export function initDb(dbPath?: string): Database.Database {
 }
 
 export function getUnifiedApiKey(): string {
+  // Allow overriding via env var — set UNIFIED_API_KEY in Render/production
+  // to change the key without re-deploying or touching the database.
+  const envKey = process.env.UNIFIED_API_KEY?.trim();
+  if (envKey) return envKey;
+
   const db = getDb();
-  const row = db.prepare("SELECT value FROM settings WHERE key = 'unified_api_key'").get() as { value: string } | undefined;
-  return row?.value ?? '';
+  const row = db.prepare("SELECT value FROM settings WHERE key = 'unified_api_key'").get() as { value: string };
+  return row.value;
 }
 
 export function regenerateUnifiedKey(): string {
   const db = getDb();
   const key = `freellmapi-${crypto.randomBytes(24).toString('hex')}`;
-  const info = db.prepare(
-    "INSERT INTO settings (key, value) VALUES ('unified_api_key', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
-  ).run(key);
-  if (info.changes === 0) {
-    console.warn('[db] regenerateUnifiedKey: INSERT/UPDATE affected 0 rows');
-  }
+  db.prepare("UPDATE settings SET value = ? WHERE key = 'unified_api_key'").run(key);
   return key;
 }
 

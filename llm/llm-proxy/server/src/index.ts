@@ -1,7 +1,7 @@
 import './env.js';
-import { createApp, createLocalApp } from './app.js';
+import { createApp } from './app.js';
 import { initDb, getSetting } from './db/index.js';
-import { seedFreeProviders } from './db/seedFreeProviders.js';
+import { applyEnvProviderKeys } from './lib/env-keys.js';
 import { startHealthChecker } from './services/health.js';
 import { applyProxyUrl, applyProxyEnabled, applyProxyBypass } from './lib/proxy.js';
 import { startCatalogSync } from './services/catalog-sync.js';
@@ -12,20 +12,9 @@ const PORT = process.env.PORT ?? 3001;
 // disabled fall back to IPv4-only below; HOST overrides the default outright.
 const HOST = process.env.HOST ?? '::';
 
-// Local-only port: no authentication required. Bound exclusively to 127.0.0.1
-// so only local processes (Dashboard dev server, deploy server) can reach it.
-// Set LOCAL_PORT=0 to disable. Default: 3002.
-const LOCAL_PORT_RAW = process.env.LOCAL_PORT ?? '3002';
-const LOCAL_PORT = LOCAL_PORT_RAW === '0' ? null : Number(LOCAL_PORT_RAW);
-
 async function main() {
-  // initDb() runs migrations which calls initEncryptionKey() internally
-  const db = initDb();
-
-  // ── Permanent free provider seeding ────────────────────────────────────
-  // Pollinations, Kilo, LLM7, OVH seeded on every boot — idempotent.
-  // Zed Pro chat works with zero user configuration.
-  seedFreeProviders();
+  initDb();
+  applyEnvProviderKeys(); // load any PROVIDER_*_KEY env vars into DB
 
   // Load the persisted proxy settings from the DB (env var wins if set).
   // Must happen after initDb so the settings table is ready.
@@ -57,20 +46,6 @@ async function main() {
     console.error('\n[server] Failed to start:\n  ' + (err?.message ?? err) + '\n');
     process.exit(1);
   });
-
-  // ── Local-only port (no auth) ───────────────────────────────────────────
-  // Bound exclusively to 127.0.0.1. The Dashboard dev server proxies /v1
-  // here so Zed Pro chat works with zero key configuration.
-  if (LOCAL_PORT) {
-    const localApp = createLocalApp();
-    const localServer = localApp.listen(LOCAL_PORT, '127.0.0.1', () => {
-      console.log(`Local proxy (no-auth) on http://127.0.0.1:${LOCAL_PORT}/v1/chat/completions`);
-    });
-    localServer.on('error', (err: NodeJS.ErrnoException) => {
-      // Non-fatal — the main server is already running. Warn and continue.
-      console.warn(`[server] Local port ${LOCAL_PORT} unavailable: ${err.message}`);
-    });
-  }
 }
 
 main().catch((err) => {

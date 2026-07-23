@@ -10,7 +10,6 @@ import type {
 } from '@freellmapi/shared/types.js';
 import { routeRequest, recordRateLimitHit, recordSuccess, hasEnabledToolsModel, type RouteResult } from '../services/router.js';
 import { recordRequest, recordTokens, setCooldown, getCooldownDurationForLimit, PAYMENT_REQUIRED_COOLDOWN_MS } from '../services/ratelimit.js';
-import { deductBudget } from '../services/token-budget.js';
 import { getUnifiedApiKey } from '../db/index.js';
 import { contentToString } from '../lib/content.js';
 import { repairToolArguments, toolSchemaMap } from '../lib/tool-args.js';
@@ -498,7 +497,6 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
             if (tc.function?.name && !acc.name) acc.name = tc.function.name;
             if (argFrag) {
               acc.args += argFrag;
-              totalOutputTokens += Math.ceil(argFrag.length / 4);
               sse('response.function_call_arguments.delta', { item_id: acc.itemId, output_index: acc.outputIndex, delta: argFrag });
             }
           }
@@ -590,7 +588,6 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
 
         recordRequest(route.platform, route.modelId, route.keyId);
         recordTokens(route.platform, route.modelId, route.keyId, estimatedInputTokens + totalOutputTokens);
-        deductBudget(route.keyId, estimatedInputTokens + totalOutputTokens);
         recordSuccess(route.modelDbId);
         setStickyModel(messages, route.modelDbId, sessionIdHeader);
         logRequest(route.platform, route.modelId, route.keyId, 'success', estimatedInputTokens, totalOutputTokens, Date.now() - start, null);
@@ -598,7 +595,7 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
       } else {
         const result = await route.provider.chatCompletion(route.apiKey, messages, route.modelId, completionOpts);
 
-        const msg = result.choices?.[0]?.message;
+        const msg = result.choices[0]?.message;
         let text = contentToString(msg?.content ?? '');
         let toolCalls = (msg?.tool_calls ?? []).map((tc) => ({
           ...tc,
@@ -636,7 +633,6 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
 
         recordRequest(route.platform, route.modelId, route.keyId);
         recordTokens(route.platform, route.modelId, route.keyId, result.usage?.total_tokens ?? 0);
-        deductBudget(route.keyId, result.usage?.total_tokens ?? 0);
         recordSuccess(route.modelDbId);
         setStickyModel(messages, route.modelDbId, sessionIdHeader);
 

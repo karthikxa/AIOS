@@ -29,8 +29,6 @@ export type Platform =
   // OVHcloud AI Endpoints — OpenAI-compatible, keyless anonymous tier
   // (2 req/min per IP per model); see migrateModelsV26.
   | 'ovh'
-  // Anthropic — Claude models via api.anthropic.com (added June 2026)
-  | 'anthropic'
   // User-configured OpenAI-compatible endpoint (llama.cpp, LM Studio, vLLM,
   // Ollama, any base_url). The endpoint URL lives on the api_keys row; see #117.
   | 'custom';
@@ -218,7 +216,6 @@ export interface ChatCompletionChunk {
     delta: {
       role?: 'assistant';
       content?: string;
-      reasoning_content?: string;
       tool_calls?: ChatToolCall[];
     };
     finish_reason: string | null;

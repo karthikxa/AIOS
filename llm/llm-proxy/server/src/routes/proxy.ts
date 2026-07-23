@@ -5,7 +5,6 @@ import { z } from 'zod';
 import type { ChatMessage, ModelListRow } from '@freellmapi/shared/types.js';
 import { routeRequest, resolveRoutingChain, recordRateLimitHit, recordSuccess, hasEnabledVisionModel, hasEnabledToolsModel, type RouteResult, type ResolvedChain } from '../services/router.js';
 import { recordRequest, recordTokens, setCooldown, getCooldownDurationForLimit, PAYMENT_REQUIRED_COOLDOWN_MS, MODEL_FORBIDDEN_COOLDOWN_MS } from '../services/ratelimit.js';
-import { deductBudget } from '../services/token-budget.js';
 import { pruneRequestAnalytics } from '../services/request-retention.js';
 import { runEmbeddings, EmbeddingsError } from '../services/embeddings.js';
 import { getDb, getUnifiedApiKey } from '../db/index.js';
@@ -41,21 +40,6 @@ export function timingSafeStringEqual(provided: string, expected: string): boole
   const a = crypto.createHmac('sha256', key).update(provided).digest();
   const b = crypto.createHmac('sha256', key).update(expected).digest();
   return crypto.timingSafeEqual(a, b);
-}
-
-// Allow requests from loopback (127.0.0.1 / ::1) to skip the unified API key
-// when LOCAL_BYPASS=true is set in the environment. This is safe because:
-//  1. Only processes on the same machine can send requests to 127.0.0.1.
-//  2. It avoids hardcoding or reading the unified key in every client (dashboard,
-//     deploy server, etc.) — so key rotation never breaks local callers.
-// Do NOT set LOCAL_BYPASS=true on a public-facing server.
-export function isLocalBypass(req: Request): boolean {
-  if (process.env.LOCAL_BYPASS !== 'true') return false;
-  // req.ip respects trust proxy; req.socket.remoteAddress is the raw TCP source.
-  // Check both so we catch loopback regardless of how many proxy hops are configured.
-  const ip = req.ip ?? (req.socket?.remoteAddress ?? '');
-  const loopback = ['127.0.0.1', '::1', '::ffff:127.0.0.1'];
-  return loopback.some(lo => ip === lo || ip.endsWith(lo));
 }
 
 // Extract the unified API key from an incoming request. Accepts both the
@@ -127,13 +111,11 @@ export function setStickyModel(messages: ChatMessage[], modelDbId: number, sessi
 // OpenAI-compatible /models endpoint (used by Hermes for metadata) 
 // shows API models which is linked by the user
 proxyRouter.get('/models', (req: Request, res: Response) => {
-  if (!isLocalBypass(req)) {
-    const token = extractApiToken(req);
-    const unifiedKey = getUnifiedApiKey();
-    if (!token || !timingSafeStringEqual(token, unifiedKey)) {
-      res.status(401).json({ error: { message: 'Invalid API key', type: 'authentication_error' } });
-      return;
-    }
+  const token = extractApiToken(req);
+  const unifiedKey = getUnifiedApiKey();
+  if (!token || !timingSafeStringEqual(token, unifiedKey)) {
+    res.status(401).json({ error: { message: 'Invalid API key', type: 'authentication_error' } });
+    return;
   }
 
   // By default we return the WHOLE catalog (one row per model id), each tagged
@@ -341,43 +323,48 @@ const chatCompletionSchema = z.object({
 });
 
 export function isRetryableError(err: any): boolean {
-  // Use err.status when available (set by providerHttpError in base.ts)
-  const status = typeof err?.status === 'number' ? err.status : 0;
-
-  if (status >= 429 && status < 500) {
-    // 429 Too Many Requests, other 4xx retryable statuses
-    return true;
-  }
-  if (status === 404) return true;  // model deprecated/removed upstream
-  if (status === 413) return true;  // payload too large, another model may accept it
-  if (status === 500 || status === 503) return true;
-  if (status === 402) return true;  // handled alongside isPaymentRequiredError below
-
   const msg = (err.message ?? '').toLowerCase();
-
-  // Word-boundary checks for messages without a numeric status property
-  return /\b429\b/.test(msg)
-    || msg.includes('rate limit')
-    || /\btoo many requests\b/.test(msg)
-    || /\bquota\b/.test(msg)
-    || msg.includes('resource_exhausted')
-    || /\b(aborted|timeout|timed\s*out)\b/.test(msg)
-    || /\b(etimedout|econnrefused|econnreset)\b/.test(msg)
-    || /\bfetch failed\b/.test(msg)
-    || /\b503\b/.test(msg) || /\bunavailable\b/.test(msg)
-    || /\b500\b/.test(msg) || /\binternal server error\b/.test(msg)
-    || /\b413\b/.test(msg) || /\bpayload too large\b/.test(msg)
-    || /\bcontent too large\b/.test(msg)
-    || /\brequest (body|entity) too large\b/.test(msg)
-    || /\b404\b/.test(msg) || /\bnot found\b/.test(msg) || /\bno endpoints found\b/.test(msg)
+  return msg.includes('429') || msg.includes('rate limit') || msg.includes('too many requests')
+    || msg.includes('quota') || msg.includes('resource_exhausted')
+    || msg.includes('aborted') || msg.includes('timeout') || msg.includes('etimedout')
+    || msg.includes('econnrefused') || msg.includes('econnreset')
+    || msg.includes('fetch failed')    // undici transport error (proxy down, DNS, TLS, etc.)
+    || msg.includes('503') || msg.includes('unavailable')
+    || msg.includes('500') || msg.includes('internal server error')
+    // 413: this model's payload limit is too small for the request, but another
+    // provider in the fallback chain may have a larger limit. Same reasoning as 503.
+    || msg.includes('413') || msg.includes('payload too large') || msg.includes('request body too large')
+    || msg.includes('request entity too large') || msg.includes('content too large')
+    // 404: model deprecated/removed upstream (e.g. OpenRouter's "no endpoints found"
+    // for a model that's been pulled). Rotate to the next model in the chain —
+    // setCooldown + the health checker will avoid this model on subsequent requests.
+    || msg.includes('404') || msg.includes('not found') || msg.includes('no endpoints found')
+    // 403: the key is valid (it passed validateKey, and the health checker
+    // disables truly-forbidden keys) but this specific model is off-limits to
+    // the key's tier — e.g. gpt-4o on GitHub Models' free tier, subscription-only
+    // models on Cloudflare. Another model in the chain is reachable, so fail over
+    // instead of 502-ing the whole request. Paired with isModelAccessForbiddenError
+    // to rule the model out for this request and a day-long bench. See issue #256.
     || isModelAccessForbiddenError(err)
-    || /\bapi error 400\b/.test(msg)
+    // 400: one provider may reject parameters another accepts (e.g. max_tokens
+    // limits, unsupported params). The matching pattern is "api error 400"
+    // which comes from the OpenAI-compat provider's error formatting, not
+    // a bare "400" which is deliberately non-retryable for validation errors.
+    || msg.includes('api error 400')
+    // 402: this provider/key is out of credits (e.g. HuggingFace Router
+    // "API error 402: Payment required"). The SAME model often lives on another
+    // provider (Kimi K2.6 is on HF + Cloudflare + NVIDIA), so fail over instead
+    // of killing the workflow. Paired with a long cooldown (isPaymentRequiredError)
+    // so we don't re-hammer the broke key every retry.
     || isPaymentRequiredError(err)
-    || /\bempty completion\b/.test(msg)
-    || /\bin-band provider error\b/.test(msg)
-    || /\bstream ended unexpectedly\b/.test(msg)
-    || /\bstream stalled\b/.test(msg)
-    || /\bunparseable inline tool-call dialect\b/.test(msg);
+    // Dead-turn classes from the stream turn-integrity layer (#231 audit):
+    // all thrown before any byte reached the client, so another model can
+    // serve the request invisibly.
+    || msg.includes('empty completion')
+    || msg.includes('in-band provider error')
+    || msg.includes('stream ended unexpectedly')
+    || msg.includes('stream stalled')
+    || msg.includes('unparseable inline tool-call dialect');
 }
 
 // A 402 Payment Required / out-of-credits error. Distinct from a transient 429:
@@ -433,13 +420,11 @@ const EmbeddingsBody = z.object({
 });
 
 proxyRouter.post('/embeddings', async (req: Request, res: Response) => {
-  if (!isLocalBypass(req)) {
-    const token = extractApiToken(req);
-    const unifiedKey = getUnifiedApiKey();
-    if (!token || !timingSafeStringEqual(token, unifiedKey)) {
-      res.status(401).json({ error: { message: 'Invalid API key', type: 'authentication_error' } });
-      return;
-    }
+  const token = extractApiToken(req);
+  const unifiedKey = getUnifiedApiKey();
+  if (!token || !timingSafeStringEqual(token, unifiedKey)) {
+    res.status(401).json({ error: { message: 'Invalid API key', type: 'authentication_error' } });
+    return;
   }
   const parsed = EmbeddingsBody.safeParse(req.body);
   if (!parsed.success) {
@@ -466,17 +451,16 @@ proxyRouter.post('/embeddings', async (req: Request, res: Response) => {
 proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
   const start = Date.now();
 
-  // Authenticate with the unified API key, unless LOCAL_BYPASS is enabled and
-  // the request comes from loopback. See isLocalBypass() for the security model.
-  if (!isLocalBypass(req)) {
-    const token = extractApiToken(req);
-    const unifiedKey = getUnifiedApiKey();
-    if (!token || !timingSafeStringEqual(token, unifiedKey)) {
-      res.status(401).json({
-        error: { message: 'Invalid API key', type: 'authentication_error' },
-      });
-      return;
-    }
+  // Authenticate with the unified API key for every proxy request, including
+  // loopback callers. Browser pages can reach localhost, so socket locality is
+  // not a reliable authorization boundary.
+  const token = extractApiToken(req);
+  const unifiedKey = getUnifiedApiKey();
+  if (!token || !timingSafeStringEqual(token, unifiedKey)) {
+    res.status(401).json({
+      error: { message: 'Invalid API key', type: 'authentication_error' },
+    });
+    return;
   }
 
   // Validate request
@@ -727,14 +711,10 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
       // No more models available
       if (lastError) {
         const safeLastError = sanitizeProviderErrorMessage(lastError.message);
-        // Use the last error's status when it's a known client/upstream error;
-        // fall back to 503 (service unavailable) for routing exhaustion without
-        // a clear rate-limit signal.
-        const status = lastError.status === 429 || lastError.status === 402 || lastError.status === 404 || lastError.status === 413 ? lastError.status : 503;
-        res.status(status).json({
+        res.status(429).json({
           error: {
-            message: `All models exhausted. Last error: ${safeLastError}`,
-            type: status === 429 ? 'rate_limit_error' : 'routing_error',
+            message: `All models rate-limited. Last error: ${safeLastError}`,
+            type: 'rate_limit_error',
           },
         });
       } else {
@@ -778,7 +758,6 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
         //  - a stream that ends with neither content nor calls is an empty
         //    completion and fails over like the non-stream path.
         let totalOutputTokens = 0;
-        let totalOutputChars = 0;
         let headerSent = false;
         let ttfbMs: number | null = null;
 
@@ -876,7 +855,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
               continue;
             }
 
-            totalOutputChars += text.length;
+            totalOutputTokens += Math.ceil(text.length / 4);
 
             if (mode === 'passthrough') {
               writeChunk({ ...anyChunk, choices: [{ ...choice, delta: { ...choice.delta, tool_calls: undefined }, finish_reason: null }] });
@@ -945,7 +924,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
           }
           if (completedCalls.length > 0) {
             writeChunk(mkChunk({ tool_calls: completedCalls.map((c, i) => ({ index: i, ...c })) }, null));
-            totalOutputChars += completedCalls.reduce((n, c) => n + c.function.arguments.length, 0);
+            totalOutputTokens += Math.ceil(completedCalls.reduce((n, c) => n + c.function.arguments.length, 0) / 4);
           }
           // Terminal finish_reason, ALWAYS present: calls win over a sloppy
           // upstream 'stop'; 'length'/'content_filter' survive for pure-text
@@ -958,10 +937,8 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
           res.write('data: [DONE]\n\n');
           res.end();
 
-          totalOutputTokens = Math.ceil(totalOutputChars / 4);
           recordRequest(route.platform, route.modelId, route.keyId);
           recordTokens(route.platform, route.modelId, route.keyId, estimatedInputTokens + injectedHandoffTokens + totalOutputTokens);
-          deductBudget(route.keyId, estimatedInputTokens + injectedHandoffTokens + totalOutputTokens);
           recordSuccess(route.modelDbId);
           setStickyModel(messages, route.modelDbId, sessionIdHeader, strategyKey);
           if (handoffMode !== 'off' && sessionKey) recordSuccessfulModel({ sessionKey, modelKey });
@@ -975,7 +952,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
             const payload = { error: { message: `Provider error (${route.displayName}): stream interrupted`, type: 'stream_error' } };
             try { res.write(`data: ${JSON.stringify(payload)}\n\n`); } catch { /* socket gone */ }
             try { res.write('data: [DONE]\n\n'); res.end(); } catch { /* socket gone */ }
-            logRequest(route.platform, route.modelId, route.keyId, 'error', estimatedInputTokens, Math.ceil(totalOutputChars / 4), Date.now() - start, sanitizeProviderErrorMessage(streamErr.message), ttfbMs, pinnedModelId);
+            logRequest(route.platform, route.modelId, route.keyId, 'error', estimatedInputTokens, totalOutputTokens, Date.now() - start, sanitizeProviderErrorMessage(streamErr.message), ttfbMs, pinnedModelId);
             return;
           }
           // Headers never sent — bubble to the outer retry handler, which
@@ -1031,7 +1008,6 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
         const totalTokens = result.usage?.total_tokens ?? 0;
         recordRequest(route.platform, route.modelId, route.keyId);
         recordTokens(route.platform, route.modelId, route.keyId, totalTokens);
-        deductBudget(route.keyId, totalTokens);
         recordSuccess(route.modelDbId);
         setStickyModel(messages, route.modelDbId, sessionIdHeader, strategyKey);
         if (handoffMode !== 'off' && sessionKey) recordSuccessfulModel({ sessionKey, modelKey });

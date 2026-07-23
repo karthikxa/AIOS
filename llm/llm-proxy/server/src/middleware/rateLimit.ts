@@ -14,6 +14,8 @@ import type { Request, Response, NextFunction } from 'express';
 
 const WINDOW_MS = 60_000;
 const DEFAULT_RPM = 120;
+// Bound the IP map so a flood of distinct (e.g. spoofed) source addresses can't
+// grow it without limit; expired entries are pruned opportunistically.
 const MAX_TRACKED_IPS = 10_000;
 
 interface WindowState {
@@ -29,26 +31,9 @@ function parseLimit(): number {
   return Math.floor(n);
 }
 
-// Normalize ::ffff:127.0.0.1 → 127.0.0.1 so IPv4-mapped IPv6 doesn't create
-// duplicate rate-limit entries for the same client.
-function normalizeIp(ip: string): string {
-  return ip.startsWith('::ffff:') ? ip.slice(7) : ip;
-}
-
 export function createProxyRateLimiter() {
   const limit = parseLimit();
   const windows = new Map<string, WindowState>();
-
-  // Prune expired entries periodically (every ~30s) instead of on every request,
-  // avoiding O(MAX_TRACKED_IPS) iteration in the hot path.
-  let lastPrune = 0;
-  const PRUNE_INTERVAL_MS = 30_000;
-
-  function pruneExpired(now: number) {
-    for (const [key, value] of windows) {
-      if (now >= value.resetAt) windows.delete(key);
-    }
-  }
 
   return function proxyRateLimit(req: Request, res: Response, next: NextFunction): void {
     if (limit === 0) {
@@ -57,7 +42,7 @@ export function createProxyRateLimiter() {
     }
 
     const now = Date.now();
-    const ip = normalizeIp(req.ip ?? req.socket.remoteAddress ?? 'unknown');
+    const ip = req.ip ?? req.socket.remoteAddress ?? 'unknown';
 
     let state = windows.get(ip);
     if (!state || now >= state.resetAt) {
@@ -66,10 +51,10 @@ export function createProxyRateLimiter() {
     }
     state.count += 1;
 
-    // Throttled pruning: only scan once per PRUNE_INTERVAL_MS.
-    if (now - lastPrune > PRUNE_INTERVAL_MS) {
-      lastPrune = now;
-      pruneExpired(now);
+    if (windows.size > MAX_TRACKED_IPS) {
+      for (const [key, value] of windows) {
+        if (now >= value.resetAt) windows.delete(key);
+      }
     }
 
     res.setHeader('X-RateLimit-Limit', String(limit));

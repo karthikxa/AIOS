@@ -9,8 +9,7 @@ import { z } from 'zod';
 import { getDb } from '../db/index.js';
 import { getAllPenalties, getRoutingScores, getRoutingStrategy, setRoutingStrategy } from '../services/router.js';
 import { BANDIT_PRESETS, type RoutingStrategy } from '../services/scoring.js';
-import { parseBudget, quotaWhereClause } from '../lib/budget.js';
-import { getBudgetInfo } from '../services/token-budget.js';
+import { parseBudget } from '../lib/budget.js';
 
 export const fallbackRouter = Router();
 
@@ -252,26 +251,18 @@ fallbackRouter.get('/token-usage', (_req: Request, res: Response) => {
   // Total budget counts all models (both enabled and disabled — they contribute to the pool)
   const totalBudget = modelBudgets.reduce((s, m) => s + m.budget, 0);
 
-  // Tokens used in the current quota window
+  // Tokens used this month
   const usage = db.prepare(`
     SELECT
       COALESCE(SUM(input_tokens + output_tokens), 0) as total_used
     FROM requests
-    WHERE ${quotaWhereClause()}
+    WHERE created_at >= datetime('now', 'start of month')
       AND request_type = 'chat'
   `).get() as { total_used: number };
-
-  // Per-key token budget info
-  const keys = db.prepare("SELECT id, platform, label FROM api_keys WHERE enabled = 1 ORDER BY id").all() as { id: number; platform: string; label: string }[];
-  const keyBudgets = keys.map(k => {
-    const info = getBudgetInfo(k.id);
-    return { keyId: k.id, platform: k.platform, label: k.label, ...info };
-  }).filter(k => k.remaining !== undefined);
 
   res.json({
     totalBudget,
     totalUsed: usage.total_used,
     models: modelBudgets,
-    keyBudgets,
   });
 });

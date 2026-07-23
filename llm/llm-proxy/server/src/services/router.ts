@@ -2,13 +2,12 @@ import { getDb, getSetting, setSetting } from '../db/index.js';
 import { getProvider, hasProvider, resolveProvider } from '../providers/index.js';
 import { decrypt } from '../lib/crypto.js';
 import { canMakeRequest, canUseTokens, isOnCooldown, canUseProvider } from './ratelimit.js';
-import { canUseBudget } from './token-budget.js';
 import {
   BANDIT_PRESETS, DEFAULT_STRATEGY, type RoutingStrategy, type RoutingWeights,
   reliabilityPosterior, expectedReliability, sampleBeta,
   speedScore, intelligenceScore, headroomFactor, rateLimitFactor, combineScore,
 } from './scoring.js';
-import { parseBudget, quotaWhereClause } from '../lib/budget.js';
+import { parseBudget } from '../lib/budget.js';
 import type { BaseProvider } from '../providers/base.js';
 import type { Platform } from '@freellmapi/shared/types.js';
 import type { Database } from 'better-sqlite3';
@@ -271,11 +270,11 @@ export function refreshStatsCache(db: Database, force = false): void {
     acc.set(key, a);
   }
 
-  // Rolling-window token usage per model, for the headroom guardrail.
+  // Calendar-month token usage per model, for the headroom guardrail.
   const usageRows = db.prepare(`
     SELECT platform, model_id, COALESCE(SUM(input_tokens + output_tokens), 0) AS used
     FROM requests
-    WHERE ${quotaWhereClause()}
+    WHERE created_at >= datetime('now', 'start of month')
       AND request_type = 'chat'
     GROUP BY platform, model_id
   `).all() as Array<{ platform: string; model_id: string; used: number }>;
@@ -644,7 +643,6 @@ export function routeRequest(estimatedTokens = 1000, skipKeys?: Set<string>, pre
 
       if (!canMakeRequest(entry.platform, entry.model_id, key.id, limits)) continue;
       if (!canUseTokens(entry.platform, entry.model_id, key.id, estimatedTokens, limits)) continue;
-      if (!canUseBudget(key.id, estimatedTokens)) continue;
 
       let decryptedKey: string;
       try {
