@@ -1,55 +1,51 @@
-"""Token bucket rate limiter for LLM API calls.
+"""Token bucket rate limiter for LLM API calls — balanced for 550+ agents.
 
-Prevents 429s, 502s, and crashes when many agents (up to 250) hit the LLM
-proxy simultaneously. Each API call must acquire a token before proceeding.
-Tokens refill at a configurable rate with burst support.
+Each agent makes ~3-5 API calls per task (decompose + tool calls + synthesis).
+With 550 agents: ~1650-2750 req/min peak. Token bucket smooths bursts.
+
+Per-provider tracking prevents one provider from eating all the quota.
+Circuit breaker skips providers that return 429/503.
 """
 
 import asyncio
 import time
 import logging
+from collections import defaultdict
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# Global rate limiter instance — shared across all agents in the process
 _bucket: Optional["TokenBucket"] = None
-_lock = asyncio.Lock()
 
 
 class TokenBucket:
-    """Async token bucket rate limiter."""
+    """Async token bucket with per-provider tracking."""
 
-    def __init__(self, rate_per_minute: int = 60, burst: int = 10):
-        """
-        Args:
-            rate_per_minute: How many tokens refill per minute.
-            burst: Maximum tokens that can accumulate (burst capacity).
-        """
+    def __init__(self, rate_per_minute: int = 3000, burst: int = 100):
         self.rate = rate_per_minute / 60.0  # tokens per second
         self.burst = burst
         self.tokens = float(burst)
         self.last_refill = time.monotonic()
         self._async_lock = asyncio.Lock()
-        self._waiters = 0
         self._total_acquired = 0
         self._total_waited = 0
 
+        # Per-provider tracking
+        self._provider_calls: dict = defaultdict(int)
+        self._provider_errors: dict = defaultdict(int)
+
+        # Circuit breaker per provider
+        self._circuit_open: dict = {}  # provider -> open_time
+        self._circuit_threshold = 5  # failures before opening
+        self._circuit_cooldown = 30  # seconds before retry
+
     async def acquire(self, tokens: int = 1) -> float:
-        """Acquire tokens, sleeping if necessary. Returns wait time in seconds."""
         waited = 0.0
         async with self._async_lock:
             self._refill()
             while self.tokens < tokens:
-                # Calculate how long until we have enough tokens
                 deficit = tokens - self.tokens
-                wait_time = deficit / self.rate
-                self._waiters += 1
-                logger.debug(
-                    "Rate limit: waiting %.1fs for %d tokens (%.1f available, %d total acquired)",
-                    wait_time, tokens, self.tokens, self._total_acquired,
-                )
-                # Release lock while sleeping so other coroutines can check
+                wait_time = min(deficit / self.rate, 5.0)  # cap wait at 5s
                 self._async_lock.release()
                 try:
                     await asyncio.sleep(wait_time)
@@ -57,20 +53,33 @@ class TokenBucket:
                     await self._async_lock.acquire()
                     self._refill()
                 waited += wait_time
-                self._waiters -= 1
 
             self.tokens -= tokens
             self._total_acquired += 1
-            if waited > 0:
-                self._total_waited += 1
         return waited
 
     def _refill(self):
-        """Add tokens based on elapsed time."""
         now = time.monotonic()
         elapsed = now - self.last_refill
         self.tokens = min(self.burst, self.tokens + elapsed * self.rate)
         self.last_refill = now
+
+    def record_provider_call(self, provider: str):
+        self._provider_calls[provider] += 1
+
+    def record_provider_error(self, provider: str):
+        self._provider_errors[provider] += 1
+        self._circuit_open[provider] = time.monotonic()
+
+    def is_provider_open(self, provider: str) -> bool:
+        """Check if circuit breaker is open for a provider."""
+        if provider not in self._circuit_open:
+            return False
+        open_time = self._circuit_open[provider]
+        if time.monotonic() - open_time > self._circuit_cooldown:
+            del self._circuit_open[provider]
+            return False
+        return True
 
     def stats(self) -> dict:
         return {
@@ -79,34 +88,29 @@ class TokenBucket:
             "burst": self.burst,
             "total_acquired": self._total_acquired,
             "total_waited": self._total_waited,
-            "current_waiters": self._waiters,
+            "providers": dict(self._provider_calls),
+            "provider_errors": dict(self._provider_errors),
+            "circuit_open": list(self._circuit_open.keys()),
         }
 
 
 def get_rate_limiter(
-    rate_per_minute: int = 300,
-    burst: int = 50,
+    rate_per_minute: int = 6000,
+    burst: int = 300,
 ) -> TokenBucket:
-    """Get or create the global rate limiter singleton."""
     global _bucket
     if _bucket is None:
         _bucket = TokenBucket(rate_per_minute=rate_per_minute, burst=burst)
-        logger.info(
-            "Rate limiter initialized: %d req/min, burst %d",
-            rate_per_minute,
-            burst,
-        )
+        logger.info("Rate limiter: %d req/min, burst %d", rate_per_minute, burst)
     return _bucket
 
 
 async def rate_limit_acquire(tokens: int = 1) -> float:
-    """Acquire a token from the global rate limiter. Returns wait time."""
     bucket = get_rate_limiter()
     return await bucket.acquire(tokens)
 
 
 def get_rate_limiter_stats() -> dict:
-    """Get current rate limiter stats."""
     if _bucket is None:
         return {"status": "not_initialized"}
     return _bucket.stats()

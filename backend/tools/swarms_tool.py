@@ -1131,13 +1131,15 @@ def swarm_router_task(task: str, workers: Optional[List[Dict]] = None,
             if wc < 10:
                 delay = 0
             elif wc < 50:
-                delay = 100
+                delay = 50
             elif wc < 200:
+                delay = 100
+            elif wc < 550:
                 delay = 200
             else:
-                delay = 300
-            # Cap total stagger to 30 seconds
-            delay = min(delay, 30000 // wc)
+                delay = 400
+            # Cap total stagger to 45 seconds
+            delay = min(delay, 45000 // wc)
         else:
             delay = 0
         _set_spawn_delay(delay)
