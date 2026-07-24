@@ -1583,7 +1583,7 @@ JSON Structure:
       }
       const paneStatus = document.getElementById('agent-pane-status-' + agent.idx);
       if (paneStatus) {
-        paneStatus.innerHTML = `<span style="font-size: 13px; color: #374151; font-weight: 500;">${agent.role}</span>`;
+        paneStatus.innerHTML = `<span style="font-size: 13px; color: #374151; font-weight: 500;">${escapeHtml(agent.role)}</span>`;
       }
 
       if (agentPaneFooterText) agentPaneFooterText.textContent = `Creating subagents... ${i + 1}/${totalAgents} completed`;
@@ -1595,10 +1595,13 @@ JSON Structure:
     textContainer.appendChild(p2);
     await streamText(p2, transitionText);
 
-    // Step 4: Execute all sub-agents in parallel using callRealAPI (streaming real CoT, tokens, and tool calls)
+    // Step 4: Execute all sub-agents SEQUENTIALLY (not parallel) to avoid rate limiting
     let completedCount = 0;
     const allResults = [];
-    const parallelPromises = subAgents.map((agent, idx) => {
+    const DELAY_BETWEEN_AGENTS = 2000; // 2 seconds between agents to avoid 429
+    
+    for (let idx = 0; idx < subAgents.length; idx++) {
+      const agent = subAgents[idx];
       agent.status = 'running';
       agent.activities = [
         { type: 'think', label: `Initializing sub-agent execution context for role: ${agent.role}...` },
@@ -1654,56 +1657,57 @@ JSON Structure:
         }
       };
 
-      return (async () => {
-        try {
-          const result = await callRealAPI(model, [
-            { role: 'system', content: `You are ${agent.role}. Complete this task concisely and thoroughly:\n\n${agent.task}` },
-            { role: 'user', content: promptText }
-          ], onSubagentToken, null, onSubagentReasoning, onSubagentToolUsage, false) || 'No response';
-          
-          agent.status = 'done';
-          agent.dotsCount = 10;
-          agent.result = result;
-          allResults[idx] = result;
+      // Add delay between agents to avoid rate limiting
+      if (idx > 0) {
+        await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_AGENTS));
+      }
 
-          agent.activities.push({
-            type: 'success',
-            label: `SUCCESS: Task complete. Output returned.`
-          });
+      try {
+        const result = await callRealAPI(model, [
+          { role: 'system', content: `You are ${agent.role}. Complete this task concisely and thoroughly:\n\n${agent.task}` },
+          { role: 'user', content: promptText }
+        ], onSubagentToken, null, onSubagentReasoning, onSubagentToolUsage, false) || 'No response';
+        
+        agent.status = 'done';
+        agent.dotsCount = 10;
+        agent.result = result;
+        allResults[idx] = result;
 
-          if (viewedAgentIdx === agent.idx) {
-            updateTerminalDisplay(agent.idx);
-          }
+        agent.activities.push({
+          type: 'success',
+          label: `SUCCESS: Task complete. Output returned.`
+        });
 
-          // Update progress counts
-          completedCount++;
-          if (agentPaneProgressCount) agentPaneProgressCount.textContent = `${completedCount}/${totalAgents}`;
-          if (agentPaneFooterText) agentPaneFooterText.textContent = `Executing subagents... ${completedCount}/${totalAgents} completed`;
-          return result;
-        } catch (err) {
-          agent.status = 'failed';
-          agent.dotsCount = 10;
-          agent.result = `Error: ${err.message}`;
-          allResults[idx] = `Error: ${err.message}`;
-          
-          agent.activities.push({
-            type: 'failed',
-            label: `ERROR: Task execution failed. ${err.message}`
-          });
-
-          if (viewedAgentIdx === agent.idx) {
-            updateTerminalDisplay(agent.idx);
-          }
-
-          completedCount++;
-          if (agentPaneProgressCount) agentPaneProgressCount.textContent = `${completedCount}/${totalAgents}`;
-          if (agentPaneFooterText) agentPaneFooterText.textContent = `Executing subagents... ${completedCount}/${totalAgents} completed`;
-          return null;
+        if (viewedAgentIdx === agent.idx) {
+          updateTerminalDisplay(agent.idx);
         }
-      })();
-    });
 
-    await Promise.all(parallelPromises);
+        // Update progress counts
+        completedCount++;
+        if (agentPaneProgressCount) agentPaneProgressCount.textContent = `${completedCount}/${totalAgents}`;
+        if (agentPaneFooterText) agentPaneFooterText.textContent = `Executing subagents... ${completedCount}/${totalAgents} completed`;
+      } catch (err) {
+        agent.status = 'failed';
+        agent.dotsCount = 10;
+        agent.result = `Error: ${err.message}`;
+        allResults[idx] = `Error: ${err.message}`;
+        
+        agent.activities.push({
+          type: 'failed',
+          label: `ERROR: Task execution failed. ${err.message}`
+        });
+
+        if (viewedAgentIdx === agent.idx) {
+          updateTerminalDisplay(agent.idx);
+        }
+
+        completedCount++;
+        if (agentPaneProgressCount) agentPaneProgressCount.textContent = `${completedCount}/${totalAgents}`;
+        if (agentPaneFooterText) agentPaneFooterText.textContent = `Executing subagents... ${completedCount}/${totalAgents} completed`;
+      }
+    }
+
+    // All subagents have been executed sequentially
 
     // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)    // Step 5: Aggregate results with LLM using callRealAPI (skip agent loop for speed)
     if (agentPaneFooterText) agentPaneFooterText.textContent = 'Synthesizing results...';
@@ -2056,16 +2060,28 @@ JSON Structure:
     if (el) { el.remove(); delete _activeToolIndicators[toolName]; }
     const bar = document.getElementById('toolIndicatorBar');
     if (bar && Object.keys(_activeToolIndicators).length === 0) bar.style.display = 'none';
+  // ── HTML sanitizer for innerHTML injections ────────────────────────────────
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
-  function clearAllToolIndicators() {
-    Object.keys(_activeToolIndicators).forEach(hideToolIndicator);
+  function safeUrl(url) {
+    try {
+      const u = new URL(url, window.location.origin);
+      if (u.protocol === 'javascript:') return '#';
+      return u.href;
+    } catch { return '#'; }
   }
 
-  const LLM_PROXY_URL = 'https://server-llm-1-0r64.onrender.com';
-  const LLM_PROXY_KEY = 'freellmapi-b8b35f76a87a2e3db4985258c26197a2f22ceabe528eb6ac';
+  // Single-port mode: use relative URLs - backend proxies to LLM on Render
+  // This eliminates the need for Vite proxy - everything runs on port 8642
+  // Route through backend proxy — API key stays server-side
+  const LLM_PROXY_URL = '';  // Relative URL - goes through backend proxy
+  const LLM_PROXY_KEY = '';  // No key needed — backend injects it
 
   async function _callLLMProxyDirect(messages, useStream, onToken, signal) {
-    const resp = await fetch(`${LLM_PROXY_URL}/v1/chat/completions`, {
+    // Use relative URL - backend /v1/chat/completions proxies to LLM on Render
+    const resp = await fetch('/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${LLM_PROXY_KEY}` },
       body: JSON.stringify({ model: 'auto', messages, stream: useStream }),
@@ -2092,8 +2108,11 @@ JSON Structure:
           if (trimmed.startsWith('data: ')) {
             try {
               const d = JSON.parse(trimmed.slice(6));
+              // Handle both content and reasoning_content
               const content = d.choices?.[0]?.delta?.content;
+              const reasoning = d.choices?.[0]?.delta?.reasoning_content;
               if (content) { full += content; if (onToken) onToken(content); }
+              if (reasoning) { /* reasoning content - ignore for now */ }
             } catch (e) {}
           }
         }
@@ -3875,7 +3894,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
                 if (m.result && m.result.startsWith('URL:')) {
                   const urlLine = m.result.split('\n')[0].replace('URL: ', '').trim();
                   const urlEl = document.getElementById('splitPaneHeaderUrl');
-                  if (urlEl && urlLine !== 'unknown') urlEl.innerHTML = '<a href="' + urlLine + '" target="_blank" style="color:#3B82F6;text-decoration:none;">' + urlLine + '</a>';
+                  if (urlEl && urlLine !== 'unknown') { const a = document.createElement('a'); a.href = safeUrl(urlLine); a.target = '_blank'; a.style.color = '#3B82F6'; a.style.textDecoration = 'none'; a.textContent = urlLine; urlEl.innerHTML = ''; urlEl.appendChild(a); }
                 }
               } else if (m.type === 'token') {
                 // Stream LLM thinking tokens into typing indicator
@@ -4487,102 +4506,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       };
 
       let reply;
-      if (promptText.toLowerCase().includes("summarize my last gmail") || promptText.toLowerCase().includes("summarize my gmail")) {
-        const mockResponse = `Your last Gmail was a security alert from Google sent at 11:01 AM GMT on June 28, 2026. The email warned that you allowed "zodzy" (zedstoreofficial@gmail.com) access to some of your Google Account data, and advised that if you didn't authorize this, someone else may be trying to access your account.
-
-I'll tackle this literature review project by creating specialized sub-agents and working in parallel. Let me start by setting up the workflow and creating the necessary agents.`;
-        
-        reply = mockResponse;
-        
-        // Staggered token stream simulation
-        let words = mockResponse.split(" ");
-        let currentWordIndex = 0;
-        
-        // Initial thinking time simulation before streaming content
-        onReasoningCb("Thinking... verifying access... reading mailbox...\n");
-        await new Promise(r => setTimeout(r, 600));
-
-        // AGENTIC MOCK TRIGGER: simulate a browser_navigate tool call start (Onboarding Demo)
-        onToolUsageCb({
-          type: 'tool_start',
-          name: 'browser_navigate',
-          id: 'mock-browser-1',
-          args: { url: 'https://example.com/onboarding' }
-        });
-
-        await new Promise((resolve) => {
-          const tokenInterval = setInterval(() => {
-            if (currentWordIndex < words.length) {
-              const token = words[currentWordIndex] + " ";
-              onTokenCb(token);
-              currentWordIndex++;
-            } else {
-              clearInterval(tokenInterval);
-              resolve();
-            }
-          }, 30);
-        });
-
-        // Simulate browser_navigate tool completion
-        onToolUsageCb({
-          type: 'tool_complete',
-          name: 'browser_navigate',
-          id: 'mock-browser-1'
-        });
-
-        // Emit final active spinner row simulating "Generating project workflow..."
-        onToolUsageCb({
-          type: 'tool_start',
-          name: 'browser_navigate',
-          id: 'mock-active-1',
-          args: { url: 'https://example.com/workflow' }
-        });
-      } else if (promptText.toLowerCase().includes("rtx 5090") || promptText.toLowerCase().includes("rtx5090")) {
-        const mockResponse = `I've initiated a search across multiple retailers and tech forums to locate the cheapest price for the NVIDIA RTX 5090 Founders Edition and third-party partner cards. 
-
-Here are the current findings:
-1. **NVIDIA Founders Edition** — $1,999 (if you can get it from Best Buy/NVIDIA)
-2. **MSI Ventus 3X OC** — $2,020–$2,070 (best value among third-party)
-3. **Zotac Solid** — $2,050–$2,100 (solid budget option)
-
-📌 **Tips to Get One Cheap**
-- Sign up for stock alerts (HotStock, NowInStock)
-- Check Best Buy, B&H, Newegg at random times
-- Micro Center in-store if you're near one
-- Avoid eBay scalpers (3-5x markup)
-- Wait 2–3 months for supply to stabilize`;
-        
-        reply = mockResponse;
-        
-        // Staggered token stream simulation
-        let words = mockResponse.split(" ");
-        let currentWordIndex = 0;
-        
-        // Initial thinking time simulation before streaming content
-        onReasoningCb("Thinking... searching retailers... comparing prices...\n");
-        await new Promise(r => setTimeout(r, 600));
-
-        // Trigger Swarm Visualization since it's a swarm prompt
-        if (!swarmVisualized) {
-          swarmVisualized = true;
-          (async () => { await triggerSwarmVisualization(promptText, ensureAssistantBubble(), model); })();
-        }
-
-        await new Promise((resolve) => {
-          const tokenInterval = setInterval(() => {
-            if (currentWordIndex < words.length) {
-              const token = words[currentWordIndex] + " ";
-              onTokenCb(token);
-              currentWordIndex++;
-            } else {
-              clearInterval(tokenInterval);
-              resolve();
-            }
-          }, 30);
-        });
-
-      } else {
-        if (effectiveMode === 'search' && isPromptSwarmTrigger) {
+      if (effectiveMode === 'search' && isPromptSwarmTrigger) {
           // Agent Mode: trigger triggerSwarmVisualization directly and return early
           window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Orchestrating swarm' } }));
           ensureAssistantBubble();
@@ -4590,9 +4514,8 @@ Here are the current findings:
           showStopButton(false);
           clearAllToolIndicators();
           return;
-        }
-        reply = await callRealAPI(model, conversationHistory, onTokenCb, abortController.signal, onReasoningCb, onToolUsageCb);
       }
+      reply = await callRealAPI(model, conversationHistory, onTokenCb, abortController.signal, onReasoningCb, onToolUsageCb);
 
       showStopButton(false);
       clearAllToolIndicators();
@@ -5138,9 +5061,12 @@ Here are the current findings:
   }
 
   // On localhost: set/update noVNC URL (versioned so it auto-updates when URL changes)
-  const KASM_URL_VERSION = '7';
+  const KASM_URL_VERSION = '10';  // Increment to force localStorage refresh
+  // Direct connection to KasmVNC (WebSocket proxy not working through FastAPI)
+  // Backend serves HTTP pages via /kasm/ proxy, but WebSocket connects directly
   const CORRECT_KASM_URL = 'http://localhost:6901/vnc.html?autoconnect=true&password=headless&resize=scale&reconnect=true&reconnect_delay=1000';
-  if (isLocal && localStorage.getItem('kasm_url_version') !== KASM_URL_VERSION) {
+  // Always update localStorage on load to ensure correct URL
+  if (isLocal) {
     localStorage.setItem('kasm_url', CORRECT_KASM_URL);
     localStorage.setItem('kasm_url_version', KASM_URL_VERSION);
   }

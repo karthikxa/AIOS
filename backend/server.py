@@ -45,6 +45,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+# ── LLM Load Balancer ──────────────────────────────────────────────────────
+from agent.llm_load_balancer import (
+    get_load_balancer,
+    rate_limit_acquire,
+    record_llm_request,
+    register_agent,
+    unregister_agent,
+    get_load_balancer_status,
+)
+
 # ── Zed Home = C:\Users\<user>\.zed (all sessions, config, memories) ────
 # CRITICAL: Must set ZED_HOME env var BEFORE importing cron modules,
 # because cron/jobs.py resolves get_zed_home() at import time.
@@ -101,6 +111,17 @@ except Exception:
 
 logger = logging.getLogger("zed.server")
 
+# ── Phase 0: Foundation — Startup health check ────────────────────────────
+# Verify all required Hermes files/databases exist before server finishes booting
+print(f"[ZED] Using Hermes home: {get_zed_home()}")
+_required_files = ["config.yaml", "auth.json", ".env", "SOUL.md", "sessions.db", "state.db", "kanban.db", "memory.db", "connections.db"]
+for _f in _required_files:
+    _path = os.path.join(str(get_zed_home()), _f)
+    if not os.path.exists(_path):
+        print(f"[WARN] Missing: {_path}")
+    else:
+        print(f"[OK] {_f}")
+
 # ── Enable tools that gate on session-mode env vars ───────────────────────
 # These defaults unlock cronjob + kanban-style tools so the dashboard gets the
 # full Zed toolset without requiring a gateway / interactive-CLI session.
@@ -139,46 +160,289 @@ FREELLMAPI_URL = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.co
 if "ZED_PRO_BASE_URL" not in os.environ:
     os.environ["ZED_PRO_BASE_URL"] = "https://server-llm-1.onrender.com/v1"
 if "ZED_PRO_API_KEY" not in os.environ:
-    os.environ["ZED_PRO_API_KEY"] = "freellmapi-b8b35f76a87a2e3db4985258c26197a2f22ceabe528eb6ac"
+    logger.warning("ZED_PRO_API_KEY not set — LLM calls will fail")
 
 # ── Dynamic Tool Router ──────────────────────────────────────────────────────
 # Maps query intent keywords to enabled toolsets. Router call: ~50 tokens.
+# Comprehensive wiring: ALL 94 tools mapped to modes (Chat, Plugins, Schedules, Agents, Computer)
 TOOL_ROUTES = {
-    "file": ["file"],
-    "terminal": ["terminal", "code_execution"],
-    "code": ["code_execution", "terminal", "file"],
+    # ══════════════════════════════════════════════════════════════════════════
+    # BROWSER TOOLS (12) — Chat + Agents + Computer
+    # ══════════════════════════════════════════════════════════════════════════
     "browser": ["browser", "web", "vision"],
+    "automate": ["browser", "vision", "terminal", "file"],
+    "web_interact": ["browser", "web"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # FILE TOOLS (4) — Chat + Agents + Computer
+    # ══════════════════════════════════════════════════════════════════════════
+    "file": ["file"],
+    "read": ["file"],
+    "write": ["file"],
+    "patch": ["file"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # TERMINAL TOOLS (4) — Chat + Agents + Computer + Schedules
+    # ══════════════════════════════════════════════════════════════════════════
+    "terminal": ["terminal", "code_execution"],
+    "shell": ["terminal"],
+    "command": ["terminal"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # CODE EXECUTION (1) — All 5 modes
+    # ══════════════════════════════════════════════════════════════════════════
+    "code": ["code_execution", "terminal", "file"],
+    "python": ["code_execution", "terminal"],
+    "script": ["code_execution", "terminal"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # VISION/IMAGE (2) — Chat + Agents + Computer
+    # ══════════════════════════════════════════════════════════════════════════
+    "vision": ["vision"],
+    "image": ["image_gen"],
+    "screenshot": ["vision", "browser"],
+    "analyze_image": ["vision"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # WEB TOOLS (2) — Chat + Agents + Computer + Schedules
+    # ══════════════════════════════════════════════════════════════════════════
     "web": ["web", "browser"],
     "search": ["web", "session_search"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # VIDEO TOOLS (4) — Chat + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "video": ["video", "video_gen"],
+    "youtube": ["youtube"],
+    "video_gen": ["video_gen"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # TTS/VOICE (3) — Chat + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "tts": ["tts"],
+    "speech": ["tts"],
+    "voice": ["tts"],
+    "transcribe": ["tts"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # MEMORY/SESSION (2) — All 5 modes
+    # ══════════════════════════════════════════════════════════════════════════
+    "memory": ["memory", "session_search"],
+    "recall": ["session_search"],
+    "history": ["session_search"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # TODO (1) — All 5 modes
+    # ══════════════════════════════════════════════════════════════════════════
+    "todo": ["todo"],
+    "task": ["todo", "kanban"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # CLARIFY (1) — Chat + Agents + Computer
+    # ══════════════════════════════════════════════════════════════════════════
+    "clarify": ["clarify"],
+    "question": ["clarify"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # SKILLS (3) — All 5 modes
+    # ══════════════════════════════════════════════════════════════════════════
+    "skill": ["skills"],
+    "learn": ["skills"],
+    "install_skill": ["skills"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # DELEGATION (1) — Chat + Agents + Schedules
+    # ══════════════════════════════════════════════════════════════════════════
+    "delegate": ["delegation", "swarm"],
+    "subagent": ["delegation", "swarm"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # SWARM (10) — Agents + Schedules
+    # ══════════════════════════════════════════════════════════════════════════
+    "swarm": ["swarm", "delegation", "web", "file", "terminal", "browser", "search", "code_execution"],
+    "agent": ["delegation", "swarm", "terminal", "file", "web", "browser"],
+    "autonomous": ["delegation", "swarm", "terminal", "file", "web"],
+    "orchestrate": ["swarm", "delegation"],
+    "parallel": ["swarm"],
+    "concurrent": ["swarm"],
+    "hierarchical": ["swarm"],
+    "forest": ["swarm"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # CRONJOB (1) — Chat + Schedules + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "cron": ["cronjob"],
+    "schedule": ["cronjob"],
+    "reminder": ["cronjob"],
+    "timer": ["cronjob"],
+    "recurring": ["cronjob"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # KANBAN (9) — Schedules + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "kanban": ["kanban"],
+    "board": ["kanban"],
+    "backlog": ["kanban"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # COMPUTER USE (1) — Agents + Computer
+    # ══════════════════════════════════════════════════════════════════════════
+    "computer": ["computer_use", "browser", "vision", "terminal", "file"],
+    "desktop": ["computer_use", "browser", "vision", "terminal"],
+    "gui": ["computer_use", "browser", "vision"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # HOME ASSISTANT (4) — Chat + Plugins + Schedules + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "home": ["homeassistant"],
+    "smart home": ["homeassistant"],
+    "hass": ["homeassistant"],
+    "light": ["homeassistant"],
+    "thermostat": ["homeassistant"],
+    "device": ["homeassistant"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # DISCORD (2) — Chat + Plugins + Schedules + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "discord": ["discord"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # GOOGLE WORKSPACE (47) — Chat + Plugins + Schedules + Agents
+    # ══════════════════════════════════════════════════════════════════════════
     "email": ["gmail"],
     "gmail": ["gmail"],
+    "inbox": ["gmail"],
     "drive": ["drive"],
+    "google drive": ["drive"],
     "calendar": ["calendar"],
+    "event": ["calendar"],
     "tasks": ["tasks"],
     "contacts": ["contacts"],
     "photos": ["photos"],
     "youtube": ["youtube"],
     "docs": ["docs"],
+    "google doc": ["docs"],
     "sheets": ["sheets"],
+    "spreadsheet": ["sheets"],
     "slides": ["slides"],
-    "chat": ["chat"],
+    "presentation": ["slides"],
+    "google chat": ["chat"],
     "meet": ["meet"],
+    "meeting": ["meet"],
     "fit": ["fit"],
+    "fitness": ["fit"],
     "classroom": ["classroom"],
-    "delegate": ["delegation", "swarm"],
-    "swarm": ["swarm", "delegation", "web", "file", "terminal", "browser", "search", "code_execution"],
-    "memory": ["memory", "session_search"],
-    "skill": ["skills"],
-    "cron": ["cronjob"],
-    "todo": ["todo"],
-    "vision": ["vision"],
-    "image": ["image_gen"],
-    "video": ["video"],
-    "music": ["video", "web"],
+    "course": ["classroom"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # FEISHU (5) — Chat + Plugins + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "feishu": ["feishu_doc", "feishu_drive"],
+    "lark": ["feishu_doc", "feishu_drive"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # YUANBAO (5) — Chat + Plugins + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "yuanbao": ["yuanbao"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PROJECT (3) — Chat + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "project": ["project"],
+    "workspace": ["project"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # MCP (4) — Chat + Plugins + Agents + Computer
+    # ══════════════════════════════════════════════════════════════════════════
+    "mcp": ["mcp", "terminal", "file"],
+    "upload": ["file", "mcp"],
+    "plugin": ["mcp"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # SECURITY (7) — Chat + Agents + Computer + Schedules
+    # ══════════════════════════════════════════════════════════════════════════
+    "security": ["security"],
+    "approve": ["security"],
+    "confirm": ["security"],
+    "safe": ["security"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # SKILL MANAGEMENT (7) — Chat + Plugins + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "skill_manage": ["skill_management"],
+    "skill_hub": ["skill_management"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # BLUEPRINTS (1) — Chat + Agents + Computer + Schedules
+    # ══════════════════════════════════════════════════════════════════════════
+    "blueprint": ["blueprints"],
+    "template": ["blueprints"],
+    "workflow": ["blueprints"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # X SEARCH (1) — Chat + Plugins + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "twitter": ["x_search"],
+    "x_search": ["x_search"],
+    "tweet": ["x_search"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # GITHUB (2) — Chat + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "github": ["terminal", "file"],
+    "git": ["terminal", "file"],
+    "pr": ["terminal", "file"],
+    "pull request": ["terminal", "file"],
+    "commit": ["terminal", "file"],
+    "repository": ["terminal", "file"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # RESEARCH — Chat + Agents + Computer
+    # ══════════════════════════════════════════════════════════════════════════
+    "research": ["web", "browser", "session_search"],
+    "paper": ["web", "browser"],
+    "arxiv": ["web"],
+    "study": ["web", "browser"],
+    "investigate": ["web", "browser"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # DATA SCIENCE — Chat + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "data": ["code_execution", "terminal", "file"],
+    "analysis": ["code_execution", "terminal"],
+    "chart": ["code_execution", "image_gen"],
+    "visualization": ["code_execution", "image_gen"],
+    "plot": ["code_execution", "image_gen"],
+    "graph": ["code_execution", "image_gen"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # CREATIVE — Chat + Agents
+    # ══════════════════════════════════════════════════════════════════════════
+    "creative": ["web", "image_gen"],
+    "write": ["web", "file"],
+    "content": ["web", "file"],
+    "story": ["web", "file"],
+    "poem": ["web", "file"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # SOFTWARE DEVELOPMENT — Chat + Agents + Computer
+    # ══════════════════════════════════════════════════════════════════════════
+    "debug": ["terminal", "file", "browser"],
+    "test": ["terminal", "file"],
+    "refactor": ["terminal", "file"],
+    "review": ["terminal", "file", "browser"],
+    "fix": ["terminal", "file"],
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # QA/TESTING — Computer
+    # ══════════════════════════════════════════════════════════════════════════
+    "qa": ["browser", "vision"],
+    "dogfood": ["browser", "vision"],
+    "testing": ["browser", "vision", "terminal"],
 }
 
 ROUTER_PROMPT = """You are a tool router. Given a user query, output the single most relevant category.
-Categories: file, terminal, code, browser, web, search, gmail, drive, calendar, tasks, contacts, photos, youtube, docs, sheets, slides, chat, meet, fit, classroom, delegate, swarm, memory, skill, cron, todo, vision, image, video, music, general
+Categories: file, terminal, code, browser, web, search, gmail, drive, calendar, tasks, contacts, photos, youtube, docs, sheets, slides, chat, meet, fit, classroom, delegate, swarm, agent, autonomous, memory, skill, cron, todo, vision, image, video, music, media, mcp, upload, github, git, pr, research, paper, data, analysis, chart, creative, write, content, debug, test, refactor, review, computer, desktop, automate, qa, dogfood, home, smart home, hass, light, thermostat, feishu, lark, yuanbao, project, workspace, security, approve, confirm, blueprint, template, workflow, twitter, x_search, tweet, skill_manage, skill_hub, clarify, question, recall, history, speech, voice, transcribe, screenshot, analyze_image, web_interact, board, backlog, orchestrate, parallel, concurrent, hierarchical, forest, reminder, timer, recurring, device, discord, general
 Reply with ONLY the category name, nothing else.
 
 Query: {query}"""
@@ -187,61 +451,58 @@ Query: {query}"""
 _SWARM_ROUTE = ["swarm"]
 
 # Core tools EVERY query should have — delegation, clarification, memory, etc.
-_CORE_AGENT_TOOLS = ["delegation", "clarify", "memory", "todo", "session_search", "skills"]
+# Updated: Added approval, checkpoint, budget_config for comprehensive coverage
+_CORE_AGENT_TOOLS = [
+    "delegation",       # Always allow sub-agent spawning
+    "clarify",          # Always allow asking questions
+    "memory",           # Always allow memory access
+    "todo",             # Always allow task tracking
+    "session_search",   # Always allow history search
+    "skills",           # Always allow skill access
+    "approval",         # Always allow tool approval (NEW)
+    "checkpoint",       # Always allow checkpointing (NEW)
+    "budget_config",    # Always allow budget management (NEW)
+]
 
 
 def route_query(query: str) -> list:
-    """Route a query to the matching toolsets. Uses keyword heuristic (0 tokens), falls back to LLM."""
+    """Route a query to the matching toolsets. Uses keyword heuristic (0 tokens), falls back to LLM.
+    
+    Comprehensive routing for ALL 94 tools across 5 modes:
+    - Chat: Standard LLM conversation
+    - Plugins: Integration status and management
+    - Schedules: Cron and kanban tasks
+    - Agents: Multi-agent orchestration
+    - Computer: Browser automation
+    """
     q = query.lower()
     # Quick keyword check first. ALWAYS include swarm so the agent can
     # autonomously decide when multi-agent orchestration helps — like Kimi.
-    # Every route gets core agent tools (delegation, clarify, memory) plus specific tools
+    # Every route gets core agent tools (delegation, clarify, memory, approval) plus specific tools
     core = _CORE_AGENT_TOOLS + _SWARM_ROUTE
-    if any(w in q for w in ["email", "inbox", "send mail", "compose"]):
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 1: Email/Plugins (Google Workspace)
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["email", "inbox", "send mail", "compose", "gmail", "google mail", "read mail"]):
         return core + TOOL_ROUTES["email"]
-    if any(w in q for w in ["gmail", "google mail", "read mail"]):
-        return core + TOOL_ROUTES["gmail"]
-    if any(w in q for w in ["drive", "google drive", "file in drive"]):
+    if any(w in q for w in ["drive", "google drive", "file in drive", "upload to drive"]):
         return core + TOOL_ROUTES["drive"]
-    if any(w in q for w in ["browse", "open url", "navigate", "website", "go to"]):
-        return core + TOOL_ROUTES["browser"]
-    if any(w in q for w in ["search", "find", "look up", "google", "research"]):
-        return core + TOOL_ROUTES["search"]
-    if any(w in q for w in ["run", "execute", "bash", "terminal", "command", "shell"]):
-        return core + TOOL_ROUTES["terminal"]
-    if any(w in q for w in ["write code", "python", "javascript", "program", "script"]):
-        return core + TOOL_ROUTES["code"]
-    if any(w in q for w in ["read", "write", "create file", "edit file", "list dir"]):
-        return core + TOOL_ROUTES["file"]
-    if any(w in q for w in ["delegate", "subagent", "child"]):
-        return core + TOOL_ROUTES["delegate"]
-    if any(w in q for w in ["swarm", "concurrent", "hierarchical", "orchestrate", "multi-agent", "forest"]):
-        return core + TOOL_ROUTES["swarm"]
-    if any(w in q for w in ["remember", "memory", "recall", "find session"]):
-        return core + TOOL_ROUTES["memory"]
-    if any(w in q for w in ["skill", "install", "create skill"]):
-        return core + TOOL_ROUTES["skill"]
-    if any(w in q for w in ["schedule", "cron", "every day", "every hour", "recurring"]):
-        return core + TOOL_ROUTES["cron"]
-    if any(w in q for w in ["todo", "task list", "to-do"]):
-        return core + TOOL_ROUTES["todo"]
-    if any(w in q for w in ["see ", "view ", "image", "photo", "picture", "screenshot"]):
-        return core + TOOL_ROUTES["vision"]
-    if any(w in q for w in ["generate image", "create image", "draw", "make a picture"]):
-        return core + TOOL_ROUTES["image"]
-    if any(w in q for w in ["video", "youtube", "watch", "play video"]):
-        return core + TOOL_ROUTES["video"]
-    if any(w in q for w in ["calendar", "event", "appointment", "schedule"]):
+    if any(w in q for w in ["calendar", "event", "appointment", "meeting schedule"]):
         return core + TOOL_ROUTES["calendar"]
+    if any(w in q for w in ["task list", "google tasks", "todo list"]):
+        return core + TOOL_ROUTES["tasks"]
     if any(w in q for w in ["contact", "phonebook", "people", "address book"]):
         return core + TOOL_ROUTES["contacts"]
-    if any(w in q for w in ["photo", "picture", "album"]):
+    if any(w in q for w in ["photo", "picture", "album", "google photos"]):
         return core + TOOL_ROUTES["photos"]
-    if any(w in q for w in ["doc", "google doc", "write doc"]):
+    if any(w in q for w in ["youtube", "watch video", "play video"]):
+        return core + TOOL_ROUTES["youtube"]
+    if any(w in q for w in ["doc", "google doc", "write doc", "document"]):
         return core + TOOL_ROUTES["docs"]
-    if any(w in q for w in ["sheet", "spreadsheet", "excel"]):
+    if any(w in q for w in ["sheet", "spreadsheet", "excel", "google sheets"]):
         return core + TOOL_ROUTES["sheets"]
-    if any(w in q for w in ["slide", "presentation", "powerpoint"]):
+    if any(w in q for w in ["slide", "presentation", "powerpoint", "google slides"]):
         return core + TOOL_ROUTES["slides"]
     if any(w in q for w in ["google chat", "chat space", "chat message"]):
         return core + TOOL_ROUTES["chat"]
@@ -249,12 +510,167 @@ def route_query(query: str) -> list:
         return core + TOOL_ROUTES["meet"]
     if any(w in q for w in ["fitness", "fit data", "health data", "step count"]):
         return core + TOOL_ROUTES["fit"]
-    if any(w in q for w in ["classroom", "course", "class", "student"]):
+    if any(w in q for w in ["classroom", "course", "class", "student", "assignment"]):
         return core + TOOL_ROUTES["classroom"]
-    # Default: minimal toolset (~20 tools, <1000 tokens)
-    # Covers common general-purpose capabilities without the full 76-tool footprint
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 2: Agent/Autonomous/Swarm
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["agent", "autonomous", "spawn", "orchestrate", "delegate", "subagent", "child"]):
+        return core + TOOL_ROUTES["agent"]
+    if any(w in q for w in ["swarm", "concurrent", "hierarchical", "multi-agent", "forest", "parallel", "orchestrate"]):
+        return core + TOOL_ROUTES["swarm"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 3: Computer/Desktop
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["computer", "desktop", "automate", "gui", "screen"]):
+        return core + TOOL_ROUTES["computer"]
+    if any(w in q for w in ["qa", "dogfood", "testing", "test web"]):
+        return core + TOOL_ROUTES["qa"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 4: Browser/Web
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["browse", "open url", "navigate", "website", "go to", "web interact"]):
+        return core + TOOL_ROUTES["browser"]
+    if any(w in q for w in ["search", "find", "look up", "google", "research"]):
+        return core + TOOL_ROUTES["search"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 5: Terminal/Code
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["run", "execute", "bash", "terminal", "command", "shell"]):
+        return core + TOOL_ROUTES["terminal"]
+    if any(w in q for w in ["write code", "python", "javascript", "program", "script", "code execution"]):
+        return core + TOOL_ROUTES["code"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 6: File operations
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["read file", "write file", "create file", "edit file", "list dir", "file"]):
+        return core + TOOL_ROUTES["file"]
+    if any(w in q for w in ["patch", "find replace", "modify file"]):
+        return core + TOOL_ROUTES["patch"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 7: Memory/Session/Skills
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["remember", "memory", "recall", "find session", "history"]):
+        return core + TOOL_ROUTES["memory"]
+    if any(w in q for w in ["skill", "install skill", "create skill", "learn"]):
+        return core + TOOL_ROUTES["skill"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 8: Cron/Schedule/Kanban
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["schedule", "cron", "every day", "every hour", "recurring", "reminder", "timer"]):
+        return core + TOOL_ROUTES["cron"]
+    if any(w in q for w in ["kanban", "board", "backlog", "task board"]):
+        return core + TOOL_ROUTES["kanban"]
+    if any(w in q for w in ["todo", "task list", "to-do", "task"]):
+        return core + TOOL_ROUTES["todo"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 9: Vision/Image/Video
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["see", "view", "image", "photo", "picture", "screenshot", "analyze image"]):
+        return core + TOOL_ROUTES["vision"]
+    if any(w in q for w in ["generate image", "create image", "draw", "make a picture"]):
+        return core + TOOL_ROUTES["image"]
+    if any(w in q for w in ["video", "youtube", "watch", "play video", "video generate"]):
+        return core + TOOL_ROUTES["video"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 10: TTS/Voice
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["tts", "text to speech", "speak", "say aloud"]):
+        return core + TOOL_ROUTES["tts"]
+    if any(w in q for w in ["voice", "transcribe", "speech", "dictate"]):
+        return core + TOOL_ROUTES["voice"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 11: Smart Home
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["home", "smart home", "hass", "light", "thermostat", "device"]):
+        return core + TOOL_ROUTES["home"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 12: Discord
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["discord", "server", "channel"]):
+        return core + TOOL_ROUTES["discord"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 13: MCP/Plugin
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["mcp", "upload", "file upload", "plugin"]):
+        return core + TOOL_ROUTES["mcp"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 14: Security
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["security", "approve", "confirm", "safe"]):
+        return core + TOOL_ROUTES["security"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 15: Blueprints/Templates
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["blueprint", "template", "workflow"]):
+        return core + TOOL_ROUTES["blueprint"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 16: Social (Twitter/X)
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["twitter", "tweet", "x_search"]):
+        return core + TOOL_ROUTES["twitter"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 17: Feishu/Lark
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["feishu", "lark"]):
+        return core + TOOL_ROUTES["feishu"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 18: Yuanbao
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["yuanbao"]):
+        return core + TOOL_ROUTES["yuanbao"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 19: Project/Workspace
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["project", "workspace"]):
+        return core + TOOL_ROUTES["project"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 20: GitHub/Git
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["github", "git", "pull request", "pr", "repository", "commit"]):
+        return core + TOOL_ROUTES["github"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 21: Research/Data Science
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["research", "paper", "arxiv", "study", "investigate"]):
+        return core + TOOL_ROUTES["research"]
+    if any(w in q for w in ["data", "analysis", "chart", "visualization", "plot", "graph"]):
+        return core + TOOL_ROUTES["data"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # PRIORITY 22: Creative/Software Development
+    # ══════════════════════════════════════════════════════════════════════════
+    if any(w in q for w in ["creative", "write", "content", "story", "poem"]):
+        return core + TOOL_ROUTES["creative"]
+    if any(w in q for w in ["debug", "test", "refactor", "review code", "fix bug", "fix"]):
+        return core + TOOL_ROUTES["debug"]
+    
+    # ══════════════════════════════════════════════════════════════════════════
+    # DEFAULT: Comprehensive fallback with core tools
+    # ══════════════════════════════════════════════════════════════════════════
     return ["web", "file", "terminal", "browser", "delegation", "memory", "skills",
-            "cronjob", "todo", "vision", "session_search", "tts", "code_execution", "swarm"]
+            "cronjob", "todo", "vision", "session_search", "tts", "code_execution", "swarm",
+            "approval", "checkpoint", "budget_config"]
 
 # ── Google OAuth plugin ───────────────────────────────────────────────────────
 from plugins.dashboard_auth.google import router as google_oauth_router
@@ -744,11 +1160,34 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://aios-lovat-two.vercel.app",
+        "http://localhost:8000",
+        "http://localhost:8001",
+        "http://localhost:8642",
+        "http://127.0.0.1:8000",
+        "http://127.0.0.1:8001",
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+# ── Auth middleware for dangerous endpoints ───────────────────────────────────
+# Protect file I/O, tool execution, env vars, git, and debug endpoints.
+# Simple API key check — add Bearer token in request header.
+_DANGEROUS_PATHS = ("/api/files", "/api/tools/execute", "/api/env", "/api/git", "/api/debug")
+
+@app.middleware("http")
+async def auth_middleware(request: Request, call_next):
+    path = request.url.path
+    if any(path.startswith(p) for p in _DANGEROUS_PATHS):
+        auth = request.headers.get("authorization", "")
+        api_key = os.environ.get("ZED_DASHBOARD_API_KEY", "")
+        if api_key and auth != f"Bearer {api_key}":
+            return JSONResponse(status_code=403, content={"error": "Unauthorized"})
+    return await call_next(request)
+
 
 # Mount Google OAuth plugin routes
 app.include_router(google_oauth_router)
@@ -836,18 +1275,26 @@ async def get_agent_output(agent_id: str):
     if not output_dir.exists():
         return {"outputs": [], "count": 0}
     outputs = []
-    for f in sorted(output_dir.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True):
+    for f in sorted(output_dir.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True)[:10]:
         try:
             data = json.loads(f.read_text())
             outputs.append(data)
         except Exception:
-            pass
+            continue
     return {"outputs": outputs[:10], "count": len(outputs)}
 
 
 @app.get("/")
 async def root_ping():
-    """Root endpoint — returns OK so external cron jobs don't get 404."""
+    """Root endpoint — serves the frontend dashboard or returns OK for health checks."""
+    # If dashboard is mounted, let the static file handler serve it
+    # Otherwise return JSON for API-only mode
+    if _dashboard_dir:
+        # Serve index.html for SPA routing
+        index_path = _dashboard_dir / "index.html"
+        if index_path.exists():
+            from fastapi.responses import HTMLResponse
+            return HTMLResponse(content=index_path.read_text(encoding="utf-8"))
     return {"status": "ok", "service": "zed-pro-backend", "ts": time.time()}
 
 
@@ -998,9 +1445,21 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
     Always runs through the full AIAgent loop with tools, memory, skills,
     context files, and retry — same as Hermes. Falls back to direct proxy
     only if AIAgent initialization fails.
+    
+    Uses load balancer for rate limiting to prevent 429 errors.
     """
     if not request.messages:
         raise HTTPException(status_code=400, detail="No messages provided")
+
+    # ── Rate limiting via load balancer ─────────────────────────────────────
+    try:
+        provider, wait_time = await rate_limit_acquire(1)
+        if wait_time > 0:
+            logger.info("Rate limited, waiting %.1fs for provider %s", wait_time, provider.name)
+            await asyncio.sleep(wait_time)
+    except Exception as e:
+        logger.warning("Load balancer error: %s", e)
+        # Continue without rate limiting if load balancer fails
 
     # ── Always use AIAgent (unified path like Hermes) ────────────────────────
     session_id = raw_request.headers.get("x-zed-session-id") or raw_request.headers.get("x-session-id")
@@ -1174,6 +1633,11 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                         yield f"data: {json.dumps(chunk)}\n\n"
                     elif event_type == "done":
                         _agent_status[session_id] = {"status": "completed", "result": val, "finished_at": time.time()}
+                        # Cleanup old entries (keep last 100)
+                        if len(_agent_status) > 100:
+                            oldest = sorted(_agent_status.items(), key=lambda x: x[1].get("finished_at", 0))[:50]
+                            for k, _ in oldest:
+                                _agent_status.pop(k, None)
                         chunk = {
                             "id": f"chatcmpl-{session_id}",
                             "object": "chat.completion.chunk",
@@ -1377,22 +1841,63 @@ async def reset_session():
 # ── Skills ────────────────────────────────────────────────────────────────────
 @app.get("/api/skills")
 async def list_skills():
-    """List all available skills from all skill directories."""
+    """List all available skills from all skill directories.
+    
+    Supports both SKILL.md (Hermes standard) and DESCRIPTION.md formats.
+    """
     skill_dirs = [
-        ZED_HOME / "skills",
-        _AGENT_DIR / "skills",
-        _AGENT_DIR / "optional-skills",
+        ZED_HOME / "skills",           # ~/.hermes/skills/
+        _AGENT_DIR / "skills",         # backend/skills/
+        _AGENT_DIR / "optional-skills", # backend/optional-skills/
     ]
     skills = []
+    seen = set()  # Avoid duplicates
+    
     for skill_dir in skill_dirs:
-        if skill_dir.exists():
-            for f in skill_dir.iterdir():
-                if f.is_dir() and (f / "SKILL.md").exists():
-                    skills.append({
-                        "name": f.name,
-                        "path": str(f),
-                        "source": skill_dir.name,
-                    })
+        if not skill_dir.exists():
+            continue
+        for f in skill_dir.iterdir():
+            if not f.is_dir() or f.name in seen:
+                continue
+            
+            # Check for SKILL.md (Hermes standard) or DESCRIPTION.md
+            skill_md = f / "SKILL.md"
+            desc_md = f / "DESCRIPTION.md"
+            
+            if skill_md.exists() or desc_md.exists():
+                # Parse metadata from frontmatter if available
+                description = ""
+                metadata_file = skill_md if skill_md.exists() else desc_md
+                try:
+                    content = metadata_file.read_text(encoding="utf-8")[:2000]
+                    # Extract description from frontmatter or first paragraph
+                    if content.startswith("---"):
+                        # YAML frontmatter
+                        parts = content.split("---")
+                        if len(parts) >= 2:
+                            for line in parts[1].split("\n"):
+                                if line.strip().startswith("description:"):
+                                    description = line.split(":", 1)[1].strip().strip('"').strip("'")
+                                    break
+                    if not description:
+                        # Use first non-empty line
+                        for line in content.split("\n"):
+                            if line.strip() and not line.startswith("#") and not line.startswith("---"):
+                                description = line.strip()[:100]
+                                break
+                except Exception:
+                    pass
+                
+                skills.append({
+                    "name": f.name,
+                    "path": str(f),
+                    "source": skill_dir.name,
+                    "description": description,
+                    "has_skill_md": skill_md.exists(),
+                    "has_desc_md": desc_md.exists(),
+                })
+                seen.add(f.name)
+    
     return {"skills": skills, "count": len(skills)}
 
 
@@ -2469,6 +2974,20 @@ async def rate_limit_status():
         return {"status": "not_initialized"}
 
 
+@app.get("/api/load-balancer")
+async def load_balancer_status():
+    """Check load balancer status and metrics."""
+    return get_load_balancer_status()
+
+
+@app.post("/api/load-balancer/health-check")
+async def trigger_health_check():
+    """Trigger health check on all LLM providers."""
+    lb = get_load_balancer()
+    await lb.health_check_all()
+    return {"status": "completed", "providers": lb.get_status()["providers"]}
+
+
 @app.get("/healthz")
 async def healthz():
     """Lightweight health check — always 200 if process is alive."""
@@ -2931,14 +3450,263 @@ async def system_stats():
     return stats
 
 
+# ── Phase 2: Auth & Credentials endpoints ──────────────────────────────────
+
+@app.get("/api/plugins/status")
+async def plugins_status():
+    """Get real plugin connection status from connections.db."""
+    import sqlite3
+    from datetime import datetime
+    
+    connections_db = ZED_HOME / "connections.db"
+    if not connections_db.exists():
+        return {"connections": [], "message": "No connections database found"}
+    
+    try:
+        conn = sqlite3.connect(str(connections_db))
+        cursor = conn.cursor()
+        
+        # Get all connections
+        cursor.execute("""
+            SELECT provider, email, name, expires_at, scopes, updated_at
+            FROM connections
+            ORDER BY updated_at DESC
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        
+        connections = []
+        now = time.time()
+        
+        for row in rows:
+            provider, email, name, expires_at, scopes, updated_at = row
+            
+            # Check if token is expired
+            if expires_at and expires_at < now:
+                status = "expired"
+            elif expires_at and expires_at > now:
+                status = "connected"
+            else:
+                status = "connected"  # No expiry = assume valid
+            
+            connections.append({
+                "provider": provider,
+                "email": email,
+                "name": name,
+                "status": status,
+                "expires_at": expires_at,
+                "scopes": scopes.split() if scopes else [],
+                "updated_at": updated_at,
+            })
+        
+        return {"connections": connections}
+    except Exception as e:
+        logger.warning("Failed to read connections.db: %s", e)
+        return {"connections": [], "error": str(e)}
+
+
+@app.get("/api/credentials/status")
+async def credentials_status():
+    """Get masked credential status (booleans only, never raw keys)."""
+    import json
+    
+    status = {}
+    
+    # Check .env for API keys (masked)
+    env_path = ZED_HOME / ".env"
+    if env_path.exists():
+        try:
+            content = env_path.read_text()
+            key_patterns = [
+                "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY",
+                "GROQ_API_KEY", "MISTRAL_API_KEY", "COHERE_API_KEY",
+                "TOGETHER_API_KEY", "FIREWORKS_API_KEY", "DEEPSEEK_API_KEY",
+                "OPENROUTER_API_KEY", "TELEGRAM_BOT_TOKEN", "COPILOT_GITHUB_TOKEN",
+            ]
+            for key in key_patterns:
+                if key in content:
+                    # Check if it has a real value (not placeholder)
+                    for line in content.split("\n"):
+                        if line.startswith(key + "="):
+                            value = line.split("=", 1)[1].strip()
+                            status[key.lower()] = bool(value and len(value) > 10 and not value.startswith("your-"))
+                            break
+                else:
+                    status[key.lower()] = False
+        except Exception:
+            pass
+    
+    # Check auth.json for provider credentials
+    auth_path = ZED_HOME / "auth.json"
+    if auth_path.exists():
+        try:
+            auth = json.loads(auth_path.read_text())
+            providers = auth.get("providers", {})
+            for provider_name, provider_data in providers.items():
+                if isinstance(provider_data, dict):
+                    has_token = bool(provider_data.get("access_token"))
+                    status[f"auth_{provider_name}"] = has_token
+        except Exception:
+            pass
+    
+    return status
+
+
+@app.get("/api/soul")
+async def get_soul():
+    """Get the current SOUL.md content."""
+    soul_path = ZED_HOME / "SOUL.md"
+    if soul_path.exists():
+        content = soul_path.read_text(encoding="utf-8")
+        return {"content": content, "path": str(soul_path)}
+    return {"content": "", "path": str(soul_path), "message": "SOUL.md not found"}
+
+
+@app.put("/api/soul")
+async def update_soul(request: Request):
+    """Update SOUL.md content."""
+    body = await request.json()
+    content = body.get("content", "")
+    
+    soul_path = ZED_HOME / "SOUL.md"
+    try:
+        soul_path.write_text(content, encoding="utf-8")
+        logger.info("Updated SOUL.md: %d chars", len(content))
+        return {"success": True, "path": str(soul_path)}
+    except Exception as e:
+        logger.warning("Failed to update SOUL.md: %s", e)
+        raise HTTPException(status_code=500, detail=f"Failed to update SOUL.md: {e}")
+
+
+# ── KasmVNC Proxy (single-port: /kasm/* → localhost:6901) ──────────────────
+# Routes KasmVNC traffic through backend so everything runs on port 8642
+KASMVNC_URL = os.getenv("KASMVNC_URL", "http://127.0.0.1:6901")
+
+
+@app.websocket("/kasm/websockify")
+async def proxy_kasmvnc_websocket(websocket):
+    """Proxy WebSocket connections to KasmVNC websockify."""
+    import asyncio
+    import websockets
+    
+    try:
+        # Accept the incoming WebSocket connection
+        await websocket.accept()
+        
+        # Connect to KasmVNC WebSocket
+        ws_url = "ws://127.0.0.1:6901/websockify"
+        async with websockets.connect(ws_url) as target_ws:
+            # Bidirectional message forwarding
+            async def forward_to_target():
+                try:
+                    while True:
+                        data = await websocket.receive_bytes()
+                        await target_ws.send(data)
+                except Exception:
+                    pass
+            
+            async def forward_to_client():
+                try:
+                    while True:
+                        data = await target_ws.recv()
+                        if isinstance(data, str):
+                            await websocket.send_text(data)
+                        else:
+                            await websocket.send_bytes(data)
+                except Exception:
+                    pass
+            
+            # Run both forwards concurrently
+            await asyncio.gather(
+                forward_to_target(),
+                forward_to_client(),
+                return_exceptions=True
+            )
+    except Exception as e:
+        logger.warning("WebSocket proxy error: %s", e)
+        try:
+            await websocket.close(code=1011, reason=str(e))
+        except:
+            pass
+
+
+@app.api_route("/kasm/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy_kasmvnc(path: str, request: Request):
+    """Proxy HTTP requests to KasmVNC noVNC server."""
+    import httpx
+    
+    # Build target URL
+    target_url = f"{KASMVNC_URL}/{path}"
+    if request.url.query:
+        target_url += f"?{request.url.query}"
+    
+    # Forward headers (except host)
+    headers = {k: v for k, v in request.headers.items() if k.lower() != "host"}
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            if request.method == "GET":
+                resp = await client.get(target_url, headers=headers, timeout=10)
+            elif request.method == "POST":
+                body = await request.body()
+                resp = await client.post(target_url, headers=headers, content=body, timeout=10)
+            elif request.method == "PUT":
+                body = await request.body()
+                resp = await client.put(target_url, headers=headers, content=body, timeout=10)
+            elif request.method == "DELETE":
+                resp = await client.delete(target_url, headers=headers, timeout=10)
+            else:
+                return Response(status_code=405)
+            
+            # Return response with same status and headers
+            return Response(
+                content=resp.content,
+                status_code=resp.status_code,
+                headers=dict(resp.headers),
+            )
+        except httpx.ConnectError:
+            return Response(
+                content=f"KasmVNC not reachable at {KASMVNC_URL}".encode(),
+                status_code=502,
+            )
+        except Exception as e:
+            return Response(
+                content=f"Proxy error: {str(e)}".encode(),
+                status_code=500,
+            )
+
+
 # ── Serve Dashboard static files (after all API routes) ───────────────────
+# Single-port architecture: backend serves frontend from dist/ directory
+# This eliminates the need for Vite proxy - everything runs on port 8642
 from fastapi.staticfiles import StaticFiles
-_DASHBOARD_DIR = Path(__file__).resolve().parent.parent  # Dashboard/
-if _DASHBOARD_DIR.joinpath("index.html").exists():
-    app.mount("/", StaticFiles(directory=str(_DASHBOARD_DIR), html=True), name="dashboard")
-    logger.info("Dashboard frontend mounted from %s", _DASHBOARD_DIR)
+
+# Try multiple locations for the frontend dist
+_frontend_locations = [
+    Path(__file__).resolve().parent.parent / "frontend" / "dist",  # AVDE/frontend/dist/
+    Path(__file__).resolve().parent.parent / "dist",               # AVDE/dist/
+    Path(__file__).resolve().parent.parent / "frontend",           # AVDE/frontend/ (dev mode)
+    Path(__file__).resolve().parent.parent,                        # AVDE/ (fallback)
+]
+
+_dashboard_dir = None
+for loc in _frontend_locations:
+    if loc.joinpath("index.html").exists():
+        _dashboard_dir = loc
+        break
+
+if _dashboard_dir:
+    # Mount static assets (CSS, JS, images)
+    assets_dir = _dashboard_dir / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+        logger.info("Static assets mounted from %s", assets_dir)
+    
+    # Mount the SPA (index.html + client-side routing)
+    app.mount("/", StaticFiles(directory=str(_dashboard_dir), html=True), name="dashboard")
+    logger.info("Dashboard frontend mounted from %s (single-port mode on port %d)", _dashboard_dir, PORT)
 else:
-    logger.warning("Dashboard frontend not found at %s", _DASHBOARD_DIR)
+    logger.warning("Dashboard frontend not found - API-only mode on port %d", PORT)
 
 
 # ── Entry point ────────────────────────────────────────────────────────────────
