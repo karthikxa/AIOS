@@ -2607,7 +2607,8 @@ async def run_cron_now(job_id: str):
                 headers={"Authorization": f"Bearer {llm_api_key}", "Content-Type": "application/json"},
                 timeout=120.0,
             )
-            result = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "No response") if resp.status_code == 200 else f"Error {resp.status_code}: {resp.text[:200]}"
+            choices = resp.json().get("choices", []) if resp.status_code == 200 else []
+            result = choices[0]["message"]["content"] if choices else f"Error {resp.status_code}: {resp.text[:200]}"
             status = "success" if resp.status_code == 200 else "error"
         except Exception as e:
             result = f"Execution failed: {e}"
@@ -2793,8 +2794,6 @@ async def run_agent_now(agent_id: str):
                 status = "success"
 
             logger.info("Agent %s completed: %s", agent_id, result[:200] if result else "empty")
-            
-            logger.info("Agent %s completed with %d tool rounds", agent_id, tool_round + 1)
 
             # Save result (success or error — always write so /api/agent_output shows something)
             (output_dir / f"{run_id}.json").write_text(json.dumps({
@@ -3626,7 +3625,7 @@ async def proxy_kasmvnc_websocket(websocket):
         logger.warning("WebSocket proxy error: %s", e)
         try:
             await websocket.close(code=1011, reason=str(e))
-        except:
+        except Exception:
             pass
 
 

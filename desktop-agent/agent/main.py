@@ -51,65 +51,21 @@ DESKTOP_HEIGHT = 2160
 
 
 async def init_desktop():
-    """Launch a SEPARATE Chromium window as a virtual desktop."""
+    """Launch headless Chromium as a virtual desktop."""
     global _playwright, _browser, _context, _page
-    _playwright = await async_playwright().start()
-    _browser = await _playwright.chromium.launch(
-        headless=False,  # Visible window — separate from user's screen
-        args=[
-            f"--window-size={DESKTOP_WIDTH},{DESKTOP_HEIGHT}",
-            "--start-maximized",
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-        ]
-    )
-    _context = await _browser.new_context(
-        viewport={"width": DESKTOP_WIDTH, "height": DESKTOP_HEIGHT},
-    )
-    _page = await _context.new_page()
-    # Open a desktop-like page with app shortcuts
-    await _page.set_content("""<!DOCTYPE html>
-<html><head><style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-       height:100vh; display:flex; flex-direction:column; font-family:'Segoe UI',sans-serif; color:#fff; }
-.taskbar { height:48px; background:rgba(0,0,0,0.7); backdrop-filter:blur(20px);
-           display:flex; align-items:center; padding:0 16px; gap:12px; border-top:1px solid rgba(255,255,255,0.1); }
-.taskbar .start-btn { background:#0078d4; border:none; color:#fff; padding:6px 16px;
-                       border-radius:4px; cursor:pointer; font-weight:600; font-size:13px; }
-.desktop { flex:1; display:flex; flex-wrap:wrap; padding:24px; gap:16px; align-content:flex-start; }
-.app-shortcut { width:90px; text-align:center; cursor:pointer; padding:8px; border-radius:8px; }
-.app-shortcut:hover { background:rgba(255,255,255,0.1); }
-.app-shortcut .icon { width:48px; height:48px; border-radius:12px; margin:0 auto 6px;
-                       display:flex; align-items:center; justify-content:center; font-size:24px; }
-.app-shortcut .name { font-size:11px; color:rgba(255,255,255,0.85); }
-.browser-icon { background:linear-gradient(135deg,#4285f4,#34a853); }
-.terminal-icon { background:#1a1a1a; border:1px solid #333; }
-.files-icon { background:#f5ba42; }
-.code-icon { background:#007acc; }
-.settings-icon { background:#444; }
-</style></head><body>
-<div class="desktop">
-  <div class="app-shortcut" onclick="navigate('chrome')"><div class="icon browser-icon">🌐</div><div class="name">Browser</div></div>
-  <div class="app-shortcut" onclick="navigate('terminal')"><div class="icon terminal-icon">⌨️</div><div class="name">Terminal</div></div>
-  <div class="app-shortcut" onclick="navigate('files')"><div class="icon files-icon">📁</div><div class="name">Files</div></div>
-  <div class="app-shortcut" onclick="navigate('code')"><div class="icon code-icon">📝</div><div class="name">Code Editor</div></div>
-  <div class="app-shortcut" onclick="navigate('settings')"><div class="icon settings-icon">⚙️</div><div class="name">Settings</div></div>
-</div>
-<div class="taskbar">
-  <button class="start-btn">⊞ Start</button>
-  <span style="color:#aaa; font-size:12px;">Desktop Agent — 4K Virtual Desktop</span>
-  <span style="margin-left:auto; color:#aaa; font-size:12px;" id="clock"></span>
-</div>
-<script>
-function navigate(app) {
-  const urls = { chrome:'https://google.com', terminal:'about:blank', files:'about:blank', code:'about:blank', settings:'about:blank' };
-  window.location.href = urls[app] || 'about:blank';
-}
-setInterval(()=>{ document.getElementById('clock').textContent=new Date().toLocaleTimeString(); }, 1000);
-</script>
-</body></html>""")
-    print(f"[Desktop Agent] Virtual desktop ready — {DESKTOP_WIDTH}x{DESKTOP_HEIGHT}")
+    try:
+        _playwright = await async_playwright().start()
+        _browser = await _playwright.chromium.launch(
+            headless=True,
+            args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"]
+        )
+        _context = await _browser.new_context(viewport={"width": 1920, "height": 1080})
+        _page = await _context.new_page()
+        await _page.goto("https://example.com")
+        print(f"[Desktop Agent] Browser ready — 1920x1080")
+    except Exception as e:
+        print(f"[Desktop Agent] Init failed: {e}")
+        raise  # Fail startup so it's not silently bricked
 
 
 async def close_desktop():
@@ -128,9 +84,22 @@ async def close_desktop():
 
 
 def get_page() -> Page:
-    if _page is None:
-        raise RuntimeError("Desktop not initialized")
+    if _page is None or _page.is_closed():
+        raise RuntimeError("Browser not initialized or closed")
     return _page
+
+
+async def ensure_browser():
+    """Recreate browser if it crashed."""
+    global _playwright, _browser, _context, _page
+    if _page and not _page.is_closed():
+        return
+    print("[Desktop Agent] Browser crashed — restarting...")
+    try:
+        await close_desktop()
+    except Exception:
+        pass
+    await init_desktop()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -278,8 +247,9 @@ async def execute_action(action: dict) -> str:
             idx = int(action.get("index", 0))
             pages = _context.pages
             if 0 <= idx < len(pages):
-                tab_page = pages[idx]
-                return f"Switched to tab {idx}: {await tab_page.title()}"
+                global _page
+                _page = pages[idx]
+                return f"Switched to tab {idx}: {await _page.title()}"
             return f"Tab {idx} not found"
 
         # ── Shell / code ─────────────────────────────────────────────
