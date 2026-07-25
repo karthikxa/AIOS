@@ -4,6 +4,25 @@ export function initSidebar() {
   const mobileHamburger = document.getElementById('mobileHamburger');
   const navItems = document.querySelectorAll('.nav-item');
 
+  // Desktop sidebar toggle button click handler
+  const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+  if (sidebarToggleBtn && sidebar) {
+    sidebarToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sidebar.classList.toggle('collapsed');
+    });
+  }
+
+  // Keyboard shortcut Ctrl+\ to toggle sidebar
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === '\\') {
+      e.preventDefault();
+      if (sidebar) {
+        sidebar.classList.toggle('collapsed');
+      }
+    }
+  });
+
   // Toggle sidebar on mobile/tablet hamburger click
   if (mobileHamburger && sidebar) {
     mobileHamburger.addEventListener('click', (e) => {

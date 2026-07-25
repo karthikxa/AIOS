@@ -2344,9 +2344,40 @@ input:checked + .toggle-slider:before {
 }
 
 /* Sidebar Toggle states */
-.sidebar.collapsed {
-  transform: translateX(-100%);
-  position: absolute;
+aside.sidebar.collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  border-right: 0px solid transparent !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #4B5563;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #111827;
+}
+
+.sidebar-toggle-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* Toggle Active State Trigger Button for Demonstration */
