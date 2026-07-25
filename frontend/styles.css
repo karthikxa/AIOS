@@ -2358,17 +2358,19 @@ aside.sidebar.hidden-sidebar {
 aside.sidebar.collapsed {
   width: 68px !important;
   min-width: 68px !important;
-  padding: var(--space-sm) 12px !important;
+  padding: 10px 8px !important;
   align-items: center;
 }
 
 aside.sidebar.collapsed nav.sidebar-nav {
   align-items: center !important;
   width: 100% !important;
+  gap: 4px !important;
 }
 
 /* Hide text and elements when collapsed */
-aside.sidebar.collapsed nav.sidebar-nav > div > span, /* Brand text "zed" */
+aside.sidebar.collapsed .sidebar-logo span, /* Brand text "zed" */
+aside.sidebar.collapsed .sidebar-toggle-btn, /* Toggle button */
 aside.sidebar.collapsed .nav-item span, /* Nav item labels */
 aside.sidebar.collapsed .tasks-section, /* Hide chats/tasks list completely when collapsed */
 aside.sidebar.collapsed .user-info, /* User name */
@@ -2379,7 +2381,7 @@ aside.sidebar.collapsed .user-actions /* User action icons */ {
 /* Adjust User Profile Footer when collapsed */
 aside.sidebar.collapsed .sidebar-footer {
   width: 100% !important;
-  padding: 16px 0 0 0 !important;
+  padding: 12px 0 0 0 !important;
   border-top: 1px solid var(--border-sidebar) !important;
   display: flex !important;
   justify-content: center !important;
@@ -2393,25 +2395,31 @@ aside.sidebar.collapsed .user-profile {
 /* Center icons in nav-item when collapsed */
 aside.sidebar.collapsed .nav-item {
   justify-content: center !important;
-  padding: 10px 0 !important;
+  padding: 0 !important;
   width: 44px;
   height: 44px;
   border-radius: 8px;
-  margin: 4px auto !important;
+  margin: 0 auto !important;
+  gap: 0 !important;
 }
 
-/* Center logo and toggle button in header when collapsed */
-aside.sidebar.collapsed nav.sidebar-nav > div:first-child {
+aside.sidebar.collapsed .nav-item svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+/* Header when collapsed: just the Z logo centered, no toggle button */
+aside.sidebar.collapsed .sidebar-header {
   flex-direction: column !important;
-  gap: 16px !important;
+  gap: 0 !important;
   align-items: center !important;
   width: 100% !important;
-  padding: 12px 0 16px !important;
+  padding: 4px 0 8px !important;
 }
 
-aside.sidebar.collapsed #sidebarCloseBtn {
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+aside.sidebar.collapsed #sidebarCloseBtn,
+aside.sidebar.collapsed .sidebar-toggle-btn {
+  display: none !important;
 }
 
 .sidebar-toggle-btn {
@@ -2440,30 +2448,11 @@ aside.sidebar.collapsed #sidebarCloseBtn {
   height: 20px;
 }
 
-/* Sidebar expand button - visible when sidebar collapsed, hidden when expanded */
-.sidebar-expand-btn {
-  position: fixed;
-  top: 14px;
-  left: 14px;
-  z-index: 999;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px solid #E5E7EB;
-  background: #FFFFFF;
-  color: #6B7280;
+/* Sidebar logo click cursor when collapsed */
+aside.sidebar.collapsed .sidebar-logo {
   cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
-.sidebar-expand-btn:hover {
-  background: #F9FAFB;
-  color: #111827;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
+
 /* Toggle Active State Trigger Button for Demonstration */
 .demo-state-toggle {
   position: absolute;
