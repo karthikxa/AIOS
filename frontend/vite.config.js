@@ -1,14 +1,14 @@
 /**
  * vite.config.js
  *
- * Dashboard dev server — permanently wired to Zed Pro (freellmapi).
+ * Dashboard dev server — everything LOCAL except LLM proxy (Render).
  *
- * /v1/* → http://127.0.0.1:3002  (freellmapi local port, no auth required)
- * /api/* → http://127.0.0.1:3000 (deploy server, production only)
- *
- * Port 3002 is freellmapi's loopback-only port. It has no API-key auth
- * because only local processes can reach 127.0.0.1 — OS-level security.
- * No keys, no config, no restarts needed. Permanently connected.
+ * /v1/* → http://127.0.0.1:8642  (local backend — AIAgent with tools, memory, skills)
+ * /api/* → http://127.0.0.1:8642  (local backend)
+ * /oauth/* → http://127.0.0.1:8642 (local backend — Google OAuth)
+ * /agent/* → http://127.0.0.1:8765 (local desktop agent)
+ * /kasm/* → http://127.0.0.1:6901  (KasmVNC noVNC)
+ * LLM proxy stays on Render: server-llm-1-0r64.onrender.com
  */
 
 import react from '@vitejs/plugin-react';
@@ -24,25 +24,22 @@ export default {
     },
   },
   server: {
-    port: 8000,
+    port: 8001,
     proxy: {
-      // Route /v1 to backend (which always uses AIAgent with tools, memory, skills)
+      // Route /v1 to local backend (AIAgent with tools, memory, skills)
       '/v1': {
-        target: 'https://backend-server-6ghr.onrender.com',
+        target: 'http://127.0.0.1:8642',
         changeOrigin: true,
-        secure: true,
       },
-      // Route /api to backend
+      // Route /api to local backend
       '/api': {
-        target: 'https://backend-server-6ghr.onrender.com',
+        target: 'http://127.0.0.1:8642',
         changeOrigin: true,
-        secure: true,
       },
-      // Route /oauth to backend
+      // Route /oauth to local backend
       '/oauth': {
-        target: 'https://backend-server-6ghr.onrender.com',
+        target: 'http://127.0.0.1:8642',
         changeOrigin: true,
-        secure: true,
       },
       // Route /agent to local Desktop Agent (Computer mode)
       '/agent': {
@@ -69,16 +66,9 @@ export default {
         ws: true,
         rewrite: (path) => path.replace(/^\/sandbox/, '') || '/',
       },
-      // Direct VNC WebSocket proxy for live streaming
-      '/vncws': {
-        target: 'http://127.0.0.1:8080',
-        changeOrigin: true,
-        ws: true,
-        rewrite: (path) => '/websockify',
-      },
     },
     headers: {
-      'Content-Security-Policy': "default-src 'self' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com blob:; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: http://localhost:* http://127.0.0.1:* https://localhost:* https://*.hf.space; media-src 'self' blob: https://*.hf.space; connect-src 'self' http://localhost:* http://127.0.0.1:* https://localhost:* ws://localhost:* wss://localhost:* wss://*.localhost:* https://cdn.jsdelivr.net https://accounts.google.com https://oauth2.googleapis.com https://*.hf.space; frame-src 'self' blob: https://localhost:* http://localhost:* https://*.hf.space; form-action 'self' https://accounts.google.com;",
+      'Content-Security-Policy': "default-src 'self' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com blob:; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: http://localhost:* http://127.0.0.1:* https://localhost:* https://*.hf.space; media-src 'self' blob: https://*.hf.space; connect-src 'self' http://localhost:* http://127.0.0.1:* https://localhost:* ws://localhost:* wss://localhost:* wss://*.localhost:* https://cdn.jsdelivr.net https://accounts.google.com https://oauth2.googleapis.com https://*.hf.space https://*.onrender.com; frame-src 'self' blob: https://localhost:* http://localhost:* https://*.hf.space https://*.onrender.com; form-action 'self' https://accounts.google.com;",
     },
   },
 };

@@ -431,6 +431,83 @@ TOOLSETS = {
         "includes": []
     },
 
+    # ══════════════════════════════════════════════════════════════════════════
+    # NEW TOOLSETS — Comprehensive wiring for ALL 94 tools
+    # ══════════════════════════════════════════════════════════════════════════
+
+    # Security tools — Chat + Agents + Computer + Schedules
+    "security": {
+        "description": "Security scanning, approval, and safety tools",
+        "tools": [
+            "approval", "write_approval", "url_safety", "website_policy",
+            "threat_patterns", "tirith_security", "path_security",
+        ],
+        "includes": []
+    },
+
+    # Skill management tools — Chat + Plugins + Agents
+    "skill_management": {
+        "description": "Skill lifecycle, security, and hub integration tools",
+        "tools": [
+            "skill_manager", "skill_provenance", "skill_usage",
+            "skills_ast_audit", "skills_guard", "skills_hub", "skills_sync",
+        ],
+        "includes": []
+    },
+
+    # Blueprints — Chat + Agents + Computer + Schedules
+    "blueprints": {
+        "description": "Shareable plain-language automations layered on skills + cron",
+        "tools": ["blueprints"],
+        "includes": []
+    },
+
+    # MCP tools — Chat + Plugins + Agents + Computer
+    "mcp": {
+        "description": "MCP server integration and OAuth management",
+        "tools": ["mcp_tool", "mcp_oauth", "mcp_oauth_manager", "mcp_stdio_watchdog"],
+        "includes": []
+    },
+
+    # Feishu/Lark tools — Chat + Plugins + Agents
+    "feishu_doc": {
+        "description": "Read Feishu/Lark document content",
+        "tools": ["feishu_doc_read"],
+        "includes": []
+    },
+
+    "feishu_drive": {
+        "description": "Feishu/Lark document comment operations",
+        "tools": [
+            "feishu_drive_list_comments", "feishu_drive_list_comment_replies",
+            "feishu_drive_reply_comment", "feishu_drive_add_comment",
+        ],
+        "includes": []
+    },
+
+    # Yuanbao tools — Chat + Plugins + Agents
+    "yuanbao": {
+        "description": "Yuanbao platform tools - group info, member queries, DM, stickers",
+        "tools": [
+            "yb_query_group_info", "yb_query_group_members",
+            "yb_send_dm", "yb_search_sticker", "yb_send_sticker",
+        ],
+        "includes": []
+    },
+
+    # Project tools — Chat + Agents
+    "project": {
+        "description": "Desktop Projects — create/switch named workspaces",
+        "tools": ["project_list", "project_create", "project_switch"],
+        "includes": []
+    },
+
+    # Computer use tools — Agents + Computer
+    "computer_use": {
+        "description": "Background desktop control via cua-driver",
+        "tools": ["computer_use"],
+        "includes": []
+    },
 
     # Scenario-specific toolsets
     
