@@ -1252,6 +1252,10 @@ const starIndicator = `
   async function triggerSwarmVisualization(promptText, bubbleElement, model) {
     if (!bubbleElement) return;
 
+    // Remove typing indicator when swarm visualizer starts
+    const indicators = bubbleElement.querySelectorAll('.typing-indicator');
+    indicators.forEach(el => el.remove());
+
     // Reset Viewed Agent Index
     viewedAgentIdx = 0;
 
@@ -3679,12 +3683,6 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       if (active) { active.messages.push({ role: 'user', content: modeAdjustedMsg }); tasksStore.notify(); }
     }
 
-    // Show typing indicator
-    appendMessage('assistant', '<div class="typing-placeholder"></div>');
-    let msgDiv = chatMessagesLog.lastElementChild;
-    let bubble = msgDiv.querySelector('.chat-message-bubble');
-    bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
-
     abortController = new AbortController();
     showStopButton(true);
     window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Planning' } }));
@@ -4270,6 +4268,12 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       let fullContent = '';
       let streamedToolCalls = [];
 
+      const removeTypingIndicator = (b) => {
+        if (!b) return;
+        const indicators = b.querySelectorAll('.typing-indicator');
+        indicators.forEach(el => el.remove());
+      };
+
       const showTypingIndicator = (b) => {
         if (!b) return;
         let textContainer = b.querySelector('.cot-response-text-container');
@@ -4278,10 +4282,11 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         if (!indicator && !fullContent && !cotSection) {
           indicator = document.createElement('div');
           indicator.className = 'typing-indicator';
-          indicator.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 4px 0; color: #6B7280; font-size: 13.5px; font-family: "Inter", sans-serif;';
+          indicator.style.cssText = 'display: flex; align-items: center; gap: 4px; padding: 6px 0; margin: 2px 0; white-space: nowrap;';
           indicator.innerHTML = `
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; flex-shrink: 0;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-            <span style="font-weight: 450; color: #374151;">Thinking...</span>
+            <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #9CA3AF; display: inline-block; animation: pulse 1.4s infinite ease-in-out both; animation-delay: -0.32s;"></span>
+            <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #9CA3AF; display: inline-block; animation: pulse 1.4s infinite ease-in-out both; animation-delay: -0.16s;"></span>
+            <span style="width: 6px; height: 6px; border-radius: 50%; background-color: #9CA3AF; display: inline-block; animation: pulse 1.4s infinite ease-in-out both;"></span>
           `;
           textContainer.appendChild(indicator);
         }
@@ -4329,6 +4334,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         renderPending = false;
         lastRenderTime = Date.now();
         if (bubble) {
+          removeTypingIndicator(bubble);
           let textContainer = bubble.querySelector('.cot-response-text-container');
           if (!textContainer) {
             textContainer = document.createElement('div');
@@ -4409,6 +4415,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         
         // Ensure we have a bubble
         ensureAssistantBubble();
+        removeTypingIndicator(bubble);
 
         // SWARM PROMPT KEYWORD TRIGGER
         if (isPromptSwarmTrigger && !swarmVisualized) {
