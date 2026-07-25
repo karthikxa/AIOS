@@ -420,7 +420,7 @@ async def run_agent(task: str):
         for tc in tcs:
             fn = tc.get("function", {}); name = fn.get("name", "")
             try: args = json.loads(fn.get("arguments", "{}"))
-            except: args = {}
+            except Exception: args = {}
             await broadcast({"type": "action", "text": f"Executing: {name}", "action": name})
             t0 = time.time()
             result = await execute_action({"action": name, **args})
@@ -491,7 +491,7 @@ async def mjpeg():
                 yield f"--{bnd}\r\nContent-Type: image/jpeg\r\nContent-Length: {len(png)}\r\n\r\n".encode() + png + b"\r\n"
                 await asyncio.sleep(0.2)
             except asyncio.CancelledError: raise
-            except: await asyncio.sleep(0.5)
+            except Exception: await asyncio.sleep(0.5)
     return StreamingResponse(gen(), media_type="multipart/x-mixed-replace; boundary=frame",
                              headers={"Cache-Control": "no-store"})
 
