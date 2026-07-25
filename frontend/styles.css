@@ -2417,7 +2417,6 @@ aside.sidebar.collapsed .sidebar-header {
   padding: 4px 0 8px !important;
 }
 
-aside.sidebar.collapsed #sidebarCloseBtn,
 aside.sidebar.collapsed .sidebar-toggle-btn {
   display: none !important;
 }
@@ -2429,17 +2428,17 @@ aside.sidebar.collapsed .sidebar-toggle-btn {
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: #4B5563;
+  border: 1px solid #E5E7EB;
+  background: #F3F4F6;
+  color: #6B7280;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-right: 8px;
+  margin-right: 0;
   flex-shrink: 0;
 }
 
 .sidebar-toggle-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: #E5E7EB;
   color: #111827;
 }
 
