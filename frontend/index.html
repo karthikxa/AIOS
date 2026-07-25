@@ -417,13 +417,12 @@
 
       <!-- Row 3: Viewport (desktop/browser live view) — fixed size, never shrinks -->
       <div class="split-pane-viewport" id="splitPaneViewport" style="flex: 1 1 0%; min-height: 0; height: 0; position: relative; background: #000; overflow: hidden;">
-        <iframe
+        <img
           id="desktopFrame"
-          style="width: 100%; height: 100%; border: none; display: block; background: #000;"
-          src="https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=1000&resize=scale&quality=6&path=websockify&bell=false&show_dot=false"
-          allow="clipboard-read; clipboard-write; fullscreen"
-          referrerpolicy="no-referrer">
-        </iframe>
+          style="width: 100%; height: 100%; object-fit: contain; display: block; background: #000;"
+          src="http://localhost:4000/stream.mjpeg"
+          alt="Desktop live stream"
+        >
         <!-- Click-blocker overlay (transparent — no badge) -->
         <div id="splitPaneViewOnlyOverlay" style="position:absolute;inset:0;z-index:20;cursor:default;display:block;user-select:none;"></div>
         <!-- Connecting overlay hidden by default — VNC loads instantly from iframe src above -->
