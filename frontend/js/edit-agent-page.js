@@ -1084,7 +1084,6 @@ function runTerminalSimulation() {
     { type: 'input', text: `${prompt} echo "Agent ${state.name} ready"`, delay: 0 },
     { type: 'text', text: `Agent ${state.name} is ready for deployment.`, delay: 500 },
     { type: 'success', text: '[OK] Agent configuration loaded', delay: 1000 },
-  ];
     { type: 'success', text: '[r] No weak passwords found', delay: 2800 },
     { type: 'success', text: '[r] Firewall is active', delay: 3400 },
     { type: 'warning', text: '[!] 3 suspicious files detected', delay: 4200 },
