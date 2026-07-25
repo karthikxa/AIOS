@@ -27,11 +27,28 @@ except ImportError:
     pass
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+# ── Auth middleware — require API key on all endpoints ──────────────────
+_AGENT_API_KEY = os.environ.get("AGENT_API_KEY", "")
+
+@app.middleware("http")
+async def auth_middleware(request, call_next):
+    # Skip auth for health endpoint
+    if request.url.path == "/health":
+        return await call_next(request)
+    # If AGENT_API_KEY is set, require it
+    if _AGENT_API_KEY:
+        auth = request.headers.get("authorization", "")
+        if auth != f"Bearer {_AGENT_API_KEY}":
+            from fastapi.responses import JSONResponse
+            return JSONResponse(status_code=403, content={"error": "Unauthorized"})
+    return await call_next(request)
+
+app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:8001", "http://localhost:8000", "http://127.0.0.1:8001"], allow_methods=["*"], allow_headers=["*"])
 
 LLM_KEY = os.environ.get("LLM_API_KEY", "no-auth")
 LLM_MODEL = os.environ.get("LLM_MODEL", "auto")
-LLM_BASE = os.environ.get("LLM_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+LLM_BASE = os.environ.get("LLM_BASE_URL", "")
 clients = []
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -161,6 +178,7 @@ def reset_agent_state():
 
 async def execute_action(action: dict) -> str:
     a = action.get("action", "")
+    await ensure_browser()
     page = get_page()
     try:
         # ── Screen ────────────────────────────────────────────────────
@@ -386,17 +404,45 @@ RULES:
 4. You control a SEPARATE virtual desktop — not the user's screen"""
 
 
+# ── Circuit breaker for LLM calls ───────────────────────────────────────────
+_llm_circuit = {"failures": 0, "open_until": 0.0, "threshold": 5, "cooldown": 30}
+
+def _check_circuit():
+    if _llm_circuit["open_until"] > 0:
+        if time.time() < _llm_circuit["open_until"]:
+            raise RuntimeError(f"LLM circuit open — retry after {int(_llm_circuit['open_until'] - time.time())}s")
+        _llm_circuit["open_until"] = 0.0
+        _llm_circuit["failures"] = 0
+        logger.info("LLM circuit half-open — retrying")
+
+def _record_llm_success():
+    _llm_circuit["failures"] = 0
+    _llm_circuit["open_until"] = 0.0
+
+def _record_llm_failure():
+    _llm_circuit["failures"] += 1
+    if _llm_circuit["failures"] >= _llm_circuit["threshold"]:
+        _llm_circuit["open_until"] = time.time() + _llm_circuit["cooldown"]
+        logger.warning("LLM circuit OPEN — %d failures, cooling down %ds", _llm_circuit["failures"], _llm_circuit["cooldown"])
+
+
 async def call_llm_with_tools(messages):
+    _check_circuit()
     headers = {"Content-Type": "application/json"}
     if LLM_KEY and LLM_KEY != "no-auth":
         headers["Authorization"] = f"Bearer {LLM_KEY}"
-    async with httpx.AsyncClient(timeout=120) as c:
-        resp = await c.post(f"{LLM_BASE}/chat/completions", headers=headers,
-                           json={"model": LLM_MODEL, "messages": messages,
-                                  "tools": COMPUTER_TOOLS, "tool_choice": "auto",
-                                  "temperature": 0.1, "max_tokens": 2048})
-        resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]
+    try:
+        async with httpx.AsyncClient(timeout=30) as c:
+            resp = await c.post(f"{LLM_BASE}/chat/completions", headers=headers,
+                               json={"model": LLM_MODEL, "messages": messages,
+                                      "tools": COMPUTER_TOOLS, "tool_choice": "auto",
+                                      "temperature": 0.1, "max_tokens": 2048})
+            resp.raise_for_status()
+            _record_llm_success()
+            return resp.json()["choices"][0]["message"]
+    except Exception as e:
+        _record_llm_failure()
+        raise
 
 
 async def broadcast(msg):

@@ -843,6 +843,15 @@ async def lifespan(app: FastAPI):
     logger.info("  Upstream: %s", FREELLMAPI_URL)
     logger.info("=" * 60)
 
+    # ── Validate critical env vars — fail fast ──────────────────────────────
+    required_vars = {"ZED_HOME": str(ZED_HOME)}
+    missing = [k for k, v in required_vars.items() if not v]
+    if missing:
+        raise RuntimeError(f"Missing required environment variables: {', '.join(missing)}")
+    if not ZED_HOME.exists():
+        ZED_HOME.mkdir(parents=True, exist_ok=True)
+        logger.info("Created ZED_HOME: %s", ZED_HOME)
+
     # Clean up orphaned swarm temp dirs from crashed runs
     try:
         from tools.swarms_tool import cleanup_orphaned_workspaces
