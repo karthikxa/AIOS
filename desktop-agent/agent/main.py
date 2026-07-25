@@ -62,28 +62,60 @@ _browser: Optional[Browser] = None
 _context: Optional[BrowserContext] = None
 _page: Optional[Page] = None
 
-# 4K resolution for the virtual desktop
-DESKTOP_WIDTH = 3840
-DESKTOP_HEIGHT = 2160
+# Detect WSL2 virtual display — if DISPLAY=:0 is set (by WSL2 start-vnc.sh),
+# Chromium renders into the Xvfb framebuffer and appears in the VNC desktop.
+WSL2_DISPLAY = os.environ.get("DISPLAY", "")
+USE_WSL2 = WSL2_DISPLAY.startswith(":")
+
+# Default resolution — larger if WSL2 VNC display is available
+if USE_WSL2:
+    DESKTOP_WIDTH = 1360
+    DESKTOP_HEIGHT = 768
+else:
+    DESKTOP_WIDTH = 1920
+    DESKTOP_HEIGHT = 1080
 
 
 async def init_desktop():
-    """Launch headless Chromium as a virtual desktop."""
+    """Launch Chromium as a virtual desktop.
+
+    When DISPLAY is set (WSL2 path), launches headful into the Xvfb framebuffer
+    so the agent's actions appear in the VNC desktop at localhost:6901.
+    Otherwise, launches headless — the MJPEG stream shows what the agent sees.
+    """
     global _playwright, _browser, _context, _page
     try:
         _playwright = await async_playwright().start()
-        _browser = await _playwright.chromium.launch(
-            headless=True,
-            args=[
-                "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu",
-                "--disable-background-networking", "--disable-extensions",
-                "--disable-component-update", "--disable-features=AudioServiceOutOfProcess,TranslateUI",
-            ]
-        )
-        _context = await _browser.new_context(viewport={"width": 1920, "height": 1080})
+
+        launch_args = [
+            "--no-sandbox", "--disable-dev-shm-usage",
+            "--disable-background-networking", "--disable-extensions",
+            "--disable-component-update", "--disable-features=AudioServiceOutOfProcess,TranslateUI",
+        ]
+
+        if USE_WSL2:
+            # Headful mode: Chromium renders into Xvfb, visible in VNC desktop
+            # Merge env so Chromium inherits PATH while getting DISPLAY override
+            merged_env = {**os.environ, "DISPLAY": WSL2_DISPLAY}
+            _browser = await _playwright.chromium.launch(
+                headless=False,
+                args=launch_args,
+                env=merged_env,
+            )
+            print(f"[Desktop Agent] WSL2 mode — headful Chromium on DISPLAY={WSL2_DISPLAY}")
+        else:
+            # Headless mode: no visible window, MJPEG shows screenshots
+            launch_args.append("--disable-gpu")
+            _browser = await _playwright.chromium.launch(
+                headless=True,
+                args=launch_args,
+            )
+            print(f"[Desktop Agent] Headless mode — MJPEG screenshot stream")
+
+        _context = await _browser.new_context(viewport={"width": DESKTOP_WIDTH, "height": DESKTOP_HEIGHT})
         _page = await _context.new_page()
-        await _page.goto("https://example.com")
-        print(f"[Desktop Agent] Browser ready — 1920x1080")
+        await _page.goto("about:blank")
+        print(f"[Desktop Agent] Browser ready — {DESKTOP_WIDTH}x{DESKTOP_HEIGHT}")
     except Exception as e:
         print(f"[Desktop Agent] Init failed: {e}")
         raise  # Fail startup so it's not silently bricked
@@ -540,9 +572,9 @@ async def mjpeg():
         bnd = "frame"
         while True:
             try:
-                png = await get_page().screenshot(type="jpeg", quality=70)
+                png = await get_page().screenshot(type="jpeg", quality=85)
                 yield f"--{bnd}\r\nContent-Type: image/jpeg\r\nContent-Length: {len(png)}\r\n\r\n".encode() + png + b"\r\n"
-                await asyncio.sleep(0.2)
+                await asyncio.sleep(0.1)
             except asyncio.CancelledError: raise
             except Exception: await asyncio.sleep(0.5)
     return StreamingResponse(gen(), media_type="multipart/x-mixed-replace; boundary=frame",
