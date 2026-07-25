@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,7 +10,7 @@ import {
   DialogPopup,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SearchIcon, SendIcon, ShieldCheckIcon, UploadIcon, CalendarIcon, PenIcon, ClockIcon } from "lucide-react";
+import { SearchIcon, SendIcon, ShieldCheckIcon, UploadIcon, CalendarIcon, PenIcon, ClockIcon, FolderIcon } from "lucide-react";
 
 interface Feature {
   icon: React.ReactNode;
@@ -39,54 +40,54 @@ const PLUGIN_DATA: Record<string, { desc: string; features: Feature[]; buttonTex
   gmail: {
     desc: "Connect your Gmail account to manage and search your emails.",
     features: [
-      { icon: <SearchIcon size={14} />, title: "Search and read emails", sub: "Let the agent search, read, and organize your emails." },
-      { icon: <SendIcon size={14} />, title: "Send and reply to messages", sub: "Allow the agent to send emails and draft replies." },
-      { icon: <ShieldCheckIcon size={14} />, title: "Secure & private", sub: "Your credentials and emails are encrypted safely." },
+      { icon: <SearchIcon size={16} className="text-zinc-500" />, title: "Search and read emails", sub: "Let the agent search, read, and organize your emails." },
+      { icon: <SendIcon size={16} className="text-zinc-500" />, title: "Send and reply to messages", sub: "Allow the agent to send emails and draft replies." },
+      { icon: <ShieldCheckIcon size={16} className="text-zinc-500" />, title: "Secure & private", sub: "Your credentials and emails are encrypted safely." },
     ],
     buttonText: "Connect Gmail",
   },
   "google-drive": {
     desc: "Connect your Google Drive account to allow access to your files and folders.",
     features: [
-      { icon: <SearchIcon size={14} />, title: "Search and access files", sub: "Let the agent search and read your files." },
-      { icon: <UploadIcon size={14} />, title: "Upload and manage files", sub: "Allow the agent to upload and organize files." },
-      { icon: <ShieldCheckIcon size={14} />, title: "Secure & private", sub: "Your data is encrypted and never shared." },
+      { icon: <SearchIcon size={16} className="text-zinc-500" />, title: "Search and access files", sub: "Let the agent search and read your files." },
+      { icon: <UploadIcon size={16} className="text-zinc-500" />, title: "Upload and manage files", sub: "Allow the agent to upload and organize files." },
+      { icon: <ShieldCheckIcon size={16} className="text-zinc-500" />, title: "Secure & private", sub: "Your data is encrypted and never shared." },
     ],
     buttonText: "Connect Google Drive",
   },
   notion: {
     desc: "Connect your Notion workspace to read, write, and sync your pages.",
     features: [
-      { icon: <SearchIcon size={14} />, title: "Search and read workspace", sub: "Let the agent query database items and pages." },
-      { icon: <PenIcon size={14} />, title: "Create and edit pages", sub: "Allow the agent to update databases and append content." },
-      { icon: <ShieldCheckIcon size={14} />, title: "Secure & private", sub: "Workspace tokens are encrypted and handled safely." },
+      { icon: <SearchIcon size={16} className="text-zinc-500" />, title: "Search and read workspace", sub: "Let the agent query database items and pages." },
+      { icon: <PenIcon size={16} className="text-zinc-500" />, title: "Create and edit pages", sub: "Allow the agent to update databases and append content." },
+      { icon: <ShieldCheckIcon size={16} className="text-zinc-500" />, title: "Secure & private", sub: "Workspace tokens are encrypted and handled safely." },
     ],
     buttonText: "Connect Notion",
   },
   calendar: {
     desc: "Connect your Google Calendar to manage schedules, events, and meetings.",
     features: [
-      { icon: <CalendarIcon size={14} />, title: "Read calendar schedules", sub: "Let the agent view upcoming events and conflicts." },
-      { icon: <ClockIcon size={14} />, title: "Create and edit events", sub: "Allow the agent to schedule meetings and invitees." },
-      { icon: <ShieldCheckIcon size={14} />, title: "Secure & private", sub: "Calendar data is encrypted and private to you." },
+      { icon: <CalendarIcon size={16} className="text-zinc-500" />, title: "Read calendar schedules", sub: "Let the agent view upcoming events and conflicts." },
+      { icon: <ClockIcon size={16} className="text-zinc-500" />, title: "Create and edit events", sub: "Allow the agent to schedule meetings and invitees." },
+      { icon: <ShieldCheckIcon size={16} className="text-zinc-500" />, title: "Secure & private", sub: "Calendar data is encrypted and private to you." },
     ],
     buttonText: "Connect Google Calendar",
   },
   slack: {
     desc: "Connect your Slack workspace to manage notifications and send messages.",
     features: [
-      { icon: <SearchIcon size={14} />, title: "Read messages", sub: "Let the agent read channel messages and threads." },
-      { icon: <SendIcon size={14} />, title: "Send messages", sub: "Allow the agent to post messages to channels." },
-      { icon: <ShieldCheckIcon size={14} />, title: "Secure & private", sub: "Your workspace data is encrypted and private." },
+      { icon: <SearchIcon size={16} className="text-zinc-500" />, title: "Read messages", sub: "Let the agent read channel messages and threads." },
+      { icon: <SendIcon size={16} className="text-zinc-500" />, title: "Send messages", sub: "Allow the agent to post messages to channels." },
+      { icon: <ShieldCheckIcon size={16} className="text-zinc-500" />, title: "Secure & private", sub: "Your workspace data is encrypted and private." },
     ],
     buttonText: "Connect Slack",
   },
   trello: {
     desc: "Connect your Trello account to manage boards, lists, and cards.",
     features: [
-      { icon: <SearchIcon size={14} />, title: "View boards and cards", sub: "Let the agent read your boards, lists, and cards." },
-      { icon: <PenIcon size={14} />, title: "Create and update cards", sub: "Allow the agent to create, move, and update cards." },
-      { icon: <ShieldCheckIcon size={14} />, title: "Secure & private", sub: "Your Trello data is encrypted and private." },
+      { icon: <SearchIcon size={16} className="text-zinc-500" />, title: "View boards and cards", sub: "Let the agent read your boards, lists, and cards." },
+      { icon: <PenIcon size={16} className="text-zinc-500" />, title: "Create and update cards", sub: "Allow the agent to create, move, and update cards." },
+      { icon: <ShieldCheckIcon size={16} className="text-zinc-500" />, title: "Secure & private", sub: "Your Trello data is encrypted and private." },
     ],
     buttonText: "Connect Trello",
   },
@@ -95,9 +96,9 @@ const PLUGIN_DATA: Record<string, { desc: string; features: Feature[]; buttonTex
 const DEFAULT_DATA = {
   desc: "Connect your account to allow the agent to read and write data.",
   features: [
-    { icon: <SearchIcon size={14} />, title: "Search and access data", sub: "Let the agent search and read your data." },
-    { icon: <PenIcon size={14} />, title: "Modify data", sub: "Allow the agent to edit and upload data." },
-    { icon: <ShieldCheckIcon size={14} />, title: "Secure & private", sub: "All credentials and access tokens are encrypted securely." },
+    { icon: <SearchIcon size={16} className="text-zinc-500" />, title: "Search and access data", sub: "Let the agent search and read your data." },
+    { icon: <PenIcon size={16} className="text-zinc-500" />, title: "Modify data", sub: "Allow the agent to edit and upload data." },
+    { icon: <ShieldCheckIcon size={16} className="text-zinc-500" />, title: "Secure & private", sub: "All credentials and access tokens are encrypted securely." },
   ],
   buttonText: "Connect",
 };
@@ -124,23 +125,27 @@ export function PluginConnectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogPopup className="sm:max-w-sm">
+      <DialogPopup className="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle>Connect {plugin.name}</DialogTitle>
+          <DialogTitle>{`Connect ${plugin.name}`}</DialogTitle>
           <DialogDescription>{data.desc}</DialogDescription>
         </DialogHeader>
-        <DialogPanel className="grid gap-4">
-          {data.features.map((f, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <span className="mt-0.5 text-muted-foreground shrink-0">{f.icon}</span>
-              <div className="min-w-0">
-                <div className="text-sm font-medium text-foreground">{f.title}</div>
-                <div className="text-xs text-muted-foreground leading-snug mt-0.5">{f.sub}</div>
+        <DialogPanel>
+          <div className="flex flex-col gap-4">
+            {data.features.map((f, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
+                  {f.icon}
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-zinc-950">{f.title}</div>
+                  <div className="text-[13px] text-zinc-500 leading-snug">{f.sub}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </DialogPanel>
-        <DialogFooter>
+        <DialogFooter variant="bare">
           <DialogClose render={<Button variant="ghost" />}>
             Cancel
           </DialogClose>
