@@ -5931,6 +5931,11 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   }
 
   window.addEventListener('agent-typing-start', (e) => {
+    const activeModeOpt = document.querySelector('.chat-mode-option.active');
+    const effectiveMode = activeModeOpt ? activeModeOpt.dataset.mode : 'search';
+    if (effectiveMode !== 'computer') {
+      return;
+    }
     const status = e.detail?.status || 'Thinking';
     if (status === 'Planning' || status === 'Analyzing' || status === 'Thinking' || status === 'Orchestrating swarm') {
       addThoughtStep();
