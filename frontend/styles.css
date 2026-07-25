@@ -11391,3 +11391,177 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
   font-size: 14px !important;
 }
 
+/* ==========================================================================
+   shadcn-style Dialog (plugin install / connect)
+   ========================================================================== */
+.zed-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  animation: dialogFadeIn 0.15s ease-out;
+}
+@keyframes dialogFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.zed-dialog {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  box-shadow: 0 16px 70px rgba(0, 0, 0, 0.15);
+  width: 440px;
+  max-width: 92vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  animation: dialogSlideIn 0.2s ease-out;
+}
+@keyframes dialogSlideIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.zed-dialog-header {
+  padding: 24px 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.zed-dialog-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+  padding-right: 24px;
+}
+
+.zed-dialog-description {
+  font-size: 14px;
+  color: #6B7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.zed-dialog-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #9CA3AF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+.zed-dialog-close:hover {
+  background: #F3F4F6;
+  color: #374151;
+}
+
+.zed-dialog-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.zed-dialog-footer {
+  padding: 0 24px 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.zed-dialog-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+  outline: none;
+  white-space: nowrap;
+}
+.zed-dialog-btn:focus-visible {
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #3B82F6;
+}
+
+.zed-dialog-btn-ghost {
+  background: transparent;
+  color: #374151;
+  border-color: transparent;
+}
+.zed-dialog-btn-ghost:hover {
+  background: #F3F4F6;
+}
+
+.zed-dialog-btn-outline {
+  background: #FFFFFF;
+  color: #374151;
+  border-color: #D1D5DB;
+}
+.zed-dialog-btn-outline:hover {
+  background: #F9FAFB;
+}
+
+.zed-dialog-btn-primary {
+  background: #111827;
+  color: #FFFFFF;
+  border-color: #111827;
+}
+.zed-dialog-btn-primary:hover {
+  background: #1F2937;
+}
+
+/* Feature list inside dialog */
+.zed-dialog-features {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.zed-dialog-feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.zed-dialog-feature-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #F3F4F6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.zed-dialog-feature-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+.zed-dialog-feature-sub {
+  font-size: 13px;
+  color: #6B7280;
+}
+
