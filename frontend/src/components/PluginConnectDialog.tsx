@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -146,20 +145,21 @@ export function PluginConnectDialog({
           </div>
         </DialogPanel>
         <DialogFooter variant="bare">
-          <DialogClose render={<Button variant="ghost" />}>
-            Cancel
-          </DialogClose>
-          <Button
-            onClick={() => {
-              onOpenChange(false);
-              onConnect(plugin.id);
-            }}
-          >
-            <span className="flex items-center gap-2">
-              {isGoogle && GOOGLE_SVG}
-              {data.buttonText}
-            </span>
-          </Button>
+          <div className="flex w-full flex-col items-center gap-2">
+            <Button
+              className="w-full"
+              onClick={() => {
+                onOpenChange(false);
+                onConnect(plugin.id);
+              }}
+            >
+              <span className="flex items-center gap-2">
+                {isGoogle && GOOGLE_SVG}
+                {data.buttonText}
+              </span>
+            </Button>
+            <span className="text-xs text-zinc-400">You'll be redirected to sign in.</span>
+          </div>
         </DialogFooter>
       </DialogPopup>
     </Dialog>
