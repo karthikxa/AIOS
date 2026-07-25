@@ -125,6 +125,9 @@ class PluginsStore {
 const pluginsStore = new PluginsStore();
 export { pluginsStore };
 
+// Expose to React dialog
+window.__pluginsStore = pluginsStore;
+
 let currentConfigPluginId = null;
 
 export function initPluginsPage() {
@@ -307,6 +310,18 @@ async function openPluginConnectModal(item) {
   pluginModalOpen = true;
   currentConfigPluginId = item.id;
 
+  // Use React dialog if available
+  if (window.__openPluginDialog) {
+    window.__openPluginDialog({
+      id: item.id,
+      name: item.name,
+      logo: item.logo,
+    });
+    pluginModalOpen = false;
+    return;
+  }
+
+  // Fallback to vanilla modal
   try {
     const resp = await fetch(`/api/plugins/${item.id}/config`);
     const config = resp.ok ? await resp.json() : { client_id: '' };

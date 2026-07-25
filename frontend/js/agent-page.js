@@ -282,7 +282,7 @@ function renderAgentsList(store) {
   if (filtered.length === 0) {
     listWrapper.innerHTML = `
       <div style="padding: 40px; text-align: center; color: #6F6F6F; font-size: 14.5px; background: #FFFFFF; border: 1px solid #EAEAEA; border-radius: 20px;">
-        ${agents.length === 0 ? 'No agents yet. Click "Create agent" to get started.' : 'No agents found matching the selected filters.'}
+        ${agents.length === 0 ? 'No agents created yet. Click "Create agent" to build your first agent.' : 'No agents match the current filters. Try adjusting your search.'}
       </div>
     `;
     return;

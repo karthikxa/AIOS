@@ -177,6 +177,7 @@ def reset_agent_state():
 # ══════════════════════════════════════════════════════════════════════════════
 
 async def execute_action(action: dict) -> str:
+    global _page
     a = action.get("action", "")
     await ensure_browser()
     page = get_page()
@@ -272,7 +273,6 @@ async def execute_action(action: dict) -> str:
             idx = int(action.get("index", 0))
             pages = _context.pages
             if 0 <= idx < len(pages):
-                global _page
                 _page = pages[idx]
                 return f"Switched to tab {idx}: {await _page.title()}"
             return f"Tab {idx} not found"
