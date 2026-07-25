@@ -155,11 +155,11 @@ HOST = "0.0.0.0"
 PORT = int(os.getenv("PORT", "8642"))  # Render sets PORT=10000; local dev uses 8642
 
 # Upstream proxy endpoint configurations
-FREELLMAPI_URL = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1").rstrip("/") + "/chat/completions"
+FREELLMAPI_URL = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1").rstrip("/") + "/chat/completions"
 
 # Tell zed-agent's provider router to call freellmapi directly
 if "ZED_PRO_BASE_URL" not in os.environ:
-    os.environ["ZED_PRO_BASE_URL"] = "https://server-llm-1.onrender.com/v1"
+    os.environ["ZED_PRO_BASE_URL"] = "https://server-llm-1-0r64.onrender.com/v1"
 if "ZED_PRO_API_KEY" not in os.environ:
     logger.warning("ZED_PRO_API_KEY not set — LLM calls will fail")
 
@@ -1128,13 +1128,13 @@ async def lifespan(app: FastAPI):
     _cron_thread.start()
 
     # ── LLM Proxy Keepalive — prevent Render from sleeping the proxy ────────
-    # The LLM proxy (server-llm-1.onrender.com) is a separate Render free-tier
+    # The LLM proxy (server-llm-1-0r64.onrender.com) is a separate Render free-tier
     # service. Without periodic traffic, Render spins it down after ~15 min.
     # This background task pings it every 5 minutes to keep it alive.
     _keepalive_stop = threading.Event()
 
     def _keepalive_loop():
-        proxy_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
+        proxy_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
         ping_url = proxy_url.replace("/v1", "") if "/v1" in proxy_url else proxy_url
         ping_url = ping_url.rstrip("/") + "/healthz"
         logger.info("LLM proxy keepalive started — pinging %s every 5 min", ping_url)
@@ -1397,7 +1397,7 @@ async def get_status():
     """Health check — shows freellmapi connectivity."""
     freellmapi_ok = False
     try:
-        base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
+        base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
         base_ping_url = base_url.replace("/v1", "") if "/v1" in base_url else base_url
         api_key = os.getenv("ZED_PRO_API_KEY", "")
         headers = {}
@@ -1426,7 +1426,7 @@ async def get_status():
 async def list_models():
     """List available models via freellmapi."""
     try:
-        base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
+        base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
         base_ping_url = base_url.replace("/v1", "") if "/v1" in base_url else base_url
         api_key = os.getenv("ZED_PRO_API_KEY", "")
         headers = {}
@@ -1537,7 +1537,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                     model=resolved_model,
                     quiet_mode=True,
                     verbose_logging=False,
-                    base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"),
+                    base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1"),
                     api_key=os.getenv("ZED_PRO_API_KEY", ""),
                     enabled_toolsets=selected_toolsets,
                     disabled_toolsets=disabled_toolsets,
@@ -1705,7 +1705,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                 model=resolved_model,
                 quiet_mode=True,
                 verbose_logging=False,
-                base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"),
+                base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1"),
                 api_key=os.getenv("ZED_PRO_API_KEY", ""),
                 enabled_toolsets=selected_toolsets,
                 disabled_toolsets=disabled_toolsets,
@@ -1759,7 +1759,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                     model=fallback_model,
                     quiet_mode=True,
                     verbose_logging=False,
-                    base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"),
+                    base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1"),
                     api_key=os.getenv("ZED_PRO_API_KEY", ""),
                     credential_pool=credential_pool,
                 )
@@ -2612,7 +2612,7 @@ async def run_cron_now(job_id: str):
 
     prompt = job.get("prompt", f"Execute scheduled task: {job.get('name', job_id)}")
     llm_model = job.get("model", "auto") or "auto"
-    llm_base_url = os.environ.get("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
+    llm_base_url = os.environ.get("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
     llm_api_key  = os.environ.get("ZED_PRO_API_KEY", os.environ.get("OPENAI_API_KEY", "no-key"))
     run_id = f"run-{uuid.uuid4().hex[:8]}"
 
@@ -3015,7 +3015,7 @@ async def healthz():
     # Also check LLM proxy connectivity
     proxy_ok = False
     try:
-        proxy_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
+        proxy_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
         ping_url = proxy_url.replace("/v1", "") if "/v1" in proxy_url else proxy_url
         r = await _http_client.get(f"{ping_url.rstrip('/')}/healthz", timeout=5.0)
         proxy_ok = r.status_code == 200
@@ -3082,7 +3082,7 @@ async def retry_chat(session_id: str, request: Request):
             model=fallback_model,
             quiet_mode=True,
             verbose_logging=False,
-            base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"),
+            base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1"),
             api_key=os.getenv("ZED_PRO_API_KEY", ""),
             credential_pool=credential_pool,
         )

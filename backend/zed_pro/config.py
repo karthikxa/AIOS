@@ -29,7 +29,7 @@ SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
 # ── Upstream LLM ──────────────────────────────────────────────────────────────
 # freellmapi loopback no-auth port (same one server.py talks to).
 FREELLMAPI_BASE_URL: str = os.environ.get(
-    "ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"
+    "ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1"
 )
 FREELLMAPI_API_KEY: str = os.environ.get("ZED_PRO_API_KEY", "no-auth")
 # Default model the router will pick when the request says "auto" / "zed-pro".

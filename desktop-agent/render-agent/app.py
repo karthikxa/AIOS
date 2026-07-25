@@ -30,7 +30,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 log = logging.getLogger("agent")
 
 # ── Config from environment ──
-DESKTOP_URL = os.environ.get("DESKTOP_URL", "https://browser-server-1.onrender.com").rstrip("/")
+DESKTOP_URL = os.environ.get("DESKTOP_URL", "http://localhost:4000").rstrip("/")
 AGENT_SECRET = os.environ.get("AGENT_SECRET", "")
 LLM_KEY = os.environ.get("LLM_API_KEY", "no-auth")
 LLM_MODEL = os.environ.get("LLM_MODEL", "auto")

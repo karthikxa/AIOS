@@ -3860,7 +3860,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         updateStatus('Agent starting...', '0 / ?');
 
         // ── HF Space endpoint ───────────────────────────────────────────
-        const hfUrl = (localStorage.getItem('hf_space_url') || 'https://browser-server-2.onrender.com').replace(/\/$/, '');
+        const hfUrl = (localStorage.getItem('hf_space_url') || 'http://localhost:4000').replace(/\/$/, '');
         let agentStep = 0;
         const maxSteps = 15;
         let progressIndex = 0;
@@ -5021,12 +5021,14 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   let desktopStreamStarted = false;
   let desktopPollInterval = null;
   let desktopPollStopped = false;
-  const DEFAULT_HF_SPACE_URL = 'https://browser-server-2.onrender.com';
+  const DEFAULT_HF_SPACE_URL = 'http://localhost:4000';
   const DEFAULT_CLOUD_VNC_URL =
-    'https://browser-server-1.onrender.com/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=1000&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
+    'http://localhost:6901/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=1000&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
   const LEGACY_HF_SPACE_URLS = new Set([
     'https://bkarthikeyan-desktop-agent.hf.space',
     'https://bkarthikeyan-browser-agent-stream.hf.space',
+    'https://browser-server-1.onrender.com',
+    'https://browser-server-2.onrender.com',
   ]);
 
   // Set default HF Space URL only on non-localhost (cloud mode)
@@ -5502,15 +5504,9 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           if (isLocal && (trimmed.includes('localhost') || trimmed.includes('127.0.0.1'))) {
             localStorage.setItem('kasm_url', trimmed);
             localStorage.removeItem('hf_space_url');
-          } else if (trimmed.includes('.hf.space')) {
-            localStorage.setItem('hf_space_url', trimmed);
-            localStorage.removeItem('kasm_url');
-          } else if (trimmed.includes('browser-server-2.onrender.com')) {
-            localStorage.setItem('hf_space_url', trimmed);
-            localStorage.removeItem('kasm_url');
           } else {
-            localStorage.setItem('vnc_url', trimmed);
-            localStorage.removeItem('kasm_url');
+            localStorage.setItem('kasm_url', trimmed);
+            localStorage.removeItem('hf_space_url');
           }
         } else {
           if (isLocal) {
