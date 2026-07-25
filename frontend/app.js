@@ -4294,16 +4294,9 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
       const ensureAssistantBubble = () => {
         if (!bubble) {
-          const lastMsg = chatMessagesLog.lastElementChild;
-          if (lastMsg && lastMsg.classList.contains('assistant')) {
-            msgDiv = lastMsg;
-            bubble = msgDiv.querySelector('.chat-message-bubble');
-          }
-          if (!bubble) {
-            appendMessage('assistant', '');
-            msgDiv = chatMessagesLog.lastElementChild;
-            bubble = msgDiv.querySelector('.chat-message-bubble');
-          }
+          appendMessage('assistant', '');
+          msgDiv = chatMessagesLog.lastElementChild;
+          bubble = msgDiv.querySelector('.chat-message-bubble');
         }
         
         let blocksContainer = bubble.querySelector('.message-collapsible-blocks');
