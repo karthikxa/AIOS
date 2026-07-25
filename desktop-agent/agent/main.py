@@ -107,10 +107,13 @@ async def ensure_browser():
 # ══════════════════════════════════════════════════════════════════════════════
 
 class ActionLogger:
+    MAX_ENTRIES = 500
     def __init__(self):
         self.entries = []
     def log(self, action, params, result, success):
         self.entries.append({"timestamp": time.time(), "action": action, "params": params, "result": result[:500], "success": success})
+        if len(self.entries) > self.MAX_ENTRIES:
+            self.entries = self.entries[-self.MAX_ENTRIES:]
     def get_summary(self, last_n=10):
         recent = self.entries[-last_n:]
         return "\n".join(f"[{'OK' if e['success'] else 'FAIL'}] {e['action']}: {e['result'][:100]}" for e in recent) or "No actions logged."

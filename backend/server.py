@@ -811,6 +811,7 @@ def _enhance_system_prompt(system_msg: str, dashboard_state: Optional[Dict[str, 
 
 # ── State ────────────────────────────────────────────────────────────────────
 _active_agents: Dict[str, Any] = {}
+_active_agents_lock = __import__('threading').Lock()
 _ws_clients: List[WebSocket] = []
 session_db: Optional[SessionDB] = None
 _plugin_manager = None
@@ -1147,7 +1148,8 @@ async def lifespan(app: FastAPI):
 
     if _http_client:
         await _http_client.aclose()
-    _active_agents.clear()
+    with _active_agents_lock:
+        _active_agents.clear()
 
 
 
@@ -1819,7 +1821,8 @@ async def delete_session(session_id: str):
     if session_db is None:
         raise HTTPException(status_code=503, detail="Session DB not ready")
     session_db.delete_session(session_id)
-    _active_agents.pop(session_id, None)
+    with _active_agents_lock:
+        _active_agents.pop(session_id, None)
     return {"status": "deleted"}
 
 
@@ -1834,8 +1837,9 @@ async def get_session_messages(session_id: str, limit: int = Query(100, le=500))
 @app.post("/api/reset")
 async def reset_session():
     """Clear all active agent sessions."""
-    _active_agents.clear()
-    return {"status": "reset", "cleared": len(_active_agents)}
+    with _active_agents_lock:
+        _active_agents.clear()
+    return {"status": "reset"}
 
 
 # ── Skills ────────────────────────────────────────────────────────────────────
