@@ -2430,43 +2430,22 @@ aside.sidebar.collapsed .sidebar-toggle-btn {
   border-radius: 6px;
   border: 1px solid #D1D5DB;
   background: #F3F4F6;
+  color: #6B7280;
   cursor: pointer;
   transition: all 0.2s ease;
   margin-right: 0;
   flex-shrink: 0;
+  padding: 0;
+  line-height: 1;
 }
 
-.sidebar-toggle-icon {
-  display: flex;
-  gap: 0;
-  width: 16px;
-  height: 14px;
-}
-
-/* Left narrow panel (filled) */
-.sidebar-toggle-icon::before {
-  content: '';
+.sidebar-toggle-btn svg {
   display: block;
-  width: 5px;
-  height: 100%;
-  background: #9CA3AF;
-  border: 1px solid #9CA3AF;
-  border-radius: 2px;
-}
-
-/* Right wider panel (outlined) */
-.sidebar-toggle-icon::after {
-  content: '';
-  display: block;
-  flex: 1;
-  height: 100%;
-  background: transparent;
-  border: 1.5px solid #9CA3AF;
-  border-radius: 2px;
 }
 
 .sidebar-toggle-btn:hover {
   background-color: #E5E7EB;
+  color: #374151;
 }
 
 .sidebar-toggle-btn svg {
