@@ -3860,7 +3860,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         updateStatus('Agent starting...', '0 / ?');
 
         // ── HF Space endpoint ───────────────────────────────────────────
-        const hfUrl = (localStorage.getItem('hf_space_url') || 'http://localhost:4000').replace(/\/$/, '');
+        const hfUrl = (localStorage.getItem('hf_space_url') || '/api/desktop/stream.mjpeg').replace(/\/$/, '');
         let agentStep = 0;
         const maxSteps = 15;
         let progressIndex = 0;
@@ -5021,9 +5021,9 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   let desktopStreamStarted = false;
   let desktopPollInterval = null;
   let desktopPollStopped = false;
-  const DEFAULT_HF_SPACE_URL = 'http://localhost:4000';
+  const DEFAULT_HF_SPACE_URL = '/api/desktop/stream.mjpeg';
   const DEFAULT_CLOUD_VNC_URL =
-    'http://localhost:6901/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=1000&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
+    '/desktop/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=1000&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
   const LEGACY_HF_SPACE_URLS = new Set([
     'https://bkarthikeyan-desktop-agent.hf.space',
     'https://bkarthikeyan-browser-agent-stream.hf.space',
@@ -5086,9 +5086,8 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
   // On localhost: set/update noVNC URL (versioned so it auto-updates when URL changes)
   const KASM_URL_VERSION = '10';  // Increment to force localStorage refresh
-  // Direct connection to KasmVNC (WebSocket proxy not working through FastAPI)
-  // Backend serves HTTP pages via /kasm/ proxy, but WebSocket connects directly
-  const CORRECT_KASM_URL = 'http://localhost:6901/vnc.html?autoconnect=true&password=headless&resize=scale&reconnect=true&reconnect_delay=1000';
+  // Direct connection to VNC via backend proxy (single-port architecture)
+  const CORRECT_KASM_URL = '/desktop/vnc.html?autoconnect=true&password=headless&resize=scale&reconnect=true&reconnect_delay=1000';
   // Always update localStorage on load to ensure correct URL
   if (isLocal) {
     localStorage.setItem('kasm_url', CORRECT_KASM_URL);
@@ -5170,12 +5169,12 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
     if (desktopStreamStarted && !frameIsBlank) return;
     desktopStreamStarted = true;
 
-    // ── Priority 0: Local desktop agent MJPEG stream (pyautogui, full OS) ──
+    // ── Priority 0: Local desktop agent MJPEG stream (via backend proxy) ──
     if (isLocal) {
-      const agentUrl = 'http://localhost:4000';
-      fetch(agentUrl + '/health').then(r => r.json()).then(d => {
-        if (d.status === 'ok' && d.platform === 'win32') {
-          // Replace iframe with MJPEG img for full desktop stream
+      const agentUrl = '/api/desktop';
+      fetch(agentUrl + '/status').then(r => r.json()).then(d => {
+        if (d.running) {
+          // Replace iframe with MJPEG img for live desktop stream
           const img = document.createElement('img');
           img.id = 'desktopFrame';
           img.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;display:block;';
@@ -5185,7 +5184,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           desktopFrame = img;
           // Update header
           const urlEl = document.getElementById('splitPaneHeaderUrl');
-          if (urlEl) { urlEl.textContent = 'Local Desktop (' + (d.screen || '1920x1080') + ')'; urlEl.style.display = 'inline'; }
+          if (urlEl) { urlEl.textContent = 'Desktop Agent'; urlEl.style.display = 'inline'; }
           const browserLabel = document.getElementById('splitPaneBrowserLabel');
           if (browserLabel) browserLabel.textContent = 'Zed is using Desktop';
           if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
@@ -5291,7 +5290,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       const streamImg = document.createElement('img');
       streamImg.id = 'desktopFrame';
       streamImg.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;display:block;';
-      streamImg.src = 'http://localhost:4000/stream.mjpeg';
+      streamImg.src = '/api/desktop/stream.mjpeg';
       streamImg.alt = 'Live desktop stream';
       desktopFrame.parentNode.replaceChild(streamImg, desktopFrame);
       desktopFrame = streamImg;
@@ -5495,7 +5494,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         ? (localStorage.getItem('kasm_url') || CORRECT_KASM_URL)
         : (localStorage.getItem('vnc_url') || DEFAULT_CLOUD_VNC_URL);
       const url = prompt(
-        'Desktop URL\n\n• Local Kasm:  https://localhost:6901\n• HF Space:   https://your-space.hf.space\n\nLeave blank to reset to default Kasm URL.',
+        'Desktop URL\n\n• Default (via backend proxy): /desktop/vnc.html\n• Custom VNC URL\n\nLeave blank to reset to default.',
         currentKasm
       );
       if (url !== null) {

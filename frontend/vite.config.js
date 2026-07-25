@@ -68,7 +68,7 @@ export default {
       },
     },
     headers: {
-      'Content-Security-Policy': "default-src 'self' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com blob:; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: http://localhost:* http://127.0.0.1:* https://localhost:*; media-src 'self' blob:; connect-src 'self' http://localhost:* http://127.0.0.1:* https://localhost:* ws://localhost:* wss://localhost:* wss://*.localhost:* https://cdn.jsdelivr.net https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' blob: https://localhost:* http://localhost:*; form-action 'self' https://accounts.google.com;",
+      'Content-Security-Policy': "default-src 'self' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com blob:; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: http://localhost:* http://127.0.0.1:* https://localhost:*; media-src 'self' blob:; connect-src 'self' blob: ws://localhost:* wss://localhost:* https://cdn.jsdelivr.net https://accounts.google.com https://oauth2.googleapis.com; frame-src 'self' blob:; form-action 'self' https://accounts.google.com;",
     },
   },
 };

@@ -3697,6 +3697,113 @@ async def proxy_kasmvnc(path: str, request: Request):
             )
 
 
+# ── MJPEG Stream Proxy (single-port: /api/desktop/stream.mjpeg → localhost:4000) ──
+@app.get("/api/desktop/stream.mjpeg")
+async def proxy_desktop_mjpeg():
+    """Proxy the live MJPEG screenshot stream from the desktop agent."""
+    import asyncio as _aio
+    async def _stream():
+        bnd = "frame"
+        try:
+            async with httpx.AsyncClient(timeout=None) as client:
+                async with client.stream("GET", f"{DESKTOP_AGENT_URL}/stream.mjpeg") as resp:
+                    async for chunk in resp.aiter_bytes():
+                        yield chunk
+        except httpx.ConnectError:
+            # If desktop agent is down, return a single placeholder frame
+            yield (f"--{bnd}\r\nContent-Type: text/plain\r\n\r\n"
+                   b"Desktop agent not running\r\n"
+                   f"--{bnd}--\r\n").encode()
+        except Exception as e:
+            logger.warning("MJPEG proxy error: %s", e)
+    return StreamingResponse(
+        _stream(),
+        media_type="multipart/x-mixed-replace; boundary=frame",
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+# ── noVNC VNC Proxy (single-port: /desktop/vnc/* → localhost:6901) ──────────
+# Provides the noVNC web client and WebSocket proxy so the frontend
+# iframe can load from the same origin instead of needing port 6901.
+KASMVNC_DIRECT_URL = os.getenv("KASMVNC_DIRECT_URL", "http://127.0.0.1:6901")
+
+
+@app.get("/desktop/vnc")
+@app.get("/desktop/vnc.html")
+async def desktop_vnc_page(request: Request):
+    """Serve the noVNC page through the backend proxy."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(f"{KASMVNC_DIRECT_URL}/vnc.html?autoconnect=true&password=headless&resize=scale&reconnect=true&reconnect_delay=1000&bell=false&show_dot=false")
+            return Response(
+                content=resp.content,
+                status_code=resp.status_code,
+                media_type="text/html",
+            )
+    except Exception:
+        return Response(
+            content=b"<html><body><h2>VNC not available</h2><p>KasmVNC/WSL2 desktop is not running.</p></body></html>",
+            status_code=503,
+            media_type="text/html",
+        )
+
+
+@app.websocket("/desktop/websockify")
+async def proxy_desktop_websockify(websocket):
+    """Proxy WebSocket for noVNC VNC connection through the backend."""
+    try:
+        await websocket.accept()
+        ws_url = "ws://127.0.0.1:6901/websockify"
+        async with websockets.connect(ws_url) as target_ws:
+            async def forward_to_target():
+                try:
+                    while True:
+                        data = await websocket.receive_bytes()
+                        await target_ws.send(data)
+                except Exception:
+                    pass
+
+            async def forward_to_client():
+                try:
+                    while True:
+                        data = await target_ws.recv()
+                        if isinstance(data, str):
+                            await websocket.send_text(data)
+                        else:
+                            await websocket.send_bytes(data)
+                except Exception:
+                    pass
+
+            await asyncio.gather(
+                forward_to_target(),
+                forward_to_client(),
+                return_exceptions=True,
+            )
+    except Exception as e:
+        logger.warning("Desktop WebSocket proxy error: %s", e)
+        try:
+            await websocket.close(code=1011, reason=str(e))
+        except Exception:
+            pass
+
+
+@app.api_route("/desktop/static/{path:path}", methods=["GET"])
+async def proxy_desktop_static(path: str, request: Request):
+    """Proxy noVNC static assets (JS, CSS, images) through backend."""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(f"{KASMVNC_DIRECT_URL}/static/{path}")
+            content_type = resp.headers.get("content-type", "application/octet-stream")
+            return Response(
+                content=resp.content,
+                status_code=resp.status_code,
+                media_type=content_type,
+            )
+    except Exception:
+        return Response(content=b"Not found", status_code=404)
+
+
 # ── Serve Dashboard static files (after all API routes) ───────────────────
 # Single-port architecture: backend serves frontend from dist/ directory
 # This eliminates the need for Vite proxy - everything runs on port 8642
