@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import gc
 import json
 import logging
 import os
@@ -1140,7 +1141,15 @@ async def lifespan(app: FastAPI):
     _keepalive_thread.start()
 
     logger.info("Zed Pro backend ready — http://127.0.0.1:%s", PORT)
+    # Periodic GC to keep memory clean under 550-agent load
+    async def _periodic_gc():
+        while True:
+            await asyncio.sleep(300)  # every 5 minutes
+            gc.collect()
+            logger.debug("Periodic GC: RSS cleaned")
+    gc_task = asyncio.create_task(_periodic_gc())
     yield
+    gc_task.cancel()
 
     logger.info("Stopping cron scheduler daemon...")
     _cron_stop.set()

@@ -14,6 +14,7 @@ services:
       - DISPLAY_WIDTH=3840
       - DISPLAY_HEIGHT=2160
     shm_size: "2g"
+    mem_limit: "250m"
     restart: unless-stopped
 
   # ── CUA Agent (AI controls the desktop) ─────────────────────────────

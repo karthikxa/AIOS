@@ -57,7 +57,11 @@ async def init_desktop():
         _playwright = await async_playwright().start()
         _browser = await _playwright.chromium.launch(
             headless=True,
-            args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"]
+            args=[
+                "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu",
+                "--disable-background-networking", "--disable-extensions",
+                "--disable-component-update", "--disable-features=AudioServiceOutOfProcess,TranslateUI",
+            ]
         )
         _context = await _browser.new_context(viewport={"width": 1920, "height": 1080})
         _page = await _context.new_page()
