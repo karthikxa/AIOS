@@ -787,7 +787,7 @@ const starIndicator = `
     try {
       const formatted = JSON.stringify(args, null, 2);
       return `<pre style="background:#F3F4F6;padding:8px;border-radius:6px;font-family:monospace;margin:4px 0;overflow-x:auto;font-size:11px;">${DOMPurify.sanitize(formatted)}</pre>`;
-    } catch {
+    } catch (e) {
       return `<div style="font-family:monospace;font-size:11px;">${DOMPurify.sanitize(String(args))}</div>`;
     }
   }
@@ -2060,6 +2060,8 @@ JSON Structure:
     if (el) { el.remove(); delete _activeToolIndicators[toolName]; }
     const bar = document.getElementById('toolIndicatorBar');
     if (bar && Object.keys(_activeToolIndicators).length === 0) bar.style.display = 'none';
+  }
+
   // ── HTML sanitizer for innerHTML injections ────────────────────────────────
   function escapeHtml(str) {
     if (!str) return '';
@@ -2070,7 +2072,7 @@ JSON Structure:
       const u = new URL(url, window.location.origin);
       if (u.protocol === 'javascript:') return '#';
       return u.href;
-    } catch { return '#'; }
+    } catch (e) { return '#'; }
   }
 
   // Single-port mode: use relative URLs - backend proxies to LLM on Render
@@ -2459,7 +2461,7 @@ JSON Structure:
                   if (reasoningDelta && typeof onReasoning === 'function') {
                     onReasoning(reasoningDelta);
                   }
-                } catch {}
+                } catch (e) {}
               }
             }
           }
@@ -4053,7 +4055,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
               if (!llmResp.ok) {
                 let errDetail = `${llmResp.status}`;
-                try { const e = await llmResp.json(); errDetail += ': ' + (e?.error?.message || e?.detail || JSON.stringify(e)); } catch {}
+                try { const e = await llmResp.json(); errDetail += ': ' + (e?.error?.message || e?.detail || JSON.stringify(e)); } catch (e) {}
                 throw new Error(`LLM error: ${errDetail}`);
               }
 
@@ -5837,7 +5839,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         } else {
           try {
             badgeText = new URL(url).hostname;
-          } catch {
+          } catch (e) {
             badgeText = url;
           }
         }
@@ -6332,3 +6334,5 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       renderBranchContent(msgDiv, newBranchIndex);
     }
   }
+
+

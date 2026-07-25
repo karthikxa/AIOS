@@ -812,7 +812,7 @@ def _enhance_system_prompt(system_msg: str, dashboard_state: Optional[Dict[str, 
 
 # ── State ────────────────────────────────────────────────────────────────────
 _active_agents: Dict[str, Any] = {}
-_active_agents_lock = __import__('threading').Lock()
+_active_agents_lock = asyncio.Lock()
 _ws_clients: List[WebSocket] = []
 session_db: Optional[SessionDB] = None
 _plugin_manager = None
