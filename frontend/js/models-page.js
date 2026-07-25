@@ -168,7 +168,7 @@ function renderView(state) {
       tableBody.innerHTML = `
         <tr>
           <td colspan="7" style="text-align: center; padding: 24px; color: var(--text-secondary);">
-            No agents found matching "${searchQuery}"
+            ${searchQuery ? `No results for "${searchQuery}". Try a different search.` : 'No agent usage data yet. Run some tasks and check back here.'}
           </td>
         </tr>
       `;
