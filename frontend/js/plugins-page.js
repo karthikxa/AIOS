@@ -803,7 +803,7 @@ function showConfigModal(item, config) {
     <div class="zed-dialog-overlay" id="pluginConfigOverlay">
       <div class="zed-dialog" style="position:relative;">
         <button id="cfgCancelBtn" class="zed-dialog-close" title="Close">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
         <div class="zed-dialog-header">
           <h2 class="zed-dialog-title">Connect ${item.name}</h2>
@@ -822,16 +822,12 @@ function showConfigModal(item, config) {
             `).join('')}
           </div>
         </div>
-        <div class="zed-dialog-footer" style="flex-direction:column;align-items:stretch;">
-          <button id="cfgMainConnectBtn" class="zed-dialog-btn zed-dialog-btn-outline" style="width:100%;height:40px;">
+        <div class="zed-dialog-footer" style="flex-direction:column;gap:10px;">
+          <button id="cfgMainConnectBtn" class="zed-dialog-btn-connect">
             ${buttonLogoHtml}
             ${buttonText}
           </button>
-          <span style="font-size:12px;color:#9CA3AF;text-align:center;margin-top:6px;">You'll be redirected to ${details.redirectProvider} to sign in.</span>
-          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
-            <button id="cfgCancelBtnFooter" class="zed-dialog-btn zed-dialog-btn-ghost">Cancel</button>
-            <button id="cfgConnectBtn" class="zed-dialog-btn zed-dialog-btn-primary">Install</button>
-          </div>
+          <span style="font-size:12px;color:#A1A1AA;text-align:center;">You'll be redirected to ${details.redirectProvider} to sign in.</span>
         </div>
       </div>
     </div>
@@ -843,23 +839,15 @@ function showConfigModal(item, config) {
 
   const overlay = div.querySelector('#pluginConfigOverlay');
   const closeBtn = div.querySelector('#cfgCancelBtn');
-  const cancelFooter = div.querySelector('#cfgCancelBtnFooter');
-  const connectBtn = div.querySelector('#cfgConnectBtn');
   const mainConnectBtn = div.querySelector('#cfgMainConnectBtn');
 
   const destroyModal = () => { pluginModalOpen = false; div.remove(); };
 
   closeBtn.addEventListener('click', destroyModal);
-  cancelFooter.addEventListener('click', destroyModal);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) destroyModal(); });
 
   document.addEventListener('keydown', function onEsc(e) {
     if (e.key === 'Escape') { destroyModal(); document.removeEventListener('keydown', onEsc); }
-  });
-
-  connectBtn.addEventListener('click', () => {
-    destroyModal();
-    pluginsStore.connect(item.id);
   });
 
   mainConnectBtn.addEventListener('click', () => {

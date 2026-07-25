@@ -11392,17 +11392,18 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
 }
 
 /* ==========================================================================
-   shadcn-style Dialog (plugin install / connect)
+   assistant-ui style Dialog (plugin connect)
    ========================================================================== */
 .zed-dialog-overlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Inter', sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   animation: dialogFadeIn 0.15s ease-out;
 }
 @keyframes dialogFadeIn {
@@ -11412,10 +11413,10 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
 
 .zed-dialog {
   background: #FFFFFF;
-  border: 1px solid #E5E7EB;
-  border-radius: 12px;
-  box-shadow: 0 16px 70px rgba(0, 0, 0, 0.15);
-  width: 440px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 16px 70px rgba(0, 0, 0, 0.2);
+  width: 400px;
   max-width: 92vw;
   max-height: 85vh;
   display: flex;
@@ -11456,10 +11457,10 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
   right: 16px;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: none;
   background: transparent;
-  color: #9CA3AF;
+  color: #A1A1AA;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -11468,8 +11469,8 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
   padding: 0;
 }
 .zed-dialog-close:hover {
-  background: #F3F4F6;
-  color: #374151;
+  background: #F4F4F5;
+  color: #18181B;
 }
 
 .zed-dialog-body {
@@ -11486,52 +11487,32 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
   gap: 8px;
 }
 
-.zed-dialog-btn {
+/* Connect button — primary action */
+.zed-dialog-btn-connect {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 8px;
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.15s ease;
-  border: 1px solid transparent;
+  border: none;
   outline: none;
   white-space: nowrap;
+  background: #18181B;
+  color: #FAFAFA;
+  width: 100%;
 }
-.zed-dialog-btn:focus-visible {
+.zed-dialog-btn-connect:hover {
+  background: #27272A;
+}
+.zed-dialog-btn-connect:focus-visible {
   box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #3B82F6;
-}
-
-.zed-dialog-btn-ghost {
-  background: transparent;
-  color: #374151;
-  border-color: transparent;
-}
-.zed-dialog-btn-ghost:hover {
-  background: #F3F4F6;
-}
-
-.zed-dialog-btn-outline {
-  background: #FFFFFF;
-  color: #374151;
-  border-color: #D1D5DB;
-}
-.zed-dialog-btn-outline:hover {
-  background: #F9FAFB;
-}
-
-.zed-dialog-btn-primary {
-  background: #111827;
-  color: #FFFFFF;
-  border-color: #111827;
-}
-.zed-dialog-btn-primary:hover {
-  background: #1F2937;
 }
 
 /* Feature list inside dialog */
@@ -11548,8 +11529,8 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
 .zed-dialog-feature-icon {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background: #F3F4F6;
+  border-radius: 8px;
+  background: #F4F4F5;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11558,10 +11539,11 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
 .zed-dialog-feature-title {
   font-size: 14px;
   font-weight: 500;
-  color: #111827;
+  color: #18181B;
 }
 .zed-dialog-feature-sub {
   font-size: 13px;
-  color: #6B7280;
+  color: #71717A;
+  margin-top: 1px;
 }
 
