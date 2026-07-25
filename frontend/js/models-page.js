@@ -3,64 +3,8 @@ import { modelsStore } from './models-store.js';
 import { openSettingsModal, openConnectFlow, openAddProviderModal } from './modal.js';
 import { showToast } from './toast.js';
 
-// Static agent usage dataset to match mockup exactly
-const agentUsageData = [
-  {
-    name: "Research Agent",
-    role: "Web research & analysis",
-    provider: "OpenAI",
-    model: "GPT-4o",
-    logoSrc: "assets/models/openai.svg",
-    avatarSrc: "assets/models/research_avatar.png",
-    status: "Active",
-    statusClass: "active",
-    lastUsed: "2h ago"
-  },
-  {
-    name: "Data Analyst",
-    role: "Data analysis & visualization",
-    provider: "Google",
-    model: "Gemini 1.5 Pro",
-    logoSrc: "assets/models/google.svg",
-    avatarSrc: "assets/models/finance_avatar.png",
-    status: "Active",
-    statusClass: "active",
-    lastUsed: "5h ago"
-  },
-  {
-    name: "Content Writer",
-    role: "Writing & editing",
-    provider: "Anthropic",
-    model: "Claude 3.5 Sonnet",
-    logoSrc: "assets/models/claude.png",
-    avatarSrc: "assets/models/assistant_avatar.png",
-    status: "Active",
-    statusClass: "active",
-    lastUsed: "1d ago"
-  },
-  {
-    name: "Code Assistant",
-    role: "Coding & debugging",
-    provider: "DeepSeek",
-    model: "DeepSeek-V2.5",
-    logoSrc: "assets/models/deepseek.svg",
-    avatarSrc: "assets/models/coder_avatar.png",
-    status: "Active",
-    statusClass: "active",
-    lastUsed: "3h ago"
-  },
-  {
-    name: "Marketing Agent",
-    role: "Marketing content & strategy",
-    provider: "xAI",
-    model: "Grok-1.5",
-    logoSrc: "assets/models/grok.png",
-    avatarSrc: "assets/models/social_avatar.png",
-    status: "Idle",
-    statusClass: "idle",
-    lastUsed: "2d ago"
-  }
-];
+// Agent usage data — populated from backend when available
+const agentUsageData = [];
 
 export function initModelsPage() {
   const modelsPageView = document.getElementById('modelsPageView');

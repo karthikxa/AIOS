@@ -32,27 +32,27 @@ export function initSidebar() {
   // Router will handle active state toggling and view switching
 
 
-  // Handle new project button click simulation
+  // Handle new project button click
   const addProjectBtn = document.getElementById('addProjectBtn');
   const newProjectBtn = document.getElementById('newProjectBtn');
   
   if (addProjectBtn) {
     addProjectBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      showToast('Simulation: Create new project dialog.', 'info');
+      showToast('New project feature coming soon.', 'info');
     });
   }
 
   if (newProjectBtn) {
     newProjectBtn.addEventListener('click', () => {
-      showToast('Simulation: Create new project dialog.', 'info');
+      showToast('New project feature coming soon.', 'info');
     });
   }
 
   const navNewProject = document.getElementById('navNewProject');
   if (navNewProject) {
     navNewProject.addEventListener('click', () => {
-      showToast('Simulation: Create new project dialog.', 'info');
+      showToast('New project feature coming soon.', 'info');
     });
   }
 }
