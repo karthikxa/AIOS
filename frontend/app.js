@@ -2081,7 +2081,7 @@ JSON Structure:
   const LLM_PROXY_URL = '';  // Relative URL - goes through backend proxy
   const LLM_PROXY_KEY = '';  // No key needed — backend injects it
 
-  async function _callLLMProxyDirect(messages, useStream, onToken, signal) {
+  async function _callLLMProxyDirect(messages, useStream, onToken, signal, onReasoning) {
     // Use relative URL - backend /v1/chat/completions proxies to LLM on Render
     const resp = await fetch('/v1/chat/completions', {
       method: 'POST',
@@ -2110,11 +2110,16 @@ JSON Structure:
           if (trimmed.startsWith('data: ')) {
             try {
               const d = JSON.parse(trimmed.slice(6));
-              // Handle both content and reasoning_content
+              // Handle both content and reasoning_content / reasoning
               const content = d.choices?.[0]?.delta?.content;
-              const reasoning = d.choices?.[0]?.delta?.reasoning_content;
-              if (content) { full += content; if (onToken) onToken(content); }
-              if (reasoning) { /* reasoning content - ignore for now */ }
+              const reasoning = d.choices?.[0]?.delta?.reasoning_content || d.choices?.[0]?.delta?.reasoning;
+              if (reasoning && typeof onReasoning === 'function') {
+                onReasoning(reasoning);
+              }
+              if (content) {
+                full += content;
+                if (onToken) onToken(content);
+              }
             } catch (e) {}
           }
         }
@@ -2140,7 +2145,7 @@ JSON Structure:
     if (isZedPro && !skipAgent) {
       const useStream = !!onToken;
       try {
-        return await _callLLMProxyDirect(apiMessages, useStream, onToken, signal);
+        return await _callLLMProxyDirect(apiMessages, useStream, onToken, signal, onReasoning);
       } catch (err) {
         console.error('[Zed Pro] LLM proxy call failed:', err);
         throw new Error('Could not reach the AI service. Please check your connection and try again.');
@@ -3529,7 +3534,7 @@ JSON Structure:
     }
 
     // Swarm mode variables
-    let isPromptSwarmTrigger = effectiveMode === 'search' && checkShouldTriggerSwarm(promptText);
+    let isPromptSwarmTrigger = (effectiveMode === 'search' || effectiveMode === 'agent') && checkShouldTriggerSwarm(promptText);
     let swarmVisualized = false;
 
     // Show subagent status bar with slide-down pop-up animation in computer mode
@@ -4265,6 +4270,23 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       let fullContent = '';
       let streamedToolCalls = [];
 
+      const showTypingIndicator = (b) => {
+        if (!b) return;
+        let textContainer = b.querySelector('.cot-response-text-container');
+        if (!textContainer) return;
+        let indicator = textContainer.querySelector('.typing-indicator');
+        if (!indicator && !fullContent && !cotSection) {
+          indicator = document.createElement('div');
+          indicator.className = 'typing-indicator';
+          indicator.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 4px 0; color: #6B7280; font-size: 13.5px; font-family: "Inter", sans-serif;';
+          indicator.innerHTML = `
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4B5563" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1s linear infinite; flex-shrink: 0;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            <span style="font-weight: 450; color: #374151;">Thinking...</span>
+          `;
+          textContainer.appendChild(indicator);
+        }
+      };
+
       const ensureAssistantBubble = () => {
         if (!bubble) {
           const lastMsg = chatMessagesLog.lastElementChild;
@@ -4278,9 +4300,6 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             bubble = msgDiv.querySelector('.chat-message-bubble');
           }
         }
-        
-        const indicator = bubble.querySelector('.typing-indicator');
-        if (indicator) indicator.remove();
         
         let blocksContainer = bubble.querySelector('.message-collapsible-blocks');
         if (!blocksContainer) {
@@ -4297,6 +4316,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           bubble.appendChild(textContainer);
         }
         
+        showTypingIndicator(bubble);
         return bubble;
       };
 
@@ -4508,10 +4528,10 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       };
 
       let reply;
-      if (effectiveMode === 'search' && isPromptSwarmTrigger) {
+      ensureAssistantBubble();
+      if ((effectiveMode === 'search' || effectiveMode === 'agent') && isPromptSwarmTrigger) {
           // Agent Mode: trigger triggerSwarmVisualization directly and return early
           window.dispatchEvent(new CustomEvent('agent-typing-start', { detail: { status: 'Orchestrating swarm' } }));
-          ensureAssistantBubble();
           await triggerSwarmVisualization(promptText, bubble, model);
           showStopButton(false);
           clearAllToolIndicators();
@@ -5911,13 +5931,8 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   }
 
   window.addEventListener('agent-typing-start', (e) => {
-    const activeModeOpt = document.querySelector('.chat-mode-option.active');
-    const effectiveMode = activeModeOpt ? activeModeOpt.dataset.mode : 'search';
-    if (effectiveMode !== 'computer') {
-      return;
-    }
     const status = e.detail?.status || 'Thinking';
-    if (status === 'Planning' || status === 'Analyzing') {
+    if (status === 'Planning' || status === 'Analyzing' || status === 'Thinking' || status === 'Orchestrating swarm') {
       addThoughtStep();
     } else if (status === 'Writing response' || status === 'Synthesizing') {
       completeThoughtStep();
