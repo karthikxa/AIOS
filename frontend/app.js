@@ -5258,30 +5258,17 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   });
 
   function startScreenshotPolling() {
-    if (desktopPollInterval) return;
-    // Keep the VNC canvas visible until the fallback has a real frame.  Clearing
-    // the iframe first causes the black flash this fallback was meant to avoid.
+    // No screenshot polling — use live MJPEG stream only
     if (desktopConnectingOverlay) {
       desktopConnectingOverlay.innerHTML = '<span style="font-size: 13px; color: #999;">Desktop connected</span>';
       setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 500);
     }
-    // Poll screenshot every 2s and display as image
-    desktopFrame.style.display = 'block';
-    const img = document.createElement('img');
-    img.id = 'desktopScreenshotImg';
-    img.style.width = '100%';
-    img.style.height = '100%';
-    img.style.objectFit = 'contain';
-    img.style.background = '#000';
-    img.style.position = 'absolute';
-    img.style.inset = '0';
-    img.style.display = 'none';
-    const container = desktopFrame.parentElement;
-    if (container) container.appendChild(img);
-    img.addEventListener('load', () => { img.style.display = 'block'; }, { once: true });
-    desktopPollInterval = setInterval(() => {
-      img.src = 'http://127.0.0.1:7777/screenshot?_t=' + Date.now();
-    }, 2000);
+    // Load live MJPEG stream from desktop agent
+    if (desktopFrame) {
+      desktopFrame.style.display = 'block';
+      desktopFrame.src = 'http://localhost:4000/stream.mjpeg';
+      if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
+    }
   }
 
   function stopDesktopPolling() {
