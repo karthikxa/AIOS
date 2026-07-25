@@ -5258,16 +5258,20 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   });
 
   function startScreenshotPolling() {
-    // No screenshot polling — use live MJPEG stream only
+    // Live MJPEG stream — no polling, no screenshots
     if (desktopConnectingOverlay) {
-      desktopConnectingOverlay.innerHTML = '<span style="font-size: 13px; color: #999;">Desktop connected</span>';
-      setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 500);
+      desktopConnectingOverlay.innerHTML = '<span style="font-size: 13px; color: #999;">Connecting to live stream...</span>';
     }
-    // Load live MJPEG stream from desktop agent
-    if (desktopFrame) {
-      desktopFrame.style.display = 'block';
-      desktopFrame.src = 'http://localhost:4000/stream.mjpeg';
-      if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
+    // Replace iframe with live stream img element
+    if (desktopFrame && desktopFrame.parentNode) {
+      const streamImg = document.createElement('img');
+      streamImg.id = 'desktopFrame';
+      streamImg.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;display:block;';
+      streamImg.src = 'http://localhost:4000/stream.mjpeg';
+      streamImg.alt = 'Live desktop stream';
+      desktopFrame.parentNode.replaceChild(streamImg, desktopFrame);
+      desktopFrame = streamImg;
+      streamImg.onload = () => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; };
     }
   }
 
