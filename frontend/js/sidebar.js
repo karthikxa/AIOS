@@ -6,10 +6,42 @@ export function initSidebar() {
 
   // Desktop sidebar toggle button click handler
   const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+  const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+  const sidebarExpandBtn = document.getElementById('sidebarExpandBtn');
+
+  const updateExpandBtn = () => {
+    if (sidebarExpandBtn) {
+      sidebarExpandBtn.style.display = sidebar.classList.contains('collapsed') || sidebar.classList.contains('hidden-sidebar') ? 'flex' : 'none';
+    }
+  };
+
+  const handleToggle = (e) => {
+    if (e) e.stopPropagation();
+    sidebar.classList.toggle('collapsed');
+    updateExpandBtn();
+  };
+
   if (sidebarToggleBtn && sidebar) {
     sidebarToggleBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      sidebar.classList.toggle('hidden-sidebar');
+    });
+  }
+  if (sidebarCloseBtn && sidebar) {
+    sidebarCloseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
       sidebar.classList.toggle('collapsed');
+      updateExpandBtn();
+    });
+  }
+
+  // Expand button - click to restore full sidebar
+  if (sidebarExpandBtn && sidebar) {
+    sidebarExpandBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sidebar.classList.remove('collapsed');
+      sidebar.classList.remove('hidden-sidebar');
+      updateExpandBtn();
     });
   }
 
@@ -18,7 +50,13 @@ export function initSidebar() {
     if ((e.ctrlKey || e.metaKey) && e.key === '\\') {
       e.preventDefault();
       if (sidebar) {
-        sidebar.classList.toggle('collapsed');
+        if (sidebar.classList.contains('collapsed') || sidebar.classList.contains('hidden-sidebar')) {
+          sidebar.classList.remove('collapsed');
+          sidebar.classList.remove('hidden-sidebar');
+        } else {
+          sidebar.classList.add('collapsed');
+        }
+        updateExpandBtn();
       }
     }
   });

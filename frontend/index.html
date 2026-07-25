@@ -54,8 +54,8 @@
             <path d="M 7.5,7 H 16.5 V 9.5 L 11.0,14.5 H 16.5 V 17 H 7.5 V 14.5 L 13.0,9.5 H 7.5 Z" fill="#FFFFFF"/>
           </svg>
           <span style="font-size:28px;font-weight:700;color:#000;letter-spacing:-0.5px;text-transform:lowercase;">zed</span>
-          <button id="sidebarCloseBtn" onclick="document.getElementById('sidebar').style.display='none'" style="margin-left:auto;background:none;border:none;cursor:pointer;padding:4px;color:#9CA3AF;" title="Close sidebar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <button id="sidebarCloseBtn" class="sidebar-toggle-btn" style="margin-left:auto;" title="Toggle Sidebar (Ctrl+\\)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sidebar"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
           </button>
         </div>
         <div class="nav-item active" id="navNewTask">
@@ -103,9 +103,14 @@
       </div>
     </aside>
 
+    <!-- Floating toggle button (visible when sidebar collapsed) -->
+    <button id="sidebarExpandBtn" class="sidebar-expand-btn" title="Open sidebar (Ctrl+\\)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
+    </button>
+
     <!-- Main Content Area -->
     <main class="main-content" id="mainContent">
-      
+
       <!-- Top App Header -->
       <header class="app-header">
         <div class="header-left" style="display: flex; align-items: center; gap: 8px;">

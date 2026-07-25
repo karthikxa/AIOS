@@ -2343,6 +2343,17 @@ input:checked + .toggle-slider:before {
   color: var(--blue-600);
 }
 
+/* Sidebar Fully Closed state */
+aside.sidebar.hidden-sidebar {
+  width: 0 !important;
+  min-width: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  border-right: 0px solid transparent !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Sidebar Mini / Rail Collapsed states */
 aside.sidebar.collapsed {
   width: 68px !important;
@@ -2429,6 +2440,30 @@ aside.sidebar.collapsed #sidebarCloseBtn {
   height: 20px;
 }
 
+/* Sidebar expand button - visible when sidebar collapsed, hidden when expanded */
+.sidebar-expand-btn {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 999;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #E5E7EB;
+  background: #FFFFFF;
+  color: #6B7280;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.sidebar-expand-btn:hover {
+  background: #F9FAFB;
+  color: #111827;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
 /* Toggle Active State Trigger Button for Demonstration */
 .demo-state-toggle {
   position: absolute;
