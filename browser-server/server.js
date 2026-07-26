@@ -1,6 +1,7 @@
 const express = require('express');
 const { WebSocketServer, WebSocket } = require('ws');
 const http = require('http');
+const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 
 const DEFAULT_MAX_SESSIONS = 1;
@@ -8,9 +9,28 @@ const DEFAULT_RECONNECT_GRACE_MS = 2 * 60 * 1000;
 const DEFAULT_MAX_IDLE_MS = 60 * 60 * 1000;
 const DEFAULT_HEARTBEAT_MS = 30 * 1000;
 
+// HMAC secret for session tickets. In production, set BROWSER_SERVER_SECRET.
+// If not set, a random secret is generated at startup (resets on restart).
+const HMAC_SECRET = process.env.BROWSER_SERVER_SECRET || crypto.randomBytes(32).toString('hex');
+
 function positiveInteger(value, fallback) {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function signTicket(sessionId, createdAt) {
+  const payload = `${sessionId}|${createdAt}`;
+  return crypto.createHmac('sha256', HMAC_SECRET).update(payload).digest('hex');
+}
+
+function verifyTicket(sessionId, createdAt, ticket) {
+  const expected = signTicket(sessionId, createdAt);
+  // Constant-time comparison to prevent timing attacks
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(ticket, 'hex'));
+  } catch {
+    return false;
+  }
 }
 
 function createBrowserServer(options = {}) {
@@ -23,14 +43,17 @@ function createBrowserServer(options = {}) {
   const heartbeatMs = positiveInteger(options.heartbeatMs ?? process.env.HEARTBEAT_MS, DEFAULT_HEARTBEAT_MS);
 
   const app = express();
+  app.use(express.json());
   const server = http.createServer(app);
   const wss = new WebSocketServer({ server });
   const sessions = new Map();
 
   function createSession() {
     const now = Date.now();
+    const id = uuidv4();
     return {
-      id: uuidv4(),
+      id,
+      ticket: signTicket(id, now),
       status: 'initializing',
       currentUrl: 'about:blank',
       createdAt: now,
@@ -89,9 +112,8 @@ function createBrowserServer(options = {}) {
     ws.isAlive = true;
   }
 
-  // Health checks intentionally reflect the stream relay's availability.  A
-  // disconnected client is not a failed session: it has a grace period to
-  // reattach after browser refreshes or a transient network change.
+  // ── HTTP routes ───────────────────────────────────────────────────────
+
   app.get('/health', (req, res) => {
     let activeSessions = 0;
     let connectedClients = 0;
@@ -109,6 +131,7 @@ function createBrowserServer(options = {}) {
     });
   });
 
+  // GET /session/:id — returns session info WITHOUT the ticket (safe for querying)
   app.get('/session/:id', (req, res) => {
     const session = sessions.get(req.params.id);
     if (!session) return res.status(404).json({ error: 'Session not found' });
@@ -122,14 +145,23 @@ function createBrowserServer(options = {}) {
     });
   });
 
+  // POST /session — creates a new session and returns the HMAC ticket.
+  // The ticket MUST be provided when connecting via WebSocket.
   app.post('/session', (req, res) => {
     if (sessions.size >= maxSessions) {
       return res.status(503).json({ error: 'Server at capacity' });
     }
     const session = createSession();
     sessions.set(session.id, session);
-    return res.json({ sessionId: session.id, status: session.status });
+    console.log(`[Session] Created: ${session.id}`);
+    return res.json({
+      sessionId: session.id,
+      ticket: session.ticket,
+      status: session.status,
+    });
   });
+
+  // ── WebSocket handler ─────────────────────────────────────────────────
 
   async function handleMessage(session, msg, ws) {
     session.lastActivityAt = Date.now();
@@ -159,8 +191,6 @@ function createBrowserServer(options = {}) {
         broadcastToSession(session, { type: 'screenshot_request', quality: msg.quality || 80 });
         break;
       case 'frame':
-        // A renderer sends frames while viewers receive them.  Never echo a
-        // frame back to its source: it doubles work and can stall a slow peer.
         broadcastToSession(session, { type: 'frame', data: msg.data, timestamp: Date.now() }, { except: ws });
         break;
       case 'ping':
@@ -174,12 +204,24 @@ function createBrowserServer(options = {}) {
   wss.on('connection', (ws, req) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const requestedSessionId = url.searchParams.get('session');
+    const ticket = url.searchParams.get('ticket');
     let session = requestedSessionId ? sessions.get(requestedSessionId) : null;
 
     if (requestedSessionId && !session) {
       send(ws, { type: 'error', code: 'session_not_found', message: 'Session not found or expired' });
       ws.close(4404, 'Session not found');
       return;
+    }
+
+    // ── Ticket validation ──────────────────────────────────────────────
+    if (session) {
+      // Attaching to an existing session requires a valid HMAC ticket
+      if (!ticket || !verifyTicket(session.id, session.createdAt, ticket)) {
+        console.warn(`[WS] Invalid ticket for session ${session.id} — rejecting`);
+        send(ws, { type: 'error', code: 'unauthorized', message: 'Invalid or missing session ticket' });
+        ws.close(4401, 'Unauthorized');
+        return;
+      }
     }
 
     if (!session) {
@@ -190,7 +232,8 @@ function createBrowserServer(options = {}) {
       }
       session = createSession();
       sessions.set(session.id, session);
-      send(ws, { type: 'session_created', sessionId: session.id });
+      // Send the ticket back so the client can reconnect later
+      send(ws, { type: 'session_created', sessionId: session.id, ticket: session.ticket });
     }
 
     console.log(`[WS] Client attached to session: ${session.id}`);
@@ -222,9 +265,6 @@ function createBrowserServer(options = {}) {
     });
 
     ws.on('close', () => {
-      // A page refresh commonly opens its replacement socket before this old
-      // socket finishes closing.  Only remove this exact socket; do not mark a
-      // newly attached client disconnected.
       session.clients.delete(ws);
       session.lastActivityAt = Date.now();
       if (session.clients.size === 0) {
@@ -233,6 +273,8 @@ function createBrowserServer(options = {}) {
       }
     });
   });
+
+  // ── Timers ───────────────────────────────────────────────────────────
 
   const heartbeatTimer = setInterval(() => {
     for (const ws of wss.clients) {
@@ -272,6 +314,7 @@ if (require.main === module) {
   server.listen(port, '0.0.0.0', () => {
     console.log(`Browser server running on port ${port}`);
     console.log(`Health check: http://localhost:${port}/health`);
+    console.log(`Session creation: POST http://localhost:${port}/session`);
   });
 }
 

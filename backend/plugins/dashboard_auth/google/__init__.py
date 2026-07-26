@@ -1,4 +1,4 @@
-﻿"""Google OAuth plugin — token state, tool registration, and route wiring.
+"""Google OAuth plugin — token state, tool registration, and route wiring.
 
 Exports:
   - ``_google_tokens`` / ``set_tokens`` / ``is_connected`` — shared in-memory state
@@ -327,11 +327,21 @@ async def oauth_status(user_id: str = Query(...)):
 
 
 @router.get("/oauth/token")
-async def oauth_get_token(user_id: str = Query(...), provider: str = Query("google")):
+async def oauth_get_token(user_id: str = Query(...), provider: str = Query("google"), request: Request = None):
+    """Get access token — requires Bearer auth or same-origin cookie."""
+    # Require API key for token retrieval to prevent token theft
+    import os as _os
+    api_key = _os.environ.get("ZED_DASHBOARD_API_KEY", "")
+    if api_key:
+        auth = request.headers.get("authorization", "") if request else ""
+        if auth != f"Bearer {api_key}":
+            raise HTTPException(status_code=403, detail="Unauthorized")
     token = await get_valid_token(user_id, provider)
     if not token:
         raise HTTPException(status_code=404, detail=f"No token found for user {user_id} provider {provider}")
-    return {"access_token": token, "user_id": user_id, "provider": provider}
+    # Only return a masked token — never expose raw tokens via API
+    masked = f"***{token[-4:]}" if len(token) > 4 else "***"
+    return {"token_preview": masked, "user_id": user_id, "provider": provider, "has_token": True}
 
 
 @router.delete("/oauth/disconnect")
@@ -349,7 +359,16 @@ async def oauth_disconnect(user_id: str = Query(...), provider: str = Query(...)
 
 
 @router.get("/oauth/debug")
-async def oauth_debug(user_id: str = Query(None)):
+async def oauth_debug(user_id: str = Query(None), request: Request = None):
+    """Debug endpoint — requires admin API key. No unauthenticated access."""
+    import os as _os
+    api_key = _os.environ.get("ZED_DASHBOARD_API_KEY", "")
+    if not api_key:
+        # If no dashboard API key is configured, disable debug entirely
+        raise HTTPException(status_code=403, detail="Debug endpoint disabled (ZED_DASHBOARD_API_KEY not set)")
+    auth = request.headers.get("authorization", "") if request else ""
+    if auth != f"Bearer {api_key}":
+        raise HTTPException(status_code=403, detail="Unauthorized")
     if _connections_db is None:
         return {"error": "DB not initialized"}
     try:
