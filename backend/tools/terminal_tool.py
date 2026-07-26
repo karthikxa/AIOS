@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Terminal Tool Module
 
@@ -1893,6 +1893,31 @@ def terminal_tool(
                 "error": f"Invalid command: expected string, got {type(command).__name__}",
                 "status": "error",
             }, ensure_ascii=False)
+
+        # ── Path traversal deny-list: block access to sensitive system paths ──
+        _DENIED_PATH_PATTERNS = [
+            r'(?i)/etc/(passwd|shadow|sudoers)',
+            r'(?i)\\Windows\\System32',
+            r'(?i)\\AppData\\(Roaming|Local)\\(Microsoft|Google|Mozilla)',
+            r'(?i)/home/[^/]+/\.(ssh|gnupg|aws|azure|docker|kube)',
+            r'(?i)\.env$',
+            r'(?i)auth\.json$',
+            r'(?i)credentials\.json$',
+            r'(?i)/etc/cron',
+            r'(?i)\\\.ssh\\',
+            r'(?i)\\\.aws\\',
+            r'(?i)\\\.docker\\',
+        ]
+        import re as _re
+        for pat in _DENIED_PATH_PATTERNS:
+            if _re.search(pat, command):
+                logger.warning("Terminal command blocked: matches denied path pattern '%s'", pat)
+                return json.dumps({
+                    "output": "",
+                    "exit_code": -1,
+                    "error": f"Command blocked: access to sensitive path denied (pattern: {pat})",
+                    "status": "error",
+                }, ensure_ascii=False)
 
         # Path translation: Map user's Windows path to Render's current directory path
         if workdir:

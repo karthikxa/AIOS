@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """File Tools Module - LLM agent file manipulation tools."""
 
 import errno
@@ -786,7 +786,18 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
     try:
         offset, limit = normalize_read_pagination(offset, limit)
 
-        # â”€â”€ Device path guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # Sensitive path deny-list
+        import re as _re
+        _DENIED = [r'(?i)/etc/(passwd|shadow|sudoers)', r'(?i)\\Windows\\System32',
+                   r'(?i)\\AppData\\(Roaming|Local)\\(Microsoft|Google|Mozilla)',
+                   r'(?i)/home/[^/]+/\.(ssh|gnupg|aws|azure|docker|kube)',
+                   r'(?i)(^|[/\\])(\.env|auth\.json|credentials\.json)$',
+                   r'(?i)(^|[/\\])(\.ssh|\.aws|\.docker)[/\\]']
+        for _pat in _DENIED:
+            if _re.search(_pat, path):
+                return json.dumps({"error": f"Access denied: sensitive path"})
+
+        # Device path guard
         # Block paths that would hang the process (infinite output,
         # blocking on input).  Pure path check â€” no I/O.
         if _is_blocked_device(path):

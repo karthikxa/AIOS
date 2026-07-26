@@ -1,13 +1,13 @@
 /**
  * vite.config.js
  *
- * Dashboard dev server — everything LOCAL except LLM proxy (Render).
+ * Dashboard dev server — single-port architecture via backend on port 8642.
  *
- * /v1/* → http://127.0.0.1:8642  (local backend — AIAgent with tools, memory, skills)
- * /api/* → http://127.0.0.1:8642  (local backend)
- * /oauth/* → http://127.0.0.1:8642 (local backend — Google OAuth)
- * /agent/* → http://127.0.0.1:8765 (local desktop agent)
- * /kasm/* → http://127.0.0.1:6901  (KasmVNC noVNC)
+ * /v1/* → http://127.0.0.1:8642  (LLM proxy)
+ * /api/* → http://127.0.0.1:8642  (backend API + desktop agent proxy)
+ * /oauth/* → http://127.0.0.1:8642 (Google OAuth)
+ * /desktop/* → http://127.0.0.1:8642 (VNC proxy + MJPEG stream)
+ * /kasm/* → http://127.0.0.1:8642  (legacy KasmVNC proxy)
  * LLM proxy stays on Render: server-llm-1-0r64.onrender.com
  */
 
@@ -26,12 +26,12 @@ export default {
   server: {
     port: 8001,
     proxy: {
-      // Route /v1 to local backend (AIAgent with tools, memory, skills)
+      // Route /v1 to local backend (LLM proxy passthrough)
       '/v1': {
         target: 'http://127.0.0.1:8642',
         changeOrigin: true,
       },
-      // Route /api to local backend
+      // Route /api to local backend (all API routes including desktop agent)
       '/api': {
         target: 'http://127.0.0.1:8642',
         changeOrigin: true,
@@ -41,30 +41,17 @@ export default {
         target: 'http://127.0.0.1:8642',
         changeOrigin: true,
       },
-      // Route /agent to local Desktop Agent (Computer mode)
-      '/agent': {
-        target: 'http://127.0.0.1:8765',
-        changeOrigin: true,
-      },
-      // Proxy KasmVNC (noVNC on port 6901) — no auth, plain HTTP
-      '/kasm': {
-        target: 'http://127.0.0.1:6901',
-        changeOrigin: true,
-        ws: true,
-        rewrite: (path) => path.replace(/^\/kasm/, '') || '/',
-      },
-      // Proxy Windows Desktop API (port 7777) — screenshot + input for AI agent
+      // Route /desktop to local backend (VNC proxy + MJPEG stream + WebSocket)
       '/desktop': {
-        target: 'http://127.0.0.1:7777',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/desktop/, ''),
-      },
-      // Proxy Sandbox (port 8080) — browser API + VNC + screenshots
-      '/sandbox': {
-        target: 'http://127.0.0.1:8080',
+        target: 'http://127.0.0.1:8642',
         changeOrigin: true,
         ws: true,
-        rewrite: (path) => path.replace(/^\/sandbox/, '') || '/',
+      },
+      // Route /kasm to local backend (legacy KasmVNC proxy)
+      '/kasm': {
+        target: 'http://127.0.0.1:8642',
+        changeOrigin: true,
+        ws: true,
       },
     },
     headers: {
@@ -72,4 +59,3 @@ export default {
     },
   },
 };
-
