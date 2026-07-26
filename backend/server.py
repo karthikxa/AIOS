@@ -886,6 +886,78 @@ _init_status: Dict[str, bool] = {}  # Tracks which subsystems initialized OK
 _agent_status: Dict[str, Dict[str, Any]] = {}  # session_id -> {status, result, ...}
 
 
+def _auto_configure_env():
+    """First-run auto-setup: configure missing LLM and security env vars.
+
+    On first run, detects missing ZED_PRO_BASE_URL, ZED_PRO_API_KEY,
+    and ZED_DASHBOARD_API_KEY. Auto-configures them from built-in defaults
+    and writes to .env so subsequent runs are automatic.
+    """
+    env_path = Path(__file__).resolve().parent / ".env"
+    changes = []
+
+    # 1. LLM Proxy — use built-in FreeLLMAPI if not configured
+    if not os.environ.get("ZED_PRO_BASE_URL"):
+        default_url = "https://server-llm-1-0r64.onrender.com/v1"
+        os.environ["ZED_PRO_BASE_URL"] = default_url
+        changes.append(f"ZED_PRO_BASE_URL={default_url}")
+        logger.info("Auto-configured LLM proxy: %s", default_url)
+
+    if not os.environ.get("ZED_PRO_API_KEY"):
+        default_key = "freellmapi-b8b35f76a87a2e3db4985258c26197a2f22ceabe528eb6ac"
+        os.environ["ZED_PRO_API_KEY"] = default_key
+        changes.append(f"ZED_PRO_API_KEY=***{default_key[-4:]}")
+        logger.info("Auto-configured LLM API key")
+
+    # 2. Dashboard API Key — generate if not set (for auth gating)
+    if not os.environ.get("ZED_DASHBOARD_API_KEY"):
+        import secrets as _secrets
+        api_key = _secrets.token_urlsafe(32)
+        os.environ["ZED_DASHBOARD_API_KEY"] = api_key
+        changes.append(f"ZED_DASHBOARD_API_KEY={api_key}")
+        logger.info("Auto-generated dashboard API key (first-run)")
+
+    # 3. Desktop Agent URL — default to local
+    if not os.environ.get("DESKTOP_AGENT_URL"):
+        os.environ["DESKTOP_AGENT_URL"] = "http://localhost:4000"
+
+    # 4. ZED_HOME — default to standard location
+    if not os.environ.get("ZED_HOME"):
+        default_home = str(Path.home() / ".zed")
+        os.environ["ZED_HOME"] = default_home
+        changes.append(f"ZED_HOME={default_home}")
+
+    # Write changes to .env file for persistence
+    if changes:
+        try:
+            existing = env_path.read_text(encoding="utf-8") if env_path.exists() else ""
+
+            # Append only new vars that aren't already in .env
+            new_lines = []
+            for change in changes:
+                key = change.split("=")[0]
+                if key not in existing:
+                    new_lines.append(change)
+
+            if new_lines:
+                with open(env_path, "a", encoding="utf-8") as f:
+                    if not existing.endswith("\n") and existing:
+                        f.write("\n")
+                    f.write("\n# Auto-generated on first run\n")
+                    for line in new_lines:
+                        f.write(f"{line}\n")
+                logger.info("Wrote auto-config to %s: %s", env_path, [c.split("=")[0] for c in new_lines])
+
+            # Show the dashboard API key in logs so user can find it
+            api_key = os.environ.get("ZED_DASHBOARD_API_KEY", "")
+            if api_key:
+                logger.info("=" * 60)
+                logger.info("  DASHBOARD API KEY: %s", api_key)
+                logger.info("  Use this in Bearer token for protected endpoints")
+                logger.info("=" * 60)
+        except Exception as e:
+            logger.warning("Could not write .env auto-config: %s", e)
+
 
 # ── Lifespan ─────────────────────────────────────────────────────────────────
 @asynccontextmanager
@@ -895,8 +967,11 @@ async def lifespan(app: FastAPI):
     logger.info("=" * 60)
     logger.info("  Zed Pro Backend starting on port %s", PORT)
     logger.info("  ZED_HOME: %s", ZED_HOME)
-    logger.info("  Upstream: %s", FREELLMAPI_URL)
+    logger.info("  Upstream: %s", FREELLMAPI_URL or "(not configured)")
     logger.info("=" * 60)
+
+    # ── First-run auto-setup: configure missing env vars ────────────────────
+    _auto_configure_env()
 
     # ── Validate critical env vars — fail fast ──────────────────────────────
     required_vars = {"ZED_HOME": str(ZED_HOME)}
@@ -1022,193 +1097,193 @@ async def lifespan(app: FastAPI):
             changed = False
 
             for job in jobs:
-            if not job.get("enabled", True):
-                continue
-
-            # Check if due
-            schedule = job.get("schedule")
-            if not isinstance(schedule, dict):
-                continue  # raw string schedules not supported in self-contained mode
-
-            kind = schedule.get("kind", "")
-            is_due = False
-
-            if kind == "interval":
-                # Interval schedule: check minutes
-                minutes = schedule.get("minutes", 60)
-                last_run = job.get("last_run_at")
-                if last_run:
-                    try:
-                        last_ts = last_run.timestamp() if hasattr(last_run, 'timestamp') else float(last_run)
-                        if now - last_ts >= minutes * 60:
-                            is_due = True
-                    except Exception:
-                        is_due = True
-                else:
-                    is_due = True
-            elif kind == "cron":
-                # Cron expression — try croniter
-                expr = schedule.get("expr", "")
-                if not expr:
+                if not job.get("enabled", True):
                     continue
-                try:
-                    from croniter import croniter
+
+                # Check if due
+                schedule = job.get("schedule")
+                if not isinstance(schedule, dict):
+                    continue  # raw string schedules not supported in self-contained mode
+
+                kind = schedule.get("kind", "")
+                is_due = False
+
+                if kind == "interval":
+                    # Interval schedule: check minutes
+                    minutes = schedule.get("minutes", 60)
                     last_run = job.get("last_run_at")
                     if last_run:
                         try:
                             last_ts = last_run.timestamp() if hasattr(last_run, 'timestamp') else float(last_run)
+                            if now - last_ts >= minutes * 60:
+                                is_due = True
                         except Exception:
-                            last_ts = now - 60
+                            is_due = True
                     else:
-                        last_ts = now - 60
-                    # Get next run time after last_run
-                    cron = croniter(expr, last_ts)
-                    next_run = cron.get_next(float)
-                    if next_run <= now + 5:  # 5s tolerance
                         is_due = True
-                except ImportError:
-                    # croniter not available — fall back to simple minute check
-                    if schedule.get("expr", "").strip() == "* * * * *":
+                elif kind == "cron":
+                    # Cron expression — try croniter
+                    expr = schedule.get("expr", "")
+                    if not expr:
+                        continue
+                    try:
+                        from croniter import croniter
                         last_run = job.get("last_run_at")
                         if last_run:
                             try:
                                 last_ts = last_run.timestamp() if hasattr(last_run, 'timestamp') else float(last_run)
-                                if now - last_ts >= 55:
-                                    is_due = True
                             except Exception:
-                                is_due = True
+                                last_ts = now - 60
                         else:
+                            last_ts = now - 60
+                        # Get next run time after last_run
+                        cron = croniter(expr, last_ts)
+                        next_run = cron.get_next(float)
+                        if next_run <= now + 5:  # 5s tolerance
                             is_due = True
-                except Exception:
-                    logger.debug("Cron expr parse failed for job %s: %s", job.get("id"), schedule.get("expr"))
+                    except ImportError:
+                        # croniter not available — fall back to simple minute check
+                        if schedule.get("expr", "").strip() == "* * * * *":
+                            last_run = job.get("last_run_at")
+                            if last_run:
+                                try:
+                                    last_ts = last_run.timestamp() if hasattr(last_run, 'timestamp') else float(last_run)
+                                    if now - last_ts >= 55:
+                                        is_due = True
+                                except Exception:
+                                    is_due = True
+                            else:
+                                is_due = True
+                    except Exception:
+                        logger.debug("Cron expr parse failed for job %s: %s", job.get("id"), schedule.get("expr"))
+                        continue
+
+                if not is_due:
                     continue
 
-            if not is_due:
-                continue
+                # Fire the job
+                job_id = job.get("id", "unknown")
+                job_name = job.get("name", job_id)
+                prompt = job.get("prompt", f"Execute scheduled task: {job_name}")
+                llm_model = job.get("model", "auto") or "auto"
+                if llm_model.lower() in ("zed-pro", ""):
+                    llm_model = "auto"
 
-            # Fire the job
-            job_id = job.get("id", "unknown")
-            job_name = job.get("name", job_id)
-            prompt = job.get("prompt", f"Execute scheduled task: {job_name}")
-            llm_model = job.get("model", "auto") or "auto"
-            if llm_model.lower() in ("zed-pro", ""):
-                llm_model = "auto"
+                logger.info("Cron daemon firing job '%s' (id=%s)", job_name, job_id)
 
-            logger.info("Cron daemon firing job '%s' (id=%s)", job_name, job_id)
+                run_id = f"run-{uuid.uuid4().hex[:8]}"
 
-            run_id = f"run-{uuid.uuid4().hex[:8]}"
-
-            def _fire_job(_job_id=job_id, _job_name=job_name, _prompt=prompt, _llm_model=llm_model, _run_id=run_id):
-                output_dir = ZED_HOME / "cron_output" / _job_id
-                try:
-                    output_dir.mkdir(parents=True, exist_ok=True)
-                except Exception as mkdir_err:
-                    logger.error("Cron daemon: mkdir failed for %s: %s", output_dir, mkdir_err)
-                    return
-
-                # Validate prompt integrity — reject prompts that try to escalate
-                _BLOCKED_CRON_PATTERNS = (
-                    "delegate_task", "clarify", "sudo", "rm -rf", "format",
-                    "shutdown", "reboot", "curl.*POST", "wget.*POST",
-                )
-                import re as _re
-                for pat in _BLOCKED_CRON_PATTERNS:
-                    if _re.search(pat, _prompt, _re.IGNORECASE):
-                        logger.warning("Cron daemon: blocked dangerous prompt pattern '%s' in job %s", pat, _job_id)
-                        result = f"Blocked: prompt contains restricted pattern '{pat}'"
-                        status = "error"
-                        output_file = output_dir / f"{_run_id}.json"
-                        try:
-                            output_file.write_text(json.dumps({
-                                "run_id": _run_id, "job_id": _job_id, "job_name": _job_name,
-                                "prompt": _prompt, "result": result, "model": _llm_model,
-                                "status": status, "created_at": time.time(),
-                            }, indent=2), encoding="utf-8")
-                        except Exception:
-                            pass
+                def _fire_job(_job_id=job_id, _job_name=job_name, _prompt=prompt, _llm_model=llm_model, _run_id=run_id):
+                    output_dir = ZED_HOME / "cron_output" / _job_id
+                    try:
+                        output_dir.mkdir(parents=True, exist_ok=True)
+                    except Exception as mkdir_err:
+                        logger.error("Cron daemon: mkdir failed for %s: %s", output_dir, mkdir_err)
                         return
 
-                try:
-                    # Use full AIAgent but with restricted toolsets for cron safety
-                    resolved = _llm_model if _llm_model.lower() not in ("auto", "zed-pro", "") else "gemini-2.5-flash-lite"
-
-                    agent = AIAgent(
-                        session_id=f"cron-{_job_id}",
-                        session_db=session_db,
-                        model=resolved,
-                        quiet_mode=True,
-                        verbose_logging=False,
-                        base_url=os.environ.get("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1").rstrip("/"),
-                        api_key=os.environ.get("ZED_PRO_API_KEY", ""),
-                        credential_pool=credential_pool,
+                    # Validate prompt integrity — reject prompts that try to escalate
+                    _BLOCKED_CRON_PATTERNS = (
+                        "delegate_task", "clarify", "sudo", "rm -rf", "format",
+                        "shutdown", "reboot", "curl.*POST", "wget.*POST",
                     )
+                    import re as _re
+                    for pat in _BLOCKED_CRON_PATTERNS:
+                        if _re.search(pat, _prompt, _re.IGNORECASE):
+                            logger.warning("Cron daemon: blocked dangerous prompt pattern '%s' in job %s", pat, _job_id)
+                            result = f"Blocked: prompt contains restricted pattern '{pat}'"
+                            status = "error"
+                            output_file = output_dir / f"{_run_id}.json"
+                            try:
+                                output_file.write_text(json.dumps({
+                                    "run_id": _run_id, "job_id": _job_id, "job_name": _job_name,
+                                    "prompt": _prompt, "result": result, "model": _llm_model,
+                                    "status": status, "created_at": time.time(),
+                                }, indent=2), encoding="utf-8")
+                            except Exception:
+                                pass
+                            return
 
-                    # Cron jobs get a restricted system prompt — no delegation, no sudo
-                    system_msg = (
-                        "You are executing a scheduled automated task. "
-                        "You do NOT have access to delegate_task, clarify, sudo, or destructive commands. "
-                        "Focus on completing the task with web_search, web_extract, read_file, write_file, "
-                        "search_files, terminal, and vision tools only."
-                    )
+                    try:
+                        # Use full AIAgent but with restricted toolsets for cron safety
+                        resolved = _llm_model if _llm_model.lower() not in ("auto", "zed-pro", "") else "gemini-2.5-flash-lite"
 
-                    agent_result = agent.run_conversation(
-                        user_message=_prompt,
-                        system_message=system_msg,
-                    )
+                        agent = AIAgent(
+                            session_id=f"cron-{_job_id}",
+                            session_db=session_db,
+                            model=resolved,
+                            quiet_mode=True,
+                            verbose_logging=False,
+                            base_url=os.environ.get("ZED_PRO_BASE_URL", "").rstrip("/"),
+                            api_key=os.environ.get("ZED_PRO_API_KEY", ""),
+                            credential_pool=credential_pool,
+                        )
 
-                    if isinstance(agent_result, dict):
-                        result = agent_result.get("final_response", str(agent_result))
-                        status = "success" if result else "error"
-                    else:
-                        result = str(agent_result)
-                        status = "success"
-                except Exception as e:
-                    result = f"Execution failed: {e}"
-                    status = "error"
+                        # Cron jobs get a restricted system prompt — no delegation, no sudo
+                        system_msg = (
+                            "You are executing a scheduled automated task. "
+                            "You do NOT have access to delegate_task, clarify, sudo, or destructive commands. "
+                            "Focus on completing the task with web_search, web_extract, read_file, write_file, "
+                            "search_files, terminal, and vision tools only."
+                        )
 
-                # Save output — wrap in try/except so Render filesystem errors are logged
-                output_file = output_dir / f"{_run_id}.json"
-                try:
-                    output_file.write_text(json.dumps({
-                        "run_id": _run_id,
-                        "job_id": _job_id,
-                        "job_name": _job_name,
-                        "prompt": _prompt,
-                        "result": result,
-                        "model": _llm_model,
-                        "status": status,
-                        "created_at": time.time(),
-                    }, indent=2), encoding="utf-8")
-                    logger.info("Cron daemon: wrote output to %s", output_file)
-                except Exception as write_err:
-                    logger.error("Cron daemon: FAILED to write output to %s: %s", output_file, write_err)
+                        agent_result = agent.run_conversation(
+                            user_message=_prompt,
+                            system_message=system_msg,
+                        )
 
-                # Update job state in jobs.json
-                try:
-                    with _cron_jobs_lock:
-                        jobs_data = json.loads(jobs_file.read_text(encoding="utf-8"))
-                        jobs_list = jobs_data.get("jobs", []) if isinstance(jobs_data, dict) else jobs_data
-                        for j in jobs_list:
-                            if j.get("id") == _job_id:
-                                j["last_run_at"] = time.time()
-                                j["last_status"] = status
-                                j["last_error"] = result if status == "error" else None
-                                repeat = j.get("repeat") or {}
-                                repeat["completed"] = repeat.get("completed", 0) + 1
-                                j["repeat"] = repeat
-                                break
-                        if isinstance(jobs_data, dict):
-                            jobs_data["jobs"] = jobs_list
+                        if isinstance(agent_result, dict):
+                            result = agent_result.get("final_response", str(agent_result))
+                            status = "success" if result else "error"
                         else:
-                            jobs_data = {"jobs": jobs_list}
-                        jobs_file.write_text(json.dumps(jobs_data, indent=2), encoding="utf-8")
-                except Exception as state_err:
-                    logger.error("Cron daemon: failed to update job state: %s", state_err)
+                            result = str(agent_result)
+                            status = "success"
+                    except Exception as e:
+                        result = f"Execution failed: {e}"
+                        status = "error"
 
-                logger.info("Cron daemon job '%s' run %s: %s", _job_name, _run_id, status)
+                    # Save output — wrap in try/except so Render filesystem errors are logged
+                    output_file = output_dir / f"{_run_id}.json"
+                    try:
+                        output_file.write_text(json.dumps({
+                            "run_id": _run_id,
+                            "job_id": _job_id,
+                            "job_name": _job_name,
+                            "prompt": _prompt,
+                            "result": result,
+                            "model": _llm_model,
+                            "status": status,
+                            "created_at": time.time(),
+                        }, indent=2), encoding="utf-8")
+                        logger.info("Cron daemon: wrote output to %s", output_file)
+                    except Exception as write_err:
+                        logger.error("Cron daemon: FAILED to write output to %s: %s", output_file, write_err)
 
-            threading.Thread(target=_fire_job, daemon=True).start()
-            changed = True
+                    # Update job state in jobs.json
+                    try:
+                        with _cron_jobs_lock:
+                            jobs_data = json.loads(jobs_file.read_text(encoding="utf-8"))
+                            jobs_list = jobs_data.get("jobs", []) if isinstance(jobs_data, dict) else jobs_data
+                            for j in jobs_list:
+                                if j.get("id") == _job_id:
+                                    j["last_run_at"] = time.time()
+                                    j["last_status"] = status
+                                    j["last_error"] = result if status == "error" else None
+                                    repeat = j.get("repeat") or {}
+                                    repeat["completed"] = repeat.get("completed", 0) + 1
+                                    j["repeat"] = repeat
+                                    break
+                            if isinstance(jobs_data, dict):
+                                jobs_data["jobs"] = jobs_list
+                            else:
+                                jobs_data = {"jobs": jobs_list}
+                            jobs_file.write_text(json.dumps(jobs_data, indent=2), encoding="utf-8")
+                    except Exception as state_err:
+                        logger.error("Cron daemon: failed to update job state: %s", state_err)
+
+                    logger.info("Cron daemon job '%s' run %s: %s", _job_name, _run_id, status)
+
+                threading.Thread(target=_fire_job, daemon=True).start()
+                changed = True
 
     def _cron_loop():
         logger.info("Cron scheduler daemon started (interval=60s, self-contained mode)")
