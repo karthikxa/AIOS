@@ -391,6 +391,57 @@ async def oauth_debug(user_id: str = Query(None), request: Request = None):
 _connections_db = None
 CONNECTIONS_DB_PATH = None
 
+# ── Token encryption at rest ────────────────────────────────────────────────
+# Uses Fernet symmetric encryption. Key derived from machine hostname + ZED_HOME
+# so tokens are only readable on the same machine. Key stored in connections.key.
+_token_cipher = None
+
+def _init_token_encryption():
+    """Initialize Fernet encryption for tokens at rest."""
+    global _token_cipher
+    import os
+    try:
+        from cryptography.fernet import Fernet
+        key_path = CONNECTIONS_DB_PATH.parent / "connections.key"
+        if key_path.exists():
+            key = key_path.read_bytes().strip()
+        else:
+            # Derive key from machine hostname + ZED_HOME path
+            seed = f"{os.environ.get('COMPUTERNAME', 'default')}:{CONNECTIONS_DB_PATH}"
+            key_hash = hashlib.sha256(seed.encode()).digest()
+            key = Fernet(base64.urlsafe_b64encode(key_hash))
+            key = key._encryption_key  # Extract raw Fernet key
+            key_path.write_bytes(key)
+            key_path.chmod(0o600)
+            logger.info("Generated token encryption key: %s", key_path)
+        _token_cipher = Fernet(key)
+        logger.info("Token encryption initialized")
+    except Exception as e:
+        logger.error("Token encryption init failed: %s — tokens stored in plaintext", e)
+        _token_cipher = None
+
+def _encrypt_token(token: str) -> str:
+    """Encrypt a token for storage. Returns plaintext if encryption unavailable."""
+    if not token or not _token_cipher:
+        return token
+    try:
+        return _token_cipher.encrypt(token.encode()).decode()
+    except Exception:
+        return token
+
+def _decrypt_token(token: str) -> str:
+    """Decrypt a stored token. Returns as-is if already plaintext."""
+    if not token or not _token_cipher:
+        return token
+    try:
+        return _token_cipher.decrypt(token.encode()).decode()
+    except Exception:
+        # Token is plaintext (pre-encryption migration) — return as-is
+        return token
+
+
+import hashlib, base64
+
 def init_db(db_path):
     global _connections_db, CONNECTIONS_DB_PATH
     CONNECTIONS_DB_PATH = db_path
@@ -417,6 +468,8 @@ def init_db(db_path):
     db.commit()
     _connections_db = db
     _update_all_instances("_connections_db", db)
+    # Initialize token encryption before reloading tokens
+    _init_token_encryption()
     # Reload tokens from DB into in-memory cache so tools are available
     _reload_tokens_from_db()
     logger.info("Connections DB ready: %s", db_path)
@@ -440,8 +493,8 @@ def _reload_tokens_from_db():
                 continue
             plugin_key = _PROVIDER_TO_PLUGIN.get(provider, provider)
             token_data = {
-                "token": r["access_token"],
-                "refresh_token": r["refresh_token"],
+                "token": _decrypt_token(r["access_token"]),
+                "refresh_token": _decrypt_token(r["refresh_token"]),
                 "token_uri": "https://oauth2.googleapis.com/token",
                 "client_id": GOOGLE_CLIENT_ID,
                 "client_secret": GOOGLE_CLIENT_SECRET,
@@ -460,9 +513,11 @@ def _reload_tokens_from_db():
         # regardless of which specific Google service was connected
         fallback = generic_row or first_google_row
         if fallback:
+            fb_token = _decrypt_token(fallback.get("access_token", "") or fallback.get("token", ""))
+            fb_refresh = _decrypt_token(fallback.get("refresh_token", "") or "")
             set_tokens("google-drive", {
-                "token": fallback["access_token"] if "access_token" in fallback else fallback["token"],
-                "refresh_token": fallback["refresh_token"],
+                "token": fb_token,
+                "refresh_token": fb_refresh,
                 "token_uri": "https://oauth2.googleapis.com/token",
                 "client_id": GOOGLE_CLIENT_ID,
                 "client_secret": GOOGLE_CLIENT_SECRET,
@@ -482,7 +537,14 @@ def _get_conn(user_id: str, provider: str):
             "SELECT * FROM connections WHERE user_id=? AND provider=?",
             (user_id, provider)
         ).fetchone()
-        return dict(row) if row else None
+        if row is None:
+            return None
+        d = dict(row)
+        # Decrypt tokens at read boundary
+        d["access_token"] = _decrypt_token(d.get("access_token", ""))
+        if d.get("refresh_token"):
+            d["refresh_token"] = _decrypt_token(d["refresh_token"])
+        return d
     except Exception as e:
         logger.warning("_get_conn error: %s", e)
         return None
@@ -495,6 +557,10 @@ def _save_conn(
     if _connections_db is None:
         return
     try:
+        # Encrypt tokens at rest
+        enc_access = _encrypt_token(access_token)
+        enc_refresh = _encrypt_token(refresh_token) if refresh_token else None
+
         _connections_db.execute("""
             INSERT INTO connections
               (user_id, provider, access_token, refresh_token, expires_at, scopes, email, name, updated_at)
@@ -507,7 +573,7 @@ def _save_conn(
               email=excluded.email,
               name=excluded.name,
               updated_at=unixepoch()
-        """, (user_id, provider, access_token, refresh_token, expires_at, scopes, email, name))
+        """, (user_id, provider, enc_access, enc_refresh, expires_at, scopes, email, name))
         _connections_db.commit()
     except Exception as e:
         logger.error("_save_conn error: %s", e)

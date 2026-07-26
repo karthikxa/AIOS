@@ -876,6 +876,7 @@ memory_manager = None
 credential_pool = None
 context_files = {}
 soul_content = ""
+_init_status: Dict[str, bool] = {}  # Tracks which subsystems initialized OK
 
 # ── Concurrency + rate limiting ─────────────────────────────────────────────
 # No hard cap — the token bucket rate limiter handles throttling naturally.
@@ -926,35 +927,43 @@ async def lifespan(app: FastAPI):
     try:
         from agent.memory_store import MemoryStore
         memory_store = MemoryStore(ZED_HOME)
+        _init_status["memory_store"] = True
         logger.info("Memory store initialized: %s", ZED_HOME)
     except Exception as e:
-        logger.warning("Memory store init failed: %s", e)
+        _init_status["memory_store"] = False
+        logger.error("Memory store init FAILED: %s — memory features will be unavailable", e)
 
     try:
         from agent.memory_manager import MemoryManager
         memory_manager = MemoryManager(zed_home=ZED_HOME)
         memory_manager.setup()
+        _init_status["memory_manager"] = True
         logger.info("Memory manager initialized")
     except Exception as e:
-        logger.warning("Memory manager init failed: %s", e)
+        _init_status["memory_manager"] = False
+        logger.error("Memory manager init FAILED: %s — memory features will be unavailable", e)
 
     # ── Credential pool (multi-key rotation + failover) ─────────────────────
     credential_pool = None
     try:
         from agent.credential_pool import CredentialPool
         credential_pool = CredentialPool(zed_home=ZED_HOME)
+        _init_status["credential_pool"] = True
         logger.info("Credential pool initialized")
     except Exception as e:
-        logger.warning("Credential pool init failed: %s", e)
+        _init_status["credential_pool"] = False
+        logger.error("Credential pool init FAILED: %s — multi-key rotation unavailable", e)
 
     # ── Context files (AGENTS.md, CLAUDE.md, .cursorrules) ──────────────────
     context_files = {}
     try:
         from agent.context_engine import load_context_files
         context_files = load_context_files(Path.cwd())
+        _init_status["context_files"] = True
         logger.info("Loaded %d context files", len(context_files))
     except Exception as e:
-        logger.warning("Context file loading failed: %s", e)
+        _init_status["context_files"] = False
+        logger.error("Context file loading FAILED: %s — context features unavailable", e)
 
     # ── SOUL.md (agent identity/personality) ────────────────────────────────
     soul_content = ""
@@ -962,11 +971,14 @@ async def lifespan(app: FastAPI):
         soul_path = ZED_HOME / "SOUL.md"
         if soul_path.exists():
             soul_content = soul_path.read_text(encoding="utf-8")
+            _init_status["soul"] = True
             logger.info("Loaded SOUL.md: %d chars", len(soul_content))
         else:
+            _init_status["soul"] = True  # Not found is OK — uses default
             logger.info("No SOUL.md found at %s, using default identity", soul_path)
     except Exception as e:
-        logger.warning("SOUL.md loading failed: %s", e)
+        _init_status["soul"] = False
+        logger.error("SOUL.md loading FAILED: %s — using default identity", e)
 
     # Initialize Google OAuth plugin DB
     init_google_db(ZED_HOME / "connections.db")
@@ -1367,7 +1379,13 @@ class ConfigUpdateRequest(BaseModel):
 # ── Health ───────────────────────────────────────────────────────────────────
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "service": "zed-pro-backend"}
+    return {
+        "status": "ok",
+        "service": "zed-pro-backend",
+        "subsystems": _init_status,
+        "session_db": session_db is not None,
+        "http_client": _http_client is not None,
+    }
 
 
 @app.get("/api/ping")
