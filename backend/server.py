@@ -1,8 +1,8 @@
 """
-Zed Pro Dashboard Server
-========================
-FastAPI bridge connecting the Zed Pro frontend (localhost:8000) to
-the zed-agent's full capabilities — rebranded as Zed Pro.
+AVDE Dashboard Server (Hermes-powered)
+=======================================
+FastAPI bridge connecting the AVDE frontend (localhost:8000) to
+the Hermes Agent's full capabilities.
 
 Architecture:
   Browser → localhost:8000 (Dashboard Vite) → /v1/* → localhost:3001 (freellmapi no-auth)
@@ -11,8 +11,9 @@ Architecture:
 This server:
   - Proxies /v1/chat/completions to freellmapi (port 3001) with SSE streaming
   - Exposes all agent management APIs (sessions, skills, tools, cron, memory)
-  - Loads config from C:\\Users\\balur\\.zed\\config.yaml (Zed Home)
-  - All sessions/memories/skills saved to C:\\Users\\balur\\.zed\\
+  - All intelligence flows through Hermes Agent (C:\\Users\\balur\\AppData\\Local\\hermes\\hermes-agent)
+  - Loads config from C:\\Users\\balur\\.hermes\\config.yaml (Hermes Home)
+  - All sessions/memories/skills saved to C:\\Users\\balur\\.hermes\\
 """
 
 from __future__ import annotations
@@ -34,20 +35,27 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# ── Resolve zed-agent module path ──────────────────────────────────────────
+# ── Add Hermes upstream to sys.path (single brain, no vendored fork) ────────
+# Hermes root FIRST — provides hermes_cli, hermes_constants, hermes_state,
+# agent, tools, cron, gateway, plugins, run_agent, model_tools, toolsets.
+_HERMES_ROOT = r"C:\Users\balur\AppData\Local\hermes\hermes-agent"
+if _HERMES_ROOT not in sys.path:
+    sys.path.insert(0, _HERMES_ROOT)
+
+# ── AVDE backend dir SECOND — provides avde_extras/, avde_plugins/, tests/ ──
 _AGENT_DIR = Path(__file__).resolve().parent
 if str(_AGENT_DIR) not in sys.path:
-    sys.path.insert(0, str(_AGENT_DIR))
+    sys.path.append(str(_AGENT_DIR))
 
 import httpx
 import uvicorn
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect, Request, Response, Body
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field
 
-# ── LLM Load Balancer ──────────────────────────────────────────────────────
-from agent.llm_load_balancer import (
+# ── LLM Load Balancer (AVDE-specific, not in upstream Hermes) ────────────
+from avde_extras.llm_load_balancer import (
     get_load_balancer,
     rate_limit_acquire,
     record_llm_request,
@@ -56,21 +64,21 @@ from agent.llm_load_balancer import (
     get_load_balancer_status,
 )
 
-# ── Zed Home = C:\Users\<user>\.zed (all sessions, config, memories) ────
+# ── Hermes Home = C:\Users\<user>\.hermes (all sessions, config, memories) ────
 # CRITICAL: Must set ZED_HOME env var BEFORE importing cron modules,
 # because cron/jobs.py resolves get_zed_home() at import time.
-_DEFAULT_ZED_HOME = Path.home() / ".zed"
+_DEFAULT_ZED_HOME = Path.home() / ".hermes"
 _raw_zed_home = os.environ.get("ZED_HOME", str(_DEFAULT_ZED_HOME)).strip()
 ZED_HOME = Path(_raw_zed_home)
 os.environ["ZED_HOME"] = str(ZED_HOME)
 
 try:
-    from zed_constants import get_zed_home
+    from hermes_constants import get_zed_home
 except Exception:
     get_zed_home = lambda: ZED_HOME
 
 try:
-    from zed_logging import setup_logging
+    from hermes_logging import setup_logging
 except Exception:
     setup_logging = lambda **kw: None
 
@@ -145,9 +153,9 @@ except ImportError:
     pass
 
 from run_agent import AIAgent
-from zed_state import SessionDB
+from hermes_state import SessionDB
 from model_tools import get_tool_definitions, get_toolset_for_tool
-from zed_cli.plugins import discover_plugins, get_plugin_manager
+from hermes_cli.plugins import discover_plugins, get_plugin_manager
 from tools.registry import discover_builtin_tools
 
 # ── Config ──────────────────────────────────────────────────────────────────
@@ -676,9 +684,9 @@ def route_query(query: str) -> list:
             "approval", "checkpoint", "budget_config"]
 
 # ── Google OAuth plugin ───────────────────────────────────────────────────────
-from plugins.dashboard_auth.google import router as google_oauth_router
-from plugins.dashboard_auth.google import init_db as init_google_db
-from plugins.dashboard_auth.google import all_connected, GOOGLE_PLUGIN_IDS
+from avde_plugins.dashboard_auth.google import router as google_oauth_router
+from avde_plugins.dashboard_auth.google import init_db as init_google_db
+from avde_plugins.dashboard_auth.google import all_connected, GOOGLE_PLUGIN_IDS
 
 # ── Dashboard API Endpoints ──────────────────────────────────────────────────
 
@@ -921,9 +929,9 @@ def _auto_configure_env():
     if not os.environ.get("DESKTOP_AGENT_URL"):
         os.environ["DESKTOP_AGENT_URL"] = "http://localhost:4000"
 
-    # 4. ZED_HOME — default to standard location
+    # 4. ZED_HOME — default to Hermes home location
     if not os.environ.get("ZED_HOME"):
-        default_home = str(Path.home() / ".zed")
+        default_home = str(Path.home() / ".hermes")
         os.environ["ZED_HOME"] = default_home
         changes.append(f"ZED_HOME={default_home}")
 
@@ -1010,8 +1018,12 @@ async def lifespan(app: FastAPI):
 
     try:
         from agent.memory_manager import MemoryManager
-        memory_manager = MemoryManager(zed_home=ZED_HOME)
-        memory_manager.setup()
+        try:
+            memory_manager = MemoryManager(zed_home=ZED_HOME)
+        except TypeError:
+            memory_manager = MemoryManager()
+        if hasattr(memory_manager, 'setup'):
+            memory_manager.setup()
         _init_status["memory_manager"] = True
         logger.info("Memory manager initialized")
     except Exception as e:
@@ -1022,7 +1034,10 @@ async def lifespan(app: FastAPI):
     credential_pool = None
     try:
         from agent.credential_pool import CredentialPool
-        credential_pool = CredentialPool(zed_home=ZED_HOME)
+        try:
+            credential_pool = CredentialPool(zed_home=ZED_HOME)
+        except TypeError:
+            credential_pool = CredentialPool()
         _init_status["credential_pool"] = True
         logger.info("Credential pool initialized")
     except Exception as e:
@@ -1032,8 +1047,14 @@ async def lifespan(app: FastAPI):
     # ── Context files (AGENTS.md, CLAUDE.md, .cursorrules) ──────────────────
     context_files = {}
     try:
-        from agent.context_engine import load_context_files
-        context_files = load_context_files(Path.cwd())
+        try:
+            from agent.context_engine import load_context_files
+            context_files = load_context_files(Path.cwd())
+        except ImportError:
+            for cfile in ["AGENTS.md", "CLAUDE.md", ".cursorrules"]:
+                cp = Path.cwd() / cfile
+                if cp.exists():
+                    context_files[cfile] = cp.read_text(encoding="utf-8", errors="replace")
         _init_status["context_files"] = True
         logger.info("Loaded %d context files", len(context_files))
     except Exception as e:
@@ -1602,24 +1623,34 @@ async def get_status():
 
 
 # ── Models ───────────────────────────────────────────────────────────────────
+import json as _json
+from pathlib import Path as _Path
+
+_NOUS_MODELS = [
+    {"id": "stepfun/step-3.7-flash", "name": "step-3.7-flash"},
+    {"id": "tencent/hy3", "name": "hy3"},
+    {"id": "poolside/laguna-s-2.1", "name": "laguna-s-2.1"},
+    {"id": "inclusionai/ling-3.0-flash", "name": "ling-3.0-flash"},
+]
+
+
+def _nous_auth() -> tuple[str, str]:
+    """Return Nous access_token and inference base url from Hermes auth.json."""
+    try:
+        auth_path = _Path(os.getenv("ZED_HOME", "~/.hermes")).expanduser() / "auth.json"
+        data = _json.loads(auth_path.read_text())
+        nous = data.get("providers", {}).get("nous", {})
+        token = nous.get("access_token", "") or ""
+        base = nous.get("inference_base_url", "https://inference-api.nousresearch.com/v1")
+        return token, base.rstrip("/")
+    except Exception:
+        return "", "https://inference-api.nousresearch.com/v1"
+
+
 @app.get("/api/models")
 @app.get("/v1/models")
 async def list_models():
-    """List available models via freellmapi."""
-    try:
-        base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
-        base_ping_url = base_url.replace("/v1", "") if "/v1" in base_url else base_url
-        api_key = os.getenv("ZED_PRO_API_KEY", "")
-        headers = {}
-        if api_key:
-            headers["Authorization"] = f"Bearer {api_key}"
-
-        r = await _http_client.get(f"{base_ping_url.rstrip('/')}/api/models", headers=headers, timeout=5.0)
-        if r.status_code == 200:
-            return r.json()
-    except Exception:
-        pass
-    # Fallback — always show Zed Pro
+    """List available models: Zed Pro + Nous free models."""
     return {
         "object": "list",
         "data": [
@@ -1630,7 +1661,39 @@ async def list_models():
                 "owned_by": "zed-team",
                 "description": "Zed Pro — powered by freellmapi free providers",
                 "context_length": 128000,
-            }
+            },
+            {
+                "id": "stepfun/step-3.7-flash",
+                "object": "model",
+                "created": int(time.time()),
+                "owned_by": "nous",
+                "description": "step-3.7-flash — Nous free model",
+                "context_length": 128000,
+            },
+            {
+                "id": "tencent/hy3",
+                "object": "model",
+                "created": int(time.time()),
+                "owned_by": "nous",
+                "description": "hy3 — Nous free model",
+                "context_length": 128000,
+            },
+            {
+                "id": "poolside/laguna-s-2.1",
+                "object": "model",
+                "created": int(time.time()),
+                "owned_by": "nous",
+                "description": "laguna-s-2.1 — Nous free model",
+                "context_length": 128000,
+            },
+            {
+                "id": "inclusionai/ling-3.0-flash",
+                "object": "model",
+                "created": int(time.time()),
+                "owned_by": "nous",
+                "description": "ling-3.0-flash — Nous free model",
+                "context_length": 128000,
+            },
         ],
     }
 
@@ -1682,6 +1745,20 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
     if resolved_model.lower() in ("zed-pro", "auto"):
         resolved_model = "gemini-2.5-flash-lite"
 
+    # ── Route Nous models through Hermes Nous auth ────────────────────────────
+    _nous_model_ids = {m["id"] for m in _NOUS_MODELS}
+    _nous_token, _nous_base = _nous_auth()
+    _is_nous_model = resolved_model in _nous_model_ids
+    _agent_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+    _agent_api_key = os.getenv("ZED_PRO_API_KEY", "")
+    if _is_nous_model and _nous_token:
+        _agent_base_url = _nous_base
+        _agent_api_key = _nous_token
+    elif _is_nous_model and not _nous_token:
+        logger.warning("Nous model selected but no Nous auth found; upstream fallback may not serve this model")
+        _agent_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+        _agent_api_key = os.getenv("ZED_PRO_API_KEY", "")
+
     if request.stream:
         q = asyncio.Queue()
         loop = asyncio.get_running_loop()
@@ -1701,8 +1778,60 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                 safe_args = str(function_args)[:500]
             loop.call_soon_threadsafe(q.put_nowait, ("tool_start", {"id": tool_call_id, "name": function_name, "args": safe_args}))
 
+            # ── Phase 1: Register delegate_task as real subagent entry ─────────
+            # Only emits spawn_requested + start immediately.
+            # Phase 2 (real result + metrics) fires from tool_complete_cb below.
+            if function_name == "delegate_task":
+                goal = safe_args.get("goal") or safe_args.get("task") or str(safe_args)[:80]
+                tasks_list = safe_args.get("tasks", [])
+                workers = [
+                    {"name": f"Worker {i+1}", "motto": (t.get("goal") or goal) if isinstance(t, dict) else str(t), "icon": "⚡"}
+                    for i, t in enumerate(tasks_list)
+                ] if tasks_list else [{"name": "Worker 1", "motto": goal, "icon": "⚡"}]
+                sub_id = subagent_manager.create_subagent(
+                    name="Delegated Subagent",
+                    task_description=goal,
+                    workers=workers,
+                    session_id=session_id,
+                    tool_call_id=tool_call_id,  # Bind for routing in tool_complete_cb
+                )
+                # Fire spawn_phase (spawn_requested + start) immediately
+                asyncio.run_coroutine_threadsafe(
+                    subagent_manager.spawn_phase(sub_id),
+                    loop
+                )
+                # Notify frontend SSE URL so it opens /api/subagents/stream/{id}
+                loop.call_soon_threadsafe(q.put_nowait, ("delegate_subagent_id", {
+                    "tool_call_id": tool_call_id,
+                    "subagent_id": sub_id,
+                    "goal": goal,
+                    "stream_url": f"/api/subagents/stream/{sub_id}"
+                }))
+
         def tool_complete_cb(tool_call_id, function_name, function_args, result):
             loop.call_soon_threadsafe(q.put_nowait, ("tool_complete", {"id": tool_call_id, "name": function_name}))
+
+            # ── Phase 2: Fire real subagent.progress + subagent.complete ──────
+            # Route by tool_call_id to find the registered subagent_id.
+            # complete_phase() parses the real Hermes result for actual metrics.
+            if function_name == "delegate_task":
+                sub_id = subagent_manager.get_subagent_id_for_tool(tool_call_id)
+                if sub_id:
+                    # Extract real tool list from function_args.tasks if batch
+                    real_tasks = []
+                    try:
+                        safe_fa = json.loads(json.dumps(function_args, default=str))
+                        tasks_list = safe_fa.get("tasks", [])
+                        real_tasks = [
+                            t.get("goal") or str(t) if isinstance(t, dict) else str(t)
+                            for t in tasks_list
+                        ]
+                    except Exception:
+                        pass
+                    asyncio.run_coroutine_threadsafe(
+                        subagent_manager.complete_phase(sub_id, result, real_tasks or None),
+                        loop
+                    )
 
         agent_ref = [None]
 
@@ -1718,8 +1847,8 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                     model=resolved_model,
                     quiet_mode=True,
                     verbose_logging=False,
-                    base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1"),
-                    api_key=os.getenv("ZED_PRO_API_KEY", ""),
+                    base_url=_agent_base_url,
+                    api_key=_agent_api_key,
                     enabled_toolsets=selected_toolsets,
                     disabled_toolsets=disabled_toolsets,
                     credential_pool=credential_pool,
@@ -1756,7 +1885,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
             # Rate limit: each agent acquires a token before hitting the LLM.
             # All 250 agents share the same bucket — natural throttling.
             try:
-                from agent.token_bucket import rate_limit_acquire
+                from avde_extras.token_bucket import rate_limit_acquire
                 await rate_limit_acquire(1)
             except Exception:
                 pass
@@ -1803,6 +1932,28 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                             "created": created_time,
                             "model": request.model or "zed-pro",
                             "choices": [{"index": 0, "delta": {"tool_usage": {"type": "tool_complete", "name": val.get("name", ""), "id": val.get("id", "")}}, "finish_reason": None}]
+                        }
+                        yield f"data: {json.dumps(chunk)}\n\n"
+                    elif event_type == "delegate_subagent_id":
+                        # Native subagent.* telemetry: tell the frontend the real SSE stream URL
+                        chunk = {
+                            "id": f"chatcmpl-{session_id}",
+                            "object": "chat.completion.chunk",
+                            "created": created_time,
+                            "model": request.model or "zed-pro",
+                            "choices": [{
+                                "index": 0,
+                                "delta": {
+                                    "subagent_event": {
+                                        "type": "subagent.spawn_requested",
+                                        "subagent_id": val.get("subagent_id", ""),
+                                        "tool_call_id": val.get("tool_call_id", ""),
+                                        "goal": val.get("goal", ""),
+                                        "stream_url": val.get("stream_url", "")
+                                    }
+                                },
+                                "finish_reason": None
+                            }]
                         }
                         yield f"data: {json.dumps(chunk)}\n\n"
                     elif event_type == "delegate_start":
@@ -1880,14 +2031,27 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
 
     else:
         def run_agent_sync():
+            _nous_model_ids = {m["id"] for m in _NOUS_MODELS}
+            _nous_token_for_sync, _nous_base_for_sync = _nous_auth()
+            _is_nous_sync = resolved_model in _nous_model_ids
+            sync_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+            sync_api_key = os.getenv("ZED_PRO_API_KEY", "")
+            if _is_nous_sync and _nous_token_for_sync:
+                sync_base_url = _nous_base_for_sync
+                sync_api_key = _nous_token_for_sync
+            elif _is_nous_sync and not _nous_token_for_sync:
+                sync_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+                sync_api_key = os.getenv("ZED_PRO_API_KEY", "")
+                resolved_model = "gemini-2.5-flash-lite"
+
             agent = AIAgent(
                 session_id=session_id,
                 session_db=session_db,
                 model=resolved_model,
                 quiet_mode=True,
                 verbose_logging=False,
-                base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1"),
-                api_key=os.getenv("ZED_PRO_API_KEY", ""),
+                base_url=sync_base_url,
+                api_key=sync_api_key,
                 enabled_toolsets=selected_toolsets,
                 disabled_toolsets=disabled_toolsets,
                 credential_pool=credential_pool,
@@ -3168,7 +3332,7 @@ async def agent_status(session_id: str):
 async def rate_limit_status():
     """Check rate limiter status."""
     try:
-        from agent.token_bucket import get_rate_limiter_stats
+        from avde_extras.token_bucket import get_rate_limiter_stats
         return get_rate_limiter_stats()
     except Exception:
         return {"status": "not_initialized"}
@@ -3222,7 +3386,7 @@ async def readyz():
 async def circuit_breaker_status():
     """Check per-provider circuit breaker status."""
     try:
-        from agent.circuit_breaker import get_all_breakers_stats
+        from avde_extras.circuit_breaker import get_all_breakers_stats
         return get_all_breakers_stats()
     except Exception:
         return {}
@@ -3977,6 +4141,430 @@ async def proxy_desktop_static(path: str, request: Request):
             )
     except Exception:
         return Response(content=b"Not found", status_code=404)
+
+
+# ── Hermes Subagent & Agent Swarm Backend System ─────────────────────────────────
+
+class SubagentSpawnRequest(BaseModel):
+    name: str = Field(default="Subagent Worker", description="Subagent or swarm name")
+    task_description: str = Field(..., description="Goal / prompt for the subagent worker")
+    workers: List[Dict[str, Any]] = Field(default_factory=list, description="Worker list [{name, motto, icon}]")
+    model: Optional[str] = Field(default=None, description="Model override")
+    session_id: Optional[str] = Field(default=None, description="Parent session ID")
+
+class SubagentTaskManager:
+    """
+    Two-phase real subagent telemetry bridge.
+
+    Phase 1 — spawn_phase() [called from tool_start_cb]:
+        Registers the subagent entry and immediately emits:
+          subagent.spawn_requested → subagent.start
+        Returns the subagent_id so the frontend can open the SSE stream.
+
+    Phase 2 — complete_phase() [called from tool_complete_cb with real result]:
+        Parses the actual delegate_task result from Hermes to extract:
+          - real tool list from result text
+          - real token estimates from result character count
+          - real wall-clock duration
+        Then emits: subagent.progress → subagent.complete (or subagent.error)
+    """
+
+    def __init__(self):
+        self.subagents: Dict[str, Dict[str, Any]] = {}
+        self.listeners: Dict[str, List[asyncio.Queue]] = {}
+        # Maps tool_call_id → subagent_id for routing tool_complete_cb
+        self._tool_id_map: Dict[str, str] = {}
+
+    # ── create the registry entry (no events yet) ──────────────────────────────
+    def create_subagent(
+        self,
+        name: str,
+        task_description: str,
+        workers: List[Dict[str, Any]],
+        session_id: Optional[str] = None,
+        tool_call_id: Optional[str] = None,
+    ) -> str:
+        subagent_id = f"subagent-{uuid.uuid4().hex[:8]}"
+        now = time.time()
+        formatted_workers = workers if workers else [
+            {"name": "Worker 1", "motto": task_description, "icon": "⚡"}
+        ]
+        self.subagents[subagent_id] = {
+            "id": subagent_id,
+            "subagent_id": subagent_id,
+            "name": name,
+            "task_description": task_description,
+            "status": "Running",
+            "created_at": now,
+            "start_time": now,
+            "duration_seconds": 0,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "toolCount": 0,
+            "session_id": session_id,
+            "workers": formatted_workers,
+            "logs": [f"[{time.strftime('%H:%M:%S')}] delegate_task intercepted ({subagent_id})"],
+            "progress_steps": [
+                {"text": "delegate_task dispatched by Hermes", "done": True},
+                {"text": f"Child executing: {task_description[:50]}…", "done": False},
+                {"text": "Awaiting real child result", "done": False}
+            ],
+            "result_output": ""
+        }
+        self.listeners[subagent_id] = []
+        if tool_call_id:
+            self._tool_id_map[tool_call_id] = subagent_id
+        return subagent_id
+
+    # ── route tool_call_id → subagent_id ──────────────────────────────────────
+    def get_subagent_id_for_tool(self, tool_call_id: str) -> Optional[str]:
+        return self._tool_id_map.get(tool_call_id)
+
+    # ── SSE broadcast ─────────────────────────────────────────────────────────
+    async def broadcast_native_event(self, subagent_id: str, event_type: str, payload: Dict[str, Any]):
+        """Broadcast a native subagent.* SSE event to all active listeners."""
+        # ── Observability event logging ───────────────────────────────────────
+        try:
+            obs_event_map = {
+                "subagent.start": "zed.subagent.start",
+                "subagent.complete": "zed.subagent.stop",
+                "subagent.error": "zed.subagent.error"
+            }
+            if event_type in obs_event_map:
+                logger.info("[OBSERVABILITY] %s subagent_id=%s payload=%s", obs_event_map[event_type], subagent_id, payload)
+        except Exception:
+            pass
+
+        if subagent_id not in self.listeners:
+            return
+        data_str = json.dumps({
+            "subagent_id": subagent_id,
+            "event": event_type,
+            "timestamp": time.time(),
+            **payload
+        })
+        sse_chunk = f"event: {event_type}\ndata: {data_str}\n\n"
+        for q in list(self.listeners[subagent_id]):
+            try:
+                await q.put(sse_chunk)
+            except Exception:
+                pass
+
+    # ── PHASE 1: emit spawn + start immediately when delegate_task starts ─────
+    async def spawn_phase(self, subagent_id: str):
+        """Emit subagent.spawn_requested and subagent.start from real tool_start_cb."""
+        if subagent_id not in self.subagents:
+            return
+        task = self.subagents[subagent_id]
+        await self.broadcast_native_event(subagent_id, "subagent.spawn_requested", {
+            "name": task["name"],
+            "goal": task["task_description"],
+            "workers": task["workers"]
+        })
+        await self.broadcast_native_event(subagent_id, "subagent.start", {
+            "status": "Running",
+            "start_time": task["start_time"]
+        })
+        # Start watchdog task for 300s timeout monitoring
+        asyncio.create_task(self._start_watchdog(subagent_id, timeout_seconds=300))
+
+    # ── PHASE 2: parse real Hermes result and emit real telemetry ─────────────
+    async def complete_phase(
+        self,
+        subagent_id: str,
+        real_result: Any,
+        real_tool_calls_used: Optional[List[str]] = None,
+    ):
+        """
+        Called from tool_complete_cb with the actual delegate_task result.
+        Parses real metrics from the result text and emits real subagent.* events.
+        No hardcoded values, no asyncio.sleep fakes.
+        """
+        if subagent_id not in self.subagents:
+            return
+        task = self.subagents[subagent_id]
+
+        # ── Extract real metrics from delegate_task result ─────────────────────
+        result_str = ""
+        if isinstance(real_result, str):
+            result_str = real_result
+        elif isinstance(real_result, dict):
+            result_str = real_result.get("result") or real_result.get("output") or json.dumps(real_result)
+        else:
+            result_str = str(real_result) if real_result is not None else ""
+
+        # Real wall-clock duration and character count
+        real_duration = int(time.time() - task["start_time"])
+        char_count = len(result_str)
+
+        # Real tool count: parse tool names from delegate_task structured output
+        # Hermes delegate_task returns JSON with keys like "tools_used", "tool_calls", "steps"
+        # Fall back to counting bracketed tool names in result text
+        real_tool_count = 0
+        real_tools_list: List[str] = real_tool_calls_used or []
+        if not real_tools_list:
+            if isinstance(real_result, dict):
+                real_tools_list = real_result.get("tools_used") or real_result.get("tool_calls") or []
+            if not real_tools_list and result_str:
+                try:
+                    parsed = json.loads(result_str)
+                    real_tools_list = (
+                        parsed.get("tools_used") or
+                        parsed.get("tool_calls") or
+                        parsed.get("steps") or
+                        []
+                    )
+                except Exception:
+                    pass
+            if not real_tools_list and result_str:
+                import re
+                _KNOWN_TOOLS = [
+                    "web_search", "web_extract", "read_file", "write_file", "execute_code",
+                    "terminal", "memory", "gmail_read", "gmail_send", "browser_navigate",
+                    "browser_click", "image_generate", "delegate_task"
+                ]
+                found = set()
+                for tool in _KNOWN_TOOLS:
+                    if tool in result_str:
+                        found.add(tool)
+                real_tools_list = list(found)
+        if isinstance(real_tools_list, list):
+            real_tools_list = [t if isinstance(t, str) else (t.get("tool") or t.get("name") or str(t)) for t in real_tools_list]
+        real_tool_count = len(real_tools_list)
+
+        # ── Parse token metrics (structured vs estimate) ──────────────────────
+        is_token_estimate = True
+        estimated_output_tokens = max(1, char_count // 4)
+        estimated_input_tokens = max(1, len(task["task_description"]) // 4 + 200)
+
+        if isinstance(real_result, dict) and "token_usage" in real_result:
+            tu = real_result["token_usage"]
+            if isinstance(tu, dict):
+                estimated_input_tokens = tu.get("input", tu.get("input_tokens", estimated_input_tokens))
+                estimated_output_tokens = tu.get("output", tu.get("output_tokens", estimated_output_tokens))
+                is_token_estimate = False
+
+        # Update task state with real metrics
+        task["duration_seconds"] = real_duration
+        task["inputTokens"] = estimated_input_tokens
+        task["outputTokens"] = estimated_output_tokens
+        task["toolCount"] = real_tool_count
+        task["progress_steps"][1]["done"] = True
+        task["progress_steps"][2]["done"] = True
+        task["status"] = "Completed"
+        task["result_output"] = result_str[:500]  # Store first 500 chars of real result
+        task["logs"].append(
+            f"[{time.strftime('%H:%M:%S')}] delegate_task returned in {real_duration}s. "
+            f"Tools used: {real_tools_list or 'none detected'}. "
+            f"Result: {char_count} chars."
+        )
+
+        # ── Emit real subagent.progress (with actual metrics & estimate flag) ─
+        await self.broadcast_native_event(subagent_id, "subagent.progress", {
+            "durationSeconds": real_duration,
+            "inputTokens": estimated_input_tokens,
+            "outputTokens": estimated_output_tokens,
+            "toolCount": real_tool_count,
+            "toolsUsed": real_tools_list,
+            "tokenEstimate": is_token_estimate,
+            "logs": task["logs"]
+        })
+
+        # ── Emit real subagent.complete (with actual result & estimate flag) ──
+        await self.broadcast_native_event(subagent_id, "subagent.complete", {
+            "status": "Completed",
+            "durationSeconds": real_duration,
+            "output": task["result_output"],
+            "inputTokens": estimated_input_tokens,
+            "outputTokens": estimated_output_tokens,
+            "toolCount": real_tool_count,
+            "toolsUsed": real_tools_list,
+            "tokenEstimate": is_token_estimate
+        })
+
+    async def error_phase(self, subagent_id: str, error: str):
+        """Emit subagent.error with the real error from delegate_task."""
+        if subagent_id not in self.subagents:
+            return
+        task = self.subagents[subagent_id]
+        task["status"] = "Failed"
+        task["duration_seconds"] = int(time.time() - task["start_time"])
+        task["logs"].append(f"[{time.strftime('%H:%M:%S')}] delegate_task failed: {error}")
+        await self.broadcast_native_event(subagent_id, "subagent.error", {
+            "error": error,
+            "durationSeconds": task["duration_seconds"]
+        })
+
+    # ── Watchdog timer & cancellation ──────────────────────────────────────────
+    async def _start_watchdog(self, subagent_id: str, timeout_seconds: int = 300):
+        """Monitors running subagent and emits timeout error if it hangs past threshold."""
+        elapsed = 0
+        interval = min(1, timeout_seconds)
+        while elapsed < timeout_seconds:
+            await asyncio.sleep(interval)
+            elapsed += interval
+            if subagent_id not in self.subagents:
+                return
+            status = self.subagents[subagent_id].get("status")
+            if status != "Running":
+                return  # Subagent finished or failed normally
+        # If still running after timeout_seconds, auto-emit error
+        if subagent_id in self.subagents and self.subagents[subagent_id].get("status") == "Running":
+            await self.error_phase(subagent_id, f"Subagent execution timed out ({timeout_seconds}s limit)")
+
+    async def cancel_subagent(self, subagent_id: str, reason: str = "Subagent cancelled by user"):
+        """Explicitly cancels a running subagent."""
+        if subagent_id in self.subagents:
+            await self.error_phase(subagent_id, reason)
+
+    # ── Real execution path for dashboard-spawned subagents with live telemetry callbacks ──
+    async def run_subagent_task(self, subagent_id: str, prompt: str, model: Optional[str] = None):
+        """Used by the /api/subagents/spawn dashboard endpoint.
+        Runs spawn_phase immediately, then executes a real AIAgent child task with live event callbacks.
+        """
+        if subagent_id not in self.subagents:
+            return
+        await self.spawn_phase(subagent_id)
+        
+        resolved_model = model or "gemini-2.5-flash-lite"
+        if resolved_model.lower() in ("zed-pro", "auto"):
+            resolved_model = "gemini-2.5-flash-lite"
+
+        _agent_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+        _agent_api_key = os.getenv("ZED_PRO_API_KEY", "")
+
+        loop = asyncio.get_running_loop()
+        tools_executed: List[str] = []
+
+        # ── Thread-safe callbacks from child AIAgent thread to asyncio SSE stream ──
+        def child_reasoning_cb(reasoning: str):
+            if reasoning:
+                asyncio.run_coroutine_threadsafe(
+                    self.broadcast_native_event(subagent_id, "subagent.thinking", {
+                        "preview": reasoning[:120],
+                        "thought_text": reasoning
+                    }),
+                    loop
+                )
+
+        def child_stream_delta_cb(token: str):
+            if token:
+                asyncio.run_coroutine_threadsafe(
+                    self.broadcast_native_event(subagent_id, "subagent.thinking", {
+                        "preview": token[:80],
+                        "thought_text": token
+                    }),
+                    loop
+                )
+
+        def child_tool_start_cb(tool_call_id, function_name, function_args):
+            if len(tools_executed) >= 50:
+                return
+            tools_executed.append(function_name)
+            safe_args = function_args if isinstance(function_args, dict) else str(function_args)[:220]
+            asyncio.run_coroutine_threadsafe(
+                self.broadcast_native_event(subagent_id, "subagent.tool", {
+                    "tool": function_name,
+                    "args": safe_args,
+                    "status": "running"
+                }),
+                loop
+            )
+
+        def child_tool_complete_cb(tool_call_id, function_name, function_args, result):
+            start_t = self.subagents.get(subagent_id, {}).get("start_time", time.time())
+            asyncio.run_coroutine_threadsafe(
+                self.broadcast_native_event(subagent_id, "subagent.progress", {
+                    "current_tool": function_name,
+                    "toolCount": len(tools_executed),
+                    "toolsUsed": list(dict.fromkeys(tools_executed)),
+                    "durationSeconds": int(time.time() - start_t)
+                }),
+                loop
+            )
+
+        async def _watchdog():
+            try:
+                timeout = await self._get_timeout_for_prompt(prompt)
+                await asyncio.sleep(timeout)
+                task = self.subagents.get(subagent_id)
+                if task and task.get("status") == "Running":
+                    await self.error_phase(subagent_id, f"Subagent timed out after {timeout}s")
+            except Exception:
+                pass
+
+        def _exec():
+            try:
+                agent = AIAgent(
+                    session_id=f"sub-{subagent_id}",
+                    model=resolved_model,
+                    quiet_mode=True,
+                    verbose_logging=False,
+                    base_url=_agent_base_url,
+                    api_key=_agent_api_key,
+                    reasoning_callback=child_reasoning_cb,
+                    stream_delta_callback=child_stream_delta_cb,
+                    tool_start_callback=child_tool_start_cb,
+                    tool_complete_callback=child_tool_complete_cb,
+                )
+                return agent.run_conversation(
+                    user_message=prompt,
+                    system_message="You are a specialized background subagent. Complete the requested task thoroughly.",
+                )
+            except Exception as e:
+                return f"Error executing subagent task: {e}"
+
+        result = await asyncio.to_thread(_exec)
+        await self.complete_phase(subagent_id, result, real_tool_calls_used=tools_executed)
+
+subagent_manager = SubagentTaskManager()
+
+@app.post("/api/subagents/spawn")
+async def spawn_subagent(req: SubagentSpawnRequest):
+    """API endpoint to spawn a real backend subagent via Hermes."""
+    subagent_id = subagent_manager.create_subagent(
+        name=req.name,
+        task_description=req.task_description,
+        workers=req.workers,
+        session_id=req.session_id
+    )
+    asyncio.create_task(subagent_manager.run_subagent_task(subagent_id, req.task_description, req.model))
+    return {"status": "ok", "subagent_id": subagent_id, "data": subagent_manager.subagents[subagent_id]}
+
+@app.get("/api/subagents/list")
+async def list_subagents():
+    """List all active and completed subagents."""
+    return {"status": "ok", "subagents": list(subagent_manager.subagents.values())}
+
+@app.get("/api/subagents/status/{subagent_id}")
+async def get_subagent_status(subagent_id: str):
+    """Get status and details of a specific subagent."""
+    if subagent_id not in subagent_manager.subagents:
+        raise HTTPException(status_code=404, detail="Subagent not found")
+    return {"status": "ok", "data": subagent_manager.subagents[subagent_id]}
+
+@app.get("/api/subagents/stream/{subagent_id}")
+async def stream_subagent(subagent_id: str):
+    """SSE endpoint for live real-time subagent execution updates."""
+    if subagent_id not in subagent_manager.subagents:
+        raise HTTPException(status_code=404, detail="Subagent not found")
+    
+    q = asyncio.Queue()
+    subagent_manager.listeners[subagent_id].append(q)
+    
+    async def event_generator():
+        yield f"event: subagent_init\ndata: {json.dumps(subagent_manager.subagents[subagent_id])}\n\n"
+        try:
+            while True:
+                data = await q.get()
+                yield data
+        except asyncio.CancelledError:
+            pass
+        finally:
+            if subagent_id in subagent_manager.listeners and q in subagent_manager.listeners[subagent_id]:
+                subagent_manager.listeners[subagent_id].remove(q)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 # ── Serve Dashboard static files (after all API routes) ───────────────────

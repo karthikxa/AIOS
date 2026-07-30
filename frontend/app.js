@@ -1259,8 +1259,7 @@ const starIndicator = `
     // Reset Viewed Agent Index
     viewedAgentIdx = 0;
 
-    // Show right panel split pane, set to Agent mode view
-    toggleAgentSplit(true);
+    // Do NOT auto-open right panel split pane unless explicitly clicked
 
     // Update split panel task description
     const agentPaneTitle = document.getElementById('agentPaneTitle');
@@ -2085,7 +2084,7 @@ JSON Structure:
   const LLM_PROXY_URL = '';  // Relative URL - goes through backend proxy
   const LLM_PROXY_KEY = '';  // No key needed — backend injects it
 
-  async function _callLLMProxyDirect(messages, useStream, onToken, signal, onReasoning) {
+  async function _callLLMProxyDirect(messages, useStream, onToken, signal, onReasoning, onToolUsage) {
     // Use relative URL - backend /v1/chat/completions proxies to LLM on Render
     const resp = await fetch('/v1/chat/completions', {
       method: 'POST',
@@ -2114,15 +2113,84 @@ JSON Structure:
           if (trimmed.startsWith('data: ')) {
             try {
               const d = JSON.parse(trimmed.slice(6));
-              // Handle both content and reasoning_content / reasoning
-              const content = d.choices?.[0]?.delta?.content;
-              const reasoning = d.choices?.[0]?.delta?.reasoning_content || d.choices?.[0]?.delta?.reasoning;
+              const delta = d.choices?.[0]?.delta;
+              if (!delta) continue;
+
+              // Handle content tokens
+              const content = delta.content;
+              const reasoning = delta.reasoning_content || delta.reasoning;
               if (reasoning && typeof onReasoning === 'function') {
                 onReasoning(reasoning);
               }
               if (content) {
                 full += content;
                 if (onToken) onToken(content);
+              }
+
+              // ── Handle native tool_usage events ─────────────────────
+              if (delta.tool_usage && typeof onToolUsage === 'function') {
+                onToolUsage(delta.tool_usage);
+              }
+
+              // ── Handle native subagent.* telemetry events ───────────
+              // When backend emits subagent_event.type === 'subagent.spawn_requested',
+              // open a real EventSource to /api/subagents/stream/{id} and relay
+              // native subagent.* events to onToolUsage so the UI renders real cards.
+              if (delta.subagent_event && typeof onToolUsage === 'function') {
+                const se = delta.subagent_event;
+                if (se.type === 'subagent.spawn_requested' && se.subagent_id) {
+                  // Fire spawn event immediately so UI can show loading card
+                  onToolUsage({
+                    type: 'subagent_spawn',
+                    subagent_id: se.subagent_id,
+                    goal: se.goal,
+                    stream_url: se.stream_url
+                  });
+                  // Open native SSE stream and relay events
+                  (function openNativeSubagentStream(subagentId, streamUrl, toolUsageCb) {
+                    // 1. Security: Validate streamUrl is safe same-origin path
+                    if (!streamUrl || typeof streamUrl !== 'string' || !streamUrl.startsWith('/api/subagents/stream/')) {
+                      console.warn('[Subagent SSE] Invalid or untrusted stream URL:', streamUrl);
+                      return;
+                    }
+                    // 2. Dedup: Check active EventSource Map
+                    window._activeSubagentSSE = window._activeSubagentSSE || new Map();
+                    if (window._activeSubagentSSE.has(subagentId)) {
+                      return; // Stream already active
+                    }
+                    try {
+                      const es = new EventSource(streamUrl);
+                      window._activeSubagentSSE.set(subagentId, es);
+
+                      const cleanup = () => {
+                        try { es.close(); } catch (e) {}
+                        if (window._activeSubagentSSE) {
+                          window._activeSubagentSSE.delete(subagentId);
+                        }
+                      };
+
+                      const forwardEvent = (eventName, data) => {
+                        try {
+                          const payload = JSON.parse(data);
+                          toolUsageCb({ type: eventName, subagent_id: subagentId, ...payload });
+                        } catch (e) {
+                          console.warn('[Subagent SSE] parse error:', e, 'data:', data);
+                        }
+                      };
+                      [
+                        'subagent.spawn_requested', 'subagent.start', 'subagent.thinking',
+                        'subagent.tool', 'subagent.progress', 'subagent.complete', 'subagent.error'
+                      ].forEach(evtName => {
+                        es.addEventListener(evtName, e => forwardEvent(evtName, e.data));
+                      });
+                      es.onerror = () => cleanup();
+                      es.addEventListener('subagent.complete', () => cleanup());
+                      es.addEventListener('subagent.error', () => cleanup());
+                    } catch (err) {
+                      console.warn('[Subagent SSE] Failed to open native stream:', err);
+                    }
+                  })(se.subagent_id, se.stream_url, onToolUsage);
+                }
               }
             } catch (e) {}
           }
@@ -2149,7 +2217,7 @@ JSON Structure:
     if (isZedPro && !skipAgent) {
       const useStream = !!onToken;
       try {
-        return await _callLLMProxyDirect(apiMessages, useStream, onToken, signal, onReasoning);
+        return await _callLLMProxyDirect(apiMessages, useStream, onToken, signal, onReasoning, onToolUsage);
       } catch (err) {
         console.error('[Zed Pro] LLM proxy call failed:', err);
         throw new Error('Could not reach the AI service. Please check your connection and try again.');
@@ -4160,8 +4228,8 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             const streamingMsg = chatMessagesLog.querySelector('.streaming-assistant-msg');
             if (streamingMsg) {
               streamingMsg.classList.remove('streaming-assistant-msg');
-            } else {
-              // Fallback: remove typing placeholder and append
+            } else if (!bubble) {
+              // Only fallback-append if no bubble was created during stream
               const existingTypingMsg = chatMessagesLog.querySelector('.typing-indicator, .typing-placeholder')?.closest('.chat-message');
               if (existingTypingMsg) {
                 existingTypingMsg.remove();
@@ -4318,10 +4386,10 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         return bubble;
       };
 
-      // Throttle rendering configuration
+      // Throttle rendering configuration (Ultra-fast <50ms response streaming)
       let renderPending = false;
       let lastRenderTime = 0;
-      const RENDER_THROTTLE_MS = 80;
+      const RENDER_THROTTLE_MS = 10;
 
       function performRender() {
         renderPending = false;
@@ -4448,13 +4516,81 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
         // Ensure we have a bubble
         ensureAssistantBubble();
 
-        // AGENTIC DECISION TRIGGER FOR SWARM: trigger visualizer when delegate_task tool starts
-        if (toolUsage.type === 'tool_start' && toolUsage.name === 'delegate_task') {
-          if (!swarmVisualized) {
-            swarmVisualized = true;
-            (async () => { await triggerSwarmVisualization(promptText, bubble, model); })();
+        // ── Native subagent.* telemetry: handle subagent_spawn from native SSE bridge ──
+        if (toolUsage.type === 'subagent_spawn' || toolUsage.type === 'subagent.spawn_requested') {
+          // Show a real live subagent card in the chat bubble
+          const subagentId = toolUsage.subagent_id || toolUsage.id;
+          if (!subagentId) return;
+
+          const goal = toolUsage.goal || toolUsage.task_description || '';
+          let blocksContainer = bubble.querySelector('.message-collapsible-blocks');
+          if (!blocksContainer) {
+            blocksContainer = document.createElement('div');
+            blocksContainer.className = 'message-collapsible-blocks';
+            blocksContainer.style.cssText = 'width:100%;';
+            bubble.insertBefore(blocksContainer, bubble.firstChild);
           }
+
+          // Guard against duplicate card creation if card already exists for this subagentId
+          let existingCard = bubble.querySelector(`[data-subagent-id="${subagentId}"]`);
+          if (existingCard) {
+            const labelSpan = existingCard.querySelector('.activity-label-span');
+            if (labelSpan && goal) {
+              labelSpan.textContent = `Subagent active — ${goal.slice(0, 50)}`;
+            }
+            return;
+          }
+
+          // Create live native subagent card
+          const nativeCard = createActivityRow({
+            type: 'active',
+            label: `Spawning subagent — ${goal.slice(0, 50)}`,
+            contentHtml: `<span style="font-size:12px;color:#6B7280;">Connecting to native SSE stream (${subagentId})…</span>`,
+            defaultOpen: true
+          });
+          nativeCard.dataset.subagentId = subagentId;
+          blocksContainer.appendChild(nativeCard);
+          return;
         }
+        // ── Update existing native subagent card from SSE stream events ──
+        if (toolUsage.type && toolUsage.type.startsWith('subagent.') && toolUsage.subagent_id) {
+          const card = bubble.querySelector(`[data-subagent-id="${toolUsage.subagent_id}"]`);
+          if (card) {
+            const labelSpan = card.querySelector('.activity-label-span');
+            const contentContainer = card.querySelector('.activity-content-container');
+            const iconSpan = card.querySelector('.activity-icon-span');
+            if (toolUsage.type === 'subagent.thinking' && labelSpan) {
+              labelSpan.textContent = `Thinking: ${(toolUsage.preview || '').slice(0, 60)}`;
+            } else if (toolUsage.type === 'subagent.tool' && labelSpan) {
+              labelSpan.textContent = `Running ${toolUsage.tool || 'tool'}…`;
+            } else if (toolUsage.type === 'subagent.progress' && labelSpan) {
+              const toolsText = (toolUsage.toolsUsed && toolUsage.toolsUsed.length > 0)
+                ? `tools: ${toolUsage.toolsUsed.join(', ')}`
+                : `${toolUsage.toolCount || 0} tools`;
+              const estPrefix = toolUsage.tokenEstimate ? '~' : '';
+              const tokenText = toolUsage.outputTokens ? ` • ${estPrefix}${toolUsage.outputTokens} tokens` : '';
+              labelSpan.textContent = `Progress — ${toolsText} (${toolUsage.durationSeconds || 0}s)${tokenText}`;
+            } else if (toolUsage.type === 'subagent.complete') {
+              if (labelSpan) {
+                const toolsText = (toolUsage.toolsUsed && toolUsage.toolsUsed.length > 0) ? ` (${toolUsage.toolsUsed.join(', ')})` : '';
+                const durText = toolUsage.durationSeconds ? ` in ${toolUsage.durationSeconds}s` : '';
+                const estPrefix = toolUsage.tokenEstimate ? '~' : '';
+                const tokenText = toolUsage.outputTokens ? ` • ${estPrefix}${toolUsage.outputTokens} tokens` : '';
+                labelSpan.textContent = `Subagent complete${toolsText}${durText}${tokenText}`;
+                labelSpan.style.color = '#059669';
+              }
+              if (iconSpan) iconSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+              if (contentContainer) contentContainer.style.maxHeight = '0px';
+            } else if (toolUsage.type === 'subagent.error' && labelSpan) {
+              labelSpan.textContent = `Subagent failed: ${(toolUsage.error || '').slice(0, 60)}`;
+              labelSpan.style.color = '#DC2626';
+              if (iconSpan) iconSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+            }
+          }
+          return;
+        }
+
+        // Real subagent stream tool handler (no duplicate LLM calls or forced split pane openings)
 
         if (toolUsage.type === 'tool_start') {
           if (toolUsage.name === 'swarm_router' || toolUsage.name === 'delegate_task') {
@@ -5449,9 +5585,14 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       });
     });
 
-    // Initialize slider position without animation
+    // Initialize slider position without animation (with layout recalculation pass)
     const activeOption = modeCapsule.querySelector('.mode-capsule-option.active');
-    if (activeOption) updateSlider(activeOption, false);
+    if (activeOption) {
+      updateSlider(activeOption, false);
+      requestAnimationFrame(() => updateSlider(activeOption, false));
+      setTimeout(() => updateSlider(activeOption, false), 100);
+      setTimeout(() => updateSlider(activeOption, false), 300);
+    }
 
     // Re-position on resize
     window.addEventListener('resize', () => {
