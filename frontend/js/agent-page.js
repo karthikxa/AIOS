@@ -1,5 +1,16 @@
 import { SKILLS_CATALOG, getSkillById } from './skills-catalog.js';
+import { pluginsStore } from './plugins-page.js';
 import { showToast } from './toast.js';
+
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 const agentPixelAvatars = {
   security: `<img src="assets/models/security_avatar.png" alt="Security Agent" style="width: 100%; height: 100%; object-fit: cover;">`,
@@ -10,13 +21,21 @@ const agentPixelAvatars = {
   assistant: `<img src="assets/models/assistant_avatar.png" alt="Assistant Agent" style="width: 100%; height: 100%; object-fit: cover;">`
 };
 
+const defaultAgentsList = [
+  { id: "security", name: "Security Sentinel", desc: "Monitors vulnerability advisories, audits dependencies, and enforces security policies.", status: "active", avatar: "security", model: "Claude 3.7 Sonnet", provider: "anthropic", schedule: "Manual" },
+  { id: "coder", name: "Code Architect", desc: "Automates refactoring, generates unit test suites, and conducts automated code reviews.", status: "active", avatar: "coder", model: "GPT-4o", provider: "openai", schedule: "Manual" },
+  { id: "research", name: "Deep Researcher", desc: "Gathers web data, analyzes documentation, and produces technical summaries.", status: "active", avatar: "research", model: "Gemini 2.0 Flash", provider: "google", schedule: "Manual" },
+  { id: "finance", name: "Cost Guard", desc: "Tracks LLM API spending, flags abnormal usage, and optimizes context budget.", status: "paused", avatar: "finance", model: "Orchestrator", provider: "zed-pro", schedule: "Manual" },
+  { id: "social", name: "Community Manager", desc: "Drafts release notes, monitors feedback channels, and manages announcements.", status: "inactive", avatar: "social", model: "GPT-4o-mini", provider: "openai", schedule: "Manual" }
+];
+
 class AgentsStore {
   constructor() {
-    this.agents = [];
+    this.agents = defaultAgentsList;
     this.filter = "all";
     this.searchQuery = "";
     this.listeners = [];
-    this.loaded = false;
+    this.loaded = true;
   }
 
   subscribe(listener) {
@@ -45,12 +64,14 @@ class AgentsStore {
       const res = await fetch('/api/agents');
       if (res.ok) {
         const data = await res.json();
-        this.agents = data.agents || [];
-        this.loaded = true;
-        this.notify();
+        if (data.agents && data.agents.length > 0) {
+          this.agents = data.agents;
+          this.loaded = true;
+          this.notify();
+        }
       }
     } catch (e) {
-      console.warn('[Agents] Failed to load from backend:', e);
+      console.warn('[Agents] Failed to load from backend, using defaults:', e);
     }
   }
 
@@ -332,8 +353,8 @@ function renderAgentsList(store) {
             ${pixelAvatar}
           </div>
           <div class="agent-item-text-info">
-            <h3 class="agent-item-name">${agent.name}</h3>
-            <p class="agent-item-desc">${agent.desc}</p>
+            <h3 class="agent-item-name">${escapeHtml(agent.name)}</h3>
+            <p class="agent-item-desc">${escapeHtml(agent.desc)}</p>
           </div>
         </div>
 
@@ -356,7 +377,7 @@ function renderAgentsList(store) {
               </svg>
             </div>
             <div class="schedule-text-lines">
-              <div class="sched-line-time">${agent.schedule || 'Manual'}</div>
+              <div class="sched-line-time">${escapeHtml(agent.schedule || 'Manual')}</div>
               <div class="sched-line-next">${agent.status === 'active' ? 'Active' : 'Paused'}</div>
             </div>
           </div>
@@ -366,7 +387,7 @@ function renderAgentsList(store) {
         <div class="agent-item-model-col">
           <div class="agent-model-provider-badge">
             ${providerLogoHtml}
-            <span class="agent-model-name-label">${agent.model}</span>
+            <span class="agent-model-name-label">${escapeHtml(agent.model)}</span>
           </div>
         </div>
 
@@ -376,7 +397,7 @@ function renderAgentsList(store) {
           ${agent.skills.slice(0, 3).map(skillId => {
             const skill = getSkillById(skillId);
             if (!skill) return '';
-            return `<span style="font-size: 10.5px; color: #4F46E5; background: #EEF2FF; border-radius: 9999px; padding: 2px 8px; font-weight: 500; white-space: nowrap;" title="${skill.name}: ${skill.desc}">${skill.name}</span>`;
+            return `<span style="font-size: 10.5px; color: #4F46E5; background: #EEF2FF; border-radius: 9999px; padding: 2px 8px; font-weight: 500; white-space: nowrap;" title="${escapeHtml(skill.name)}: ${escapeHtml(skill.desc)}">${escapeHtml(skill.name)}</span>`;
           }).join('')}
           ${agent.skills.length > 3 ? `<span style="font-size: 10.5px; color: #6B7280; background: #F3F4F6; border-radius: 9999px; padding: 2px 6px; font-weight: 500;">+${agent.skills.length - 3}</span>` : ''}
         </div>
@@ -417,6 +438,8 @@ function bindAgentRowEvents() {
     });
   });
 }
+
+let currentCloseMenu = null;
 
 function toggleAgentRowMenu(triggerBtn, id) {
   let menu = document.getElementById('zedAgentRowMenu');
@@ -507,12 +530,19 @@ function toggleAgentRowMenu(triggerBtn, id) {
     });
   });
 
+  if (currentCloseMenu) {
+    document.removeEventListener('click', currentCloseMenu);
+    currentCloseMenu = null;
+  }
+
   const closeMenu = (e) => {
     if (!triggerBtn.contains(e.target) && !menu.contains(e.target)) {
       menu.remove();
       document.removeEventListener('click', closeMenu);
+      currentCloseMenu = null;
     }
   };
+  currentCloseMenu = closeMenu;
   document.addEventListener('click', closeMenu);
 }
 
