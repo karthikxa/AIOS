@@ -23,6 +23,7 @@ import dataUtilsRouter from './routes/data-utils.js';
 import videoRouter from './routes/video.js';
 import browserRouter from './routes/browser.js';
 import mcpRouter from './routes/mcp.js';
+import utilsRouter from './routes/utils.js';
 import { requireAuth } from './middleware/requireAuth.js';
 import { createProxyRateLimiter } from './middleware/rateLimit.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -96,6 +97,7 @@ export function createApp() {
   app.use('/api/video', requireAuth, videoRouter);
   app.use('/api/browser', requireAuth, browserRouter);
   app.use('/api/mcp', requireAuth, mcpRouter);
+  app.use('/api/utils', requireAuth, utilsRouter);
 
   // OpenAI-compatible proxy. Per-IP rate limiting (#35 item #6) runs first so
   // it throttles unauthenticated brute-force / flood attempts before any
