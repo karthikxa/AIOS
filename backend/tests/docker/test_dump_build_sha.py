@@ -102,3 +102,4 @@ def test_dump_reports_baked_sha_when_present(built_image: str) -> None:
         f"dump reported {reported!r} but baked file contained {baked!r} "
         f"(expected first 8 chars: {baked[:8]!r})"
     )
+

@@ -1,4 +1,4 @@
-﻿from zed_cli import cli_output
+﻿from hermes_cli import cli_output
 
 
 def test_password_prompt_uses_masked_secret_prompt(monkeypatch):
@@ -18,3 +18,4 @@ def test_empty_password_prompt_returns_default(monkeypatch):
     monkeypatch.setattr(cli_output, "masked_secret_prompt", lambda _display: "")
 
     assert cli_output.prompt("API key", default="old", password=True) == "old"
+

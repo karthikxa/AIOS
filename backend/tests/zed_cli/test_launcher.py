@@ -7,17 +7,17 @@ from pathlib import Path
 
 
 def test_launcher_delegates_to_argparse_entrypoint(monkeypatch):
-    """`./zed` should use `zed_cli.main`, not the legacy Fire wrapper."""
+    """`./zed` should use `hermes_cli.main`, not the legacy Fire wrapper."""
     launcher_path = Path(__file__).resolve().parents[2] / "zed"
     called = []
 
-    fake_main_module = types.ModuleType("zed_cli.main")
+    fake_main_module = types.ModuleType("hermes_cli.main")
 
     def fake_main():
-        called.append("zed_cli.main")
+        called.append("hermes_cli.main")
 
     fake_main_module.main = fake_main
-    monkeypatch.setitem(sys.modules, "zed_cli.main", fake_main_module)
+    monkeypatch.setitem(sys.modules, "hermes_cli.main", fake_main_module)
 
     fake_cli_module = types.ModuleType("cli")
 
@@ -39,4 +39,5 @@ def test_launcher_delegates_to_argparse_entrypoint(monkeypatch):
 
     runpy.run_path(str(launcher_path), run_name="__main__")
 
-    assert called == ["zed_cli.main"]
+    assert called == ["hermes_cli.main"]
+

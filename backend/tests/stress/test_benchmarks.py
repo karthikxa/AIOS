@@ -58,7 +58,7 @@ def main():
     os.environ["ZED_HOME"] = home
     os.environ["HOME"] = home
     sys.path.insert(0, WT)
-    from zed_cli import kanban_db as kb
+    from hermes_cli import kanban_db as kb
 
     kb.init_db()
 
@@ -219,3 +219,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

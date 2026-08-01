@@ -1,5 +1,5 @@
 ﻿from cli import ZedCLI
-from zed_cli.active_sessions import (
+from hermes_cli.active_sessions import (
     active_session_registry_snapshot,
     try_acquire_active_session,
 )
@@ -39,3 +39,4 @@ def test_cli_claim_active_session_respects_global_limit(tmp_path, monkeypatch):
     finally:
         held.release()
         cli._release_active_session()
+

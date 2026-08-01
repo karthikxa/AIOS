@@ -6,7 +6,7 @@ anchor, the call returns goal (bookend_start) + match (window) + resolution
 """
 import pytest
 
-from zed_state import SessionDB
+from hermes_state import SessionDB
 
 
 @pytest.fixture
@@ -159,3 +159,4 @@ class TestSessionIsolation:
         # All bookend messages should have session_id = s1 (or session_id col)
         for m in view["bookend_start"] + view["bookend_end"]:
             assert m.get("session_id") == "s1"
+

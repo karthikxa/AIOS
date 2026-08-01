@@ -1,4 +1,4 @@
-﻿"""Tests for zed_cli.uninstall.remove_node_symlinks.
+﻿"""Tests for hermes_cli.uninstall.remove_node_symlinks.
 
 Regression for #34536: the POSIX installer drops node/npm/npx symlinks in
 ~/.local/bin pointing into $ZED_HOME/node and prepends ~/.local/bin to
@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-import zed_cli.uninstall as uninstall
+import hermes_cli.uninstall as uninstall
 
 
 @pytest.fixture
@@ -164,3 +164,4 @@ def test_removes_fhs_symlinks_in_usr_local_bin(fake_home, tmp_path, monkeypatch)
     assert sorted(p.name for p in removed) == ["node", "npm", "npx"]
     for name in ("node", "npm", "npx"):
         assert not (fhs_bin / name).is_symlink()
+

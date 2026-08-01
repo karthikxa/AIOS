@@ -5,9 +5,9 @@ shared slash-command pipeline (`/model` in CLI/gateway/Telegram) historically
 only looked at `providers:`.
 """
 
-import zed_cli.providers as providers_mod
-from zed_cli.model_switch import list_authenticated_providers, switch_model
-from zed_cli.providers import resolve_provider_full
+import hermes_cli.providers as providers_mod
+from hermes_cli.model_switch import list_authenticated_providers, switch_model
+from hermes_cli.providers import resolve_provider_full
 
 
 _MOCK_VALIDATION = {
@@ -97,9 +97,9 @@ def test_list_authenticated_providers_includes_active_bare_custom_endpoint(monke
 
 def test_switch_model_accepts_explicit_bare_custom_current_endpoint(monkeypatch):
     """Picker selections for bare custom endpoints should route to current base_url."""
-    monkeypatch.setattr("zed_cli.models.validate_requested_model", lambda *a, **k: _MOCK_VALIDATION)
-    monkeypatch.setattr("zed_cli.model_switch.get_model_info", lambda *a, **k: None)
-    monkeypatch.setattr("zed_cli.model_switch.get_model_capabilities", lambda *a, **k: None)
+    monkeypatch.setattr("hermes_cli.models.validate_requested_model", lambda *a, **k: _MOCK_VALIDATION)
+    monkeypatch.setattr("hermes_cli.model_switch.get_model_info", lambda *a, **k: None)
+    monkeypatch.setattr("hermes_cli.model_switch.get_model_capabilities", lambda *a, **k: None)
 
     result = switch_model(
         raw_input="gpt-4o-mini",
@@ -132,16 +132,16 @@ def test_is_aggregator_leaves_unknown_provider_non_aggregator():
 def test_switch_model_accepts_explicit_named_custom_provider(monkeypatch):
     """Shared /model switch pipeline should accept --provider for custom_providers."""
     monkeypatch.setattr(
-        "zed_cli.runtime_provider.resolve_runtime_provider",
+        "hermes_cli.runtime_provider.resolve_runtime_provider",
         lambda **kwargs: {
             "api_key": "no-key-required",
             "base_url": "http://127.0.0.1:4141/v1",
             "api_mode": "chat_completions",
         },
     )
-    monkeypatch.setattr("zed_cli.models.validate_requested_model", lambda *a, **k: _MOCK_VALIDATION)
-    monkeypatch.setattr("zed_cli.model_switch.get_model_info", lambda *a, **k: None)
-    monkeypatch.setattr("zed_cli.model_switch.get_model_capabilities", lambda *a, **k: None)
+    monkeypatch.setattr("hermes_cli.models.validate_requested_model", lambda *a, **k: _MOCK_VALIDATION)
+    monkeypatch.setattr("hermes_cli.model_switch.get_model_info", lambda *a, **k: None)
+    monkeypatch.setattr("hermes_cli.model_switch.get_model_capabilities", lambda *a, **k: None)
 
     result = switch_model(
         raw_input="rotator-openrouter-coding",
@@ -548,7 +548,7 @@ def test_lmstudio_picker_probes_active_config_base_url(monkeypatch):
         captured["api_key"] = api_key
         return ["qwen/qwen3-coder-30b"]
 
-    monkeypatch.setattr("zed_cli.models.fetch_lmstudio_models", _fake_fetch)
+    monkeypatch.setattr("hermes_cli.models.fetch_lmstudio_models", _fake_fetch)
 
     list_authenticated_providers(
         current_provider="lmstudio",
@@ -575,7 +575,7 @@ def test_lmstudio_picker_lm_base_url_env_wins_over_active_config(monkeypatch):
         captured["base_url"] = base_url
         return []
 
-    monkeypatch.setattr("zed_cli.models.fetch_lmstudio_models", _fake_fetch)
+    monkeypatch.setattr("hermes_cli.models.fetch_lmstudio_models", _fake_fetch)
 
     list_authenticated_providers(
         current_provider="lmstudio",
@@ -601,7 +601,7 @@ def test_lmstudio_picker_skips_probe_when_not_configured(monkeypatch):
         captured["base_url"] = base_url
         return []
 
-    monkeypatch.setattr("zed_cli.models.fetch_lmstudio_models", _fake_fetch)
+    monkeypatch.setattr("hermes_cli.models.fetch_lmstudio_models", _fake_fetch)
 
     list_authenticated_providers(
         current_provider="openrouter",
@@ -621,7 +621,7 @@ def test_custom_providers_uses_live_models_for_multi_model_endpoint(monkeypatch)
     models from the endpoint.
     """
     monkeypatch.setattr("agent.models_dev.fetch_models_dev", lambda: {})
-    monkeypatch.setattr("zed_cli.providers.ZED_OVERLAYS", {})
+    monkeypatch.setattr("hermes_cli.providers.ZED_OVERLAYS", {})
 
     calls = []
 
@@ -629,7 +629,7 @@ def test_custom_providers_uses_live_models_for_multi_model_endpoint(monkeypatch)
         calls.append((api_key, base_url))
         return ["gateway-model-a", "gateway-model-b", "gateway-model-c"]
 
-    monkeypatch.setattr("zed_cli.models.fetch_api_models", fake_fetch_api_models)
+    monkeypatch.setattr("hermes_cli.models.fetch_api_models", fake_fetch_api_models)
 
     custom_providers = [
         {
@@ -682,7 +682,7 @@ def test_custom_providers_discover_models_false_keeps_explicit_subset(monkeypatc
     serve a configured subset.
     """
     monkeypatch.setattr("agent.models_dev.fetch_models_dev", lambda: {})
-    monkeypatch.setattr("zed_cli.providers.ZED_OVERLAYS", {})
+    monkeypatch.setattr("hermes_cli.providers.ZED_OVERLAYS", {})
 
     calls = []
 
@@ -690,7 +690,7 @@ def test_custom_providers_discover_models_false_keeps_explicit_subset(monkeypatc
         calls.append((api_key, base_url))
         return ["gateway-model-a", "gateway-model-b", "gateway-model-c"]
 
-    monkeypatch.setattr("zed_cli.models.fetch_api_models", fake_fetch_api_models)
+    monkeypatch.setattr("hermes_cli.models.fetch_api_models", fake_fetch_api_models)
 
     custom_providers = [
         {
@@ -738,7 +738,7 @@ def test_custom_providers_discover_models_false_string_is_normalised(monkeypatch
     must be treated as a disable, same as the boolean ``False`` and section 3.
     """
     monkeypatch.setattr("agent.models_dev.fetch_models_dev", lambda: {})
-    monkeypatch.setattr("zed_cli.providers.ZED_OVERLAYS", {})
+    monkeypatch.setattr("hermes_cli.providers.ZED_OVERLAYS", {})
 
     calls = []
 
@@ -746,7 +746,7 @@ def test_custom_providers_discover_models_false_string_is_normalised(monkeypatch
         calls.append((api_key, base_url))
         return ["live-a", "live-b"]
 
-    monkeypatch.setattr("zed_cli.models.fetch_api_models", fake_fetch_api_models)
+    monkeypatch.setattr("hermes_cli.models.fetch_api_models", fake_fetch_api_models)
 
     custom_providers = [
         {
@@ -774,3 +774,4 @@ def test_custom_providers_discover_models_false_string_is_normalised(monkeypatch
     assert gateway_prov is not None
     assert calls == [], "string 'false' must disable live discovery"
     assert gateway_prov["models"] == ["only-model"]
+

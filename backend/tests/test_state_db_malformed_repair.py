@@ -18,8 +18,8 @@ from pathlib import Path
 
 import pytest
 
-import zed_state
-from zed_state import (
+import hermes_state
+from hermes_state import (
     SessionDB,
     is_malformed_db_error,
     repair_state_db_schema,
@@ -129,7 +129,7 @@ def test_auto_heal_attempted_once_per_process(tmp_path, monkeypatch):
     monkeypatch.setattr(zed_state, "_repair_attempted_paths", set())
 
     calls = {"n": 0}
-    real_repair = zed_state.repair_state_db_schema
+    real_repair = hermes_state.repair_state_db_schema
 
     def fake_repair(path, **kw):
         calls["n"] += 1
@@ -170,7 +170,7 @@ def test_strategy_b_rebuild_when_dedup_insufficient(tmp_path, monkeypatch):
     # so the routine escalates to strat 2 (drop FTS + VACUUM) and runs its
     # real SQL against the file; the strat-2 verification then uses the real
     # check and passes.
-    real_check = zed_state._db_opens_cleanly
+    real_check = hermes_state._db_opens_cleanly
     calls = {"n": 0}
 
     def flaky_check(path):
@@ -218,7 +218,7 @@ def test_non_malformed_error_is_not_auto_repaired(tmp_path, monkeypatch):
     monkeypatch.setattr(zed_state, "_repair_attempted_paths", set())
 
     called = {"n": 0}
-    orig = zed_state.repair_state_db_schema
+    orig = hermes_state.repair_state_db_schema
 
     def spy(*a, **kw):
         called["n"] += 1
@@ -242,3 +242,4 @@ def test_repair_on_clean_db_is_noop(tmp_path):
     assert conn.execute("SELECT COUNT(*) FROM messages").fetchone()[0] == 10
     assert conn.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
     conn.close()
+

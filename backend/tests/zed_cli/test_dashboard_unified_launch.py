@@ -12,7 +12,7 @@ import pytest
 
 @pytest.fixture
 def main_mod():
-    import zed_cli.main as main_mod
+    import hermes_cli.main as main_mod
     return main_mod
 
 
@@ -29,7 +29,7 @@ def _args(**kw):
 class TestUnifiedDashboardRouting:
     def test_profile_launch_attaches_to_running_dashboard(self, main_mod, monkeypatch):
         monkeypatch.setattr(
-            "zed_cli.profiles.get_active_profile_name", lambda: "worker_x"
+            "hermes_cli.profiles.get_active_profile_name", lambda: "worker_x"
         )
         monkeypatch.setattr(main_mod, "_dashboard_listening", lambda host, port: True)
         execs = []
@@ -44,7 +44,7 @@ class TestUnifiedDashboardRouting:
         """The attach path must open the browser at ?profile=<name> â€” that
         URL is the entire point of attaching (preselects the switcher)."""
         monkeypatch.setattr(
-            "zed_cli.profiles.get_active_profile_name", lambda: "worker_x"
+            "hermes_cli.profiles.get_active_profile_name", lambda: "worker_x"
         )
         monkeypatch.setattr(main_mod, "_dashboard_listening", lambda host, port: True)
         opened = []
@@ -59,7 +59,7 @@ class TestUnifiedDashboardRouting:
     def test_profile_launch_reexecs_machine_dashboard(self, main_mod, monkeypatch):
         monkeypatch.delenv("ZED_HOME", raising=False)
         monkeypatch.setattr(
-            "zed_cli.profiles.get_active_profile_name", lambda: "worker_x"
+            "hermes_cli.profiles.get_active_profile_name", lambda: "worker_x"
         )
         monkeypatch.setattr(main_mod, "_dashboard_listening", lambda host, port: False)
         execs = []
@@ -84,7 +84,7 @@ class TestUnifiedDashboardRouting:
         # ZED_HOME.  For a standard install (ZED_HOME unset) that root is
         # the platform-native default (~/.zed), NOT dropped â€” see the Docker
         # test below for why we resolve explicitly instead of popping.
-        from zed_constants import get_default_zed_root
+        from hermes_constants import get_default_zed_root
         assert env.get("ZED_HOME") == str(get_default_zed_root())
 
     def test_reexec_pins_docker_machine_root(self, main_mod, monkeypatch):
@@ -100,7 +100,7 @@ class TestUnifiedDashboardRouting:
         """
         monkeypatch.setenv("ZED_HOME", "/opt/data/profiles/oracle")
         monkeypatch.setattr(
-            "zed_cli.profiles.get_active_profile_name", lambda: "oracle"
+            "hermes_cli.profiles.get_active_profile_name", lambda: "oracle"
         )
         monkeypatch.setattr(main_mod, "_dashboard_listening", lambda host, port: False)
         execs = []
@@ -128,7 +128,7 @@ class TestUnifiedDashboardRouting:
         loop. The guard keeps desktop pool backends per-profile."""
         monkeypatch.setenv("ZED_DESKTOP", "1")
         monkeypatch.setattr(
-            "zed_cli.profiles.get_active_profile_name", lambda: "worker_x"
+            "hermes_cli.profiles.get_active_profile_name", lambda: "worker_x"
         )
         listening_calls = []
         monkeypatch.setattr(
@@ -146,7 +146,7 @@ class TestUnifiedDashboardRouting:
 
     def test_isolated_flag_skips_routing(self, main_mod, monkeypatch):
         monkeypatch.setattr(
-            "zed_cli.profiles.get_active_profile_name", lambda: "worker_x"
+            "hermes_cli.profiles.get_active_profile_name", lambda: "worker_x"
         )
         listening_calls = []
         monkeypatch.setattr(
@@ -164,7 +164,7 @@ class TestUnifiedDashboardRouting:
 
     def test_default_profile_launch_skips_routing(self, main_mod, monkeypatch):
         monkeypatch.setattr(
-            "zed_cli.profiles.get_active_profile_name", lambda: "default"
+            "hermes_cli.profiles.get_active_profile_name", lambda: "default"
         )
         listening_calls = []
         monkeypatch.setattr(
@@ -181,7 +181,7 @@ class TestUnifiedDashboardRouting:
         """The re-exec'd child carries --open-profile; the guard must treat
         that as 'already routed' and never re-exec again (no exec loop)."""
         monkeypatch.setattr(
-            "zed_cli.profiles.get_active_profile_name", lambda: "worker_x"
+            "hermes_cli.profiles.get_active_profile_name", lambda: "worker_x"
         )
         execs = []
         monkeypatch.setattr(main_mod.os, "execvpe", lambda *a, **k: execs.append(a))
@@ -196,7 +196,7 @@ class TestUnifiedDashboardRouting:
         tui_gateway/entry.py, so it must kick off MCP discovery itself or
         desktop sessions never see a profile's MCP tools."""
         monkeypatch.setattr(
-            "zed_cli.profiles.get_active_profile_name", lambda: "default"
+            "hermes_cli.profiles.get_active_profile_name", lambda: "default"
         )
         monkeypatch.delenv("ZED_WEB_DIST", raising=False)
         monkeypatch.setattr(main_mod, "_sync_bundled_skills_quietly", lambda: None)
@@ -210,17 +210,17 @@ class TestUnifiedDashboardRouting:
         )
         monkeypatch.setitem(
             sys.modules,
-            "zed_cli.plugins",
+            "hermes_cli.plugins",
             types.SimpleNamespace(discover_plugins=lambda: None),
         )
         calls = []
         monkeypatch.setattr(
-            "zed_cli.mcp_startup.start_background_mcp_discovery",
+            "hermes_cli.mcp_startup.start_background_mcp_discovery",
             lambda **kwargs: calls.append(kwargs),
         )
         monkeypatch.setitem(
             sys.modules,
-            "zed_cli.web_server",
+            "hermes_cli.web_server",
             types.SimpleNamespace(start_server=lambda **_kwargs: None),
         )
 
@@ -232,3 +232,4 @@ class TestUnifiedDashboardRouting:
                 "thread_name": "dashboard-mcp-discovery",
             }
         ]
+

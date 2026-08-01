@@ -11,7 +11,7 @@ from typing import Callable, Optional
 
 logger = logging.getLogger(__name__)
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from tools.tool_backend_helpers import managed_nous_tools_enabled
 
 _DEFAULT_TOOL_GATEWAY_DOMAIN = "zedteam.com"
@@ -108,7 +108,7 @@ def read_nous_access_token() -> Optional[str]:
         return cached_token
 
     try:
-        from zed_cli.auth import resolve_nous_access_token
+        from hermes_cli.auth import resolve_nous_access_token
 
         refreshed_token = resolve_nous_access_token(
             refresh_skew_seconds=_NOUS_ACCESS_TOKEN_REFRESH_SKEW_SECONDS,
@@ -190,3 +190,4 @@ def is_managed_tool_gateway_ready(
         gateway_builder=gateway_builder,
         token_reader=token_reader or peek_nous_access_token,
     ) is not None
+

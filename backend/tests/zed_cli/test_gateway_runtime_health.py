@@ -1,4 +1,4 @@
-﻿from zed_cli.gateway import _runtime_health_lines
+﻿from hermes_cli.gateway import _runtime_health_lines
 
 
 def test_runtime_health_lines_include_fatal_platform_and_startup_reason(monkeypatch):
@@ -51,3 +51,4 @@ def test_runtime_status_running_pid_rejects_stopped_record(monkeypatch):
     monkeypatch.setattr(status_mod, "_pid_exists", lambda pid: True)
 
     assert status_mod.get_runtime_status_running_pid(runtime) is None
+

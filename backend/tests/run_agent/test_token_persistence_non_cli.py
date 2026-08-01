@@ -74,7 +74,7 @@ def test_session_search_lazily_opens_db_when_entrypoint_did_not_pass_one(monkeyp
             return sentinel_db
 
     zed_state = ModuleType("zed_state")
-    zed_state.SessionDB = FakeSessionDB
+    hermes_state.SessionDB = FakeSessionDB
     monkeypatch.setitem(sys.modules, "zed_state", zed_state)
 
     session_search_mod = ModuleType("tools.session_search_tool")
@@ -93,3 +93,4 @@ def test_session_search_lazily_opens_db_when_entrypoint_did_not_pass_one(monkeyp
     assert captured["db"] is sentinel_db
     assert captured["query"] == "Zed"
     assert agent._session_db is sentinel_db
+

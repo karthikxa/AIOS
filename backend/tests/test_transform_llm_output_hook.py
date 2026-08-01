@@ -19,8 +19,8 @@ from pathlib import Path
 
 import yaml
 
-import zed_cli.plugins as plugins_mod
-from zed_cli.plugins import PluginManager, VALID_HOOKS
+import hermes_cli.plugins as plugins_mod
+from hermes_cli.plugins import PluginManager, VALID_HOOKS
 
 
 def _make_enabled_plugin(zed_home: Path, name: str, register_body: str) -> Path:
@@ -157,3 +157,4 @@ def test_no_plugins_returns_empty_results(tmp_path, monkeypatch):
         platform="",
     )
     assert results == []
+

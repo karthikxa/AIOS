@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import argparse
 
-from zed_cli.subcommands.cron import build_cron_parser
+from hermes_cli.subcommands.cron import build_cron_parser
 
 
 def _sentinel_handler(args):  # pragma: no cover - only identity is asserted
@@ -83,3 +83,4 @@ def test_cron_accept_hooks_flag_on_run_and_tick():
     assert ns.accept_hooks is True
     ns2 = parser.parse_args(["cron", "tick", "--accept-hooks"])
     assert ns2.accept_hooks is True
+

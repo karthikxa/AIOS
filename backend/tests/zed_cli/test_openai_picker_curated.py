@@ -23,8 +23,8 @@ from unittest.mock import patch
 
 import pytest
 
-from zed_cli import models as M
-from zed_cli.providers import ZED_OVERLAYS
+from hermes_cli import models as M
+from hermes_cli.providers import ZED_OVERLAYS
 
 
 # --- Bug 2: overlay no longer lists OPENAI_API_KEY --------------------------
@@ -94,3 +94,4 @@ def test_custom_openai_compatible_endpoint_keeps_live_list(monkeypatch):
         result = M.provider_model_ids("openai-api", force_refresh=True)
 
     assert result == live
+

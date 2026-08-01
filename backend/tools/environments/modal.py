@@ -14,7 +14,7 @@ import threading
 from pathlib import Path
 from typing import Any, Optional
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from tools.environments.base import (
     BaseEnvironment,
     _ThreadedProcessHandle,
@@ -476,3 +476,4 @@ class ModalEnvironment(BaseEnvironment):
             self._worker.stop()
             self._sandbox = None
             self._app = None
+

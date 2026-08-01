@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-from zed_state import SessionDB
+from hermes_state import SessionDB
 
 
 @pytest.fixture
@@ -147,3 +147,4 @@ def test_concurrent_acquire_only_one_winner(db: SessionDB) -> None:
     assert sum(1 for r in results if r is False) == 7
     # The single winner still owns it
     assert db.get_compression_lock_holder("contended_session") is not None
+

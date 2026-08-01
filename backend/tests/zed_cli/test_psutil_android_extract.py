@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 import pytest
 
-from zed_cli.psutil_android import (
+from hermes_cli.psutil_android import (
     MARKER,
     REPLACEMENT,
     PSUTIL_URL,
@@ -68,7 +68,7 @@ def test_install_psutil_android_compat_uses_patched_tree(tmp_path):
     archive = tmp_path / "psutil.tar.gz"
     _build_psutil_archive(archive, malicious_symlink=False)
 
-    from zed_cli import main as zed_main
+    from hermes_cli import main as zed_main
 
     captured: dict[str, object] = {}
 
@@ -124,3 +124,4 @@ def test_install_psutil_android_script_uses_patched_tree(tmp_path, monkeypatch, 
 
     captured = capsys.readouterr()
     assert "psutil installed via Android compatibility shim" in captured.out
+

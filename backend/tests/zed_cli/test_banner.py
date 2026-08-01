@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from rich.console import Console
 
-import zed_cli.banner as banner
+import hermes_cli.banner as banner
 import model_tools
 import tools.mcp_tool
 
@@ -74,7 +74,7 @@ def test_build_welcome_banner_title_is_hyperlinked_to_release():
     """Panel title (version label) is wrapped in an OSC-8 hyperlink to the GitHub release."""
     import io
     from unittest.mock import patch as _patch
-    import zed_cli.banner as _banner
+    import hermes_cli.banner as _banner
     import model_tools as _mt
     import tools.mcp_tool as _mcp
 
@@ -109,7 +109,7 @@ def test_build_welcome_banner_title_falls_back_when_no_tag():
     """Without a resolvable tag, the panel title renders as plain text (no hyperlink escape)."""
     import io
     from unittest.mock import patch as _patch
-    import zed_cli.banner as _banner
+    import hermes_cli.banner as _banner
     import model_tools as _mt
     import tools.mcp_tool as _mcp
 
@@ -200,3 +200,4 @@ def test_build_welcome_banner_configured_mcp_is_not_failed():
     assert "docker-profile" in output
     assert "configured" in output
     assert "failed" not in output
+

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Terminal Tool Module
 
@@ -55,7 +55,7 @@ logger = logging.getLogger(__name__)
 # The terminal tool polls this during command execution so it can kill
 # long-running subprocesses immediately instead of blocking until timeout.
 # ---------------------------------------------------------------------------
-from tools.interrupt import is_interrupted, _interrupt_event  # noqa: F401 â€” re-exported
+from tools.interrupt import is_interrupted, _interrupt_event  # noqa: F401 Ã¢â‚¬â€ re-exported
 # display_zed_home imported lazily at call site (stale-module safety during zed update)
 
 
@@ -162,8 +162,8 @@ _sudo_password_cache_lock = threading.Lock()
 # instead of the default /dev/tty or input() readers. The CLI registers these
 # so prompts route through prompt_toolkit's event loop.
 # Callback slots used by the approval prompt and sudo password prompt
-# routines. Stored in thread-local state so overlapping ACP sessions â€”
-# each running in its own ThreadPoolExecutor thread â€” don't stomp on
+# routines. Stored in thread-local state so overlapping ACP sessions Ã¢â‚¬â€
+# each running in its own ThreadPoolExecutor thread Ã¢â‚¬â€ don't stomp on
 # each other's callbacks. See GHSA-qg5c-hvr5-hjgr.
 #
 # CLI mode is single-threaded, so each thread (the only one) holds its
@@ -184,7 +184,7 @@ def _get_approval_callback():
 def set_sudo_password_callback(cb):
     """Register a callback for sudo password prompts (used by CLI).
 
-    Per-thread scope â€” ACP sessions that run concurrently in a
+    Per-thread scope Ã¢â‚¬â€ ACP sessions that run concurrently in a
     ThreadPoolExecutor each have their own callback slot.
     """
     _callback_tls.sudo_password = cb
@@ -193,7 +193,7 @@ def set_sudo_password_callback(cb):
 def set_approval_callback(cb):
     """Register a callback for dangerous command approval prompts.
 
-    Per-thread scope â€” ACP sessions that run concurrently in a
+    Per-thread scope Ã¢â‚¬â€ ACP sessions that run concurrently in a
     ThreadPoolExecutor each have their own callback slot. See
     GHSA-qg5c-hvr5-hjgr.
     """
@@ -312,8 +312,8 @@ def _handle_sudo_failure(output: str, env_type: str) -> str:
     
     for failure in sudo_failures:
         if failure in output:
-            from zed_constants import display_zed_home as _dhh
-            return output + f"\n\nðŸ’¡ Tip: To enable sudo over messaging, add SUDO_PASSWORD to {_dhh()}/.env on the agent machine."
+            from hermes_constants import display_zed_home as _dhh
+            return output + f"\n\nÃ°Å¸â€™Â¡ Tip: To enable sudo over messaging, add SUDO_PASSWORD to {_dhh()}/.env on the agent machine."
     
     return output
 
@@ -397,13 +397,13 @@ def _prompt_for_sudo_password(timeout_seconds: int = 45) -> str:
         time.sleep(0.2)
         
         print()
-        print("â”Œ" + "â”€" * 58 + "â”")
-        print("â”‚  ðŸ” SUDO PASSWORD REQUIRED" + " " * 30 + "â”‚")
-        print("â”œ" + "â”€" * 58 + "â”¤")
-        print("â”‚  Enter password below (input is hidden), or:            â”‚")
-        print("â”‚    â€¢ Press Enter to skip (command fails gracefully)     â”‚")
-        print(f"â”‚    â€¢ Wait {timeout_seconds}s to auto-skip" + " " * 27 + "â”‚")
-        print("â””" + "â”€" * 58 + "â”˜")
+        print("Ã¢â€Å’" + "Ã¢â€â‚¬" * 58 + "Ã¢â€Â")
+        print("Ã¢â€â€š  Ã°Å¸â€Â SUDO PASSWORD REQUIRED" + " " * 30 + "Ã¢â€â€š")
+        print("Ã¢â€Å“" + "Ã¢â€â‚¬" * 58 + "Ã¢â€Â¤")
+        print("Ã¢â€â€š  Enter password below (input is hidden), or:            Ã¢â€â€š")
+        print("Ã¢â€â€š    Ã¢â‚¬Â¢ Press Enter to skip (command fails gracefully)     Ã¢â€â€š")
+        print(f"Ã¢â€â€š    Ã¢â‚¬Â¢ Wait {timeout_seconds}s to auto-skip" + " " * 27 + "Ã¢â€â€š")
+        print("Ã¢â€â€" + "Ã¢â€â‚¬" * 58 + "Ã¢â€Ëœ")
         print()
         print("  Password (hidden): ", end="", flush=True)
         
@@ -415,14 +415,14 @@ def _prompt_for_sudo_password(timeout_seconds: int = 45) -> str:
             password = result["password"] or ""
             print()  # newline after hidden input
             if password:
-                print("  âœ“ Password received (cached for this session)")
+                print("  Ã¢Å“â€œ Password received (cached for this session)")
             else:
-                print("  â­ Skipped - continuing without sudo")
+                print("  Ã¢ÂÂ­ Skipped - continuing without sudo")
             print()
             sys.stdout.flush()
             return password
         else:
-            print("\n  â± Timeout - continuing without sudo")
+            print("\n  Ã¢ÂÂ± Timeout - continuing without sudo")
             print("    (Press Enter to dismiss)")
             print()
             sys.stdout.flush()
@@ -430,7 +430,7 @@ def _prompt_for_sudo_password(timeout_seconds: int = 45) -> str:
             
     except (EOFError, KeyboardInterrupt):
         print()
-        print("  â­ Cancelled - continuing without sudo")
+        print("  Ã¢ÂÂ­ Cancelled - continuing without sudo")
         print()
         sys.stdout.flush()
         return ""
@@ -592,7 +592,7 @@ def _rewrite_compound_background(command: str) -> str:
     the subshell, `B` runs foreground, so the subshell waits for `B` to
     finish. When `B` is a long-running process (`python3 -m http.server`,
     `yes > /dev/null`, anything that doesn't naturally exit), the subshell
-    never exits. It leaks as a process stuck in ``wait4`` forever â€” and
+    never exits. It leaks as a process stuck in ``wait4`` forever Ã¢â‚¬â€ and
     on the way, its open stdout pipe can prevent the terminal tool from
     returning promptly.
 
@@ -604,7 +604,7 @@ def _rewrite_compound_background(command: str) -> str:
     when the parent shell exits.
 
     Handles redirects (``&>``, ``2>&1``) and skips content inside quoted
-    strings and parenthesised subshells. Leaves simple ``cmd &`` alone â€”
+    strings and parenthesised subshells. Leaves simple ``cmd &`` alone Ã¢â‚¬â€
     that construct doesn't have the subshell-wait bug.
     """
     n = len(command)
@@ -619,7 +619,7 @@ def _rewrite_compound_background(command: str) -> str:
     while i < n:
         ch = command[i]
 
-        # Newline terminates a statement at depth 0 â€” reset chain state.
+        # Newline terminates a statement at depth 0 Ã¢â‚¬â€ reset chain state.
         # Checked before the whitespace skip so we don't miss it.
         if ch == "\n" and paren_depth == 0 and brace_depth == 0:
             last_chain_op_end = -1
@@ -630,7 +630,7 @@ def _rewrite_compound_background(command: str) -> str:
             i += 1
             continue
 
-        # Comments (only at statement start â€” conservative: any `#` not inside
+        # Comments (only at statement start Ã¢â‚¬â€ conservative: any `#` not inside
         # a token ends the line). `_read_shell_token` handles quoted strings
         # below so `#` inside quotes is safe.
         if ch == "#":
@@ -644,7 +644,7 @@ def _rewrite_compound_background(command: str) -> str:
             i += 2
             continue
 
-        # Quoted tokens â€” consume whole string via the shared tokenizer.
+        # Quoted tokens Ã¢â‚¬â€ consume whole string via the shared tokenizer.
         if ch in {"'", '"'}:
             _, next_i = _read_shell_token(command, i)
             i = max(next_i, i + 1)
@@ -662,7 +662,7 @@ def _rewrite_compound_background(command: str) -> str:
 
         # Brace groups: `{ ... }` is a group (no subshell fork), and bash
         # requires whitespace after `{`. We track depth so already-rewritten
-        # output (`A && { B & }`) is idempotent â€” the inner `&` is part of
+        # output (`A && { B & }`) is idempotent Ã¢â‚¬â€ the inner `&` is part of
         # the group, not a new compound to rewrite. Also skip content inside
         # the group since `A && B &` there is separately well-formed.
         if ch == "{" and i + 1 < n and (command[i + 1].isspace() or command[i + 1] == "\n"):
@@ -676,7 +676,7 @@ def _rewrite_compound_background(command: str) -> str:
             i += 1
             continue
 
-        # Inside parens or brace groups, skip operators â€” they parse in their
+        # Inside parens or brace groups, skip operators Ã¢â‚¬â€ they parse in their
         # own scope. `(...)` subshells have the same bug class but are not the
         # common agent pattern; leave for a follow-up.
         if paren_depth > 0 or brace_depth > 0:
@@ -707,10 +707,10 @@ def _rewrite_compound_background(command: str) -> str:
         if ch == "&":
             # `&&` handled above; won't reach here
             if i + 1 < n and command[i + 1] == ">":
-                # `&>` redirect â€” consume
+                # `&>` redirect Ã¢â‚¬â€ consume
                 i += 2
                 continue
-            # `>&` / `<&` fd target â€” look back past whitespace
+            # `>&` / `<&` fd target Ã¢â‚¬â€ look back past whitespace
             j = i - 1
             while j >= 0 and command[j].isspace():
                 j -= 1
@@ -724,7 +724,7 @@ def _rewrite_compound_background(command: str) -> str:
             i += 1
             continue
 
-        # Regular unquoted token â€” advance past it via the shared tokenizer
+        # Regular unquoted token Ã¢â‚¬â€ advance past it via the shared tokenizer
         _, next_i = _read_shell_token(command, i)
         i = max(next_i, i + 1)
 
@@ -743,7 +743,7 @@ def _rewrite_compound_background(command: str) -> str:
         middle = result[insert_pos:amp_pos]  # inner command + trailing space
         suffix = result[amp_pos + 1 :]
         # `{` needs a trailing space in bash; the closing `}` needs to be
-        # preceded by `;` or `&` â€” we're providing `&` from the backgrounding.
+        # preceded by `;` or `&` Ã¢â‚¬â€ we're providing `&` from the backgrounding.
         result = prefix + "{ " + middle + "& }" + suffix
 
     return result
@@ -836,25 +836,25 @@ import sys
 # Tool description for LLM
 TERMINAL_TOOL_DESCRIPTION = """Execute shell commands on a Linux environment. Filesystem, current working directory, and exported environment variables persist between calls.
 
-Do NOT use cat/head/tail to read files â€” use read_file instead.
-Do NOT use grep/rg/find to search â€” use search_files instead.
-Do NOT use ls to list directories â€” use search_files(target='files') instead.
-Do NOT use sed/awk to edit files â€” use patch instead.
-Do NOT use echo/cat heredoc to create files â€” use write_file instead.
+Do NOT use cat/head/tail to read files Ã¢â‚¬â€ use read_file instead.
+Do NOT use grep/rg/find to search Ã¢â‚¬â€ use search_files instead.
+Do NOT use ls to list directories Ã¢â‚¬â€ use search_files(target='files') instead.
+Do NOT use sed/awk to edit files Ã¢â‚¬â€ use patch instead.
+Do NOT use echo/cat heredoc to create files Ã¢â‚¬â€ use write_file instead.
 Reserve terminal for: builds, installs, git, processes, scripts, network, package managers, and anything that needs a shell.
 Because exported environment state persists, activate a virtualenv or export setup variables once per session; do not re-source the same environment before every command unless a command proves the shell state was reset.
 
-Foreground (default): Commands return INSTANTLY when done, even if the timeout is high. Set timeout=300 for long builds/scripts â€” you'll still get the result in seconds if it's fast. Prefer foreground for short commands.
-Background: Set background=true to get a session_id. Almost always pair with notify_on_complete=true â€” bg without notify runs SILENTLY and you have no way to learn it finished short of calling process(action='poll') yourself. Two legitimate uses:
-  (1) Long-lived processes that never exit (servers, watchers, daemons) â€” silent is correct, there's no exit to notify on.
-  (2) Long-running bounded tasks (tests, builds, deploys, CI pollers, batch jobs) â€” MUST set notify_on_complete=true. Without it you'll either forget to poll or sit blocked waiting for the user to surface the result.
+Foreground (default): Commands return INSTANTLY when done, even if the timeout is high. Set timeout=300 for long builds/scripts Ã¢â‚¬â€ you'll still get the result in seconds if it's fast. Prefer foreground for short commands.
+Background: Set background=true to get a session_id. Almost always pair with notify_on_complete=true Ã¢â‚¬â€ bg without notify runs SILENTLY and you have no way to learn it finished short of calling process(action='poll') yourself. Two legitimate uses:
+  (1) Long-lived processes that never exit (servers, watchers, daemons) Ã¢â‚¬â€ silent is correct, there's no exit to notify on.
+  (2) Long-running bounded tasks (tests, builds, deploys, CI pollers, batch jobs) Ã¢â‚¬â€ MUST set notify_on_complete=true. Without it you'll either forget to poll or sit blocked waiting for the user to surface the result.
 For servers/watchers, do NOT use shell-level background wrappers (nohup/disown/setsid/trailing '&') in foreground mode. Use background=true so Zed can track lifecycle and output.
 After starting a server, verify readiness with a health check or log signal, then run tests in a separate terminal() call. Avoid blind sleep loops.
 Use process(action="poll") for progress checks, process(action="wait") to block until done.
 Working directory: Use 'workdir' for per-command cwd.
 PTY mode: Set pty=true for interactive CLI tools (Codex, Claude Code, Python REPL).
 
-Do NOT use vim/nano/interactive tools without pty=true â€” they hang without a pseudo-terminal. Pipe git output to cat if it might page.
+Do NOT use vim/nano/interactive tools without pty=true Ã¢â‚¬â€ they hang without a pseudo-terminal. Pipe git output to cat if it might page.
 """
 
 # Global state for environment lifecycle management
@@ -877,19 +877,19 @@ def _maybe_reap_docker_orphans(container_config: Dict[str, Any]) -> None:
     """Run the docker orphan reaper once per process, if enabled.
 
     Sweeps long-Exited containers labeled ``zed-agent=1`` for the current
-    profile that match the issue #20561 leak class â€” containers left behind
+    profile that match the issue #20561 leak class Ã¢â‚¬â€ containers left behind
     by Zed processes that exited without firing ``atexit`` (SIGKILL,
     OOM, terminal-window-close). The reaper is conservative by default:
-    only Exited containers older than ``2 Ã— lifetime_seconds`` and scoped to
+    only Exited containers older than ``2 Ãƒâ€” lifetime_seconds`` and scoped to
     the current profile.
 
     Gates:
 
     * ``terminal.docker_orphan_reaper: false`` disables it entirely (the
-      operator opted out â€” usually because they're running multiple
+      operator opted out Ã¢â‚¬â€ usually because they're running multiple
       Zed processes in the same profile and don't trust the
       conservative defaults).
-    * ``_docker_orphan_reaper_ran`` flag â€” sweep runs once per Python
+    * ``_docker_orphan_reaper_ran`` flag Ã¢â‚¬â€ sweep runs once per Python
       interpreter, not on every subagent / RL-rollout / parallel
       ``terminal()`` call.
     """
@@ -905,7 +905,7 @@ def _maybe_reap_docker_orphans(container_config: Dict[str, Any]) -> None:
             return
         _docker_orphan_reaper_ran = True
 
-    # 2 Ã— lifetime_seconds gives sibling Zed processes a generous grace
+    # 2 Ãƒâ€” lifetime_seconds gives sibling Zed processes a generous grace
     # window. Floor at 60s so an operator with TERMINAL_LIFETIME_SECONDS=0
     # doesn't get an instant-reap that races their own setup.
     # ``container_config`` only carries container_* keys, so read
@@ -1019,7 +1019,7 @@ def _resolve_container_task_id(task_id: Optional[str]) -> str:
     the override.
 
     CWD-only overrides (registered by the ACP adapter for workspace
-    tracking) are *not* isolation signals â€” they should not cause each
+    tracking) are *not* isolation signals Ã¢â‚¬â€ they should not cause each
     session to spin up its own container.  Only overrides containing
     backend-specific image keys or ``env_type`` trigger isolation.
     """
@@ -1195,7 +1195,7 @@ def _get_env_config() -> Dict[str, Any]:
         "docker_run_as_host_user": os.getenv("TERMINAL_DOCKER_RUN_AS_HOST_USER", "false").lower() in {"true", "1", "yes"},
         "docker_extra_args": docker_extra_args,
         # Cross-process container reuse (issue #20561).  The docs claim
-        # "ONE long-lived container shared across sessions" â€” this toggle
+        # "ONE long-lived container shared across sessions" Ã¢â‚¬â€ this toggle
         # makes that real by probing for a labeled container at startup and
         # attaching to it instead of always starting a fresh one.  Set to
         # ``false`` for hard per-process isolation (no reuse, container is
@@ -1205,7 +1205,7 @@ def _get_env_config() -> Dict[str, Any]:
         ).lower() in {"true", "1", "yes"},
         # Startup orphan reaper for zed-tagged containers left behind by
         # crashed / SIGKILL'd previous processes that bypassed atexit.
-        # Conservative: only sweeps Exited containers older than 2Ã— the
+        # Conservative: only sweeps Exited containers older than 2Ãƒâ€” the
         # idle-reap window AND scoped to the current profile. Issue #20561.
         "docker_orphan_reaper": os.getenv(
             "TERMINAL_DOCKER_ORPHAN_REAPER", "true"
@@ -1528,13 +1528,13 @@ def cleanup_vm(task_id: str, *, force_remove: bool = False):
     """Manually clean up a specific environment by task_id.
 
     *force_remove* (default False) is forwarded to backends that accept it
-    â€” currently only ``DockerEnvironment``. The default of False matches
+    Ã¢â‚¬â€ currently only ``DockerEnvironment``. The default of False matches
     session-lifecycle semantics: this function is called from
     ``AIAgent.close()`` (TUI session close, gateway session teardown) and the
     per-turn cleanup branch for non-persistent envs, both of which should
     honor the user's persist-mode preference. Stopping the container here
     would defeat the "ONE long-lived container shared across sessions"
-    contract â€” exactly the bug Ben reported when the container was killed
+    contract Ã¢â‚¬â€ exactly the bug Ben reported when the container was killed
     on every TUI session close.
 
     Pass ``force_remove=True`` for actual user-initiated teardown
@@ -1542,7 +1542,7 @@ def cleanup_vm(task_id: str, *, force_remove: bool = False):
     "destroy my sandbox" commands).
 
     The idle reaper passes the env through ``env.cleanup()`` directly (not
-    via this function), so persist-mode idle envs are similarly no-op'd â€”
+    via this function), so persist-mode idle envs are similarly no-op'd Ã¢â‚¬â€
     only the orphan reaper at next startup reclaims them.
     """
     # Remove from tracking dicts while holding the lock, but defer the
@@ -1604,7 +1604,7 @@ def _atexit_cleanup():
         envs_to_wait = list(_active_environments.values())
         cleanup_all_environments()
         # Block briefly so docker stop/rm actually completes before the
-        # interpreter exits. Issue #20561 â€” without this join, the daemon
+        # interpreter exits. Issue #20561 Ã¢â‚¬â€ without this join, the daemon
         # cleanup threads were getting torn down mid-`docker stop`, leaving
         # Exited containers piled up on the host.
         for env in envs_to_wait:
@@ -1637,7 +1637,7 @@ def _interpret_exit_code(command: str, exit_code: int) -> str | None:
     if exit_code == 0:
         return None
 
-    # Extract the last command in a pipeline/chain â€” that determines the
+    # Extract the last command in a pipeline/chain Ã¢â‚¬â€ that determines the
     # exit code.  Handles  `cmd1 && cmd2`, `cmd1 | cmd2`, `cmd1; cmd2`.
     # Deliberately simple: split on shell operators and take the last piece.
     segments = re.split(r'\s*(?:\|\||&&|[|;])\s*', command)
@@ -1681,7 +1681,7 @@ def _interpret_exit_code(command: str, exit_code: int) -> str | None:
             28: "Operation timed out",
         },
         # git: 1 is context-dependent but often normal (e.g. git diff with changes)
-        "git":   {1: "Non-zero exit (often normal â€” e.g. 'git diff' returns 1 when files differ)"},
+        "git":   {1: "Non-zero exit (often normal Ã¢â‚¬â€ e.g. 'git diff' returns 1 when files differ)"},
     }
 
     cmd_semantics = semantics.get(base_cmd)
@@ -1797,7 +1797,7 @@ def _resolve_notification_flag_conflict(
 ) -> tuple:
     """Decide what to do when both notify_on_complete and watch_patterns are set.
 
-    These flags produce duplicate, delayed notifications when combined â€” one
+    These flags produce duplicate, delayed notifications when combined Ã¢â‚¬â€ one
     notification per watch-pattern match AND one on process exit, with async
     delivery that can spam the user long after the process ends. When both are
     set, we drop watch_patterns in favor of notify_on_complete (the more useful
@@ -1863,7 +1863,7 @@ def terminal_tool(
         workdir: Working directory for this command (optional, uses session cwd if not set)
         pty: If True, use pseudo-terminal for interactive CLI tools (local backend only)
         notify_on_complete: If True and background=True, you'll be notified exactly once when the process exits. The right choice for almost every long task. MUTUALLY EXCLUSIVE with watch_patterns.
-        watch_patterns: List of strings to watch for in background output. HARD rate limit: 1 notification per 15s per process. After 3 strike windows in a row, watch_patterns is disabled and the session is auto-promoted to notify_on_complete. Use ONLY for rare, one-shot mid-process signals on long-lived processes (server readiness, migration-done markers). NEVER use in loops/batch jobs â€” error patterns there will hit the strike limit and get disabled. MUTUALLY EXCLUSIVE with notify_on_complete â€” set one, not both.
+        watch_patterns: List of strings to watch for in background output. HARD rate limit: 1 notification per 15s per process. After 3 strike windows in a row, watch_patterns is disabled and the session is auto-promoted to notify_on_complete. Use ONLY for rare, one-shot mid-process signals on long-lived processes (server readiness, migration-done markers). NEVER use in loops/batch jobs Ã¢â‚¬â€ error patterns there will hit the strike limit and get disabled. MUTUALLY EXCLUSIVE with notify_on_complete Ã¢â‚¬â€ set one, not both.
 
     Returns:
         str: JSON string with output, exit_code, and error fields
@@ -1894,7 +1894,7 @@ def terminal_tool(
                 "status": "error",
             }, ensure_ascii=False)
 
-        # ── Path traversal deny-list: block access to sensitive system paths ──
+        # â”€â”€ Path traversal deny-list: block access to sensitive system paths â”€â”€
         _DENIED_PATH_PATTERNS = [
             r'(?i)/etc/(passwd|shadow|sudoers)',
             r'(?i)\\Windows\\System32',
@@ -1967,7 +1967,7 @@ def terminal_tool(
         effective_timeout = timeout or default_timeout
 
         # Reject foreground commands where the model explicitly requests
-        # a timeout above FOREGROUND_MAX_TIMEOUT â€” nudge it toward background.
+        # a timeout above FOREGROUND_MAX_TIMEOUT Ã¢â‚¬â€ nudge it toward background.
         if not background and timeout and timeout > FOREGROUND_MAX_TIMEOUT:
             return json.dumps({
                 "error": (
@@ -2099,12 +2099,12 @@ def terminal_tool(
         # Hard-block: gateway lifecycle commands (systemctl/launchctl/zed
         # restart|stop targeting zed-gateway) must never run inside the
         # gateway process itself. The restart would SIGTERM the gateway, which
-        # kills this very subprocess before it can complete â€” the service may
+        # kills this very subprocess before it can complete Ã¢â‚¬â€ the service may
         # never restart. This mirrors the `zed gateway restart` guard in
         # zed_cli/gateway.py and the cron-path guard in zed_cli/cron.py,
         # but applies unconditionally (force=True cannot help here).
         if os.environ.get("_ZED_GATEWAY") == "1":
-            from zed_cli.cron import _contains_gateway_lifecycle_command
+            from hermes_cli.cron import _contains_gateway_lifecycle_command
             if _contains_gateway_lifecycle_command(command):
                 return json.dumps({
                     "output": "",
@@ -2234,14 +2234,14 @@ def terminal_tool(
                 # bounded task (tests, builds, CI pollers, deploys, batch
                 # jobs) the agent almost certainly wanted notification and
                 # forgot the flag. May 2026 PR #31231 incident: bg CI poller
-                # ran fine, exited green, agent never noticed â€” user had to
+                # ran fine, exited green, agent never noticed Ã¢â‚¬â€ user had to
                 # surface the result. Cheap nudge here costs ~one read for
                 # server cases (false positive) and prevents silent
                 # blindness for bounded-task cases (false negative).
                 if background and not notify_on_complete and not watch_patterns:
                     result_data["hint"] = (
                         "background=true without notify_on_complete=true means "
-                        "this process runs SILENTLY â€” you will not be told when "
+                        "this process runs SILENTLY Ã¢â‚¬â€ you will not be told when "
                         "it exits. If this is a bounded task (test suite, build, "
                         "CI poller, deploy, anything with a defined end), you "
                         "almost certainly wanted notify_on_complete=true so the "
@@ -2267,12 +2267,12 @@ def terminal_tool(
                 #     returns total_lines=0 forever.
                 #   * conclusion vs. status field confusion: filtering for
                 #     `PENDING` in `.conclusion` while in-progress checks have
-                #     empty conclusion â†’ poller declares all-green while 18/23
+                #     empty conclusion Ã¢â€ â€™ poller declares all-green while 18/23
                 #     checks still IN_PROGRESS.
                 #   * grepping for TTY-only banners ("All checks were
                 #     successful") that never appear when stdout is piped.
                 # The canonical patterns in the green-ci-policy skill avoid
-                # every one of these â€” drive the loop off exit codes or on
+                # every one of these Ã¢â‚¬â€ drive the loop off exit codes or on
                 # tab-separated `awk -F"\t" "$2==\"pending\""` (column 2).
                 # The detector here is deliberately narrow: it flags the
                 # statusCheckRollup JSON-API path and the `gh pr checks` +
@@ -2291,7 +2291,7 @@ def terminal_tool(
                         # through `--json statusCheckRollup` + parsing puts
                         # you in conclusion-vs-status field hell.
                         "statusCheckRollup" in command
-                        # gh pr checks piped to jq is also wrong â€” `gh pr
+                        # gh pr checks piped to jq is also wrong Ã¢â‚¬â€ `gh pr
                         # checks` doesn't emit JSON, so any `| jq` here is
                         # confused intent. The canonical column-2 poller
                         # uses awk-on-tabs, not jq.
@@ -2304,7 +2304,7 @@ def terminal_tool(
                             "`gh pr view --json statusCheckRollup` and/or "
                             "`gh pr checks | jq`. That shape has burned us "
                             "repeatedly in zed-agent dev work (PRs #31329, "
-                            "#31448, #31695, #31709, #31745, #32264, #33131) â€” "
+                            "#31448, #31695, #31709, #31745, #32264, #33131) Ã¢â‚¬â€ "
                             "stdout buffering kills output capture, jq null-key "
                             "edge cases silently exit the loop, conclusion-vs-"
                             "status field confusion exits early with bogus "
@@ -2322,7 +2322,7 @@ def terminal_tool(
                             "the verbatim snippets. If you must roll a custom "
                             "loop with rich structured output, write each tick "
                             "to a known file (`tee -a /tmp/ci.log`) and rely "
-                            "on `process(action='log')` to read THAT file â€” "
+                            "on `process(action='log')` to read THAT file Ã¢â‚¬â€ "
                             "do not rely on background-process stdout capture "
                             "for line-buffered shell loops."
                         )
@@ -2459,7 +2459,7 @@ def terminal_tool(
             # replace it by returning a string from transform_terminal_output.
             # The hook is fail-open, and the first valid string return wins.
             try:
-                from zed_cli.plugins import invoke_hook
+                from hermes_cli.plugins import invoke_hook
                 hook_results = invoke_hook(
                     "transform_terminal_output",
                     command=command,
@@ -2489,7 +2489,7 @@ def terminal_tool(
                 output = output[:head_chars] + truncated_notice + output[-tail_chars:]
 
             # Strip ANSI escape sequences so the model never sees terminal
-            # formatting â€” prevents it from copying escapes into file writes.
+            # formatting Ã¢â‚¬â€ prevents it from copying escapes into file writes.
             from tools.ansi_strip import strip_ansi
             output = strip_ansi(output)
 
@@ -2621,7 +2621,7 @@ def check_terminal_requirements() -> bool:
             return True
 
         elif env_type == "daytona":
-            from daytona import Daytona  # noqa: F401 â€” SDK presence check
+            from daytona import Daytona  # noqa: F401 Ã¢â‚¬â€ SDK presence check
             return os.getenv("DAYTONA_API_KEY") is not None
 
         else:
@@ -2651,10 +2651,10 @@ if __name__ == "__main__":
     print(f"  Lifetime: {config['lifetime_seconds']}s")
 
     if not check_terminal_requirements():
-        print("\nâŒ Requirements not met. Please check the messages above.")
+        print("\nÃ¢ÂÅ’ Requirements not met. Please check the messages above.")
         sys.exit(1)
 
-    print("\nâœ… All requirements met!")
+    print("\nÃ¢Å“â€¦ All requirements met!")
     print("\nAvailable Tool:")
     print("  - terminal_tool: Execute commands in sandboxed environments")
 
@@ -2677,7 +2677,7 @@ if __name__ == "__main__":
     print(f"  TERMINAL_MODAL_IMAGE: {os.getenv('TERMINAL_MODAL_IMAGE', default_img)}")
     print(f"  TERMINAL_DAYTONA_IMAGE: {os.getenv('TERMINAL_DAYTONA_IMAGE', default_img)}")
     print(f"  TERMINAL_CWD: {os.getenv('TERMINAL_CWD', _safe_getcwd())}")
-    from zed_constants import display_zed_home as _dhh
+    from hermes_constants import display_zed_home as _dhh
     print(f"  TERMINAL_SANDBOX_DIR: {os.getenv('TERMINAL_SANDBOX_DIR', f'{_dhh()}/sandboxes')}")
     print(f"  TERMINAL_TIMEOUT: {os.getenv('TERMINAL_TIMEOUT', '60')}")
     print(f"  TERMINAL_LIFETIME_SECONDS: {os.getenv('TERMINAL_LIFETIME_SECONDS', '300')}")
@@ -2700,12 +2700,12 @@ TERMINAL_SCHEMA = {
             },
             "background": {
                 "type": "boolean",
-                "description": "Run the command in the background. Almost always pair with notify_on_complete=true â€” without it, the process runs silently and you'll have no way to learn it finished short of calling process(action='poll') yourself (easy to forget, leading to silent blindness on long jobs). Two legitimate patterns: (1) Long-lived processes that never exit (servers, watchers, daemons) â€” these stay silent because there's no exit to notify on. (2) Long-running bounded tasks (tests, builds, deploys, CI pollers, batch jobs) â€” these MUST set notify_on_complete=true. For short commands, prefer foreground with a generous timeout instead.",
+                "description": "Run the command in the background. Almost always pair with notify_on_complete=true Ã¢â‚¬â€ without it, the process runs silently and you'll have no way to learn it finished short of calling process(action='poll') yourself (easy to forget, leading to silent blindness on long jobs). Two legitimate patterns: (1) Long-lived processes that never exit (servers, watchers, daemons) Ã¢â‚¬â€ these stay silent because there's no exit to notify on. (2) Long-running bounded tasks (tests, builds, deploys, CI pollers, batch jobs) Ã¢â‚¬â€ these MUST set notify_on_complete=true. For short commands, prefer foreground with a generous timeout instead.",
                 "default": False
             },
             "timeout": {
                 "type": "integer",
-                "description": f"Max seconds to wait (default: 180, foreground max: {FOREGROUND_MAX_TIMEOUT}). Returns INSTANTLY when command finishes â€” set high for long tasks, you won't wait unnecessarily. Foreground timeout above {FOREGROUND_MAX_TIMEOUT}s is rejected; use background=true for longer commands.",
+                "description": f"Max seconds to wait (default: 180, foreground max: {FOREGROUND_MAX_TIMEOUT}). Returns INSTANTLY when command finishes Ã¢â‚¬â€ set high for long tasks, you won't wait unnecessarily. Foreground timeout above {FOREGROUND_MAX_TIMEOUT}s is rejected; use background=true for longer commands.",
                 "minimum": 1
             },
             "workdir": {
@@ -2719,13 +2719,13 @@ TERMINAL_SCHEMA = {
             },
             "notify_on_complete": {
                 "type": "boolean",
-                "description": "When true (and background=true), you'll be automatically notified exactly once when the process finishes. **This is the right choice for almost every long-running task** â€” tests, builds, deployments, multi-item batch jobs, anything that takes over a minute and has a defined end. Use this and keep working on other things; the system notifies you on exit. MUTUALLY EXCLUSIVE with watch_patterns â€” when both are set, watch_patterns is dropped.",
+                "description": "When true (and background=true), you'll be automatically notified exactly once when the process finishes. **This is the right choice for almost every long-running task** Ã¢â‚¬â€ tests, builds, deployments, multi-item batch jobs, anything that takes over a minute and has a defined end. Use this and keep working on other things; the system notifies you on exit. MUTUALLY EXCLUSIVE with watch_patterns Ã¢â‚¬â€ when both are set, watch_patterns is dropped.",
                 "default": False
             },
             "watch_patterns": {
                 "type": "array",
                 "items": {"type": "string"},
-                "description": "Strings to watch for in background process output. HARD RATE LIMIT: at most 1 notification per 15 seconds per process â€” matches arriving inside the cooldown are dropped. After 3 consecutive 15-second windows with dropped matches, watch_patterns is automatically disabled for that process and promoted to notify_on_complete behavior (one notification on exit, no more mid-process spam). USE ONLY for truly rare, one-shot mid-process signals on LONG-LIVED processes that will never exit on their own â€” e.g. ['Application startup complete'] on a server so you know when to hit its endpoint, or ['migration done'] on a daemon. DO NOT use for: (1) end-of-run markers like 'DONE'/'PASS' â€” use notify_on_complete instead; (2) error patterns like 'ERROR'/'Traceback' in loops or multi-item batch jobs â€” they fire on every iteration and you'll hit the strike limit fast; (3) anything you'd ever combine with notify_on_complete. When in doubt, choose notify_on_complete. MUTUALLY EXCLUSIVE with notify_on_complete â€” set one, not both."
+                "description": "Strings to watch for in background process output. HARD RATE LIMIT: at most 1 notification per 15 seconds per process Ã¢â‚¬â€ matches arriving inside the cooldown are dropped. After 3 consecutive 15-second windows with dropped matches, watch_patterns is automatically disabled for that process and promoted to notify_on_complete behavior (one notification on exit, no more mid-process spam). USE ONLY for truly rare, one-shot mid-process signals on LONG-LIVED processes that will never exit on their own Ã¢â‚¬â€ e.g. ['Application startup complete'] on a server so you know when to hit its endpoint, or ['migration done'] on a daemon. DO NOT use for: (1) end-of-run markers like 'DONE'/'PASS' Ã¢â‚¬â€ use notify_on_complete instead; (2) error patterns like 'ERROR'/'Traceback' in loops or multi-item batch jobs Ã¢â‚¬â€ they fire on every iteration and you'll hit the strike limit fast; (3) anything you'd ever combine with notify_on_complete. When in doubt, choose notify_on_complete. MUTUALLY EXCLUSIVE with notify_on_complete Ã¢â‚¬â€ set one, not both."
             }
         },
         "required": ["command"]
@@ -2752,6 +2752,7 @@ registry.register(
     schema=TERMINAL_SCHEMA,
     handler=_handle_terminal,
     check_fn=check_terminal_requirements,
-    emoji="ðŸ’»",
+    emoji="Ã°Å¸â€™Â»",
     max_result_size_chars=100_000,
 )
+

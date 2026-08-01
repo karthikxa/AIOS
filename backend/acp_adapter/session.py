@@ -8,7 +8,7 @@ history.
 """
 from __future__ import annotations
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 
 import copy
 import json
@@ -45,7 +45,7 @@ def _translate_acp_cwd(cwd: str) -> str:
     sessions all agree on the usable workspace. Native Linux/macOS keeps the
     original cwd unchanged.
     """
-    from zed_constants import is_wsl
+    from hermes_constants import is_wsl
 
     if not is_wsl():
         return cwd
@@ -412,7 +412,7 @@ class SessionManager:
         if self._db_instance is not None:
             return self._db_instance
         try:
-            from zed_state import SessionDB
+            from hermes_state import SessionDB
             zed_home = get_zed_home()
             self._db_instance = SessionDB(db_path=zed_home / "state.db")
             return self._db_instance
@@ -569,8 +569,8 @@ class SessionManager:
             return self._agent_factory()
 
         from run_agent import AIAgent
-        from zed_cli.config import load_config
-        from zed_cli.runtime_provider import resolve_runtime_provider
+        from hermes_cli.config import load_config
+        from hermes_cli.runtime_provider import resolve_runtime_provider
 
         config = load_config()
         model_cfg = config.get("model")
@@ -621,3 +621,4 @@ class SessionManager:
         # Route any incidental human-readable agent output to stderr instead.
         agent._print_fn = _acp_stderr_print
         return agent
+

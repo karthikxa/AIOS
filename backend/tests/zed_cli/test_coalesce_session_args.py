@@ -1,6 +1,6 @@
 ﻿"""Tests for _coalesce_session_name_args â€” multi-word session name merging."""
 
-from zed_cli.main import _coalesce_session_name_args
+from hermes_cli.main import _coalesce_session_name_args
 
 
 class TestCoalesceSessionNameArgs:
@@ -110,3 +110,4 @@ class TestCoalesceSessionNameArgs:
         assert _coalesce_session_name_args(
             ["-c", "my", "setup"]
         ) == ["-c", "my", "setup"]
+

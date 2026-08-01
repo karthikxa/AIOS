@@ -753,7 +753,7 @@ class TestLoadSttConfig:
 
     def test_real_load_returns_dict(self):
         """_load_stt_config should always return a dict, even on import error."""
-        with patch.dict("sys.modules", {"zed_cli": None, "zed_cli.config": None}):
+        with patch.dict("sys.modules", {"zed_cli": None, "hermes_cli.config": None}):
             from tools.transcription_tools import _load_stt_config
             result = _load_stt_config()
         assert isinstance(result, dict)
@@ -1578,3 +1578,4 @@ class TestShellSafety:
         monkeypatch.delenv(LOCAL_STT_COMMAND_ENV, raising=False)
         use_shell = bool(os.getenv(LOCAL_STT_COMMAND_ENV, "").strip())
         assert use_shell is False
+

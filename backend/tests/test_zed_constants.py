@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-import zed_constants
-from zed_constants import (
+import hermes_constants
+from hermes_constants import (
     VALID_REASONING_EFFORTS,
     find_zed_node_executable,
     get_default_zed_root,
@@ -78,7 +78,7 @@ class TestGetDefaultZedRoot:
         monkeypatch.delenv("ZED_HOME", raising=False)
         monkeypatch.setenv("LOCALAPPDATA", str(local_appdata))
         monkeypatch.setattr(Path, "home", lambda: tmp_path / "Home")
-        monkeypatch.setattr(zed_constants.sys, "platform", "win32")
+        monkeypatch.setattr(hermes_constants.sys, "platform", "win32")
 
         assert get_default_zed_root() == local_appdata / "zed"
 
@@ -88,7 +88,7 @@ class TestGetDefaultZedRoot:
         monkeypatch.delenv("ZED_HOME", raising=False)
         monkeypatch.delenv("LOCALAPPDATA", raising=False)
         monkeypatch.setattr(Path, "home", lambda: home)
-        monkeypatch.setattr(zed_constants.sys, "platform", "win32")
+        monkeypatch.setattr(hermes_constants.sys, "platform", "win32")
 
         assert get_default_zed_root() == home / "AppData" / "Local" / "zed"
 
@@ -102,7 +102,7 @@ class TestGetZedHome:
         monkeypatch.delenv("ZED_HOME", raising=False)
         monkeypatch.setenv("LOCALAPPDATA", str(local_appdata))
         monkeypatch.setattr(Path, "home", lambda: tmp_path / "Home")
-        monkeypatch.setattr(zed_constants.sys, "platform", "win32")
+        monkeypatch.setattr(hermes_constants.sys, "platform", "win32")
         monkeypatch.setattr(zed_constants, "_profile_fallback_warned", False)
 
         assert get_zed_home() == local_appdata / "zed"
@@ -115,7 +115,7 @@ class TestZedManagedNode:
         bin_dir = node_dir / "bin"
         node_dir.mkdir(parents=True)
         bin_dir.mkdir()
-        monkeypatch.setattr(zed_constants.sys, "platform", "win32")
+        monkeypatch.setattr(hermes_constants.sys, "platform", "win32")
         monkeypatch.setenv("ZED_HOME", str(home))
 
         assert iter_zed_node_dirs() == [node_dir, bin_dir]
@@ -126,7 +126,7 @@ class TestZedManagedNode:
         node_dir.mkdir(parents=True)
         npm_cmd = node_dir / "npm.cmd"
         npm_cmd.write_text("@echo off\n")
-        monkeypatch.setattr(zed_constants.sys, "platform", "win32")
+        monkeypatch.setattr(hermes_constants.sys, "platform", "win32")
         monkeypatch.setenv("ZED_HOME", str(home))
 
         assert find_zed_node_executable("npm") == str(npm_cmd)
@@ -137,7 +137,7 @@ class TestZedManagedNode:
         bin_dir = node_dir / "bin"
         node_dir.mkdir(parents=True)
         bin_dir.mkdir()
-        monkeypatch.setattr(zed_constants.sys, "platform", "win32")
+        monkeypatch.setattr(hermes_constants.sys, "platform", "win32")
         monkeypatch.setenv("ZED_HOME", str(home))
 
         env = with_zed_node_path({"PATH": "system-node"})
@@ -393,3 +393,4 @@ class TestSecureParentDir:
         secure_parent_dir(link_target)
         assert len(called_with) == 1
         assert called_with[0] == (str(real_dir), 0o700)
+

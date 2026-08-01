@@ -4,7 +4,7 @@ import sqlite3
 import threading
 from pathlib import Path
 
-from zed_cli import kanban_db as kb
+from hermes_cli import kanban_db as kb
 
 
 def _make_legacy_db(path: Path) -> None:
@@ -175,3 +175,4 @@ def test_unseen_events_for_sub_survives_migrated_db(tmp_path, monkeypatch):
         )
         assert isinstance(cursor, int)
         assert isinstance(events, list)
+

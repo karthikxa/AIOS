@@ -135,3 +135,4 @@ class TestSourceCodeGuardrails:
         assert not matches, (
             f"curses_ui.py contains unclamped color 8: {matches}"
         )
+

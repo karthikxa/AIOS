@@ -30,10 +30,8 @@ export function ChainOfThought({ defaultOpen = false } = {}, ...children) {
 
   if (!headerEl) {
     headerEl = ChainOfThoughtHeader({}, 'Thought process', stepCount > 0 ? ChainOfThoughtStepCount({}, stepCount) : null);
-    container.appendChild(headerEl);
-  } else {
-    container.appendChild(headerEl);
   }
+  container.appendChild(headerEl);
 
   if (!contentEl) {
     contentEl = document.createElement('div');
@@ -159,10 +157,10 @@ export function ChainOfThoughtTrigger({ icon = '', label = '', status = 'complet
     const checkSvg = createSVG('svg', { width: '14', height: '14', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '3', strokeLinecap: 'round', strokeLinejoin: 'round', class: 'cot-check-icon' });
     checkSvg.appendChild(createSVG('polyline', { points: '20 6 9 17 4 12' }));
     iconEl.appendChild(checkSvg);
+  } else if (icon && typeof icon === 'object' && icon.render) {
+    iconEl.appendChild(icon);
   } else if (icon) {
     iconEl.innerHTML = typeof icon === 'string' ? icon : '';
-  } else if (icon && icon.render) {
-    iconEl.appendChild(icon);
   }
 
   el.appendChild(iconEl);
@@ -172,7 +170,7 @@ export function ChainOfThoughtTrigger({ icon = '', label = '', status = 'complet
   labelEl.textContent = label;
   el.appendChild(labelEl);
 
-  if (children.length > 0 || true) {
+  if (children.length > 0) {
     const stepChevron = createSVG('svg', { width: '12', height: '12', viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round', class: 'cot-step-chevron' });
     stepChevron.appendChild(createSVG('path', { d: 'M6 3l5 5-5 5' }));
     el.appendChild(stepChevron);
@@ -374,7 +372,7 @@ export function parseReasoningToCoT(reasoningText) {
     if (step.images.length > 0) {
       for (const img of step.images) {
         const imgContainer = ChainOfThoughtImage({ caption: img.alt });
-        imgContainer.appendChild(Image({ src: img.src, alt: img.alt }));
+        imgContainer.appendChild(Image({ base64: img.src, alt: img.alt }));
         children.push(imgContainer);
       }
     }

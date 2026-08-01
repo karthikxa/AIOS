@@ -16,7 +16,7 @@ from typing import Any, Awaitable, Callable, Optional
 import httpx
 
 from agent.auxiliary_client import async_call_llm, extract_content_or_reasoning
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from plugins.teams_pipeline.meetings import (
     download_recording_artifact,
     enrich_meeting_with_call_record,
@@ -687,3 +687,4 @@ def _render_summary_markdown(payload: TeamsMeetingSummaryPayload) -> str:
         payload.confidence_notes or "",
     ]
     return "\n".join(lines).strip()
+

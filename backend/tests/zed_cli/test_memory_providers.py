@@ -1,6 +1,6 @@
 ﻿"""Tests for the declarative memory-provider registry."""
 
-from zed_cli.memory_providers import (
+from hermes_cli.memory_providers import (
     KIND_SECRET,
     KIND_SELECT,
     get_memory_provider,
@@ -44,3 +44,4 @@ def test_api_key_is_a_secret_bound_to_env():
 
 def test_unknown_provider_is_none():
     assert get_memory_provider("builtin") is None
+

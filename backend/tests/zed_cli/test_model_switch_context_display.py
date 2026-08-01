@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-from zed_cli.model_switch import resolve_display_context_length
+from hermes_cli.model_switch import resolve_display_context_length
 
 
 class _FakeModelInfo:
@@ -146,3 +146,4 @@ class TestResolveDisplayContextLength:
                 custom_providers=custom_provs,
             )
         assert ctx == 400_000
+

@@ -82,7 +82,7 @@ def get_spill_config() -> Dict[str, Any]:
     """Return resolved hook output-spill config. Never raises."""
     section: Dict[str, Any] = {}
     try:
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
         cfg = load_config() or {}
         hooks = cfg.get("hooks") if isinstance(cfg, dict) else None
         if isinstance(hooks, dict):
@@ -118,7 +118,7 @@ def _resolve_spill_dir(directory_override: Optional[str], session_id: Optional[s
         base = Path(os.path.expanduser(directory_override))
     else:
         try:
-            from zed_constants import get_zed_home
+            from hermes_constants import get_zed_home
             base = Path(get_zed_home()) / "hook_outputs"
         except Exception:
             # Last-resort fallback: ZED_HOME env var, then ~/.zed
@@ -234,3 +234,4 @@ __all__ = [
     "get_spill_config",
     "spill_if_oversized",
 ]
+

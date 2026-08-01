@@ -1,4 +1,4 @@
-﻿"""Tests for zed_cli.web_server and related config utilities."""
+﻿"""Tests for hermes_cli.web_server and related config utilities."""
 
 import asyncio
 import os
@@ -11,7 +11,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 import yaml
 
-from zed_cli.config import (
+from hermes_cli.config import (
     reload_env,
     redact_key,
     OPTIONAL_ENV_VARS,
@@ -55,8 +55,8 @@ def _install_example_plugin(_isolate_zed_home):
     all). User plugins are first in the discovery search order, so
     laying down the fixture here is enough.
     """
-    from zed_constants import get_zed_home
-    from zed_cli import web_server
+    from hermes_constants import get_zed_home
+    from hermes_cli import web_server
 
     user_plugins_dir = get_zed_home() / "plugins"
     user_plugins_dir.mkdir(parents=True, exist_ok=True)
@@ -194,7 +194,7 @@ class TestSessionTokenInjection:
 
     def test_honors_injected_token(self, monkeypatch):
         import importlib
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         monkeypatch.setenv("ZED_DASHBOARD_SESSION_TOKEN", "desktop-seeded-token")
         try:
@@ -206,7 +206,7 @@ class TestSessionTokenInjection:
 
     def test_falls_back_to_random_token(self, monkeypatch):
         import importlib
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         monkeypatch.delenv("ZED_DASHBOARD_SESSION_TOKEN", raising=False)
         importlib.reload(ws)
@@ -230,9 +230,9 @@ class TestWebServerEndpoints:
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
 
-        import zed_state
-        from zed_constants import get_zed_home
-        from zed_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
+        import hermes_state
+        from hermes_constants import get_zed_home
+        from hermes_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
 
         monkeypatch.setattr(zed_state, "DEFAULT_DB_PATH", get_zed_home() / "state.db")
 
@@ -249,7 +249,7 @@ class TestWebServerEndpoints:
         assert data["can_update_zed"] is True
 
     def test_get_status_hides_update_capability_in_managed_runtime(self, monkeypatch):
-        import zed_cli.web_server as web_server
+        import hermes_cli.web_server as web_server
 
         monkeypatch.setattr(web_server, "_dashboard_local_update_managed_externally", lambda: True)
 
@@ -258,8 +258,8 @@ class TestWebServerEndpoints:
         assert resp.json()["can_update_zed"] is False
 
     def test_dashboard_update_capability_detects_generic_container(self, monkeypatch):
-        import zed_constants
-        import zed_cli.web_server as web_server
+        import hermes_constants
+        import hermes_cli.web_server as web_server
 
         monkeypatch.setattr(zed_constants, "is_container", lambda: True)
 
@@ -288,8 +288,8 @@ class TestWebServerEndpoints:
         assert fields["api_key"]["is_set"] is False
 
     def test_put_memory_provider_config_writes_config_and_secret(self):
-        from zed_constants import get_zed_home
-        from zed_cli.config import load_config, load_env
+        from hermes_constants import get_zed_home
+        from hermes_cli.config import load_config, load_env
 
         resp = self.client.put(
             "/api/memory/providers/hindsight/config",
@@ -373,7 +373,7 @@ class TestWebServerEndpoints:
 
     def test_get_media_serves_image_in_root(self):
         """An image under the gateway's images dir is returned as a data URL."""
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
 
         img_dir = get_zed_home() / "images"
         img_dir.mkdir(parents=True, exist_ok=True)
@@ -393,7 +393,7 @@ class TestWebServerEndpoints:
         assert resp.status_code == 403
 
     def test_get_media_rejects_non_image_extension(self):
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
 
         img_dir = get_zed_home() / "images"
         img_dir.mkdir(parents=True, exist_ok=True)
@@ -404,14 +404,14 @@ class TestWebServerEndpoints:
         assert resp.status_code == 415
 
     def test_get_media_404_for_missing_file(self):
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
 
         missing = get_zed_home() / "images" / "nope.png"
         resp = self.client.get("/api/media", params={"path": str(missing)})
         assert resp.status_code == 404
 
     def test_get_media_requires_auth(self):
-        from zed_cli.web_server import _SESSION_HEADER_NAME
+        from hermes_cli.web_server import _SESSION_HEADER_NAME
 
         resp = self.client.get(
             "/api/media",
@@ -430,7 +430,7 @@ class TestWebServerEndpoints:
 
     def test_set_dashboard_font_persists_valid_choice(self):
         """A valid catalog id is accepted, persisted, and read back."""
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
 
         resp = self.client.put("/api/dashboard/font", json={"font": "inter"})
         assert resp.status_code == 200
@@ -462,7 +462,7 @@ class TestWebServerEndpoints:
 
     def test_get_dashboard_font_coerces_stale_persisted_value(self):
         """A config value no longer in the catalog reads back as 'theme'."""
-        from zed_cli.config import load_config, save_config
+        from hermes_cli.config import load_config, save_config
 
         config = load_config()
         config.setdefault("dashboard", {})["font"] = "retired-font-id"
@@ -473,7 +473,7 @@ class TestWebServerEndpoints:
     def test_dashboard_font_override_independent_of_theme(self):
         """The font override and the theme are stored separately â€” setting
         one must not disturb the other."""
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
 
         self.client.put("/api/dashboard/theme", json={"name": "ember"})
         self.client.put("/api/dashboard/font", json={"font": "jetbrains-mono"})
@@ -488,7 +488,7 @@ class TestWebServerEndpoints:
         /api/sessions should reflect per-session DB state, not process/global
         cwd settings, so workspace grouping stays stable and deterministic.
         """
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         monkeypatch.setenv("TERMINAL_CWD", "/tmp/global-default")
 
@@ -529,7 +529,7 @@ class TestWebServerEndpoints:
             def close(self):
                 pass
 
-        monkeypatch.setattr("zed_state.SessionDB", _FakeDB)
+        monkeypatch.setattr("hermes_state.SessionDB", _FakeDB)
 
         resp = self.client.get("/api/sessions?limit=5&offset=0&min_messages=3")
         assert resp.status_code == 200
@@ -539,7 +539,7 @@ class TestWebServerEndpoints:
     def test_rename_session_updates_title(self):
         """PATCH /api/sessions/{id} renames a session (regression: the route
         was missing entirely, so the desktop rename dialog got a 405)."""
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -558,7 +558,7 @@ class TestWebServerEndpoints:
             db.close()
 
     def test_rename_session_clears_title_when_empty(self):
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -583,7 +583,7 @@ class TestWebServerEndpoints:
 
     def test_archive_session_via_patch(self):
         """PATCH archived=true soft-hides a session; archived=false restores it."""
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -609,7 +609,7 @@ class TestWebServerEndpoints:
 
     def test_patch_session_without_fields_is_400(self):
         """An existing session + empty body is a bad request, not a 404."""
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -623,7 +623,7 @@ class TestWebServerEndpoints:
     def test_profiles_sessions_tags_default_profile(self):
         """The cross-profile aggregator returns the default profile's rows
         tagged profile="default" (single-profile parity with /api/sessions)."""
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -647,8 +647,8 @@ class TestWebServerEndpoints:
     def test_sessions_endpoint_reads_requested_profile(self):
         """The machine dashboard's global profile switcher must retarget
         the Sessions page, not just config/skills/model pages."""
-        from zed_state import SessionDB
-        from zed_cli import profiles as profiles_mod
+        from hermes_state import SessionDB
+        from hermes_cli import profiles as profiles_mod
 
         worker_home = profiles_mod.get_profile_dir("worker")
         worker_home.mkdir(parents=True)
@@ -685,8 +685,8 @@ class TestWebServerEndpoints:
         assert [m["content"] for m in messages["messages"]] == ["worker"]
 
     def test_analytics_endpoints_read_requested_profile(self):
-        from zed_state import SessionDB
-        from zed_cli import profiles as profiles_mod
+        from hermes_state import SessionDB
+        from hermes_cli import profiles as profiles_mod
 
         worker_home = profiles_mod.get_profile_dir("worker")
         worker_home.mkdir(parents=True)
@@ -738,7 +738,7 @@ class TestWebServerEndpoints:
         first page by recency, listed under its live continuation id."""
         import time as _time
 
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -779,7 +779,7 @@ class TestWebServerEndpoints:
         so the sidebar stops showing the same chat several times."""
         import time as _time
 
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -816,7 +816,7 @@ class TestWebServerEndpoints:
         branch instead of being collapsed back to the parent/root."""
         import time as _time
 
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -849,7 +849,7 @@ class TestWebServerEndpoints:
         live continuation, matching /resume behavior."""
         import time as _time
 
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -876,7 +876,7 @@ class TestWebServerEndpoints:
         assert [m["content"] for m in payload["messages"]] == ["after compression"]
 
     def test_get_sessions_archived_is_boolean(self):
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -890,7 +890,7 @@ class TestWebServerEndpoints:
 
     def test_rename_response_omits_archived_when_not_set(self):
         """Title-only PATCH keeps its legacy {ok, title} response shape."""
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -954,7 +954,7 @@ class TestWebServerEndpoints:
         once; this guards the contract so a future merge can't lose them
         without failing CI.
         """
-        from zed_cli.web_server import app
+        from hermes_cli.web_server import app
 
         paths = {getattr(r, "path", None) for r in app.routes}
         assert "/api/audio/transcribe" in paths
@@ -962,7 +962,7 @@ class TestWebServerEndpoints:
         assert "/api/audio/elevenlabs/voices" in paths
 
     def test_elevenlabs_voices_unavailable_without_key(self, monkeypatch):
-        import zed_cli.web_server as web_server
+        import hermes_cli.web_server as web_server
 
         monkeypatch.setattr(web_server, "load_env", lambda: {})
         monkeypatch.delenv("ELEVENLABS_API_KEY", raising=False)
@@ -1001,7 +1001,7 @@ class TestWebServerEndpoints:
         assert resp.status_code == 400
 
     def test_update_zed_returns_docker_guidance_without_spawning(self, monkeypatch):
-        import zed_cli.web_server as web_server
+        import hermes_cli.web_server as web_server
 
         spawned = False
 
@@ -1035,7 +1035,7 @@ class TestWebServerEndpoints:
         assert any("docker pull zedteam/zed-agent:latest" in line for line in status_data["lines"])
 
     def test_update_zed_returns_managed_runtime_guidance_without_spawning(self, monkeypatch):
-        import zed_cli.web_server as web_server
+        import hermes_cli.web_server as web_server
 
         spawned = False
         detected = False
@@ -1077,7 +1077,7 @@ class TestWebServerEndpoints:
         assert any("managed outside this dashboard" in line for line in status_data["lines"])
 
     def test_update_zed_spawns_on_non_docker_install(self, monkeypatch):
-        import zed_cli.web_server as web_server
+        import hermes_cli.web_server as web_server
 
         class Proc:
             pid = 12345
@@ -1103,7 +1103,7 @@ class TestWebServerEndpoints:
         assert calls == [(["update"], "zed-update")]
 
     def test_action_status_reaps_completed_process(self, monkeypatch):
-        import zed_cli.web_server as web_server
+        import hermes_cli.web_server as web_server
 
         waited = {"done": False}
 
@@ -1137,7 +1137,7 @@ class TestWebServerEndpoints:
         }
 
     def test_action_status_ignores_wait_failure(self, monkeypatch):
-        import zed_cli.web_server as web_server
+        import hermes_cli.web_server as web_server
 
         class _Proc:
             pid = 99
@@ -1167,7 +1167,7 @@ class TestWebServerEndpoints:
 
     def test_get_status_filters_unconfigured_gateway_platforms(self, monkeypatch):
         import gateway.config as gateway_config
-        import zed_cli.web_server as web_server
+        import hermes_cli.web_server as web_server
 
         class _Platform:
             def __init__(self, value):
@@ -1203,7 +1203,7 @@ class TestWebServerEndpoints:
 
     def test_get_status_hides_stale_platforms_when_gateway_not_running(self, monkeypatch):
         import gateway.config as gateway_config
-        import zed_cli.web_server as web_server
+        import hermes_cli.web_server as web_server
 
         class _GatewayConfig:
             def get_connected_platforms(self):
@@ -1287,7 +1287,7 @@ class TestWebServerEndpoints:
         assert any(k.endswith("_API_KEY") or k.endswith("_TOKEN") for k in data.keys())
 
     def test_get_env_vars_marks_channel_managed_keys(self):
-        from zed_cli.web_server import _channel_managed_env_keys
+        from hermes_cli.web_server import _channel_managed_env_keys
 
         data = self.client.get("/api/env").json()
         # Every entry carries the classification the Keys page relies on.
@@ -1307,7 +1307,7 @@ class TestWebServerEndpoints:
         tencent-tokenhub, copilot were configurable via `zed model` but
         invisible in the desktop Providers â†’ API keys tab.
         """
-        from zed_cli.provider_catalog import provider_catalog
+        from hermes_cli.provider_catalog import provider_catalog
 
         data = self.client.get("/api/env").json()
         for d in provider_catalog():
@@ -1351,7 +1351,7 @@ class TestWebServerEndpoints:
         assert data["AWS_PROFILE"]["provider"] == "bedrock"
 
     def test_platform_scoped_messaging_env_vars_are_channel_managed(self):
-        from zed_cli.web_server import (
+        from hermes_cli.web_server import (
             _MESSAGING_KEYS_PAGE_KEYS,
             _build_catalog_entry,
             _channel_managed_env_keys,
@@ -1370,7 +1370,7 @@ class TestWebServerEndpoints:
 
     def test_model_set_requires_confirmation_for_expensive_model(self, monkeypatch):
         monkeypatch.setattr(
-            "zed_cli.model_cost_guard.expensive_model_warning",
+            "hermes_cli.model_cost_guard.expensive_model_warning",
             lambda *_args, **_kwargs: SimpleNamespace(message="EXPENSIVE MODEL WARNING"),
         )
 
@@ -1407,7 +1407,7 @@ class TestWebServerEndpoints:
         persist the vendor-prefixed slug verbatim (it 400s against the native
         API and reads as "changing models does nothing")."""
         monkeypatch.setattr(
-            "zed_cli.model_cost_guard.expensive_model_warning",
+            "hermes_cli.model_cost_guard.expensive_model_warning",
             lambda *_args, **_kwargs: None,
         )
         resp = self.client.post(
@@ -1425,7 +1425,7 @@ class TestWebServerEndpoints:
         # Vendor prefix stripped + dotsâ†’hyphens for the native Anthropic API.
         assert data["model"] == "claude-opus-4-6"
 
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
         cfg = load_config()
         assert cfg["model"]["provider"] == "anthropic"
         assert cfg["model"]["default"] == "claude-opus-4-6"
@@ -1435,10 +1435,10 @@ class TestWebServerEndpoints:
         a Zed provider â€” keep the user's aggregator instead of writing a
         provider that can never resolve credentials."""
         monkeypatch.setattr(
-            "zed_cli.model_cost_guard.expensive_model_warning",
+            "hermes_cli.model_cost_guard.expensive_model_warning",
             lambda *_args, **_kwargs: None,
         )
-        from zed_cli.config import load_config, save_config
+        from hermes_cli.config import load_config, save_config
         cfg = load_config()
         cfg["model"] = {"provider": "openrouter", "default": "openai/gpt-5.5"}
         save_config(cfg)
@@ -1460,7 +1460,7 @@ class TestWebServerEndpoints:
     def test_model_set_keeps_aggregator_slug_unchanged(self, monkeypatch):
         """The happy path (picker â†’ openrouter + vendor/model) is untouched."""
         monkeypatch.setattr(
-            "zed_cli.model_cost_guard.expensive_model_warning",
+            "hermes_cli.model_cost_guard.expensive_model_warning",
             lambda *_args, **_kwargs: None,
         )
         resp = self.client.post(
@@ -1480,7 +1480,7 @@ class TestWebServerEndpoints:
     def test_ops_import_passes_force_flag(self, tmp_path, monkeypatch):
         """force=True must append --force so the spawned non-interactive
         `zed import` doesn't auto-abort at the overwrite prompt."""
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         archive = tmp_path / "backup.zip"
         import zipfile
@@ -1512,8 +1512,8 @@ class TestWebServerEndpoints:
 
     def test_reveal_env_var(self, tmp_path):
         """POST /api/env/reveal should return the real unredacted value."""
-        from zed_cli.config import save_env_value
-        from zed_cli.web_server import _SESSION_HEADER_NAME, _SESSION_TOKEN
+        from hermes_cli.config import save_env_value
+        from hermes_cli.web_server import _SESSION_HEADER_NAME, _SESSION_TOKEN
         save_env_value("TEST_REVEAL_KEY", "super-secret-value-12345")
         resp = self.client.post(
             "/api/env/reveal",
@@ -1527,7 +1527,7 @@ class TestWebServerEndpoints:
 
     def test_reveal_env_var_not_found(self):
         """POST /api/env/reveal should 404 for unknown keys."""
-        from zed_cli.web_server import _SESSION_HEADER_NAME, _SESSION_TOKEN
+        from hermes_cli.web_server import _SESSION_HEADER_NAME, _SESSION_TOKEN
         resp = self.client.post(
             "/api/env/reveal",
             json={"key": "NONEXISTENT_KEY_XYZ"},
@@ -1538,8 +1538,8 @@ class TestWebServerEndpoints:
     def test_reveal_env_var_no_token(self, tmp_path):
         """POST /api/env/reveal without token should return 401."""
         from starlette.testclient import TestClient
-        from zed_cli.web_server import app
-        from zed_cli.config import save_env_value
+        from hermes_cli.web_server import app
+        from hermes_cli.config import save_env_value
         save_env_value("TEST_REVEAL_NOAUTH", "secret-value")
         # Use a fresh client WITHOUT the dashboard session header
         unauth_client = TestClient(app)
@@ -1551,8 +1551,8 @@ class TestWebServerEndpoints:
 
     def test_reveal_env_var_bad_token(self, tmp_path):
         """POST /api/env/reveal with wrong token should return 401."""
-        from zed_cli.config import save_env_value
-        from zed_cli.web_server import _SESSION_HEADER_NAME
+        from hermes_cli.config import save_env_value
+        from hermes_cli.web_server import _SESSION_HEADER_NAME
         save_env_value("TEST_REVEAL_BADAUTH", "secret-value")
         resp = self.client.post(
             "/api/env/reveal",
@@ -1563,8 +1563,8 @@ class TestWebServerEndpoints:
 
     def test_reveal_env_var_custom_session_header_ignores_proxy_authorization(self, tmp_path):
         """A valid dashboard session header should coexist with proxy auth."""
-        from zed_cli.config import save_env_value
-        from zed_cli.web_server import _SESSION_HEADER_NAME, _SESSION_TOKEN
+        from hermes_cli.config import save_env_value
+        from hermes_cli.web_server import _SESSION_HEADER_NAME, _SESSION_TOKEN
 
         save_env_value("TEST_REVEAL_PROXY_AUTH", "secret-value")
         resp = self.client.post(
@@ -1581,8 +1581,8 @@ class TestWebServerEndpoints:
 
     def test_reveal_env_var_legacy_authorization_header_still_works(self, tmp_path):
         """Keep old dashboard bundles working while the new header rolls out."""
-        from zed_cli.config import save_env_value
-        from zed_cli.web_server import _SESSION_TOKEN
+        from hermes_cli.config import save_env_value
+        from hermes_cli.web_server import _SESSION_TOKEN
 
         save_env_value("TEST_REVEAL_LEGACY_AUTH", "secret-value")
         resp = self.client.post(
@@ -1682,7 +1682,7 @@ class TestWebServerEndpoints:
             platform_registry.unregister("ircfake")
 
     def test_update_messaging_platform_saves_env_and_enablement(self):
-        from zed_cli.config import load_config, load_env
+        from hermes_cli.config import load_config, load_env
 
         resp = self.client.put(
             "/api/messaging/platforms/telegram",
@@ -1701,7 +1701,7 @@ class TestWebServerEndpoints:
         assert telegram["enabled"] is False
 
     def test_update_messaging_platform_saves_slack_allowed_users(self):
-        from zed_cli.config import load_env
+        from hermes_cli.config import load_env
 
         resp = self.client.put(
             "/api/messaging/platforms/slack",
@@ -1741,7 +1741,7 @@ class TestWebServerEndpoints:
     def test_update_messaging_platform_accepts_slack_allowed_users_wildcard(self):
         # "*" is the gateway's allow-all wildcard (gateway/platforms/slack.py),
         # so the dashboard must accept it rather than rejecting it as malformed.
-        from zed_cli.config import load_env
+        from hermes_cli.config import load_env
 
         resp = self.client.put(
             "/api/messaging/platforms/slack",
@@ -1754,7 +1754,7 @@ class TestWebServerEndpoints:
     def test_update_messaging_platform_accepts_slack_allowed_users_trailing_comma(self):
         # The gateway drops empty entries (gateway/platforms/slack.py), so a
         # trailing/interior comma must not be rejected by the dashboard.
-        from zed_cli.config import load_env
+        from hermes_cli.config import load_env
 
         resp = self.client.put(
             "/api/messaging/platforms/slack",
@@ -1778,7 +1778,7 @@ class TestWebServerEndpoints:
 
     def test_telegram_onboarding_worker_request_uses_httpx(self, monkeypatch):
         import httpx
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         calls = {}
 
@@ -1827,7 +1827,7 @@ class TestWebServerEndpoints:
     def test_telegram_onboarding_worker_request_maps_unexpected_errors(
         self, monkeypatch
     ):
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         monkeypatch.setenv("TELEGRAM_ONBOARDING_URL", "not a valid url")
 
@@ -1845,7 +1845,7 @@ class TestWebServerEndpoints:
         )
 
     def test_telegram_onboarding_start_strips_poll_token(self, monkeypatch):
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         with ws._telegram_onboarding_lock:
             ws._telegram_onboarding_pairings.clear()
@@ -1884,8 +1884,8 @@ class TestWebServerEndpoints:
         ]
 
     def test_telegram_onboarding_ready_and_apply_never_returns_bot_token(self, monkeypatch):
-        import zed_cli.web_server as ws
-        from zed_cli.config import load_config, load_env
+        import hermes_cli.web_server as ws
+        from hermes_cli.config import load_config, load_env
 
         with ws._telegram_onboarding_lock:
             ws._telegram_onboarding_pairings.clear()
@@ -1957,8 +1957,8 @@ class TestWebServerEndpoints:
     def test_telegram_onboarding_apply_reports_restart_failure_after_save(
         self, monkeypatch
     ):
-        import zed_cli.web_server as ws
-        from zed_cli.config import load_config, load_env
+        import hermes_cli.web_server as ws
+        from hermes_cli.config import load_config, load_env
 
         with ws._telegram_onboarding_lock:
             ws._telegram_onboarding_pairings.clear()
@@ -2022,7 +2022,7 @@ class TestWebServerEndpoints:
         """A live in-flight gateway restart is reused instead of spawning a
         second racing ``zed gateway restart`` child (e.g. when a stale
         cached frontend also fires its own restart call)."""
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         with ws._telegram_onboarding_lock:
             ws._telegram_onboarding_pairings.clear()
@@ -2076,7 +2076,7 @@ class TestWebServerEndpoints:
         assert applied_data["restart_pid"] == 5151
 
     def test_telegram_onboarding_apply_requires_ready_pairing(self, monkeypatch):
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         with ws._telegram_onboarding_lock:
             ws._telegram_onboarding_pairings.clear()
@@ -2105,7 +2105,7 @@ class TestWebServerEndpoints:
         assert "not ready" in resp.json()["detail"]
 
     def test_telegram_onboarding_cancel_clears_local_session(self, monkeypatch):
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         with ws._telegram_onboarding_lock:
             ws._telegram_onboarding_pairings.clear()
@@ -2147,7 +2147,7 @@ class TestWebServerEndpoints:
     def test_unauthenticated_api_blocked(self):
         """API requests without the session token should be rejected."""
         from starlette.testclient import TestClient
-        from zed_cli.web_server import app
+        from hermes_cli.web_server import app
         # Create a client WITHOUT the dashboard session header
         unauth_client = TestClient(app)
         resp = unauth_client.get("/api/env")
@@ -2184,7 +2184,7 @@ class TestWebServerEndpoints:
     def test_spa_assets_are_read_as_utf8(self, monkeypatch, tmp_path):
         from fastapi import FastAPI
         from starlette.testclient import TestClient
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         dist = tmp_path / "web_dist"
         assets = dist / "assets"
@@ -2224,7 +2224,7 @@ class TestWebServerEndpoints:
         """Switching the main provider to Nous calls apply_nous_managed_defaults
         (mirroring the CLI's post-model-selection Tool Gateway routing) and
         surfaces the routed tools in the response."""
-        import zed_cli.nous_subscription as ns
+        import hermes_cli.nous_subscription as ns
 
         called = {}
 
@@ -2251,7 +2251,7 @@ class TestWebServerEndpoints:
 
     def test_set_model_main_non_nous_skips_gateway_defaults(self, monkeypatch):
         """Non-Nous providers must NOT trigger Tool Gateway auto-routing."""
-        import zed_cli.nous_subscription as ns
+        import hermes_cli.nous_subscription as ns
 
         def boom(*args, **kwargs):  # pragma: no cover - must not be called
             raise AssertionError("apply_nous_managed_defaults called for non-nous provider")
@@ -2273,7 +2273,7 @@ class TestWebServerEndpoints:
         it on same-provider re-assignment, and always drop a hardcoded
         context_length override. Both POST /api/model/set and profile-model
         writes route through this, so the contract is pinned here."""
-        from zed_cli.web_server import _apply_main_model_assignment
+        from hermes_cli.web_server import _apply_main_model_assignment
 
         # Custom + base_url â†’ persisted; stale context_length dropped.
         out = _apply_main_model_assignment(
@@ -2353,7 +2353,7 @@ class TestWebServerEndpoints:
     def test_parse_model_ids_handles_openai_and_bare_shapes(self):
         """Model discovery must tolerate the common /v1/models shapes and
         never raise (so a slightly non-standard local endpoint still works)."""
-        from zed_cli.web_server import _parse_model_ids
+        from hermes_cli.web_server import _parse_model_ids
 
         class FakeResp:
             def __init__(self, payload, ok=True):
@@ -2383,7 +2383,7 @@ class TestWebServerEndpoints:
         resolver (which ignores OPENAI_BASE_URL) can route to a self-hosted
         endpoint without an API key. Regression for the desktop onboarding bug
         where 'Local / custom endpoint' could never be configured."""
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
 
         resp = self.client.post(
             "/api/model/set",
@@ -2412,7 +2412,7 @@ class TestWebServerEndpoints:
         endpoint reappears as a ready row in the picker â€” matching the
         ``zed model`` custom flow. Regression for the desktop loop where a
         keyed custom endpoint could never be configured from the GUI."""
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
 
         resp = self.client.post(
             "/api/model/set",
@@ -2448,7 +2448,7 @@ class TestWebServerEndpoints:
     def test_set_model_main_non_custom_clears_stale_base_url(self):
         """Switching to a hosted provider must clear a stale base_url so the
         resolver picks that provider's own default endpoint."""
-        from zed_cli.config import load_config, save_config
+        from hermes_cli.config import load_config, save_config
 
         cfg = load_config()
         cfg["model"] = {
@@ -2470,7 +2470,7 @@ class TestWebServerEndpoints:
         base_url. Regression for the desktop bug where selecting a Xiaomi MiMo
         model reset a Token Plan endpoint back to the registry default, breaking
         Token Plan keys (https://token-plan-*.xiaomimimo.com/v1)."""
-        from zed_cli.config import load_config, save_config
+        from hermes_cli.config import load_config, save_config
 
         cfg = load_config()
         cfg["model"] = {
@@ -2497,7 +2497,7 @@ class TestWebServerEndpoints:
         """Switching the main provider must report auxiliary slots still pinned
         to a *different* provider so the UI can warn the user their helper tasks
         aren't following the switch (the silent credit-burn path)."""
-        from zed_cli.config import load_config, save_config
+        from hermes_cli.config import load_config, save_config
 
         cfg = load_config()
         cfg["model"] = {"provider": "nous", "default": "zed-4"}
@@ -2528,7 +2528,7 @@ class TestWebServerEndpoints:
 
     def test_set_model_main_no_stale_when_aux_matches_new_provider(self):
         """Aux slots pinned to the SAME provider as the new main are not stale."""
-        from zed_cli.config import load_config, save_config
+        from hermes_cli.config import load_config, save_config
 
         cfg = load_config()
         cfg["model"] = {"provider": "nous", "default": "zed-4"}
@@ -2551,7 +2551,7 @@ class TestWebServerEndpoints:
 
     def test_set_model_main_gateway_failure_does_not_block_save(self, monkeypatch):
         """A Portal/gateway hiccup must never prevent saving the model."""
-        import zed_cli.nous_subscription as ns
+        import hermes_cli.nous_subscription as ns
 
         def boom(*args, **kwargs):
             raise RuntimeError("portal unreachable")
@@ -2570,7 +2570,7 @@ class TestWebServerEndpoints:
     def test_recommended_default_nous_honors_free_tier(self, monkeypatch):
         """For a free-tier Nous user, the recommended default must be a free
         model (mirroring `zed model`), not the first curated paid entry."""
-        import zed_cli.models as models_mod
+        import hermes_cli.models as models_mod
 
         monkeypatch.setattr(models_mod, "get_curated_nous_model_ids", lambda: ["paid/expensive", "free/cheap"])
         monkeypatch.setattr(
@@ -2597,7 +2597,7 @@ class TestWebServerEndpoints:
 
     def test_recommended_default_nous_paid_uses_curated_default(self, monkeypatch):
         """A paid Nous user gets the first curated/paid-augmented model."""
-        import zed_cli.models as models_mod
+        import hermes_cli.models as models_mod
 
         monkeypatch.setattr(models_mod, "get_curated_nous_model_ids", lambda: ["top/model", "other/model"])
         monkeypatch.setattr(models_mod, "get_pricing_for_provider", lambda provider: {})
@@ -2616,7 +2616,7 @@ class TestWebServerEndpoints:
 
     def test_recommended_default_handles_failure_gracefully(self, monkeypatch):
         """Endpoint never 500s â€” returns empty model on internal error."""
-        import zed_cli.models as models_mod
+        import hermes_cli.models as models_mod
 
         def boom():
             raise RuntimeError("portal down")
@@ -2637,18 +2637,18 @@ class TestWebServerEndpoints:
 
 class TestBuildSchemaFromConfig:
     def test_produces_expected_field_count(self):
-        from zed_cli.web_server import CONFIG_SCHEMA
+        from hermes_cli.web_server import CONFIG_SCHEMA
         # DEFAULT_CONFIG has ~150+ leaf fields
         assert len(CONFIG_SCHEMA) > 100
 
     def test_schema_entries_have_required_fields(self):
-        from zed_cli.web_server import CONFIG_SCHEMA
+        from hermes_cli.web_server import CONFIG_SCHEMA
         for key, entry in list(CONFIG_SCHEMA.items())[:10]:
             assert "type" in entry, f"Missing type for {key}"
             assert "category" in entry, f"Missing category for {key}"
 
     def test_overrides_applied(self):
-        from zed_cli.web_server import CONFIG_SCHEMA
+        from hermes_cli.web_server import CONFIG_SCHEMA
         # terminal.backend should be a select with options
         if "terminal.backend" in CONFIG_SCHEMA:
             entry = CONFIG_SCHEMA["terminal.backend"]
@@ -2657,7 +2657,7 @@ class TestBuildSchemaFromConfig:
             assert "local" in entry["options"]
 
     def test_empty_prefix_produces_correct_keys(self):
-        from zed_cli.web_server import _build_schema_from_config
+        from hermes_cli.web_server import _build_schema_from_config
         test_config = {"model": "test", "nested": {"key": "val"}}
         schema = _build_schema_from_config(test_config)
         assert "model" in schema
@@ -2665,18 +2665,18 @@ class TestBuildSchemaFromConfig:
 
     def test_top_level_scalars_get_general_category(self):
         """Top-level scalar fields should be in 'general' category."""
-        from zed_cli.web_server import CONFIG_SCHEMA
+        from hermes_cli.web_server import CONFIG_SCHEMA
         assert CONFIG_SCHEMA["model"]["category"] == "general"
 
     def test_nested_keys_get_parent_category(self):
         """Nested fields should use the top-level parent as their category."""
-        from zed_cli.web_server import CONFIG_SCHEMA
+        from hermes_cli.web_server import CONFIG_SCHEMA
         if "agent.max_turns" in CONFIG_SCHEMA:
             assert CONFIG_SCHEMA["agent.max_turns"]["category"] == "agent"
 
     def test_category_merge_applied(self):
         """Small categories should be merged into larger ones."""
-        from zed_cli.web_server import CONFIG_SCHEMA
+        from hermes_cli.web_server import CONFIG_SCHEMA
         categories = {e["category"] for e in CONFIG_SCHEMA.values()}
         # These should be merged away
         assert "privacy" not in categories  # merged into security
@@ -2684,7 +2684,7 @@ class TestBuildSchemaFromConfig:
 
     def test_no_single_field_categories(self):
         """After merging, no category should have just 1 field."""
-        from zed_cli.web_server import CONFIG_SCHEMA
+        from hermes_cli.web_server import CONFIG_SCHEMA
         from collections import Counter
         cats = Counter(e["category"] for e in CONFIG_SCHEMA.values())
         for cat, count in cats.items():
@@ -2705,7 +2705,7 @@ class TestConfigRoundTrip:
             from starlette.testclient import TestClient
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
-        from zed_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
+        from hermes_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
         self.client = TestClient(app)
         self.client.headers[_SESSION_HEADER_NAME] = _SESSION_TOKEN
 
@@ -2723,7 +2723,7 @@ class TestConfigRoundTrip:
 
     def test_round_trip_preserves_model_subkeys(self):
         """Save and reload should not lose model.provider, model.base_url, etc."""
-        from zed_cli.config import load_config, save_config
+        from hermes_cli.config import load_config, save_config
 
         # Set up a config with model as a dict (the common user config form)
         save_config({
@@ -2752,7 +2752,7 @@ class TestConfigRoundTrip:
 
     def test_edit_model_name_preserved(self):
         """Changing the model string should update model.default on disk."""
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
 
         web_config = self.client.get("/api/config").json()
         original_model = web_config["model"]
@@ -2773,7 +2773,7 @@ class TestConfigRoundTrip:
 
     def test_edit_nested_value(self):
         """Editing a nested config value should persist correctly."""
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
 
         web_config = self.client.get("/api/config").json()
         original_turns = web_config.get("agent", {}).get("max_turns")
@@ -2839,9 +2839,9 @@ class TestNewEndpoints:
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
 
-        import zed_state
-        from zed_constants import get_zed_home
-        from zed_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
+        import hermes_state
+        from hermes_constants import get_zed_home
+        from hermes_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
 
         monkeypatch.setattr(zed_state, "DEFAULT_DB_PATH", get_zed_home() / "state.db")
 
@@ -2908,7 +2908,7 @@ class TestNewEndpoints:
     # --- Profiles ---
 
     def test_profiles_list_includes_default(self):
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         get_zed_home().mkdir(parents=True, exist_ok=True)
 
         resp = self.client.get("/api/profiles")
@@ -2917,8 +2917,8 @@ class TestNewEndpoints:
         assert "default" in names
 
     def test_profiles_list_falls_back_when_profile_listing_fails(self, monkeypatch):
-        from zed_constants import get_zed_home
-        import zed_cli.profiles as profiles_mod
+        from hermes_constants import get_zed_home
+        import hermes_cli.profiles as profiles_mod
 
         zed_home = get_zed_home()
         zed_home.mkdir(parents=True, exist_ok=True)
@@ -2950,7 +2950,7 @@ class TestNewEndpoints:
     def test_profiles_create_rename_delete_round_trip(self, monkeypatch):
         # Stub gateway service teardown so the test doesn't shell out to
         # launchctl/systemctl on the host.
-        import zed_cli.profiles as profiles_mod
+        import hermes_cli.profiles as profiles_mod
         monkeypatch.setattr(profiles_mod, "_cleanup_gateway_service", lambda *a, **kw: None)
 
         created = self.client.post("/api/profiles", json={"name": "test-prof"})
@@ -2972,7 +2972,7 @@ class TestNewEndpoints:
         assert "test-prof-2" not in names
 
     def test_profile_setup_command_uses_named_profile_wrapper(self):
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
 
         (get_zed_home() / "profiles" / "coder").mkdir(parents=True)
 
@@ -2982,7 +2982,7 @@ class TestNewEndpoints:
         assert resp.json()["command"] == "coder setup"
 
     def test_profile_setup_command_uses_zed_for_default_profile(self):
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
 
         get_zed_home().mkdir(parents=True, exist_ok=True)
 
@@ -2992,7 +2992,7 @@ class TestNewEndpoints:
         assert resp.json()["command"] == "zed setup"
 
     def test_profiles_create_creates_wrapper_alias_when_safe(self, monkeypatch, tmp_path):
-        import zed_cli.profiles as profiles_mod
+        import hermes_cli.profiles as profiles_mod
 
         wrapper_dir = tmp_path / "bin"
         wrapper_dir.mkdir()
@@ -3010,8 +3010,8 @@ class TestNewEndpoints:
         assert wrapper_path.read_text() == '#!/bin/sh\nexec /opt/zed/bin/zed -p writer "$@"\n'
 
     def test_profiles_create_with_clone_from_copies_source_skills(self, monkeypatch):
-        from zed_constants import get_zed_home
-        import zed_cli.profiles as profiles_mod
+        from hermes_constants import get_zed_home
+        import hermes_cli.profiles as profiles_mod
 
         monkeypatch.setattr(profiles_mod, "create_wrapper_script", lambda name: None)
         (get_zed_home() / "config.yaml").write_text(
@@ -3037,8 +3037,8 @@ class TestNewEndpoints:
         assert profiles["cloned"]["skill_count"] == 1
 
     def test_profiles_create_with_clone_from_duplicates_source(self, monkeypatch):
-        from zed_constants import get_zed_home
-        import zed_cli.profiles as profiles_mod
+        from hermes_constants import get_zed_home
+        import hermes_cli.profiles as profiles_mod
 
         monkeypatch.setattr(profiles_mod, "create_wrapper_script", lambda name: None)
 
@@ -3061,8 +3061,8 @@ class TestNewEndpoints:
         assert cloned_skill.exists()
 
     def test_profiles_create_clone_all_from_named_source(self, monkeypatch):
-        from zed_constants import get_zed_home
-        import zed_cli.profiles as profiles_mod
+        from hermes_constants import get_zed_home
+        import hermes_cli.profiles as profiles_mod
 
         monkeypatch.setattr(profiles_mod, "create_wrapper_script", lambda name: None)
 
@@ -3083,8 +3083,8 @@ class TestNewEndpoints:
         assert (target_dir / "workspace" / "artifact.txt").read_text(encoding="utf-8") == "copied"
 
     def test_profiles_create_without_clone_seeds_bundled_skills(self, monkeypatch):
-        from zed_constants import get_zed_home
-        import zed_cli.profiles as profiles_mod
+        from hermes_constants import get_zed_home
+        import hermes_cli.profiles as profiles_mod
 
         monkeypatch.setattr(profiles_mod, "create_wrapper_script", lambda name: None)
 
@@ -3111,15 +3111,15 @@ class TestNewEndpoints:
         """Profile-builder create: model + MCP servers + keep-skills selection
         all land in the NEW profile's config, and hub installs are spawned
         scoped to that profile via ``-p <name>``."""
-        from zed_constants import (
+        from hermes_constants import (
             get_zed_home,
             set_zed_home_override,
             reset_zed_home_override,
         )
-        from zed_cli.config import load_config
-        from zed_cli.skills_config import get_disabled_skills
-        import zed_cli.profiles as profiles_mod
-        import zed_cli.web_server as web_server
+        from hermes_cli.config import load_config
+        from hermes_cli.skills_config import get_disabled_skills
+        import hermes_cli.profiles as profiles_mod
+        import hermes_cli.web_server as web_server
 
         monkeypatch.setattr(profiles_mod, "create_wrapper_script", lambda name: None)
 
@@ -3190,8 +3190,8 @@ class TestNewEndpoints:
             reset_zed_home_override(token)
 
     def test_profile_open_terminal_uses_macos_terminal(self, monkeypatch):
-        from zed_constants import get_zed_home
-        import zed_cli.web_server as web_server
+        from hermes_constants import get_zed_home
+        import hermes_cli.web_server as web_server
 
         (get_zed_home() / "profiles" / "coder").mkdir(parents=True)
         calls = []
@@ -3206,8 +3206,8 @@ class TestNewEndpoints:
         assert "coder setup" in " ".join(calls[0])
 
     def test_profile_open_terminal_uses_windows_cmd(self, monkeypatch):
-        from zed_constants import get_zed_home
-        import zed_cli.web_server as web_server
+        from hermes_constants import get_zed_home
+        import hermes_cli.web_server as web_server
 
         (get_zed_home() / "profiles" / "coder").mkdir(parents=True)
         calls = []
@@ -3234,7 +3234,7 @@ class TestNewEndpoints:
         assert resp.status_code == 404
 
     def test_profile_soul_round_trip(self, monkeypatch):
-        import zed_cli.profiles as profiles_mod
+        import hermes_cli.profiles as profiles_mod
         monkeypatch.setattr(profiles_mod, "_cleanup_gateway_service", lambda *a, **kw: None)
 
         self.client.post("/api/profiles", json={"name": "soul-prof"})
@@ -3260,7 +3260,7 @@ class TestNewEndpoints:
     # --- New profiles endpoints: active / description / model / describe-auto ---
 
     def test_profiles_active_defaults(self):
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         get_zed_home().mkdir(parents=True, exist_ok=True)
 
         resp = self.client.get("/api/profiles/active")
@@ -3270,7 +3270,7 @@ class TestNewEndpoints:
         assert data["current"] == "default"
 
     def test_profiles_set_active_round_trip(self, monkeypatch):
-        import zed_cli.profiles as profiles_mod
+        import hermes_cli.profiles as profiles_mod
         monkeypatch.setattr(profiles_mod, "create_wrapper_script", lambda name: None)
 
         self.client.post("/api/profiles", json={"name": "router"})
@@ -3285,7 +3285,7 @@ class TestNewEndpoints:
         assert resp.status_code == 404
 
     def test_profile_description_round_trip(self, monkeypatch):
-        import zed_cli.profiles as profiles_mod
+        import hermes_cli.profiles as profiles_mod
         monkeypatch.setattr(profiles_mod, "create_wrapper_script", lambda name: None)
 
         self.client.post("/api/profiles", json={"name": "desc-prof"})
@@ -3310,8 +3310,8 @@ class TestNewEndpoints:
         assert resp.status_code == 404
 
     def test_profile_model_round_trip(self, monkeypatch):
-        from zed_constants import get_zed_home
-        import zed_cli.profiles as profiles_mod
+        from hermes_constants import get_zed_home
+        import hermes_cli.profiles as profiles_mod
         monkeypatch.setattr(profiles_mod, "create_wrapper_script", lambda name: None)
 
         self.client.post("/api/profiles", json={"name": "model-prof"})
@@ -3330,7 +3330,7 @@ class TestNewEndpoints:
         assert cfg["model"]["default"] == "anthropic/claude-sonnet-4.6"
 
     def test_profile_model_requires_provider_and_model(self, monkeypatch):
-        import zed_cli.profiles as profiles_mod
+        import hermes_cli.profiles as profiles_mod
         monkeypatch.setattr(profiles_mod, "create_wrapper_script", lambda name: None)
 
         self.client.post("/api/profiles", json={"name": "model-prof2"})
@@ -3341,12 +3341,12 @@ class TestNewEndpoints:
         assert resp.status_code == 400
 
     def test_profile_describe_auto_success(self, monkeypatch):
-        import zed_cli.profiles as profiles_mod
+        import hermes_cli.profiles as profiles_mod
         monkeypatch.setattr(profiles_mod, "create_wrapper_script", lambda name: None)
 
         self.client.post("/api/profiles", json={"name": "auto-prof"})
 
-        from zed_cli import profile_describer
+        from hermes_cli import profile_describer
         monkeypatch.setattr(
             profile_describer,
             "describe_profile",
@@ -3363,12 +3363,12 @@ class TestNewEndpoints:
         assert body["description_auto"] is True
 
     def test_profile_describe_auto_failure_is_not_auto(self, monkeypatch):
-        import zed_cli.profiles as profiles_mod
+        import hermes_cli.profiles as profiles_mod
         monkeypatch.setattr(profiles_mod, "create_wrapper_script", lambda name: None)
 
         self.client.post("/api/profiles", json={"name": "auto-fail"})
 
-        from zed_cli import profile_describer
+        from hermes_cli import profile_describer
         monkeypatch.setattr(
             profile_describer,
             "describe_profile",
@@ -3394,8 +3394,8 @@ class TestNewEndpoints:
 
     def test_skills_list_includes_disabled_skills(self, monkeypatch):
         import tools.skills_tool as skills_tool
-        import zed_cli.skills_config as skills_config
-        import zed_cli.web_server as web_server
+        import hermes_cli.skills_config as skills_config
+        import hermes_cli.web_server as web_server
 
         def _fake_find_all_skills(*, skip_disabled=False):
             if skip_disabled:
@@ -3440,9 +3440,9 @@ class TestNewEndpoints:
             assert "enabled" in toolsets[0]
 
     def test_toolsets_list_matches_cli_enabled_state(self, monkeypatch):
-        import zed_cli.tools_config as tools_config
+        import hermes_cli.tools_config as tools_config
         import toolsets as toolsets_module
-        import zed_cli.web_server as web_server
+        import hermes_cli.web_server as web_server
 
         monkeypatch.setattr(
             tools_config,
@@ -3615,7 +3615,7 @@ class TestNewEndpoints:
         assert body["name"] == "web"
         assert body["provider"] == "Firecrawl Self-Hosted"
 
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
         cfg = load_config()
         assert cfg["web"]["backend"] == "firecrawl"
 
@@ -3682,7 +3682,7 @@ class TestNewEndpoints:
         ``billing_provider``. The Models dashboard should show one provider
         card, not a real card plus a misleading duplicate empty card.
         """
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -3725,7 +3725,7 @@ class TestNewEndpoints:
         assert row["avg_tokens_per_session"] == 13_550
 
     def test_analytics_usage_includes_skill_breakdown(self):
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -3802,7 +3802,7 @@ class TestModelContextLength:
 
     def test_normalize_extracts_context_length_from_dict(self):
         """normalize should surface context_length from model dict."""
-        from zed_cli.web_server import _normalize_config_for_web
+        from hermes_cli.web_server import _normalize_config_for_web
 
         cfg = {
             "model": {
@@ -3817,7 +3817,7 @@ class TestModelContextLength:
 
     def test_normalize_bare_string_model_yields_zero(self):
         """normalize should set model_context_length=0 for bare string model."""
-        from zed_cli.web_server import _normalize_config_for_web
+        from hermes_cli.web_server import _normalize_config_for_web
 
         result = _normalize_config_for_web({"model": "anthropic/claude-sonnet-4"})
         assert result["model"] == "anthropic/claude-sonnet-4"
@@ -3825,7 +3825,7 @@ class TestModelContextLength:
 
     def test_normalize_dict_without_context_length_yields_zero(self):
         """normalize should default to 0 when model dict has no context_length."""
-        from zed_cli.web_server import _normalize_config_for_web
+        from hermes_cli.web_server import _normalize_config_for_web
 
         cfg = {"model": {"default": "test/model", "provider": "openrouter"}}
         result = _normalize_config_for_web(cfg)
@@ -3833,7 +3833,7 @@ class TestModelContextLength:
 
     def test_normalize_non_int_context_length_yields_zero(self):
         """normalize should coerce non-int context_length to 0."""
-        from zed_cli.web_server import _normalize_config_for_web
+        from hermes_cli.web_server import _normalize_config_for_web
 
         cfg = {"model": {"default": "test/model", "context_length": "invalid"}}
         result = _normalize_config_for_web(cfg)
@@ -3841,8 +3841,8 @@ class TestModelContextLength:
 
     def test_denormalize_writes_context_length_into_model_dict(self):
         """denormalize should write model_context_length back into model dict."""
-        from zed_cli.web_server import _denormalize_config_from_web
-        from zed_cli.config import save_config
+        from hermes_cli.web_server import _denormalize_config_from_web
+        from hermes_cli.config import save_config
 
         # Set up disk config with model as a dict
         save_config({
@@ -3859,8 +3859,8 @@ class TestModelContextLength:
 
     def test_denormalize_zero_removes_context_length(self):
         """denormalize with model_context_length=0 should remove context_length key."""
-        from zed_cli.web_server import _denormalize_config_from_web
-        from zed_cli.config import save_config
+        from hermes_cli.web_server import _denormalize_config_from_web
+        from hermes_cli.config import save_config
 
         save_config({
             "model": {
@@ -3879,8 +3879,8 @@ class TestModelContextLength:
 
     def test_denormalize_upgrades_bare_string_to_dict(self):
         """denormalize should upgrade bare string model to dict when context_length set."""
-        from zed_cli.web_server import _denormalize_config_from_web
-        from zed_cli.config import save_config
+        from hermes_cli.web_server import _denormalize_config_from_web
+        from hermes_cli.config import save_config
 
         # Disk has model as bare string
         save_config({"model": "anthropic/claude-sonnet-4"})
@@ -3895,8 +3895,8 @@ class TestModelContextLength:
 
     def test_denormalize_bare_string_stays_string_when_zero(self):
         """denormalize should keep bare string model as string when context_length=0."""
-        from zed_cli.web_server import _denormalize_config_from_web
-        from zed_cli.config import save_config
+        from hermes_cli.web_server import _denormalize_config_from_web
+        from hermes_cli.config import save_config
 
         save_config({"model": "anthropic/claude-sonnet-4"})
 
@@ -3908,8 +3908,8 @@ class TestModelContextLength:
 
     def test_denormalize_coerces_string_context_length(self):
         """denormalize should handle string model_context_length from frontend."""
-        from zed_cli.web_server import _denormalize_config_from_web
-        from zed_cli.config import save_config
+        from hermes_cli.web_server import _denormalize_config_from_web
+        from hermes_cli.config import save_config
 
         save_config({
             "model": {"default": "test/model", "provider": "openrouter"}
@@ -3927,18 +3927,18 @@ class TestModelContextLengthSchema:
     """Tests for model_context_length placement in CONFIG_SCHEMA."""
 
     def test_schema_has_model_context_length(self):
-        from zed_cli.web_server import CONFIG_SCHEMA
+        from hermes_cli.web_server import CONFIG_SCHEMA
         assert "model_context_length" in CONFIG_SCHEMA
 
     def test_schema_model_context_length_after_model(self):
         """model_context_length should appear immediately after model in schema."""
-        from zed_cli.web_server import CONFIG_SCHEMA
+        from hermes_cli.web_server import CONFIG_SCHEMA
         keys = list(CONFIG_SCHEMA.keys())
         model_idx = keys.index("model")
         assert keys[model_idx + 1] == "model_context_length"
 
     def test_schema_model_context_length_is_number(self):
-        from zed_cli.web_server import CONFIG_SCHEMA
+        from hermes_cli.web_server import CONFIG_SCHEMA
         entry = CONFIG_SCHEMA["model_context_length"]
         assert entry["type"] == "number"
         assert "category" in entry
@@ -3953,7 +3953,7 @@ class TestModelInfoEndpoint:
             from starlette.testclient import TestClient
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
-        from zed_cli.web_server import app
+        from hermes_cli.web_server import app
         self.client = TestClient(app)
 
     def test_model_info_returns_200(self):
@@ -3968,7 +3968,7 @@ class TestModelInfoEndpoint:
         assert "capabilities" in data
 
     def test_model_info_with_dict_config(self, monkeypatch):
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         monkeypatch.setattr(ws, "load_config", lambda: {
             "model": {
@@ -3989,7 +3989,7 @@ class TestModelInfoEndpoint:
         assert data["effective_context_length"] == 100000  # override wins
 
     def test_model_info_auto_detect_when_no_override(self, monkeypatch):
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         monkeypatch.setattr(ws, "load_config", lambda: {
             "model": {"default": "anthropic/claude-opus-4.6", "provider": "openrouter"}
@@ -4004,7 +4004,7 @@ class TestModelInfoEndpoint:
         assert data["effective_context_length"] == 200000  # auto wins
 
     def test_model_info_empty_model(self, monkeypatch):
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         monkeypatch.setattr(ws, "load_config", lambda: {"model": ""})
 
@@ -4014,7 +4014,7 @@ class TestModelInfoEndpoint:
         assert data["effective_context_length"] == 0
 
     def test_model_info_bare_string_model(self, monkeypatch):
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         monkeypatch.setattr(ws, "load_config", lambda: {
             "model": "anthropic/claude-sonnet-4"
@@ -4030,7 +4030,7 @@ class TestModelInfoEndpoint:
         assert data["effective_context_length"] == 200000
 
     def test_model_info_capabilities(self, monkeypatch):
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         monkeypatch.setattr(ws, "load_config", lambda: {
             "model": {"default": "anthropic/claude-opus-4.6", "provider": "openrouter"}
@@ -4057,7 +4057,7 @@ class TestModelInfoEndpoint:
 
     def test_model_info_graceful_on_metadata_error(self, monkeypatch):
         """Endpoint should return zeros on import/resolution errors, not 500."""
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         monkeypatch.setattr(ws, "load_config", lambda: {
             "model": "some/obscure-model"
@@ -4081,7 +4081,7 @@ class TestProbeGatewayHealth:
 
     def test_returns_false_when_no_url_configured(self, monkeypatch):
         """When GATEWAY_HEALTH_URL is unset, the probe returns (False, None)."""
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
         monkeypatch.setattr(ws, "_GATEWAY_HEALTH_URL", None)
         alive, body = ws._probe_gateway_health()
         assert alive is False
@@ -4089,7 +4089,7 @@ class TestProbeGatewayHealth:
 
     def test_normalizes_url_with_health_suffix(self, monkeypatch):
         """If the user sets the URL to include /health, it's stripped to base."""
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
         monkeypatch.setattr(ws, "_GATEWAY_HEALTH_URL", "http://gw:8642/health")
         monkeypatch.setattr(ws, "_GATEWAY_HEALTH_TIMEOUT", 1)
         # Both paths should fail (no server), but we verify they were constructed
@@ -4109,7 +4109,7 @@ class TestProbeGatewayHealth:
 
     def test_normalizes_url_with_health_detailed_suffix(self, monkeypatch):
         """If the user sets the URL to include /health/detailed, it's stripped to base."""
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
         monkeypatch.setattr(ws, "_GATEWAY_HEALTH_URL", "http://gw:8642/health/detailed")
         monkeypatch.setattr(ws, "_GATEWAY_HEALTH_TIMEOUT", 1)
         calls = []
@@ -4125,7 +4125,7 @@ class TestProbeGatewayHealth:
 
     def test_successful_detailed_probe(self, monkeypatch):
         """Successful /health/detailed probe returns (True, body_dict)."""
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
         monkeypatch.setattr(ws, "_GATEWAY_HEALTH_URL", "http://gw:8642")
         monkeypatch.setattr(ws, "_GATEWAY_HEALTH_TIMEOUT", 1)
 
@@ -4149,7 +4149,7 @@ class TestProbeGatewayHealth:
 
     def test_detailed_fails_falls_back_to_simple_health(self, monkeypatch):
         """If /health/detailed fails, falls back to /health."""
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
         monkeypatch.setattr(ws, "_GATEWAY_HEALTH_URL", "http://gw:8642")
         monkeypatch.setattr(ws, "_GATEWAY_HEALTH_TIMEOUT", 1)
 
@@ -4183,13 +4183,13 @@ class TestStatusRemoteGateway:
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
 
-        from zed_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
+        from hermes_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
         self.client = TestClient(app)
         self.client.headers[_SESSION_HEADER_NAME] = _SESSION_TOKEN
 
     def test_status_falls_back_to_remote_probe(self, monkeypatch):
         """When local PID check fails and remote probe succeeds, gateway shows running."""
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         monkeypatch.setattr(ws, "get_running_pid", lambda: None)
         monkeypatch.setattr(ws, "read_runtime_status", lambda: None)
@@ -4211,7 +4211,7 @@ class TestStatusRemoteGateway:
 
     def test_status_remote_probe_not_attempted_when_local_pid_found(self, monkeypatch):
         """When local PID check succeeds, the remote probe is never called."""
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         monkeypatch.setattr(ws, "get_running_pid", lambda: 1234)
         monkeypatch.setattr(ws, "read_runtime_status", lambda: {
@@ -4234,7 +4234,7 @@ class TestStatusRemoteGateway:
 
     def test_status_remote_probe_not_attempted_when_no_url(self, monkeypatch):
         """When GATEWAY_HEALTH_URL is unset, no probe is attempted."""
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         monkeypatch.setattr(ws, "get_running_pid", lambda: None)
         monkeypatch.setattr(ws, "read_runtime_status", lambda: None)
@@ -4248,7 +4248,7 @@ class TestStatusRemoteGateway:
 
     def test_status_remote_running_null_pid(self, monkeypatch):
         """Remote gateway running but PID not in response â€” pid should be None."""
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         monkeypatch.setattr(ws, "get_running_pid", lambda: None)
         monkeypatch.setattr(ws, "read_runtime_status", lambda: None)
@@ -4274,20 +4274,20 @@ class TestNormaliseThemeDefinition:
     """Tests for _normalise_theme_definition() â€” parses YAML theme files."""
 
     def test_rejects_missing_name(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         assert _normalise_theme_definition({}) is None
         assert _normalise_theme_definition({"name": ""}) is None
         assert _normalise_theme_definition({"name": "   "}) is None
 
     def test_rejects_non_dict(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         assert _normalise_theme_definition("string") is None
         assert _normalise_theme_definition(None) is None
         assert _normalise_theme_definition([1, 2, 3]) is None
 
     def test_loose_colors_shorthand(self):
         """Bare hex strings under `colors` parse as {hex, alpha=1.0}."""
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         result = _normalise_theme_definition({
             "name": "loose",
             "colors": {"background": "#000000", "midground": "#ffffff"},
@@ -4300,7 +4300,7 @@ class TestNormaliseThemeDefinition:
         assert result["palette"]["foreground"]["alpha"] == 0.0
 
     def test_full_palette_form(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         result = _normalise_theme_definition({
             "name": "full",
             "palette": {
@@ -4316,7 +4316,7 @@ class TestNormaliseThemeDefinition:
         assert result["palette"]["noiseOpacity"] == 0.5
 
     def test_default_typography_applied_when_missing(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         result = _normalise_theme_definition({"name": "minimal"})
         typo = result["typography"]
         assert "fontSans" in typo
@@ -4326,7 +4326,7 @@ class TestNormaliseThemeDefinition:
         assert typo["letterSpacing"] == "0"
 
     def test_partial_typography_merges_with_defaults(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         result = _normalise_theme_definition({
             "name": "partial",
             "typography": {
@@ -4340,13 +4340,13 @@ class TestNormaliseThemeDefinition:
         assert "monospace" in result["typography"]["fontMono"]
 
     def test_layout_defaults(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         result = _normalise_theme_definition({"name": "minimal"})
         assert result["layout"]["radius"] == "0.5rem"
         assert result["layout"]["density"] == "comfortable"
 
     def test_invalid_density_falls_back(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         result = _normalise_theme_definition({
             "name": "bad",
             "layout": {"density": "ultra-spacious"},
@@ -4354,13 +4354,13 @@ class TestNormaliseThemeDefinition:
         assert result["layout"]["density"] == "comfortable"
 
     def test_valid_densities_accepted(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         for d in ("compact", "comfortable", "spacious"):
             r = _normalise_theme_definition({"name": "x", "layout": {"density": d}})
             assert r["layout"]["density"] == d
 
     def test_color_overrides_filter_unknown_keys(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         result = _normalise_theme_definition({
             "name": "o",
             "colorOverrides": {
@@ -4376,12 +4376,12 @@ class TestNormaliseThemeDefinition:
         }
 
     def test_color_overrides_omitted_when_empty(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         result = _normalise_theme_definition({"name": "x"})
         assert "colorOverrides" not in result
 
     def test_alpha_clamped_to_unit_range(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         r = _normalise_theme_definition({
             "name": "c",
             "palette": {"background": {"hex": "#000", "alpha": 99.5}},
@@ -4394,7 +4394,7 @@ class TestNormaliseThemeDefinition:
         assert r2["palette"]["background"]["alpha"] == 0.0
 
     def test_invalid_alpha_uses_default(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         r = _normalise_theme_definition({
             "name": "c",
             "palette": {"background": {"hex": "#000", "alpha": "not a number"}},
@@ -4407,7 +4407,7 @@ class TestDiscoverUserThemes:
 
     def test_returns_empty_when_dir_missing(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ZED_HOME", str(tmp_path))
-        from zed_cli import web_server
+        from hermes_cli import web_server
         assert web_server._discover_user_themes() == []
 
     def test_loads_and_normalises_yaml(self, tmp_path, monkeypatch):
@@ -4424,7 +4424,7 @@ class TestDiscoverUserThemes:
             "layout:\n"
             "  density: spacious\n"
         )
-        from zed_cli import web_server
+        from hermes_cli import web_server
         results = web_server._discover_user_themes()
         assert len(results) == 1
         assert results[0]["name"] == "ocean"
@@ -4441,7 +4441,7 @@ class TestDiscoverUserThemes:
         (themes_dir / "bad.yaml").write_text("::: not valid yaml :::\n\tindent wrong")
         (themes_dir / "nameless.yaml").write_text("label: No Name Here\n")
         (themes_dir / "ok.yaml").write_text("name: ok\n")
-        from zed_cli import web_server
+        from hermes_cli import web_server
         results = web_server._discover_user_themes()
         names = [r["name"] for r in results]
         assert "ok" in names
@@ -4455,25 +4455,25 @@ class TestNormaliseThemeExtensions:
     the dashboard without shipping code."""
 
     def test_layout_variant_defaults_to_standard(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         result = _normalise_theme_definition({"name": "t"})
         assert result["layoutVariant"] == "standard"
 
     def test_layout_variant_accepts_known_values(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         for variant in ("standard", "cockpit", "tiled"):
             r = _normalise_theme_definition({"name": "t", "layoutVariant": variant})
             assert r["layoutVariant"] == variant
 
     def test_layout_variant_rejects_unknown(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         r = _normalise_theme_definition({"name": "t", "layoutVariant": "warship"})
         assert r["layoutVariant"] == "standard"
         r2 = _normalise_theme_definition({"name": "t", "layoutVariant": 12})
         assert r2["layoutVariant"] == "standard"
 
     def test_assets_named_slots_passthrough(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         r = _normalise_theme_definition({
             "name": "t",
             "assets": {
@@ -4491,7 +4491,7 @@ class TestNormaliseThemeExtensions:
         assert "notAKnownKey" not in r["assets"]  # unknown slot ignored
 
     def test_assets_custom_block(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         r = _normalise_theme_definition({
             "name": "t",
             "assets": {
@@ -4509,12 +4509,12 @@ class TestNormaliseThemeExtensions:
         }
 
     def test_assets_absent_means_no_field(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         r = _normalise_theme_definition({"name": "t"})
         assert "assets" not in r
 
     def test_custom_css_passthrough_and_capped(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         # Small CSS passes through verbatim.
         r = _normalise_theme_definition({
             "name": "t",
@@ -4528,13 +4528,13 @@ class TestNormaliseThemeExtensions:
         assert len(r2["customCSS"]) <= 32 * 1024
 
     def test_custom_css_empty_dropped(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         for val in ("", "   \n\t", None):
             r = _normalise_theme_definition({"name": "t", "customCSS": val})
             assert "customCSS" not in r
 
     def test_component_styles_per_bucket(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         r = _normalise_theme_definition({
             "name": "t",
             "componentStyles": {
@@ -4555,7 +4555,7 @@ class TestNormaliseThemeExtensions:
         assert "rogueBucket" not in r["componentStyles"]
 
     def test_component_styles_empty_buckets_dropped(self):
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         r = _normalise_theme_definition({
             "name": "t",
             "componentStyles": {
@@ -4570,7 +4570,7 @@ class TestNormaliseThemeExtensions:
 
     def test_component_styles_accepts_numeric_values(self):
         """Numeric values (e.g. opacity: 0.8) are coerced to strings."""
-        from zed_cli.web_server import _normalise_theme_definition
+        from hermes_cli.web_server import _normalise_theme_definition
         r = _normalise_theme_definition({
             "name": "t",
             "componentStyles": {"card": {"opacity": 0.8, "zIndex": 5}},
@@ -4597,9 +4597,9 @@ class TestDeleteSessionEndpoint:
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
 
-        import zed_state
-        from zed_constants import get_zed_home
-        from zed_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
+        import hermes_state
+        from hermes_constants import get_zed_home
+        from hermes_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
 
         monkeypatch.setattr(
             zed_state, "DEFAULT_DB_PATH", get_zed_home() / "state.db"
@@ -4609,7 +4609,7 @@ class TestDeleteSessionEndpoint:
         self.auth_client.headers[_SESSION_HEADER_NAME] = _SESSION_TOKEN
 
     def _seed(self, ids):
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -4619,7 +4619,7 @@ class TestDeleteSessionEndpoint:
             db.close()
 
     def _exists(self, sid) -> bool:
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -4674,9 +4674,9 @@ class TestBulkDeleteSessionsEndpoint:
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
 
-        import zed_state
-        from zed_constants import get_zed_home
-        from zed_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
+        import hermes_state
+        from hermes_constants import get_zed_home
+        from hermes_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
 
         monkeypatch.setattr(
             zed_state, "DEFAULT_DB_PATH", get_zed_home() / "state.db"
@@ -4687,7 +4687,7 @@ class TestBulkDeleteSessionsEndpoint:
         self.auth_client.headers[_SESSION_HEADER_NAME] = _SESSION_TOKEN
 
     def _seed(self, ids):
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -4701,7 +4701,7 @@ class TestBulkDeleteSessionsEndpoint:
         assert resp.status_code == 401
 
     def test_deletes_listed_sessions_only(self):
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         self._seed(["a", "b", "c"])
         resp = self.auth_client.post(
@@ -4798,9 +4798,9 @@ class TestDeleteEmptySessionsEndpoint:
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
 
-        import zed_state
-        from zed_constants import get_zed_home
-        from zed_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
+        import hermes_state
+        from hermes_constants import get_zed_home
+        from hermes_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
 
         # Pin the SessionDB to the isolated ZED_HOME so each test
         # starts with a clean state.db.
@@ -4820,7 +4820,7 @@ class TestDeleteEmptySessionsEndpoint:
         * ``live``    â€” un-ended, empty â†’ must survive (active)
         * ``archived``â€” ended, empty, archived â†’ must survive
         """
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB()
         try:
@@ -4868,7 +4868,7 @@ class TestDeleteEmptySessionsEndpoint:
         """DELETE returns the deleted count and removes only the
         empty-ended-unarchived rows â€” same shape contract as the
         DB-level method's unit tests."""
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         self._seed()
         resp = self.auth_client.delete("/api/sessions/empty")
@@ -4934,9 +4934,9 @@ class TestPluginAPIAuth:
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
 
-        import zed_state
-        from zed_constants import get_zed_home
-        from zed_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
+        import hermes_state
+        from hermes_constants import get_zed_home
+        from hermes_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
 
         monkeypatch.setattr(zed_state, "DEFAULT_DB_PATH", get_zed_home() / "state.db")
 
@@ -5055,7 +5055,7 @@ class TestDashboardPluginManifestExtensions:
             "slots": ["sidebar", "header-left"],
             "entry": "dist/index.js",
         })
-        from zed_cli import web_server
+        from hermes_cli import web_server
         # Bust the process-level cache so the test plugin is picked up.
         web_server._dashboard_plugins_cache = None
         plugins = web_server._get_dashboard_plugins(force_rescan=True)
@@ -5072,7 +5072,7 @@ class TestDashboardPluginManifestExtensions:
             "tab": {"path": "/bad", "override": "no-leading-slash"},
             "entry": "dist/index.js",
         })
-        from zed_cli import web_server
+        from hermes_cli import web_server
         web_server._dashboard_plugins_cache = None
         plugins = web_server._get_dashboard_plugins(force_rescan=True)
         entry = next(p for p in plugins if p["name"] == "bad-override")
@@ -5086,7 +5086,7 @@ class TestDashboardPluginManifestExtensions:
             "tab": {"path": "/no-slots"},
             "entry": "dist/index.js",
         })
-        from zed_cli import web_server
+        from hermes_cli import web_server
         web_server._dashboard_plugins_cache = None
         plugins = web_server._get_dashboard_plugins(force_rescan=True)
         entry = next(p for p in plugins if p["name"] == "no-slots")
@@ -5103,7 +5103,7 @@ class TestDashboardPluginManifestExtensions:
             "slots": ["sidebar", "", 42, None, "header-right"],
             "entry": "dist/index.js",
         })
-        from zed_cli import web_server
+        from hermes_cli import web_server
         web_server._dashboard_plugins_cache = None
         plugins = web_server._get_dashboard_plugins(force_rescan=True)
         entry = next(p for p in plugins if p["name"] == "mixed-slots")
@@ -5132,7 +5132,7 @@ class TestDashboardPluginManifestExtensions:
             ],
             "entry": "dist/index.js",
         })
-        from zed_cli import web_server
+        from hermes_cli import web_server
         web_server._dashboard_plugins_cache = None
         plugins = web_server._get_dashboard_plugins(force_rescan=True)
         entry = next(p for p in plugins if p["name"] == "page-slots")
@@ -5172,7 +5172,7 @@ class TestPtyWebSocket:
     def _setup(self, monkeypatch, _isolate_zed_home):
         from starlette.testclient import TestClient
 
-        import zed_cli.web_server as ws
+        import hermes_cli.web_server as ws
 
         # Avoid exec'ing the actual TUI in tests: every test below installs
         # its own fake argv via ``ws._resolve_chat_argv``.
@@ -5192,7 +5192,7 @@ class TestPtyWebSocket:
 
     def test_resolve_chat_argv_uses_dashboard_scroll_env(self, monkeypatch):
         """Dashboard chat runs the TUI in browser-scrollback mode."""
-        import zed_cli.main as main_mod
+        import hermes_cli.main as main_mod
 
         monkeypatch.setattr(
             main_mod,
@@ -5209,7 +5209,7 @@ class TestPtyWebSocket:
     def test_resolve_chat_argv_applies_terminal_backend_config(
         self, monkeypatch, _isolate_zed_home
     ):
-        import zed_cli.main as main_mod
+        import hermes_cli.main as main_mod
 
         config_path = Path(os.environ["ZED_HOME"]) / "config.yaml"
         config_path.write_text(
@@ -5470,7 +5470,7 @@ class TestPtyWebSocket:
             assert b"99" in buf and b"41" in buf
 
     def test_unavailable_platform_closes_with_message(self, monkeypatch):
-        from zed_cli.pty_bridge import PtyUnavailableError
+        from hermes_cli.pty_bridge import PtyUnavailableError
 
         def _raise(argv, **kwargs):
             raise PtyUnavailableError("pty missing for tests")
@@ -5481,7 +5481,7 @@ class TestPtyWebSocket:
             lambda resume=None, sidecar_url=None, profile=None: (["/bin/cat"], None, None),
         )
         # Patch PtyBridge.spawn at the web_server module's binding.
-        import zed_cli.web_server as ws_mod
+        import hermes_cli.web_server as ws_mod
 
         monkeypatch.setattr(ws_mod.PtyBridge, "spawn", classmethod(lambda cls, *a, **k: _raise(*a, **k)))
 
@@ -5554,7 +5554,7 @@ class TestPtyWebSocket:
         asserting the exact fan-out contract.
         """
         import asyncio
-        from zed_cli import web_server as ws_mod
+        from hermes_cli import web_server as ws_mod
 
         class _FakeSub:
             def __init__(self):
@@ -5608,8 +5608,8 @@ class TestPtyWebSocket:
 
 
 def test_resolve_chat_argv_injects_gateway_ws_url(monkeypatch):
-    import zed_cli.main as cli_main
-    import zed_cli.web_server as ws
+    import hermes_cli.main as cli_main
+    import hermes_cli.web_server as ws
 
     monkeypatch.setattr(
         cli_main,
@@ -5656,7 +5656,7 @@ class TestDashboardPluginStaticAssetAllowlist:
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
 
-        from zed_cli.web_server import app
+        from hermes_cli.web_server import app
 
         self.client = TestClient(app)
 
@@ -5750,7 +5750,7 @@ class TestValidateProviderCredential:
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
 
-        from zed_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
+        from hermes_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
 
         self.client = TestClient(app)
         self.client.headers[_SESSION_HEADER_NAME] = _SESSION_TOKEN
@@ -5873,7 +5873,7 @@ class TestDesktopCronTicker:
             from starlette.testclient import TestClient
         except ImportError:
             pytest.skip("fastapi/starlette not installed")
-        from zed_cli.web_server import app
+        from hermes_cli.web_server import app
 
         return TestClient(app)
 
@@ -5898,3 +5898,4 @@ class TestDesktopCronTicker:
 
         with self._client():
             assert not called.wait(0.5), "ticker must not run outside the desktop app"
+

@@ -1,0 +1,14 @@
+{
+  "name": "avde-unified",
+  "version": "1.0.0",
+  "description": "Single-command bootloader for AVDE",
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail --prefix \"[{name}]\" --names \"BACKEND,DESKTOP,FRONTEND\" --prefix-colors \"bgBlue.bold,bgMagenta.bold,bgCyan.bold\" \"npm run dev:backend\" \"npm run dev:desktop\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && ..\\backend\\.venv\\Scripts\\python.exe server.py",
+    "dev:desktop": "cd desktop-agent && C:\\Users\\balur\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe start_agent.py",
+    "dev:frontend": "cd frontend && npm run dev"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

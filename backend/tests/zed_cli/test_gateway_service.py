@@ -10,7 +10,7 @@ import pytest
 pwd = pytest.importorskip("pwd")
 grp = pytest.importorskip("grp")
 
-import zed_cli.gateway as gateway_cli
+import hermes_cli.gateway as gateway_cli
 from gateway import status
 from gateway.restart import (
     DEFAULT_GATEWAY_RESTART_DRAIN_TIMEOUT,
@@ -379,7 +379,7 @@ class TestTempHomeServiceDefinitionGuard:
         assert gateway_cli._temp_home_in_service_definition(plist) is None
 
     def test_accepts_unit_without_zed_home(self):
-        unit = "[Service]\nExecStart=/usr/bin/python -m zed_cli.main gateway run\n"
+        unit = "[Service]\nExecStart=/usr/bin/python -m hermes_cli.main gateway run\n"
         assert gateway_cli._temp_home_in_service_definition(unit) is None
 
     def test_tmp_prefixed_non_temp_path_is_accepted(self):
@@ -2368,7 +2368,7 @@ class TestLegacyZedUnitDetection:
     # Minimal ExecStart that looks like our gateway
     _OUR_UNIT_TEXT = (
         "[Unit]\nDescription=Zed Gateway\n[Service]\n"
-        "ExecStart=/usr/bin/python -m zed_cli.main gateway run --replace\n"
+        "ExecStart=/usr/bin/python -m hermes_cli.main gateway run --replace\n"
     )
 
     @staticmethod
@@ -2477,14 +2477,14 @@ class TestLegacyZedUnitDetection:
         """Older installs may have used different python invocations.
 
         ExecStart variants we've seen in the wild:
-          - python -m zed_cli.main gateway run
+          - python -m hermes_cli.main gateway run
           - python path/to/zed_cli/main.py gateway run
           - zed gateway run   (direct binary)
           - python path/to/gateway/run.py
         """
         user_dir, _ = self._setup_search_paths(tmp_path, monkeypatch)
         variants = [
-            "ExecStart=/venv/bin/python -m zed_cli.main gateway run --replace",
+            "ExecStart=/venv/bin/python -m hermes_cli.main gateway run --replace",
             "ExecStart=/venv/bin/python /opt/zed/zed_cli/main.py gateway run",
             "ExecStart=/usr/local/bin/zed gateway run --replace",
             "ExecStart=/venv/bin/python /opt/zed/gateway/run.py",
@@ -2543,7 +2543,7 @@ class TestRemoveLegacyZedUnits:
 
     _OUR_UNIT_TEXT = (
         "[Unit]\nDescription=Zed Gateway\n[Service]\n"
-        "ExecStart=/usr/bin/python -m zed_cli.main gateway run --replace\n"
+        "ExecStart=/usr/bin/python -m hermes_cli.main gateway run --replace\n"
     )
 
     @staticmethod
@@ -2695,7 +2695,7 @@ class TestMigrateLegacyCommand:
 
     def test_migrate_legacy_subparser_accepts_dry_run_and_yes(self):
         """Verify the argparse subparser is registered and parses flags."""
-        import zed_cli.main as cli_main
+        import hermes_cli.main as cli_main
 
         parser = cli_main.build_parser() if hasattr(cli_main, "build_parser") else None
         # Fall back to calling main's setup helper if direct access isn't exposed
@@ -2707,11 +2707,11 @@ class TestMigrateLegacyCommand:
 
         project_root = cli_main.PROJECT_ROOT if hasattr(cli_main, "PROJECT_ROOT") else None
         if project_root is None:
-            import zed_cli.gateway as gw
+            import hermes_cli.gateway as gw
             project_root = gw.PROJECT_ROOT
 
         result = subprocess.run(
-            [sys.executable, "-m", "zed_cli.main", "gateway", "--help"],
+            [sys.executable, "-m", "hermes_cli.main", "gateway", "--help"],
             cwd=str(project_root),
             capture_output=True,
             text=True,
@@ -2749,7 +2749,7 @@ class TestGatewayStatusParser:
         import sys
 
         result = subprocess.run(
-            [sys.executable, "-m", "zed_cli.main", "gateway", "status", "-l", "--help"],
+            [sys.executable, "-m", "hermes_cli.main", "gateway", "status", "-l", "--help"],
             cwd=str(gateway_cli.PROJECT_ROOT),
             capture_output=True,
             text=True,
@@ -3151,3 +3151,4 @@ class TestServiceWorkingDirIsStable:
         # The old conditional dict form must NOT appear
         assert "SuccessfulExit" not in plist
         assert "<key>KeepAlive</key>\n    <dict>" not in plist
+

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-from zed_cli.config import get_custom_provider_context_length
+from hermes_cli.config import get_custom_provider_context_length
 
 
 class TestGetCustomProviderContextLength:
@@ -238,3 +238,4 @@ class TestContextProbeTiers:
             assert a > b, f"tiers must strictly descend, got {a} then {b}"
         # 128K is still a tier (users relying on it probe-down get there)
         assert 128_000 in CONTEXT_PROBE_TIERS
+

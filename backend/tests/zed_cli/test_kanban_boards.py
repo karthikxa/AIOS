@@ -28,7 +28,7 @@ _WORKTREE = Path(__file__).resolve().parents[2]
 if str(_WORKTREE) not in sys.path:
     sys.path.insert(0, str(_WORKTREE))
 
-from zed_cli import kanban_db as kb
+from hermes_cli import kanban_db as kb
 
 
 # ---------------------------------------------------------------------------
@@ -55,8 +55,8 @@ def fresh_home(tmp_path, monkeypatch):
         monkeypatch.delenv(var, raising=False)
     # Also reset zed_constants cache so get_default_zed_root() re-reads.
     try:
-        import zed_constants
-        zed_constants._cached_default_zed_root = None  # type: ignore[attr-defined]
+        import hermes_constants
+        hermes_constants._cached_default_zed_root = None  # type: ignore[attr-defined]
     except Exception:
         pass
     # Kanban module-level init cache must not leak between tests.
@@ -474,7 +474,7 @@ def _cli(args: list[str], env_extra: dict | None = None) -> subprocess.Completed
     if env_extra:
         env.update(env_extra)
     return subprocess.run(
-        [sys.executable, "-m", "zed_cli.main", "kanban"] + args,
+        [sys.executable, "-m", "hermes_cli.main", "kanban"] + args,
         env=env,
         capture_output=True,
         text=True,
@@ -557,3 +557,4 @@ class TestCLI:
         res = _cli(["boards", "list", "--json"], env_extra=env)
         slugs = [b["slug"] for b in json.loads(res.stdout)]
         assert "rmme" not in slugs
+

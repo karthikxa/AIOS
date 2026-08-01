@@ -14,7 +14,7 @@ fixes both halves â€” streams output AND idle-kills the process.
 import sys as _sys
 import time
 
-from zed_cli.main import _run_with_idle_timeout
+from hermes_cli.main import _run_with_idle_timeout
 
 
 def test_streams_output_and_returns_zero_on_success(tmp_path):
@@ -65,3 +65,4 @@ def test_returns_127_when_binary_missing(tmp_path):
         idle_timeout_seconds=5,
     )
     assert result.returncode == 127
+

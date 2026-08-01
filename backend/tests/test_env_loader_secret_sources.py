@@ -1,4 +1,4 @@
-﻿"""Tests for the secret-source tracking in ``zed_cli.env_loader``.
+﻿"""Tests for the secret-source tracking in ``hermes_cli.env_loader``.
 
 These cover the small public surface that lets `zed model` / `zed setup`
 label detected credentials with their origin ("from Bitwarden") so users
@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from zed_cli import env_loader  # noqa: E402
+from hermes_cli import env_loader  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
@@ -173,3 +173,4 @@ def test_apply_external_secret_sources_dedupes_within_process(tmp_path, monkeypa
     env_loader.reset_secret_source_cache()
     env_loader._apply_external_secret_sources(tmp_path)
     assert call_count["n"] == 2
+

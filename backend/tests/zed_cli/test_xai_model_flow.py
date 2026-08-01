@@ -1,17 +1,17 @@
-import argparse
+﻿import argparse
 
 
 def test_xai_model_flow_reauth_uses_standard_radio_prompt(monkeypatch):
-    from zed_cli import main as main_mod
+    from hermes_cli import main as main_mod
 
     captured = {"login_calls": 0}
 
     monkeypatch.setattr(
-        "zed_cli.auth.get_xai_oauth_auth_status",
+        "hermes_cli.auth.get_xai_oauth_auth_status",
         lambda: {"logged_in": True},
     )
     monkeypatch.setattr(
-        "zed_cli.setup._curses_prompt_choice",
+        "hermes_cli.setup._curses_prompt_choice",
         lambda title, choices, default, description=None: 1,
     )
 
@@ -20,13 +20,13 @@ def test_xai_model_flow_reauth_uses_standard_radio_prompt(monkeypatch):
         captured["force_new_login"] = force_new_login
         captured["args"] = args
 
-    monkeypatch.setattr("zed_cli.auth._login_xai_oauth", _fake_login)
+    monkeypatch.setattr("hermes_cli.auth._login_xai_oauth", _fake_login)
     monkeypatch.setattr(
-        "zed_cli.auth.resolve_xai_oauth_runtime_credentials",
+        "hermes_cli.auth.resolve_xai_oauth_runtime_credentials",
         lambda *args, **kwargs: {"base_url": "https://api.x.ai/v1"},
     )
     monkeypatch.setattr(
-        "zed_cli.auth._prompt_model_selection",
+        "hermes_cli.auth._prompt_model_selection",
         lambda model_ids, current_model="": None,
     )
 
@@ -44,22 +44,22 @@ def test_xai_model_flow_reauth_uses_standard_radio_prompt(monkeypatch):
 
 
 def test_xai_model_flow_cancel_skips_reauth(monkeypatch):
-    from zed_cli import main as main_mod
+    from hermes_cli import main as main_mod
 
     monkeypatch.setattr(
-        "zed_cli.auth.get_xai_oauth_auth_status",
+        "hermes_cli.auth.get_xai_oauth_auth_status",
         lambda: {"logged_in": True},
     )
     monkeypatch.setattr(
-        "zed_cli.setup._curses_prompt_choice",
+        "hermes_cli.setup._curses_prompt_choice",
         lambda title, choices, default, description=None: 2,
     )
     monkeypatch.setattr(
-        "zed_cli.auth._login_xai_oauth",
+        "hermes_cli.auth._login_xai_oauth",
         lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("should not reauthenticate")),
     )
     monkeypatch.setattr(
-        "zed_cli.auth._prompt_model_selection",
+        "hermes_cli.auth._prompt_model_selection",
         lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("should not pick a model")),
     )
 
@@ -67,12 +67,13 @@ def test_xai_model_flow_cancel_skips_reauth(monkeypatch):
 
 
 def test_auth_credentials_choice_falls_back_to_numbered_prompt(monkeypatch):
-    from zed_cli import main as main_mod
+    from hermes_cli import main as main_mod
 
     monkeypatch.setattr(
-        "zed_cli.setup._curses_prompt_choice",
+        "hermes_cli.setup._curses_prompt_choice",
         lambda title, choices, default, description=None: -1,
     )
     monkeypatch.setattr("builtins.input", lambda prompt="": "2")
 
     assert main_mod._prompt_auth_credentials_choice("Credentials:") == "reauth"
+

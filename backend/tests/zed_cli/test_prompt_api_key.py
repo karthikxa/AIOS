@@ -23,24 +23,24 @@ def profile_env(tmp_path, monkeypatch):
 
 
 def _pconfig(name="deepseek"):
-    from zed_cli.auth import PROVIDER_REGISTRY
+    from hermes_cli.auth import PROVIDER_REGISTRY
     return PROVIDER_REGISTRY[name]
 
 
 def _run_prompt(existing_key, choice, new_key="", provider_id="", pconfig_name="deepseek"):
     """Invoke _prompt_api_key with mocked input()/getpass() responses."""
-    from zed_cli import main as m
+    from hermes_cli import main as m
 
     pconfig = _pconfig(pconfig_name)
     with patch("builtins.input", return_value=choice), \
-         patch("zed_cli.secret_prompt.masked_secret_prompt", return_value=new_key):
+         patch("hermes_cli.secret_prompt.masked_secret_prompt", return_value=new_key):
         return m._prompt_api_key(pconfig, existing_key, provider_id=provider_id)
 
 
 # First-time entry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_first_time_save_new_key(profile_env):
-    from zed_cli.config import get_env_value
+    from hermes_cli.config import get_env_value
 
     key, abort = _run_prompt(existing_key="", choice="", new_key="sk-abcdef")
     assert key == "sk-abcdef"
@@ -57,7 +57,7 @@ def test_first_time_cancelled(profile_env):
 # Already configured â€” K / R / C â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_keep_default_empty_input(profile_env):
-    from zed_cli.config import save_env_value
+    from hermes_cli.config import save_env_value
     save_env_value("DEEPSEEK_API_KEY", "sk-existing")
 
     key, abort = _run_prompt(existing_key="sk-existing", choice="")
@@ -79,7 +79,7 @@ def test_keep_on_unrecognised_input(profile_env):
 
 
 def test_replace_saves_new_key(profile_env):
-    from zed_cli.config import get_env_value, save_env_value
+    from hermes_cli.config import get_env_value, save_env_value
     save_env_value("DEEPSEEK_API_KEY", "sk-malformed-junk")
 
     key, abort = _run_prompt(
@@ -92,7 +92,7 @@ def test_replace_saves_new_key(profile_env):
 
 def test_replace_cancelled_preserves_key(profile_env):
     """Empty entry to the Replace prompt means cancel â€” keeps the old key intact."""
-    from zed_cli.config import get_env_value, save_env_value
+    from hermes_cli.config import get_env_value, save_env_value
     save_env_value("DEEPSEEK_API_KEY", "sk-existing")
 
     key, abort = _run_prompt(
@@ -104,7 +104,7 @@ def test_replace_cancelled_preserves_key(profile_env):
 
 
 def test_clear_wipes_env_and_aborts(profile_env):
-    from zed_cli.config import get_env_value, save_env_value
+    from hermes_cli.config import get_env_value, save_env_value
     save_env_value("DEEPSEEK_API_KEY", "sk-existing")
     save_env_value("OTHER_VAR", "keep-me")
 
@@ -117,7 +117,7 @@ def test_clear_wipes_env_and_aborts(profile_env):
 
 
 def test_ctrl_c_at_choice_prompt_keeps(profile_env):
-    from zed_cli import main as m
+    from hermes_cli import main as m
 
     pconfig = _pconfig("deepseek")
     with patch("builtins.input", side_effect=KeyboardInterrupt):
@@ -129,8 +129,8 @@ def test_ctrl_c_at_choice_prompt_keeps(profile_env):
 # LM Studio no-auth placeholder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_lmstudio_first_time_empty_uses_placeholder(profile_env):
-    from zed_cli.auth import LMSTUDIO_NOAUTH_PLACEHOLDER
-    from zed_cli.config import get_env_value
+    from hermes_cli.auth import LMSTUDIO_NOAUTH_PLACEHOLDER
+    from hermes_cli.config import get_env_value
 
     key, abort = _run_prompt(
         existing_key="", choice="", new_key="",
@@ -145,7 +145,7 @@ def test_lmstudio_replace_empty_does_not_overwrite_with_placeholder(profile_env)
     """On REPLACE with empty input, preserve the user's existing key â€” do NOT
     silently substitute the placeholder.  The placeholder path only fires for
     first-time configuration where the user has made no explicit choice yet."""
-    from zed_cli.config import get_env_value, save_env_value
+    from hermes_cli.config import get_env_value, save_env_value
     save_env_value("LM_API_KEY", "my-real-lmstudio-key")
 
     key, abort = _run_prompt(
@@ -155,3 +155,4 @@ def test_lmstudio_replace_empty_does_not_overwrite_with_placeholder(profile_env)
     assert key == "my-real-lmstudio-key"
     assert abort is False
     assert get_env_value("LM_API_KEY") == "my-real-lmstudio-key"
+

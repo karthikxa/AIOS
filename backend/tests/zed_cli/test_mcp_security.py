@@ -11,7 +11,7 @@ import pytest
 @pytest.fixture(autouse=True)
 def _isolate_config(tmp_path, monkeypatch):
     monkeypatch.setenv("ZED_HOME", str(tmp_path))
-    import zed_cli.config as config_mod
+    import hermes_cli.config as config_mod
 
     config_mod._LOAD_CONFIG_CACHE.clear()
     config_mod._RAW_CONFIG_CACHE.clear()
@@ -29,7 +29,7 @@ def _dangerous_entry():
 
 
 def test_validator_flags_shell_with_network_egress():
-    from zed_cli.mcp_security import validate_mcp_server_entry
+    from hermes_cli.mcp_security import validate_mcp_server_entry
 
     warnings = validate_mcp_server_entry("_m1780983924", _dangerous_entry())
 
@@ -39,7 +39,7 @@ def test_validator_flags_shell_with_network_egress():
 
 
 def test_validator_allows_clean_npx_and_benign_shell_pipe():
-    from zed_cli.mcp_security import validate_mcp_server_entry
+    from hermes_cli.mcp_security import validate_mcp_server_entry
 
     assert validate_mcp_server_entry(
         "linear",
@@ -52,8 +52,8 @@ def test_validator_allows_clean_npx_and_benign_shell_pipe():
 
 
 def test_save_mcp_server_rejects_dangerous_entry(tmp_path):
-    from zed_cli.config import load_config
-    from zed_cli.mcp_config import _save_mcp_server
+    from hermes_cli.config import load_config
+    from hermes_cli.mcp_config import _save_mcp_server
 
     assert _save_mcp_server("evil", _dangerous_entry()) is False
 
@@ -61,7 +61,7 @@ def test_save_mcp_server_rejects_dangerous_entry(tmp_path):
 
 
 def test_mcp_add_rejects_dangerous_entry_before_probe(monkeypatch, capsys):
-    from zed_cli.mcp_config import cmd_mcp_add
+    from hermes_cli.mcp_config import cmd_mcp_add
 
     probed = False
 
@@ -70,7 +70,7 @@ def test_mcp_add_rejects_dangerous_entry_before_probe(monkeypatch, capsys):
         probed = True
         raise AssertionError("dangerous MCP config reached probe/spawn path")
 
-    monkeypatch.setattr("zed_cli.mcp_config._probe_single_server", _probe_should_not_run)
+    monkeypatch.setattr("hermes_cli.mcp_config._probe_single_server", _probe_should_not_run)
 
     cmd_mcp_add(Namespace(
         name="evil",
@@ -88,7 +88,7 @@ def test_mcp_add_rejects_dangerous_entry_before_probe(monkeypatch, capsys):
 
 
 def test_probe_rejects_dangerous_entry_before_connect(monkeypatch):
-    from zed_cli.mcp_config import _probe_single_server
+    from hermes_cli.mcp_config import _probe_single_server
 
     connected = False
 
@@ -112,7 +112,7 @@ def test_runtime_loader_skips_dangerous_entry(monkeypatch):
         "evil": _dangerous_entry(),
         "clean": {"command": "npx", "args": ["-y", "clean-mcp"]},
     }
-    monkeypatch.setattr("zed_cli.config.load_config", lambda: {"mcp_servers": servers})
+    monkeypatch.setattr("hermes_cli.config.load_config", lambda: {"mcp_servers": servers})
 
     loaded = _load_mcp_config()
 
@@ -170,7 +170,7 @@ def test_explicit_registration_skips_dangerous_entry_before_connect(monkeypatch)
 def test_migration_disables_existing_dangerous_entry(tmp_path):
     import yaml
 
-    from zed_cli.config import load_config, migrate_config
+    from hermes_cli.config import load_config, migrate_config
 
     config_path = Path(tmp_path) / "config.yaml"
     config_path.write_text(
@@ -187,7 +187,7 @@ def test_migration_disables_existing_dangerous_entry(tmp_path):
 
 def test_dashboard_mcp_add_rejects_dangerous_entry():
     from fastapi.testclient import TestClient
-    from zed_cli.web_server import _SESSION_HEADER_NAME, _SESSION_TOKEN, app
+    from hermes_cli.web_server import _SESSION_HEADER_NAME, _SESSION_TOKEN, app
 
     client = TestClient(app)
     response = client.post(
@@ -201,9 +201,9 @@ def test_dashboard_mcp_add_rejects_dangerous_entry():
 
 
 def test_profile_mcp_write_skips_dangerous_entry(tmp_path):
-    from zed_cli.config import load_config
-    from zed_cli.web_server import MCPServerCreate, _write_profile_mcp_servers
-    from zed_constants import reset_zed_home_override, set_zed_home_override
+    from hermes_cli.config import load_config
+    from hermes_cli.web_server import MCPServerCreate, _write_profile_mcp_servers
+    from hermes_constants import reset_zed_home_override, set_zed_home_override
 
     profile_dir = tmp_path / "profile"
     profile_dir.mkdir()
@@ -222,3 +222,4 @@ def test_profile_mcp_write_skips_dangerous_entry(tmp_path):
         reset_zed_home_override(token)
     assert "evil" not in config.get("mcp_servers", {})
     assert "clean" in config.get("mcp_servers", {})
+

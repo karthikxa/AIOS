@@ -10,7 +10,7 @@ import time
 import pytest
 
 from acp_adapter.provenance import build_session_provenance, session_provenance_meta
-from zed_state import SessionDB
+from hermes_state import SessionDB
 
 
 @pytest.fixture()
@@ -101,3 +101,4 @@ def test_meta_wrapper_shape(db):
     assert set(meta.keys()) == {"zed"}
     assert "sessionProvenance" in meta["zed"]
     assert meta["zed"]["sessionProvenance"]["currentZedSessionId"] == "root1"
+

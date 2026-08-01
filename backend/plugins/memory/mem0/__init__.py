@@ -44,7 +44,7 @@ def _load_config() -> dict:
     individual keys.  This avoids a silent failure when the JSON file exists
     but is missing fields like ``api_key`` that the user set in ``.env``.
     """
-    from zed_constants import get_zed_home
+    from hermes_constants import get_zed_home
 
     config = {
         "api_key": os.environ.get("MEM0_API_KEY", ""),
@@ -372,3 +372,4 @@ class Mem0MemoryProvider(MemoryProvider):
 def register(ctx) -> None:
     """Register Mem0 as a memory provider plugin."""
     ctx.register_memory_provider(Mem0MemoryProvider())
+

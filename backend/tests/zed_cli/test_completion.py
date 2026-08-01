@@ -9,7 +9,7 @@ import tempfile
 
 import pytest
 
-from zed_cli.completion import _walk, generate_bash, generate_zsh, generate_fish
+from hermes_cli.completion import _walk, generate_bash, generate_zsh, generate_fish
 
 
 # ---------------------------------------------------------------------------
@@ -232,7 +232,7 @@ class TestSubcommandDrift:
         multi-word session names after -c/-r are never accidentally split.
         """
         import inspect
-        from zed_cli.main import _coalesce_session_name_args
+        from hermes_cli.main import _coalesce_session_name_args
 
         source = inspect.getsource(_coalesce_session_name_args)
         match = re.search(r'_SUBCOMMANDS\s*=\s*\{([^}]+)\}', source, re.DOTALL)
@@ -317,3 +317,4 @@ class TestProfileCompletion:
         count = out.count("(__zed_profiles)")
         # At least the -p flag + the profile action completions
         assert count >= 2, f"Expected >=2 profile completion entries, got {count}"
+

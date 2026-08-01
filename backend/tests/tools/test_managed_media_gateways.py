@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from zed_cli.nous_account import NousPortalAccountInfo
+from hermes_cli.nous_account import NousPortalAccountInfo
 
 
 TOOLS_DIR = Path(__file__).resolve().parents[2] / "tools"
@@ -51,7 +51,7 @@ def _enable_managed_nous_tools(monkeypatch):
     """Patch the source modules so managed_nous_tools_enabled() returns True
     even after tool modules are dynamically reloaded."""
     monkeypatch.setattr(
-        "zed_cli.nous_account.get_nous_portal_account_info",
+        "hermes_cli.nous_account.get_nous_portal_account_info",
         lambda: NousPortalAccountInfo(
             logged_in=True,
             source="jwt",
@@ -516,3 +516,4 @@ def test_video_gen_happy_horse_uses_alibaba_namespace():
     hh = plugin_mod.FAL_FAMILIES["happy-horse"]
     assert hh["text_endpoint"] == "alibaba/happy-horse/text-to-video"
     assert hh["image_endpoint"] == "alibaba/happy-horse/image-to-video"
+

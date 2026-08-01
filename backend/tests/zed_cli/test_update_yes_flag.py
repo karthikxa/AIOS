@@ -1,4 +1,4 @@
-"""Tests for `hermes update --yes / -y` — assume yes for interactive prompts.
+﻿"""Tests for `hermes update --yes / -y` â€” assume yes for interactive prompts.
 
 Covers:
   1. argparse parses the flag
@@ -12,7 +12,7 @@ import subprocess
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from zed_cli.main import cmd_update
+from hermes_cli.main import cmd_update
 
 
 def _make_run_side_effect(
@@ -37,7 +37,7 @@ def _make_run_side_effect(
         if "status" in joined and "--porcelain" in joined:
             out = " M zed_cli/main.py\n" if dirty else ""
             return subprocess.CompletedProcess(cmd, 0, stdout=out, stderr="")
-        # `git stash list` — return a stash ref when dirty (so _stash_local_changes
+        # `git stash list` â€” return a stash ref when dirty (so _stash_local_changes
         # gets something to return). _stash_local_changes_if_needed is what we
         # actually patch in tests that exercise restore, so this is a catch-all.
         if "stash" in joined and "list" in joined:
@@ -50,10 +50,10 @@ def _make_run_side_effect(
 class TestUpdateYesConfigMigration:
     """--yes auto-answers the config-migration prompt and skips API-key prompts."""
 
-    @patch("zed_cli.config.migrate_config")
-    @patch("zed_cli.config.check_config_version", return_value=(1, 2))
-    @patch("zed_cli.config.get_missing_config_fields", return_value=[])
-    @patch("zed_cli.config.get_missing_env_vars", return_value=["NEW_KEY"])
+    @patch("hermes_cli.config.migrate_config")
+    @patch("hermes_cli.config.check_config_version", return_value=(1, 2))
+    @patch("hermes_cli.config.get_missing_config_fields", return_value=[])
+    @patch("hermes_cli.config.get_missing_env_vars", return_value=["NEW_KEY"])
     @patch("shutil.which", return_value=None)
     @patch("subprocess.run")
     def test_yes_auto_migrates_without_input(
@@ -78,7 +78,7 @@ class TestUpdateYesConfigMigration:
             # Never prompted the user.
             mock_input.assert_not_called()
 
-        # migrate_config was invoked with interactive=False — API-key prompts
+        # migrate_config was invoked with interactive=False â€” API-key prompts
         # are suppressed, matching gateway-mode semantics.
         assert mock_migrate.call_count == 1
         _, kwargs = mock_migrate.call_args
@@ -89,10 +89,10 @@ class TestUpdateYesConfigMigration:
         # The "Would you like to configure them now?" prompt text never appears.
         assert "Would you like to configure them now?" not in out
 
-    @patch("zed_cli.config.migrate_config")
-    @patch("zed_cli.config.check_config_version", return_value=(1, 2))
-    @patch("zed_cli.config.get_missing_config_fields", return_value=[])
-    @patch("zed_cli.config.get_missing_env_vars", return_value=["NEW_KEY"])
+    @patch("hermes_cli.config.migrate_config")
+    @patch("hermes_cli.config.check_config_version", return_value=(1, 2))
+    @patch("hermes_cli.config.get_missing_config_fields", return_value=[])
+    @patch("hermes_cli.config.get_missing_env_vars", return_value=["NEW_KEY"])
     @patch("shutil.which", return_value=None)
     @patch("subprocess.run")
     def test_no_yes_flag_still_prompts_in_tty(
@@ -114,9 +114,9 @@ class TestUpdateYesConfigMigration:
         args = SimpleNamespace(yes=False)
 
         # Patch ``sys.stdin.isatty`` and ``sys.stdout.isatty`` directly on the
-        # real ``sys`` module instead of replacing ``zed_cli.main.sys`` with
+        # real ``sys`` module instead of replacing ``hermes_cli.main.sys`` with
         # a MagicMock. The MagicMock approach was flaky under ``pytest-xdist``
-        # — a sibling test that imported ``zed_cli.main`` first could leave
+        # â€” a sibling test that imported ``hermes_cli.main`` first could leave
         # a different ``sys`` reference resolved inside the function and the
         # mock would never be consulted, with CI then taking the
         # "Non-interactive session" branch instead of prompting.
@@ -134,4 +134,5 @@ class TestUpdateYesConfigMigration:
 
 class TestUpdateYesStashRestore:
     """--yes auto-restores the pre-update autostash without prompting."""
+
 

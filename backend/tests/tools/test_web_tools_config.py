@@ -675,7 +675,7 @@ class TestCheckWebApiKey:
             return "fresh-token"
 
         monkeypatch.setattr(
-            "zed_cli.auth.resolve_nous_access_token",
+            "hermes_cli.auth.resolve_nous_access_token",
             _record_refresh,
         )
 
@@ -709,3 +709,4 @@ def test_web_requires_env_includes_exa_key():
     from tools.web_tools import _web_requires_env
 
     assert "EXA_API_KEY" in _web_requires_env()
+

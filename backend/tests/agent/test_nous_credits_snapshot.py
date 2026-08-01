@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from agent.account_usage import build_nous_credits_snapshot
-from zed_cli.nous_account import (
+from hermes_cli.nous_account import (
     NousPaidServiceAccessInfo,
     NousPortalAccountInfo,
     NousPortalSubscriptionInfo,
@@ -163,3 +163,4 @@ def test_topup_line_falls_back_to_legacy_when_slug_null():
     # Null slug â†’ legacy page (which forwards the param); never /orgs/None/...
     assert "https://portal.example.test/billing?topup=open" in blob
     assert "/orgs/" not in blob
+

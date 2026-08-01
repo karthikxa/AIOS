@@ -347,7 +347,7 @@ class TestHistoryDisplay:
 
     def test_resume_updates_zed_session_id_env_and_context(self, tmp_path):
         from gateway.session_context import _UNSET, _VAR_MAP, get_session_env
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         cli = _make_cli()
         cli.session_id = "current_session"
@@ -557,7 +557,7 @@ class TestRootLevelProviderOverride:
 
     def test_normalize_root_model_keys_moves_to_model(self):
         """_normalize_root_model_keys migrates root keys into model section."""
-        from zed_cli.config import _normalize_root_model_keys
+        from hermes_cli.config import _normalize_root_model_keys
 
         config = {
             "provider": "opencode-go",
@@ -576,7 +576,7 @@ class TestRootLevelProviderOverride:
 
     def test_normalize_root_model_keys_does_not_override_existing(self):
         """Existing model.provider is never overridden by root-level key."""
-        from zed_cli.config import _normalize_root_model_keys
+        from hermes_cli.config import _normalize_root_model_keys
 
         config = {
             "provider": "stale-provider",
@@ -591,7 +591,7 @@ class TestRootLevelProviderOverride:
 
     def test_normalize_root_context_length_migrates_to_model(self):
         """Root-level context_length is migrated into the model section."""
-        from zed_cli.config import _normalize_root_model_keys
+        from hermes_cli.config import _normalize_root_model_keys
 
         config = {
             "context_length": 128000,
@@ -605,7 +605,7 @@ class TestRootLevelProviderOverride:
 
     def test_normalize_root_context_length_does_not_override_existing(self):
         """Existing model.context_length is not overridden by root-level key."""
-        from zed_cli.config import _normalize_root_model_keys
+        from hermes_cli.config import _normalize_root_model_keys
 
         config = {
             "context_length": 256000,
@@ -620,7 +620,7 @@ class TestRootLevelProviderOverride:
 
     def test_normalize_root_context_length_with_string_model(self):
         """Root-level context_length is migrated even when model is a string."""
-        from zed_cli.config import _normalize_root_model_keys
+        from hermes_cli.config import _normalize_root_model_keys
 
         config = {
             "context_length": 128000,
@@ -647,3 +647,4 @@ class TestProviderResolution:
         cli = _make_cli()
         assert isinstance(cli.model, str)
         assert isinstance(cli.model, str) and '/' in cli.model
+

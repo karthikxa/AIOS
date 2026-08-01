@@ -11,7 +11,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from zed_cli.config import get_zed_home
+from hermes_cli.config import get_zed_home
 from utils import atomic_json_write
 
 logger = logging.getLogger(__name__)
@@ -417,3 +417,4 @@ def format_directory_for_display() -> str:
     lines.append('Bare platform name (e.g. "telegram") sends to home channel.')
 
     return "\n".join(lines)
+

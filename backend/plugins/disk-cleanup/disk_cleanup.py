@@ -29,7 +29,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 try:
-    from zed_constants import get_zed_home
+    from hermes_constants import get_zed_home
 except Exception:  # pragma: no cover â€” plugin may load before constants resolves
     import os
 
@@ -581,3 +581,4 @@ def guess_category(path: Path) -> Optional[str]:
     if any(name.endswith(sfx) for sfx in _TEST_SUFFIXES):
         return "test"
     return None
+

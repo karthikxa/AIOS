@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from zed_cli.profiles import _get_default_zed_home
+from hermes_cli.profiles import _get_default_zed_home
 
 import pytest
 
@@ -448,35 +448,35 @@ class TestResolveActiveHost:
     def test_profile_name_derives_host(self):
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("ZED_HONCHO_HOST", None)
-            with patch("zed_cli.profiles.get_active_profile_name", return_value="coder"):
+            with patch("hermes_cli.profiles.get_active_profile_name", return_value="coder"):
                 assert resolve_active_host() == "zed_coder"
 
     def test_default_profile_returns_zed(self):
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("ZED_HONCHO_HOST", None)
-            with patch("zed_cli.profiles.get_active_profile_name", return_value="default"):
+            with patch("hermes_cli.profiles.get_active_profile_name", return_value="default"):
                 assert resolve_active_host() == "zed"
 
     def test_custom_profile_returns_zed(self):
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("ZED_HONCHO_HOST", None)
-            with patch("zed_cli.profiles.get_active_profile_name", return_value="custom"):
+            with patch("hermes_cli.profiles.get_active_profile_name", return_value="custom"):
                 assert resolve_active_host() == "zed"
 
     def test_profiles_import_failure_falls_back(self):
         import sys
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("ZED_HONCHO_HOST", None)
-            # Temporarily remove zed_cli.profiles to simulate import failure
-            saved = sys.modules.get("zed_cli.profiles")
-            sys.modules["zed_cli.profiles"] = None  # type: ignore
+            # Temporarily remove hermes_cli.profiles to simulate import failure
+            saved = sys.modules.get("hermes_cli.profiles")
+            sys.modules["hermes_cli.profiles"] = None  # type: ignore
             try:
                 assert resolve_active_host() == "zed"
             finally:
                 if saved is not None:
-                    sys.modules["zed_cli.profiles"] = saved
+                    sys.modules["hermes_cli.profiles"] = saved
                 else:
-                    sys.modules.pop("zed_cli.profiles", None)
+                    sys.modules.pop("hermes_cli.profiles", None)
 
 
 class TestProfileScopedConfig:
@@ -644,7 +644,7 @@ class TestGetHonchoClient:
         )
 
         with patch("honcho.Honcho", return_value=fake_honcho) as mock_honcho, \
-             patch("zed_cli.config.load_config", return_value={"honcho": {"timeout": 88}}):
+             patch("hermes_cli.config.load_config", return_value={"honcho": {"timeout": 88}}):
             client = get_honcho_client(cfg)
 
         assert client is fake_honcho
@@ -666,7 +666,7 @@ class TestGetHonchoClient:
         )
 
         with patch("honcho.Honcho", return_value=fake_honcho) as mock_honcho, \
-             patch("zed_cli.config.load_config", return_value={}):
+             patch("hermes_cli.config.load_config", return_value={}):
             client = get_honcho_client(cfg)
 
         assert client is fake_honcho
@@ -686,7 +686,7 @@ class TestGetHonchoClient:
         )
 
         with patch("honcho.Honcho", return_value=fake_honcho) as mock_honcho, \
-             patch("zed_cli.config.load_config", return_value={"honcho": {"request_timeout": "77.5"}}):
+             patch("hermes_cli.config.load_config", return_value={"honcho": {"request_timeout": "77.5"}}):
             client = get_honcho_client(cfg)
 
         assert client is fake_honcho
@@ -941,7 +941,7 @@ class TestGetHonchoClientBaseUrlDoublePrefixFix:
         )
 
         with patch("honcho.Honcho", return_value=fake_honcho) as mock_honcho, \
-             patch("zed_cli.config.load_config", return_value={}):
+             patch("hermes_cli.config.load_config", return_value={}):
             get_honcho_client(cfg)
 
         mock_honcho.assert_called_once()
@@ -965,7 +965,7 @@ class TestGetHonchoClientBaseUrlDoublePrefixFix:
         )
 
         with patch("honcho.Honcho", return_value=fake_honcho) as mock_honcho, \
-             patch("zed_cli.config.load_config", return_value={}):
+             patch("hermes_cli.config.load_config", return_value={}):
             get_honcho_client(cfg)
 
         mock_honcho.assert_called_once()
@@ -989,7 +989,7 @@ class TestGetHonchoClientBaseUrlDoublePrefixFix:
         )
 
         with patch("honcho.Honcho", return_value=fake_honcho) as mock_honcho, \
-             patch("zed_cli.config.load_config", return_value={}):
+             patch("hermes_cli.config.load_config", return_value={}):
             get_honcho_client(cfg)
 
         mock_honcho.assert_called_once()
@@ -1014,7 +1014,7 @@ class TestGetHonchoClientBaseUrlDoublePrefixFix:
         )
 
         with patch("honcho.Honcho", return_value=fake_honcho) as mock_honcho, \
-             patch("zed_cli.config.load_config", return_value={}):
+             patch("hermes_cli.config.load_config", return_value={}):
             get_honcho_client(cfg)
 
         mock_honcho.assert_called_once()
@@ -1057,7 +1057,7 @@ class TestGetHonchoClientBaseUrlDoublePrefixFix:
         )
 
         with patch("honcho.Honcho", return_value=fake_honcho) as mock_honcho, \
-             patch("zed_cli.config.load_config", return_value={}):
+             patch("hermes_cli.config.load_config", return_value={}):
             get_honcho_client(cfg)
 
         mock_honcho.assert_called_once()
@@ -1081,7 +1081,7 @@ class TestGetHonchoClientBaseUrlDoublePrefixFix:
         )
 
         with patch("honcho.Honcho", return_value=fake_honcho) as mock_honcho, \
-             patch("zed_cli.config.load_config", return_value={}):
+             patch("hermes_cli.config.load_config", return_value={}):
             get_honcho_client(cfg)
 
         mock_honcho.assert_called_once()
@@ -1089,3 +1089,4 @@ class TestGetHonchoClientBaseUrlDoublePrefixFix:
         assert passed_base_url == "http://127.0.0.1:38000", (
             f"Expected 'http://127.0.0.1:38000', got {passed_base_url!r}"
         )
+

@@ -311,6 +311,7 @@ export function useMessageStream({
 
       if (!nativeSubagentSessionsRef.current.has(sessionId)) {
         for (const subagentPayload of delegateTaskPayloads(payload, phase, sourceEventType)) {
+          pruneDelegateFallbackSubagents(sessionId)
           upsertSubagent(
             sessionId,
             subagentPayload,

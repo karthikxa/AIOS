@@ -17,7 +17,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from zed_cli import main as cli_main
+from hermes_cli import main as cli_main
 
 
 # Tests in this module either exercise the REAL _detect_concurrent_zed_instances
@@ -460,7 +460,7 @@ def test_pause_windows_gateways_for_update_stops_profile_and_unmapped_pids(
     capsys,
 ):
     import gateway.status as status_mod
-    import zed_cli.gateway as gateway_mod
+    import hermes_cli.gateway as gateway_mod
 
     profile_home = tmp_path / "profiles" / "work"
     profile_home.mkdir(parents=True)
@@ -513,7 +513,7 @@ def test_resume_windows_gateways_after_update_relaunches_paused_profiles(
     monkeypatch,
     capsys,
 ):
-    import zed_cli.gateway as gateway_mod
+    import hermes_cli.gateway as gateway_mod
 
     relaunched = []
     monkeypatch.setattr(
@@ -622,3 +622,4 @@ def test_cmd_update_force_bypasses_concurrent_check(_winp, tmp_path):
 
     # When --force is set, we should not have even consulted psutil.
     detect.assert_not_called()
+

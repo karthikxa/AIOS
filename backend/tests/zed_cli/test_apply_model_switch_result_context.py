@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-from zed_cli.model_switch import ModelSwitchResult
+from hermes_cli.model_switch import ModelSwitchResult
 
 
 class _FakeModelInfo:
@@ -150,3 +150,4 @@ def test_picker_path_falls_back_to_model_info_when_resolver_empty(monkeypatch):
     assert "1,050,000" in ctx_line, (
         f"resolver-empty path should fall back to ModelInfo, got: {ctx_line!r}"
     )
+

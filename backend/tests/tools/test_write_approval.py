@@ -26,7 +26,7 @@ def zed_home(monkeypatch):
 
 
 def _set_approval(subsystem, enabled):
-    import zed_cli.config as cfg
+    import hermes_cli.config as cfg
     c = cfg.load_config()
     c.setdefault(subsystem, {})["write_approval"] = enabled
     cfg.save_config(c)
@@ -185,14 +185,14 @@ def test_pending_store_roundtrip(zed_home):
 # ---------------------------------------------------------------------------
 
 def test_handle_pending_list_empty(zed_home):
-    from zed_cli.write_approval_commands import handle_pending_subcommand
+    from hermes_cli.write_approval_commands import handle_pending_subcommand
     from tools import write_approval as wa
     out = handle_pending_subcommand(wa.MEMORY, ["pending"])
     assert "No pending memory" in out
 
 
 def test_handle_approve_all(zed_home):
-    from zed_cli.write_approval_commands import handle_pending_subcommand
+    from hermes_cli.write_approval_commands import handle_pending_subcommand
     from tools.memory_tool import MemoryStore
     from tools import write_approval as wa
     store = MemoryStore(); store.load_from_disk()
@@ -207,7 +207,7 @@ def test_handle_approve_all(zed_home):
 
 
 def test_handle_reject(zed_home):
-    from zed_cli.write_approval_commands import handle_pending_subcommand
+    from hermes_cli.write_approval_commands import handle_pending_subcommand
     from tools import write_approval as wa
     rec = wa.stage_write("skills", {"action": "create", "name": "s"},
                          summary="create s", origin="background_review")
@@ -217,7 +217,7 @@ def test_handle_reject(zed_home):
 
 
 def test_handle_approval_on(zed_home):
-    from zed_cli.write_approval_commands import handle_pending_subcommand
+    from hermes_cli.write_approval_commands import handle_pending_subcommand
     from tools import write_approval as wa
     captured = {}
     out = handle_pending_subcommand(
@@ -229,7 +229,7 @@ def test_handle_approval_on(zed_home):
 
 
 def test_handle_approval_off(zed_home):
-    from zed_cli.write_approval_commands import handle_pending_subcommand
+    from hermes_cli.write_approval_commands import handle_pending_subcommand
     from tools import write_approval as wa
     captured = {}
     out = handle_pending_subcommand(
@@ -242,7 +242,7 @@ def test_handle_approval_off(zed_home):
 
 def test_handle_mode_alias_still_works(zed_home):
     # 'mode' is kept as a back-compat alias for 'approval'.
-    from zed_cli.write_approval_commands import handle_pending_subcommand
+    from hermes_cli.write_approval_commands import handle_pending_subcommand
     from tools import write_approval as wa
     captured = {}
     out = handle_pending_subcommand(
@@ -254,7 +254,7 @@ def test_handle_mode_alias_still_works(zed_home):
 
 
 def test_handle_approval_invalid(zed_home):
-    from zed_cli.write_approval_commands import handle_pending_subcommand
+    from hermes_cli.write_approval_commands import handle_pending_subcommand
     from tools import write_approval as wa
     out = handle_pending_subcommand(wa.MEMORY, ["approval", "bogus"],
                                     set_mode_fn=lambda enabled: None)
@@ -262,7 +262,7 @@ def test_handle_approval_invalid(zed_home):
 
 
 def test_handle_unknown_subcommand_returns_none(zed_home):
-    from zed_cli.write_approval_commands import handle_pending_subcommand
+    from hermes_cli.write_approval_commands import handle_pending_subcommand
     from tools import write_approval as wa
     # An unrecognized /skills subcommand (e.g. 'search') must return None so
     # the CLI falls through to the skills hub.
@@ -382,3 +382,4 @@ def test_memory_invalid_params_rejected_before_staging(zed_home):
     r = json.loads(memory_tool("add", "memory", None, store=store))
     assert r["success"] is False
     assert wa.pending_count("memory") == 0
+

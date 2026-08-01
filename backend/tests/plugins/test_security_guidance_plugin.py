@@ -320,13 +320,14 @@ class TestPluginDiscovery:
 
         # Wipe any cached plugin state from earlier tests in this worker.
         for k in list(sys.modules):
-            if k.startswith(("zed_plugins", "zed_cli.plugins")):
+            if k.startswith(("zed_plugins", "hermes_cli.plugins")):
                 del sys.modules[k]
 
-        from zed_cli.plugins import _ensure_plugins_discovered
+        from hermes_cli.plugins import _ensure_plugins_discovered
 
         mgr = _ensure_plugins_discovered(force=True)
         loaded = set()
         if hasattr(mgr, "_plugins"):
             loaded = set(mgr._plugins.keys())
         assert "security-guidance" in loaded
+

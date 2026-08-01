@@ -20,7 +20,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 
 # File + directory layout (under $ZED_HOME):
 #
@@ -321,3 +321,4 @@ def stop(*, reason: str = "requested") -> Dict[str, Any]:
         "meetingId": active.get("meeting_id"),
         "transcriptPath": str(transcript_path) if transcript_path else None,
     }
+

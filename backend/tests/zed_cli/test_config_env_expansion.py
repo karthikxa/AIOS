@@ -1,7 +1,7 @@
 ﻿"""Tests for ${ENV_VAR} substitution in config.yaml values."""
 
 import pytest
-from zed_cli.config import _expand_env_vars, load_config
+from hermes_cli.config import _expand_env_vars, load_config
 
 
 class TestExpandEnvVars:
@@ -71,7 +71,7 @@ class TestLoadConfigExpansion:
         monkeypatch.setenv("GOOGLE_API_KEY", "gsk-test-key")
         monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "1234567:ABC-token")
         # Patch the imported function's own globals. Other tests may reload
-        # zed_cli.config, making string-target monkeypatches hit a different
+        # hermes_cli.config, making string-target monkeypatches hit a different
         # module object than this collection-time imported load_config().
         monkeypatch.setitem(load_config.__globals__, "get_config_path", lambda: config_file)
 
@@ -131,3 +131,4 @@ class TestLoadCliConfigExpansion:
         config = load_cli_config()
 
         assert config["auxiliary"]["vision"]["api_key"] == "${UNSET_CLI_VAR_ABC}"
+

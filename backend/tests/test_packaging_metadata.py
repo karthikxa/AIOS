@@ -41,11 +41,11 @@ def test_every_on_disk_subpackage_is_covered_by_packages_find():
 
     ``[tool.setuptools.packages.find]`` ``include`` is hand-maintained. Every
     top-level package is listed twice â€” bare (``zed_cli``) for the package
-    itself and ``zed_cli.*`` for its subpackages â€” EXCEPT when someone
-    forgets the wildcard. v0.15.x listed ``zed_cli`` without ``zed_cli.*``,
+    itself and ``hermes_cli.*`` for its subpackages â€” EXCEPT when someone
+    forgets the wildcard. v0.15.x listed ``zed_cli`` without ``hermes_cli.*``,
     so the wheel shipped ``zed_cli/*.py`` but dropped the ``dashboard_auth``
     and ``proxy`` subpackages. The dashboard then died on every install with
-    ``ModuleNotFoundError: No module named 'zed_cli.dashboard_auth'``.
+    ``ModuleNotFoundError: No module named 'hermes_cli.dashboard_auth'``.
 
     This drives setuptools' own discovery against the live tree: every package
     that exists on disk and would be found by a permissive ``<name>.*`` scan
@@ -264,4 +264,5 @@ def test_locale_catalogs_ship_in_both_wheel_and_sdist():
     # Every on-disk catalog has the .yaml extension the globs above match.
     on_disk = list((REPO_ROOT / "locales").glob("*.yaml"))
     assert on_disk, "expected locales/*.yaml catalogs on disk"
+
 

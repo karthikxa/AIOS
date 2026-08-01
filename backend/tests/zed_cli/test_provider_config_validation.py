@@ -7,7 +7,7 @@ accepted as base_url, and unknown keys go unreported.
 import logging
 
 
-from zed_cli.config import _normalize_custom_provider_entry
+from hermes_cli.config import _normalize_custom_provider_entry
 
 
 class TestNormalizeCustomProviderEntry:
@@ -191,3 +191,4 @@ class TestNormalizeCustomProviderEntry:
         result = _normalize_custom_provider_entry(entry)
         assert result is not None
         assert "models" not in result
+

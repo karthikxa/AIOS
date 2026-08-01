@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from zed_state import SessionDB
+from hermes_state import SessionDB
 from gateway.config import GatewayConfig
 from gateway.session import SessionStore
 
@@ -80,3 +80,4 @@ def test_rewind_clamps_negative_count_to_one(store):
     res = store.rewind_session(sid, -5)
     assert res["turns_undone"] == 1
     assert res["target_text"] == "q3"
+

@@ -9,7 +9,7 @@ no messages, no title, and no child sessions.
 
 import pytest
 
-from zed_state import SessionDB
+from hermes_state import SessionDB
 
 
 @pytest.fixture()
@@ -159,3 +159,4 @@ class TestCLIDiscardSessionIfEmpty:
         cli.conversation_history = [{"role": "user", "content": "hello"}]
         assert cli._discard_session_if_empty("unflushed") is False
         assert db.get_session("unflushed") is not None
+

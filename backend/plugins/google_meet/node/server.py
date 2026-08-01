@@ -30,7 +30,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from plugins.google_meet.node import protocol as _proto
 
 
@@ -198,3 +198,4 @@ class NodeServer:
             # Run until cancelled.
             import asyncio
             await asyncio.Future()
+

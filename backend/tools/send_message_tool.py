@@ -1933,3 +1933,4 @@ from tools.registry import tool_error
 #   - the standalone MCP server (mcp_serve.py), which is an opt-in surface
 # Those callers import the helpers directly; none of them need the registry
 # entry.
+

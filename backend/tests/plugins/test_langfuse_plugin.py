@@ -49,7 +49,7 @@ class TestManifest:
 class TestDiscovery:
     def test_plugin_is_discovered_as_standalone_opt_in(self, tmp_path, monkeypatch):
         """Scanner should find the plugin but NOT load it by default."""
-        from zed_cli import plugins as plugins_mod
+        from hermes_cli import plugins as plugins_mod
 
         # Isolated ZED_HOME so we don't read the developer's config.yaml.
         home = tmp_path / ".zed"
@@ -133,15 +133,15 @@ class TestRuntimeGate:
         ):
             monkeypatch.delenv(k, raising=False)
 
-        # Drop any cached import of zed_cli.config.
-        sys.modules.pop("zed_cli.config", None)
+        # Drop any cached import of hermes_cli.config.
+        sys.modules.pop("hermes_cli.config", None)
 
         langfuse_plugin = self._fresh_plugin()
         for _ in range(20):
             langfuse_plugin._get_langfuse()
 
-        assert "zed_cli.config" not in sys.modules, (
-            "langfuse plugin imported zed_cli.config â€” regression toward "
+        assert "hermes_cli.config" not in sys.modules, (
+            "langfuse plugin imported hermes_cli.config â€” regression toward "
             "the rejected per-hook load_config() design"
         )
 
@@ -1021,3 +1021,4 @@ class TestUsageFromSanitizedResponse:
 
         assert seen["resp"] is resp
         assert captured["usage_details"] == {"input": 7, "output": 3}
+

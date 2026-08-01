@@ -29,7 +29,7 @@ import contextlib
 
 import pytest
 
-from zed_cli import auth as auth_mod
+from hermes_cli import auth as auth_mod
 
 
 # ---------------------------------------------------------------------------
@@ -682,3 +682,4 @@ def test_ssh_hint_mentions_manual_paste_for_non_ssh_remotes(monkeypatch):
     rendered = buf.getvalue()
     assert "--manual-paste" in rendered
     assert "Cloud Shell" in rendered or "Codespaces" in rendered
+

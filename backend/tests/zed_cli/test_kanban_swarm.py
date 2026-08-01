@@ -1,6 +1,6 @@
 ﻿
-from zed_cli import kanban_db as kb
-from zed_cli.kanban_swarm import (
+from hermes_cli import kanban_db as kb
+from hermes_cli.kanban_swarm import (
     SwarmWorkerSpec,
     create_swarm,
     latest_blackboard,
@@ -115,3 +115,4 @@ def test_swarm_verifier_and_synthesis_are_dependency_gated(tmp_path):
         assert kb.get_task(conn, created.synthesizer_id).status == "ready"
     finally:
         conn.close()
+

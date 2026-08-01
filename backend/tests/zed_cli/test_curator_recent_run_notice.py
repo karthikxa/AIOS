@@ -27,11 +27,11 @@ def curator_env(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv("ZED_HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
-    import zed_constants
+    import hermes_constants
     importlib.reload(zed_constants)
     from agent import curator
     importlib.reload(curator)
-    from zed_cli import main as zed_main
+    from hermes_cli import main as zed_main
     importlib.reload(zed_main)
 
     yield {
@@ -160,3 +160,4 @@ def test_format_time_ago_buckets(curator_env):
     assert fmt((now - timedelta(hours=3)).isoformat()) == "3h ago"
     assert fmt((now - timedelta(days=2)).isoformat()) == "2d ago"
     assert fmt("not-a-real-iso-string") == "recently"
+

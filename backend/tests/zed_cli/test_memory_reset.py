@@ -36,7 +36,7 @@ def _run_memory_reset(target="all", yes=False, monkeypatch=None, confirm_input="
 
     Simulates what happens when `zed memory reset` is run.
     """
-    from zed_constants import get_zed_home
+    from hermes_constants import get_zed_home
 
     mem_dir = get_zed_home() / "memories"
     files_to_reset = []
@@ -152,3 +152,4 @@ class TestMemoryReset:
         # The memories dir won't exist; get_zed_home() / "memories" won't have files
         result = _run_memory_reset(target="all", yes=True)
         assert result == "nothing"
+

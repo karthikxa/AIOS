@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-import zed_cli.auth as auth
-from zed_cli.auth import (
+import hermes_cli.auth as auth
+from hermes_cli.auth import (
     NOUS_BILLING_MANAGE_SCOPE,
     nous_token_has_billing_scope,
     step_up_nous_billing_scope,
@@ -191,3 +191,4 @@ def test_device_login_fires_on_verification_before_polling(monkeypatch):
     assert order[:2] == ["verify", "poll"], "callback must fire before polling"
     assert seen["url"] == "https://portal.example/device?code=ABCD"
     assert seen["code"] == "ABCD-1234"
+

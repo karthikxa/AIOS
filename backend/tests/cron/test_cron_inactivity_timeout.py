@@ -309,5 +309,6 @@ class TestSysPathOrdering:
 
     def test_zed_constants_importable(self):
         """zed_constants should be importable from cron context."""
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         assert callable(get_zed_home)
+

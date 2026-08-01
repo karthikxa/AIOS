@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, patch, call
 
 import pytest
 
-from zed_state import SessionDB
+from hermes_state import SessionDB
 from acp_adapter.session import SessionManager
 
 
@@ -28,7 +28,7 @@ def _mock_agent():
 
 
 # ---------------------------------------------------------------------------
-# zed_state.SessionDB.update_session_meta â€” unit tests
+# hermes_state.SessionDB.update_session_meta â€” unit tests
 # ---------------------------------------------------------------------------
 
 class TestUpdateSessionMeta:
@@ -199,3 +199,4 @@ class TestPersistRoundTrip:
         assert row["model"] == "stored-model", (
             "COALESCE must preserve the existing model when new value is NULL"
         )
+

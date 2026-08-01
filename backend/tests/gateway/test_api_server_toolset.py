@@ -59,7 +59,7 @@ class TestZedApiServerToolset:
 
 class TestApiServerPlatformConfig:
     def test_platforms_dict_includes_api_server(self):
-        from zed_cli.tools_config import PLATFORMS
+        from hermes_cli.tools_config import PLATFORMS
         assert "api_server" in PLATFORMS
         assert PLATFORMS["api_server"]["default_toolset"] == "zed-api-server"
 
@@ -124,3 +124,4 @@ class TestApiServerAdapterToolset:
             call_kwargs = mock_agent_cls.call_args
             toolsets = call_kwargs.kwargs.get("enabled_toolsets")
             assert sorted(toolsets) == ["terminal", "web"]
+

@@ -21,7 +21,7 @@ from unittest.mock import MagicMock, patch
 
 def _make_session_db(tmp_path):
     """Create a real SessionDB for integration-style tests."""
-    from zed_state import SessionDB
+    from hermes_state import SessionDB
     db_path = tmp_path / "test_state.db"
     return SessionDB(db_path=db_path)
 
@@ -604,3 +604,4 @@ class TestFinalizeOrphanedCompressionSessions:
 
         session = db.get_session("titled-ghost")
         assert session["end_reason"] == "orphaned_compression"
+

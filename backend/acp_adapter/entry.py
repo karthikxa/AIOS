@@ -29,7 +29,7 @@ import asyncio
 import logging
 import sys
 from pathlib import Path
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 
 
 # Methods clients send as periodic liveness probes. They are not part of the
@@ -95,7 +95,7 @@ def _setup_logging() -> None:
 
 def _load_env() -> None:
     """Load .env from ZED_HOME (default ``~/.zed``)."""
-    from zed_cli.env_loader import load_zed_dotenv
+    from hermes_cli.env_loader import load_zed_dotenv
 
     zed_home = get_zed_home()
     loaded = load_zed_dotenv(zed_home=zed_home)
@@ -142,7 +142,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def _print_version() -> None:
-    from zed_cli import __version__ as zed_version
+    from hermes_cli import __version__ as zed_version
 
     print(zed_version)
 
@@ -155,7 +155,7 @@ def _run_check() -> None:
 
 
 def _run_setup() -> None:
-    from zed_cli.main import main as zed_main
+    from hermes_cli.main import main as zed_main
 
     old_argv = sys.argv[:]
     try:
@@ -189,7 +189,7 @@ def _run_setup_browser(assume_yes: bool = False) -> int:
 
     Returns 0 on success, 1 on failure.
     """
-    from zed_cli.dep_ensure import ensure_dependency
+    from hermes_cli.dep_ensure import ensure_dependency
 
     try:
         node_ok = ensure_dependency("node", interactive=not assume_yes)
@@ -264,3 +264,4 @@ def main(argv: list[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
+

@@ -28,7 +28,7 @@ class TestExitSummaryResumeHint:
 
     def test_resume_hint_no_profile_flag_on_default(self, capsys):
         cli_obj = _make_cli()
-        with patch("zed_cli.profiles.get_active_profile_name", return_value="default"):
+        with patch("hermes_cli.profiles.get_active_profile_name", return_value="default"):
             cli_obj._print_exit_summary()
         out = capsys.readouterr().out
         # No `-p` for the default profile.
@@ -37,7 +37,7 @@ class TestExitSummaryResumeHint:
 
     def test_resume_hint_no_profile_flag_on_custom(self, capsys):
         cli_obj = _make_cli()
-        with patch("zed_cli.profiles.get_active_profile_name", return_value="custom"):
+        with patch("hermes_cli.profiles.get_active_profile_name", return_value="custom"):
             cli_obj._print_exit_summary()
         out = capsys.readouterr().out
         # "custom" is the standard ZED_HOME indicator â€” no -p needed.
@@ -46,7 +46,7 @@ class TestExitSummaryResumeHint:
 
     def test_resume_hint_includes_profile_flag_for_named_profile(self, capsys):
         cli_obj = _make_cli()
-        with patch("zed_cli.profiles.get_active_profile_name", return_value="dev"):
+        with patch("hermes_cli.profiles.get_active_profile_name", return_value="dev"):
             cli_obj._print_exit_summary()
         out = capsys.readouterr().out
         assert "zed --resume 20260524_000001_abc123 -p dev" in out
@@ -60,7 +60,7 @@ class TestExitSummaryResumeHint:
         fake_db.get_session_title.return_value = "My Cool Session"
         cli_obj._session_db = fake_db
 
-        with patch("zed_cli.profiles.get_active_profile_name", return_value="dev"):
+        with patch("hermes_cli.profiles.get_active_profile_name", return_value="dev"):
             cli_obj._print_exit_summary()
         out = capsys.readouterr().out
         assert 'zed -c "My Cool Session" -p dev' in out
@@ -73,7 +73,7 @@ class TestExitSummaryResumeHint:
         """
         cli_obj = _make_cli()
         with patch(
-            "zed_cli.profiles.get_active_profile_name",
+            "hermes_cli.profiles.get_active_profile_name",
             side_effect=RuntimeError("profiles unavailable"),
         ):
             cli_obj._print_exit_summary()
@@ -81,3 +81,4 @@ class TestExitSummaryResumeHint:
         # Resume hint still printed without -p.
         assert "zed --resume 20260524_000001_abc123" in out
         assert " -p " not in out
+

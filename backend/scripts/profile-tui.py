@@ -38,7 +38,7 @@ from typing import Any
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
 try:
-    from zed_constants import get_zed_home
+    from hermes_constants import get_zed_home
 except ImportError:
     def get_zed_home() -> Path:  # type: ignore[misc]
         val = (os.environ.get("ZED_HOME") or "").strip()
@@ -623,3 +623,4 @@ def wait_for_change(prev: dict[str, float], collect) -> dict[str, float]:
 
 if __name__ == "__main__":
     sys.exit(main())
+

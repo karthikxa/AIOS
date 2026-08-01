@@ -136,7 +136,7 @@ def _get_mcp_stderr_log() -> Any:
         if _mcp_stderr_log_fh is not None:
             return _mcp_stderr_log_fh
         try:
-            from zed_constants import get_zed_home
+            from hermes_constants import get_zed_home
             log_dir = get_zed_home() / "logs"
             log_dir.mkdir(parents=True, exist_ok=True)
             log_path = log_dir / "mcp-stderr.log"
@@ -2894,7 +2894,7 @@ def _wrap_with_home_override(coro: "Coroutine") -> "Coroutine":
     carrying different scopes don't interfere.
     """
     try:
-        from zed_constants import (
+        from hermes_constants import (
             get_zed_home_override,
             reset_zed_home_override,
             set_zed_home_override,
@@ -3020,7 +3020,7 @@ def _interpolate_env_vars(value):
 def _filter_suspicious_mcp_servers(servers: Dict[str, dict]) -> Dict[str, dict]:
     """Drop exfiltration-shaped MCP configs before any stdio spawn path."""
     try:
-        from zed_cli.mcp_security import validate_mcp_server_entry as _validate_mcp_server_entry
+        from hermes_cli.mcp_security import validate_mcp_server_entry as _validate_mcp_server_entry
     except Exception:
         _validate_mcp_server_entry: Callable[[str, dict[str, Any]], list[str]] | None = None
 
@@ -3056,7 +3056,7 @@ def _load_mcp_config() -> Dict[str, dict]:
     ``os.environ`` (which includes ``~/.zed/.env`` loaded at startup).
     """
     try:
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
         # Safe mode (--safe-mode / ZED_SAFE_MODE=1): troubleshooting run
         # with all customizations disabled â€” no MCP servers connect.
         from utils import env_var_enabled as _env_enabled
@@ -3068,7 +3068,7 @@ def _load_mcp_config() -> Dict[str, dict]:
             return {}
         # Ensure .env vars are available for interpolation
         try:
-            from zed_cli.env_loader import load_zed_dotenv
+            from hermes_cli.env_loader import load_zed_dotenv
             load_zed_dotenv()
         except Exception:
             pass
@@ -4714,3 +4714,4 @@ def _stop_mcp_loop(*, only_if_idle: bool = False) -> bool:
         # since the loop is gone and no session can still be in flight.
         _kill_orphaned_mcp_children(include_active=True)
     return True
+

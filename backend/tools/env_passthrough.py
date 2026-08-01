@@ -22,7 +22,7 @@ from __future__ import annotations
 import logging
 from contextvars import ContextVar
 from typing import Iterable
-from zed_cli.config import cfg_get
+from hermes_cli.config import cfg_get
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +108,7 @@ def _load_config_passthrough() -> frozenset[str]:
 
     result: set[str] = set()
     try:
-        from zed_cli.config import read_raw_config
+        from hermes_cli.config import read_raw_config
         cfg = read_raw_config()
         passthrough = cfg_get(cfg, "terminal", "env_passthrough")
         if isinstance(passthrough, list):
@@ -159,5 +159,6 @@ def get_all_passthrough() -> frozenset[str]:
 def clear_env_passthrough() -> None:
     """Reset the skill-scoped allowlist (e.g. on session reset)."""
     _get_allowed().clear()
+
 
 

@@ -499,7 +499,7 @@ class SupermemoryMemoryProvider(MemoryProvider):
         _save_supermemory_config(sanitized, zed_home)
 
     def initialize(self, session_id: str, **kwargs) -> None:
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         self._zed_home = kwargs.get("zed_home") or str(get_zed_home())
         self._session_id = session_id
         self._turn_count = 0
@@ -895,3 +895,4 @@ class SupermemoryMemoryProvider(MemoryProvider):
 
 def register(ctx):
     ctx.register_memory_provider(SupermemoryMemoryProvider())
+

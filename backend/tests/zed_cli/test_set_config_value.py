@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from zed_cli.config import set_config_value, config_command
+from hermes_cli.config import set_config_value, config_command
 
 
 @pytest.fixture(autouse=True)
@@ -247,3 +247,4 @@ class TestListNavigation:
         assert isinstance(allowlist, list)
         assert allowlist[0] == {"name": "alice", "role": "admin"}
         assert allowlist[1] == {"name": "bob", "role": "admin"}
+

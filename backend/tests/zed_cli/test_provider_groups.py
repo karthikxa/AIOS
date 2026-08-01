@@ -6,7 +6,7 @@ These are invariant tests, not catalog snapshots: they assert how
 vendors, which is expected to change over time.
 """
 
-from zed_cli.models import (
+from hermes_cli.models import (
     CANONICAL_PROVIDERS,
     PROVIDER_GROUPS,
     group_providers,
@@ -120,3 +120,4 @@ def test_canonical_fold_row_count_shrinks():
     flat = [p.slug for p in CANONICAL_PROVIDERS]
     rows = group_providers(flat)
     assert len(rows) < len(flat)
+

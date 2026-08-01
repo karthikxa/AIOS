@@ -141,7 +141,7 @@ from gateway.platforms.base import (
     cache_image_from_bytes,
 )
 from gateway.status import acquire_scoped_lock, release_scoped_lock
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from utils import atomic_json_write, env_float, env_int
 
 logger = logging.getLogger(__name__)
@@ -5211,3 +5211,4 @@ def _qr_register_inner(
         result["bot_open_id"] = None
 
     return result
+

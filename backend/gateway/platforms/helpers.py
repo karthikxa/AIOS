@@ -227,7 +227,7 @@ class ThreadParticipationTracker:
         }
 
     def _state_path(self) -> Path:
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         return get_zed_home() / f"{self._platform}_threads.json"
 
     def _load(self) -> list[str]:
@@ -276,3 +276,4 @@ def redact_phone(phone: str) -> str:
     if len(phone) <= 8:
         return phone[:2] + "****" + phone[-2:] if len(phone) > 4 else "****"
     return phone[:4] + "****" + phone[-4:]
+

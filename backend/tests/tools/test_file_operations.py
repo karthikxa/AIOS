@@ -76,7 +76,7 @@ class TestIsWriteDenied:
     )
     def test_oauth_mcp_tokens_and_pairing_denied(self, path):
         """PKCE creds, mcp-tokens, and pairing entries must be write-denied."""
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         zed_home = get_zed_home()
         full_path = str(zed_home / path)
         assert _is_write_denied(full_path) is True
@@ -86,7 +86,7 @@ class TestIsWriteDenied:
         ["auth.json", "config.yaml", "webhook_subscriptions.json"],
     )
     def test_zed_control_files_requested_writable(self, path):
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
 
         assert _is_write_denied(str(get_zed_home() / path)) is False
 
@@ -98,7 +98,7 @@ class TestIsWriteDenied:
     )
     def test_oauth_traversal_denied(self, path):
         """Path traversal attempts to protected OAuth files must be blocked."""
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         zed_home = get_zed_home()
         full_path = str(zed_home / path)
         assert _is_write_denied(full_path) is True
@@ -848,3 +848,4 @@ class _DeletedTestGitBaselineCheck:
     helper is restored or replaced.
     """
     pass
+

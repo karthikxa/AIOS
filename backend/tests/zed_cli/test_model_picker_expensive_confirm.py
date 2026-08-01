@@ -1,6 +1,6 @@
 ﻿from types import SimpleNamespace
 
-from zed_cli.model_switch import ModelSwitchResult
+from hermes_cli.model_switch import ModelSwitchResult
 
 
 def _bound(fn, instance):
@@ -16,7 +16,7 @@ def test_prompt_toolkit_model_picker_defers_confirmation_off_key_handler(monkeyp
         target_provider="nous",
     )
     monkeypatch.setattr(
-        "zed_cli.model_switch.switch_model",
+        "hermes_cli.model_switch.switch_model",
         lambda **_kwargs: result,
     )
 
@@ -64,3 +64,4 @@ def test_prompt_toolkit_model_picker_defers_confirmation_off_key_handler(monkeyp
     assert captured["daemon"] is True
     assert captured["args"] == (result, True)
     assert "ran_inline" not in captured
+

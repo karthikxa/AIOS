@@ -29,7 +29,7 @@ def _isolate_zed_home(tmp_path, monkeypatch):
     """Redirect ZED_HOME to a temp directory."""
     monkeypatch.setenv("ZED_HOME", str(tmp_path))
     try:
-        import zed_constants
+        import hermes_constants
         monkeypatch.setattr(zed_constants, "get_zed_home", lambda: tmp_path)
     except (ImportError, AttributeError):
         pass
@@ -1010,7 +1010,7 @@ class TestCliIntegration:
 
         import argparse
         args = argparse.Namespace(mcp_action="serve", verbose=True)
-        from zed_cli.mcp_config import mcp_command
+        from hermes_cli.mcp_config import mcp_command
         mcp_command(args)
         mock_run.assert_called_once_with(verbose=True)
 
@@ -1236,3 +1236,4 @@ class TestEventBridgePollE2E:
         """Verify the poll interval constant."""
         from mcp_serve import POLL_INTERVAL
         assert POLL_INTERVAL == 0.2
+

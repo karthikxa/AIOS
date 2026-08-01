@@ -1,11 +1,11 @@
-﻿"""Tests for zed_cli.cron command handling."""
+﻿"""Tests for hermes_cli.cron command handling."""
 
 from argparse import Namespace
 
 import pytest
 
 from cron.jobs import create_job, get_job, list_jobs
-from zed_cli.cron import cron_command
+from hermes_cli.cron import cron_command
 
 
 @pytest.fixture()
@@ -121,3 +121,4 @@ class TestCronCommandLifecycle:
 
         out = capsys.readouterr().out
         assert "Repeat:    âˆž" in out
+

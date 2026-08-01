@@ -14,7 +14,7 @@ from decimal import Decimal
 import pytest
 
 import tui_gateway.server as srv
-import zed_cli.nous_billing as nb
+import hermes_cli.nous_billing as nb
 import agent.billing_view as bv
 from agent.billing_view import BillingState, CardInfo, MonthlyCap
 
@@ -191,7 +191,7 @@ def test_billing_auto_reload_requires_fields():
 
 
 def test_billing_step_up_granted(monkeypatch):
-    import zed_cli.auth as auth
+    import hermes_cli.auth as auth
 
     monkeypatch.setattr(auth, "step_up_nous_billing_scope", lambda **kw: True)
     res = _call("billing.step_up", {})
@@ -199,8 +199,9 @@ def test_billing_step_up_granted(monkeypatch):
 
 
 def test_billing_step_up_downscoped(monkeypatch):
-    import zed_cli.auth as auth
+    import hermes_cli.auth as auth
 
     monkeypatch.setattr(auth, "step_up_nous_billing_scope", lambda **kw: False)
     res = _call("billing.step_up", {})
     assert res["ok"] is True and res["granted"] is False
+

@@ -1,6 +1,6 @@
 ﻿"""Guards for CLI startup performance regression.
 
-``zed_cli.main`` skips eager plugin discovery at argparse-setup time
+``hermes_cli.main`` skips eager plugin discovery at argparse-setup time
 when the invocation is clearly targeting a known built-in subcommand.
 This saves 500-650ms on ``zed --help``, ``zed version``,
 ``zed logs``, etc., by not importing ``google.cloud.pubsub_v1``,
@@ -28,7 +28,7 @@ from unittest.mock import patch
 
 import pytest
 
-from zed_cli.main import (
+from hermes_cli.main import (
     _BUILTIN_SUBCOMMANDS,
     _first_positional_argv,
     _plugin_cli_discovery_needed,
@@ -45,7 +45,7 @@ def _live_subcommand_names() -> set[str]:
     plugin-registered commands aren't included â€” we're validating the
     built-in-only set.
     """
-    from zed_cli import main as _main
+    from hermes_cli import main as _main
 
     argv_backup = sys.argv[:]
     sys.argv = ["zed", "--help"]
@@ -178,3 +178,4 @@ def test_builtin_set_has_no_phantom_entries():
         f"_BUILTIN_SUBCOMMANDS has entries that are not registered as "
         f"top-level subparsers: {sorted(phantom)}"
     )
+

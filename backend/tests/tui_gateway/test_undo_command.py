@@ -20,7 +20,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from zed_state import SessionDB
+from hermes_state import SessionDB
 
 
 @pytest.fixture()
@@ -37,8 +37,8 @@ def server(zed_home):
     with patch.dict(
         "sys.modules",
         {
-            "zed_cli.env_loader": MagicMock(),
-            "zed_cli.banner": MagicMock(),
+            "hermes_cli.env_loader": MagicMock(),
+            "hermes_cli.banner": MagicMock(),
         },
     ):
         mod = importlib.import_module("tui_gateway.server")
@@ -181,3 +181,4 @@ def test_undo_in_pending_input_commands(server):
     """Registry sanity: /undo must be in _PENDING_INPUT_COMMANDS so
     slash.exec rejects it and the TUI falls through to command.dispatch."""
     assert "undo" in server._PENDING_INPUT_COMMANDS
+

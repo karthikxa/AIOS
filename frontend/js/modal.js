@@ -1418,21 +1418,7 @@ export function openConnectFlow(id, store) {
       </button>
 
       <!-- Logo Visual Row -->
-      <div class="wizard-brand-row">
-        <div class="logo-node zed-logo">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" class="logo">
-            <path d="M 7.5,7 H 16.5 V 9.5 L 11.0,14.5 H 16.5 V 17 H 7.5 V 14.5 L 13.0,9.5 H 7.5 Z" fill="#FFFFFF"/>
-          </svg>
-        </div>
-        
-        <div class="brand-connect-arrow">
-          <svg width="40" height="24" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="6" y1="12" x2="34" y2="12" stroke="#94A3B8" stroke-width="2" stroke-dasharray="3 3"/>
-            <path d="M10 8L6 12L10 16" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M30 8L34 12L30 16" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        
+      <div class="wizard-brand-row" style="justify-content: flex-start; margin-bottom: 12px;">
         <div class="logo-node provider-logo-node">
           ${logoHtml}
         </div>
@@ -1480,56 +1466,6 @@ export function openConnectFlow(id, store) {
           </button>
         </div>
         ${modelSelectionHtml}
-      </div>
-
-      <!-- Enable for Agents Box -->
-      <div class="agents-section" style="margin-top: 10px;">
-        <h4 style="font-size: 16px; font-weight: 700; color: #111111; margin: 0 0 4px 0;">Enable for Agents</h4>
-        <p style="font-size: 13.5px; color: #6B7280; margin: 0 0 12px 0;">Choose which agents can use these models.</p>
-        <div class="agents-row-container" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
-          <label class="agent-checkbox-card">
-            <input type="checkbox" class="agent-select-checkbox" data-agent-id="research" checked>
-            <span class="custom-checkmark"></span>
-            <img src="assets/models/research_avatar.png" alt="Research Agent" style="width: 18px; height: 18px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
-            <span class="agent-name-label">Research Agent</span>
-          </label>
-          <label class="agent-checkbox-card">
-            <input type="checkbox" class="agent-select-checkbox" data-agent-id="coding" checked>
-            <span class="custom-checkmark"></span>
-            <img src="assets/models/coder_avatar.png" alt="Coding Agent" style="width: 18px; height: 18px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
-            <span class="agent-name-label">Coding Agent</span>
-          </label>
-          <label class="agent-checkbox-card">
-            <input type="checkbox" class="agent-select-checkbox" data-agent-id="assistant" checked>
-            <span class="custom-checkmark"></span>
-            <img src="assets/models/assistant_avatar.png" alt="Assistant Agent" style="width: 18px; height: 18px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
-            <span class="agent-name-label">Assistant Agent</span>
-          </label>
-          
-          <!-- +2 more dropdown pill -->
-          <div class="agent-dropdown-wrapper" style="position: relative;">
-            <button type="button" class="agent-more-pill" id="agentMorePillBtn">
-              <span>+2 more</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px; display: inline-block; vertical-align: middle;">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </button>
-            <div class="agent-dropdown-menu" id="agentMoreMenu">
-              <label class="agent-dropdown-item" style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #111111; cursor: pointer; font-weight: 550;">
-                <input type="checkbox" class="agent-select-checkbox" data-agent-id="data-analyst">
-                <span class="custom-checkmark"></span>
-                <img src="assets/models/finance_avatar.png" alt="Data Analyst" style="width: 18px; height: 18px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
-                <span>Data Analyst</span>
-              </label>
-              <label class="agent-dropdown-item" style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #111111; cursor: pointer; font-weight: 550;">
-                <input type="checkbox" class="agent-select-checkbox" data-agent-id="content-writer">
-                <span class="custom-checkmark"></span>
-                <img src="assets/models/social_avatar.png" alt="Content Writer" style="width: 18px; height: 18px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
-                <span>Content Writer</span>
-              </label>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Action buttons -->
@@ -1770,8 +1706,8 @@ export function openConnectFlow(id, store) {
     } catch (err) {
       const isNetError = err.message === 'Failed to fetch' || err.name === 'TypeError';
       statusDiv.innerHTML = isNetError
-        ? `<span style="color:#E11D48; font-weight:600;">✗ Cannot reach server</span><br><span style="font-size:11px;color:#64748B;">Check URL and ensure CORS is enabled. Local servers: <code>http://localhost:PORT/v1</code></span>`
-        : `<span style="color:#E11D48; font-weight:600;">✗ ${err.message}</span>`;
+        ? `<span style="color:#EF4444; font-weight:600;">✗ Unable to connect to endpoint</span><br><span style="font-size:12px;color:#6B7280;margin-top:2px;display:block;">Please check your API key, endpoint URL, or server connection.</span>`
+        : `<span style="color:#EF4444; font-weight:600;">✗ ${err.message}</span>`;
     } finally {
       testBtn.disabled = false;
       testBtn.style.opacity = '1';
@@ -1810,6 +1746,7 @@ export function openConnectFlow(id, store) {
     statusDiv.innerHTML = `<span>⏳ Checking API connection and fetching models...</span>`;
 
     let fetchedModels = [];
+    let isCorsFallback = false;
     try {
       fetchedModels = await validateAndFetchModels(model.provider || model.name, apiKey, baseUrl);
     } catch (err) {
@@ -1820,8 +1757,9 @@ export function openConnectFlow(id, store) {
         const defKey = provLower.replace(' ai', '');
         const defModels = defaultProviderModelsMap[defKey] || [];
         fetchedModels = defModels.map(dm => dm.id);
+        isCorsFallback = true;
         console.warn(`Connection warning: Network/CORS block. Using offline models fallback:`, err);
-        statusDiv.innerHTML = `<span style="color:#E28743;font-weight:600;">✓ Connected (CORS offline fallback)</span>`;
+        statusDiv.innerHTML = `<span style="color:#E28743;font-weight:600;">⚠ CORS blocked — using offline default models (not verified)</span>`;
       } else {
         statusDiv.innerHTML = `<span style="color:#E11D48;font-weight:600;">Could not connect: ${friendlyError(err, baseUrl)}</span>`;
         connectBtn.disabled = false;
@@ -1830,7 +1768,7 @@ export function openConnectFlow(id, store) {
       }
     }
 
-    if (model.type === 'provider') {
+    if (!isCorsFallback && model.type === 'provider') {
       const checkedBoxes = modelsContainer?.querySelectorAll('.model-select-checkbox:checked') || [];
       const manualModel = connectPageView.querySelector('#sidebarProviderManualModel')?.value.trim();
       const effectiveBaseUrl = baseUrl || model.settings?.baseUrl || '';
@@ -1871,7 +1809,7 @@ export function openConnectFlow(id, store) {
           closeSidebar();
         }, 600);
       }
-    } else {
+    } else if (!isCorsFallback) {
       // Official model connection
       const checkboxes = connectPageView.querySelectorAll('.model-select-checkbox');
       checkboxes.forEach(cb => {
@@ -1910,21 +1848,7 @@ export function openAddProviderModal(store) {
       </button>
 
       <!-- Logo Visual Row -->
-      <div class="wizard-brand-row">
-        <div class="logo-node zed-logo">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" class="logo">
-            <path d="M 7.5,7 H 16.5 V 9.5 L 11.0,14.5 H 16.5 V 17 H 7.5 V 14.5 L 13.0,9.5 H 7.5 Z" fill="#FFFFFF"/>
-          </svg>
-        </div>
-        
-        <div class="brand-connect-arrow">
-          <svg width="40" height="24" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="6" y1="12" x2="34" y2="12" stroke="#94A3B8" stroke-width="2" stroke-dasharray="3 3"/>
-            <path d="M10 8L6 12L10 16" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M30 8L34 12L30 16" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        
+      <div class="wizard-brand-row" style="justify-content: flex-start; margin-bottom: 12px;">
         <div class="logo-node provider-logo-node">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
@@ -1989,56 +1913,6 @@ export function openAddProviderModal(store) {
         </div>
       </div>
 
-      <!-- Enable for Agents Box -->
-      <div class="agents-section" style="margin-top: 10px;">
-        <h4 style="font-size: 16px; font-weight: 700; color: #111111; margin: 0 0 4px 0;">Enable for Agents</h4>
-        <p style="font-size: 13.5px; color: #6B7280; margin: 0 0 12px 0;">Choose which agents can use these models.</p>
-        <div class="agents-row-container" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
-          <label class="agent-checkbox-card">
-            <input type="checkbox" class="agent-select-checkbox" data-agent-id="research" checked>
-            <span class="custom-checkmark"></span>
-            <img src="assets/models/research_avatar.png" alt="Research Agent" style="width: 18px; height: 18px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
-            <span class="agent-name-label">Research Agent</span>
-          </label>
-          <label class="agent-checkbox-card">
-            <input type="checkbox" class="agent-select-checkbox" data-agent-id="coding" checked>
-            <span class="custom-checkmark"></span>
-            <img src="assets/models/coder_avatar.png" alt="Coding Agent" style="width: 18px; height: 18px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
-            <span class="agent-name-label">Coding Agent</span>
-          </label>
-          <label class="agent-checkbox-card">
-            <input type="checkbox" class="agent-select-checkbox" data-agent-id="assistant" checked>
-            <span class="custom-checkmark"></span>
-            <img src="assets/models/assistant_avatar.png" alt="Assistant Agent" style="width: 18px; height: 18px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
-            <span class="agent-name-label">Assistant Agent</span>
-          </label>
-          
-          <!-- +2 more dropdown pill -->
-          <div class="agent-dropdown-wrapper" style="position: relative;">
-            <button type="button" class="agent-more-pill" id="agentMorePillBtn">
-              <span>+2 more</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px; display: inline-block; vertical-align: middle;">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </button>
-            <div class="agent-dropdown-menu" id="agentMoreMenu">
-              <label class="agent-dropdown-item" style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #111111; cursor: pointer; font-weight: 550;">
-                <input type="checkbox" class="agent-select-checkbox" data-agent-id="data-analyst">
-                <span class="custom-checkmark"></span>
-                <img src="assets/models/finance_avatar.png" alt="Data Analyst" style="width: 18px; height: 18px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
-                <span>Data Analyst</span>
-              </label>
-              <label class="agent-dropdown-item" style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #111111; cursor: pointer; font-weight: 550;">
-                <input type="checkbox" class="agent-select-checkbox" data-agent-id="content-writer">
-                <span class="custom-checkmark"></span>
-                <img src="assets/models/social_avatar.png" alt="Content Writer" style="width: 18px; height: 18px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
-                <span>Content Writer</span>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Action buttons -->
       <div class="wizard-footer-actions" style="margin-top: 10px; padding-top: 20px; border-top: 1px solid #E5E7EB;">
         <div id="zedTestConnStatus" style="font-size: 13px; font-weight: 550; min-height: 18px; margin-right: auto; color: #16A34A;"></div>
@@ -2063,9 +1937,15 @@ export function openAddProviderModal(store) {
   if (modelsPageView) modelsPageView.style.display = 'none';
   connectPageView.style.display = 'flex';
 
+  let closeDropdownOnDocClick = null;
+
   const closeSidebar = () => {
     connectPageView.style.display = 'none';
     if (modelsPageView) modelsPageView.style.display = 'block';
+    if (closeDropdownOnDocClick) {
+      document.removeEventListener('click', closeDropdownOnDocClick);
+      closeDropdownOnDocClick = null;
+    }
   };
 
   closeBtn.addEventListener('click', closeSidebar);
@@ -2102,7 +1982,7 @@ export function openAddProviderModal(store) {
       e.stopPropagation();
       agentMoreMenu.classList.toggle('show');
     });
-    document.addEventListener('click', () => {
+    document.addEventListener('click', closeDropdownOnDocClick = () => {
       agentMoreMenu.classList.remove('show');
     });
     agentMoreMenu.addEventListener('click', (e) => {
@@ -2260,8 +2140,8 @@ export function openAddProviderModal(store) {
     } catch (err) {
       const isNetError = err.message === 'Failed to fetch' || err.name === 'TypeError';
       statusDiv.innerHTML = isNetError
-        ? `<span style="color:#E11D48;font-weight:600;">✗ Cannot reach server</span><br><span style="font-size:11px;color:#64748B;">Check URL: <code>${normalizeBaseUrl(baseUrlRaw)}</code></span>`
-        : `<span style="color:#E11D48;font-weight:600;">✗ ${err.message}</span>`;
+        ? `<span style="color:#EF4444;font-weight:600;">✗ Unable to connect to endpoint</span><br><span style="font-size:12px;color:#6B7280;margin-top:2px;display:block;">Please check your Base URL, API key, or server connection.</span>`
+        : `<span style="color:#EF4444;font-weight:600;">✗ ${err.message}</span>`;
     } finally {
       testBtn.disabled = false;
       testBtn.style.opacity = '1';

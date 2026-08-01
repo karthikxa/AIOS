@@ -13,7 +13,7 @@ import pytest
 pytestmark = pytest.mark.xdist_group("dashboard_auth_app_state")
 from fastapi.testclient import TestClient
 
-from zed_cli import web_server
+from hermes_cli import web_server
 
 
 @pytest.fixture
@@ -96,7 +96,7 @@ def test_loopback_host_header_validation_still_enforced(client_loopback):
     ("zed-agent-prod-abc.fly.dev", False, True),
 ])
 def test_should_require_auth_truth_table(host, allow_public, expected):
-    from zed_cli.web_server import should_require_auth
+    from hermes_cli.web_server import should_require_auth
     assert should_require_auth(host, allow_public) is expected
 
 
@@ -193,7 +193,7 @@ def test_start_server_public_without_insecure_records_auth_required(monkeypatch)
     flag-stashing happens BEFORE the exit so the rest of the system can
     branch on it. (See task 3.5 tests below for the with-provider path.)
     """
-    from zed_cli.dashboard_auth import clear_providers
+    from hermes_cli.dashboard_auth import clear_providers
     clear_providers()
     _stub_uvicorn_run(monkeypatch)
     web_server.app.state.auth_required = None
@@ -218,8 +218,8 @@ def test_start_server_gate_with_provider_proceeds_and_sets_proxy_headers(monkeyp
     succeeds.  uvicorn is called with proxy_headers=True so X-Forwarded-Proto
     from Fly's TLS terminator is honoured for cookie Secure-flag decisions.
     """
-    from zed_cli.dashboard_auth import clear_providers, register_provider
-    from tests.zed_cli.conftest_dashboard_auth import StubAuthProvider
+    from hermes_cli.dashboard_auth import clear_providers, register_provider
+    from tests.hermes_cli.conftest_dashboard_auth import StubAuthProvider
 
     clear_providers()
     register_provider(StubAuthProvider())
@@ -239,7 +239,7 @@ def test_start_server_gate_with_provider_proceeds_and_sets_proxy_headers(monkeyp
 
 def test_start_server_gate_without_provider_fails_closed(monkeypatch):
     """No providers + gate would activate â†’ SystemExit with a clear message."""
-    from zed_cli.dashboard_auth import clear_providers
+    from hermes_cli.dashboard_auth import clear_providers
 
     clear_providers()
     _stub_uvicorn_run(monkeypatch)
@@ -256,7 +256,7 @@ def test_start_server_surfaces_nous_skip_reason_when_unconfigured(monkeypatch):
     env vars set), the gate's fail-closed message should surface the
     plugin's LAST_SKIP_REASON so the operator knows the config fix is
     'set ZED_DASHBOARD_OAUTH_CLIENT_ID', not 'install a plugin'."""
-    from zed_cli.dashboard_auth import clear_providers
+    from hermes_cli.dashboard_auth import clear_providers
     from plugins.dashboard_auth import nous as nous_plugin
 
     # Simulate the plugin running and skipping for "no client_id".
@@ -300,3 +300,4 @@ def test_start_server_insecure_keeps_proxy_headers_off(monkeypatch):
     )
     assert web_server.app.state.auth_required is False
     assert captured["kwargs"].get("proxy_headers") is False
+

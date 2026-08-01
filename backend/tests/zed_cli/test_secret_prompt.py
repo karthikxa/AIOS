@@ -1,6 +1,6 @@
-import pytest
+﻿import pytest
 
-from zed_cli.secret_prompt import _collect_masked_input, masked_secret_prompt
+from hermes_cli.secret_prompt import _collect_masked_input, masked_secret_prompt
 
 
 def _run_collect(chars: str):
@@ -60,3 +60,4 @@ def test_masked_secret_prompt_falls_back_to_getpass_for_non_tty(monkeypatch):
     monkeypatch.setattr("getpass.getpass", lambda prompt: f"value from {prompt}")
 
     assert masked_secret_prompt("API key: ") == "value from API key: "
+

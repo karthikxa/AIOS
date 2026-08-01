@@ -1,7 +1,7 @@
 ﻿import argparse
 import json
 
-from zed_cli import plugins_cmd
+from hermes_cli import plugins_cmd
 
 
 def _args(**kwargs):
@@ -86,3 +86,4 @@ def test_cmd_list_json_output(monkeypatch, capsys):
             "source": "git",
         }
     ]
+

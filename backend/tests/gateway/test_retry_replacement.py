@@ -14,7 +14,7 @@ from gateway.session import SessionStore
 async def test_gateway_retry_replaces_last_user_turn_in_transcript(tmp_path, monkeypatch):
     # Pin DEFAULT_DB_PATH so SessionDB() doesn't write to the real ~/.zed/state.db.
     # (Module-level constant snapshot, see test_load_transcript_db_only.)
-    import zed_state
+    import hermes_state
     monkeypatch.setattr(zed_state, "DEFAULT_DB_PATH", tmp_path / "state.db")
 
     config = GatewayConfig()
@@ -98,3 +98,4 @@ async def test_gateway_retry_replays_original_text_not_retry_command(tmp_path):
     )
 
     assert captured["text"] == "real message"
+

@@ -17,8 +17,8 @@ from pathlib import Path
 
 import pytest
 
-from zed_cli import kanban_db as kb
-from zed_cli import goals
+from hermes_cli import kanban_db as kb
+from hermes_cli import goals
 
 
 @pytest.fixture
@@ -298,3 +298,4 @@ def test_loop_stops_if_task_reclaimed(monkeypatch):
         first_response="x",
     )
     assert res["outcome"] == "stopped"
+

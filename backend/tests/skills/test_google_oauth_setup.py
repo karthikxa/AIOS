@@ -319,9 +319,9 @@ class TestZedConstantsFallback:
         module = importlib.util.module_from_spec(spec)
         assert spec.loader is not None
         spec.loader.exec_module(module)
-        import zed_constants
-        assert module.get_zed_home is zed_constants.get_zed_home
-        assert module.display_zed_home is zed_constants.display_zed_home
+        import hermes_constants
+        assert module.get_zed_home is hermes_constants.get_zed_home
+        assert module.display_zed_home is hermes_constants.display_zed_home
 
 
 def _load_setup_module(monkeypatch):
@@ -445,3 +445,4 @@ class TestInstallDeps:
         assert module.install_deps() is False
         out = capsys.readouterr().out
         assert "via uv" in out
+

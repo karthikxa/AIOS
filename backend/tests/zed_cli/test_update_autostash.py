@@ -5,8 +5,8 @@ from unittest.mock import patch
 
 import pytest
 
-from zed_cli import config as zed_config
-from zed_cli import main as zed_main
+from hermes_cli import config as zed_config
+from hermes_cli import main as zed_main
 
 
 # ---------------------------------------------------------------------------
@@ -34,9 +34,9 @@ def _patch_managed_uv(request):
     def _fake_update_managed_uv():
         return None  # never actually self-update in tests
 
-    with patch("zed_cli.managed_uv.resolve_uv", side_effect=_fake_resolve_uv), \
-         patch("zed_cli.managed_uv.ensure_uv", side_effect=_fake_ensure_uv), \
-         patch("zed_cli.managed_uv.update_managed_uv", side_effect=_fake_update_managed_uv):
+    with patch("hermes_cli.managed_uv.resolve_uv", side_effect=_fake_resolve_uv), \
+         patch("hermes_cli.managed_uv.ensure_uv", side_effect=_fake_ensure_uv), \
+         patch("hermes_cli.managed_uv.update_managed_uv", side_effect=_fake_update_managed_uv):
         yield
 
 def test_stash_local_changes_if_needed_returns_none_when_tree_clean(monkeypatch, tmp_path):
@@ -901,3 +901,4 @@ def test_bootstrap_marker_not_autostashed_by_update(tmp_path):
         ["git", "status", "--porcelain"], cwd=tmp_path, capture_output=True, text=True
     ).stdout
     assert ".zed-bootstrap-complete" not in status
+

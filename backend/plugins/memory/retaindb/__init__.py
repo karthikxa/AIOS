@@ -505,7 +505,7 @@ class RetainDBMemoryProvider(MemoryProvider):
         self._user_id = kwargs.get("user_id", "default") or "default"
         self._agent_id = kwargs.get("agent_id", "zed") or "zed"
 
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         zed_home_path = get_zed_home()
         db_path = zed_home_path / "retaindb_queue.db"
         self._queue = _WriteQueue(self._client, db_path)
@@ -764,3 +764,4 @@ class RetainDBMemoryProvider(MemoryProvider):
 def register(ctx) -> None:
     """Register RetainDB as a memory provider plugin."""
     ctx.register_memory_provider(RetainDBMemoryProvider())
+

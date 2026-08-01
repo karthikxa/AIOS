@@ -1,7 +1,7 @@
 ﻿"""Tests for the ``zed send`` CLI subcommand.
 
 Covers the argument parsing / stdin / file / list behavior of
-``zed_cli.send_cmd``. The underlying ``send_message_tool`` is stubbed so
+``hermes_cli.send_cmd``. The underlying ``send_message_tool`` is stubbed so
 no network I/O or gateway is required.
 """
 
@@ -12,7 +12,7 @@ import json
 
 import pytest
 
-from zed_cli import send_cmd
+from hermes_cli import send_cmd
 
 
 # ---------------------------------------------------------------------------
@@ -358,7 +358,7 @@ def test_load_zed_env_bridges_config_yaml_scalars(tmp_path, monkeypatch):
     # Force get_zed_home() to re-resolve under the patched env.
     from importlib import reload
 
-    import zed_cli.config as _hc_config
+    import hermes_cli.config as _hc_config
     reload(_hc_config)
 
     send_cmd._load_zed_env()
@@ -379,7 +379,7 @@ def test_load_zed_env_does_not_override_existing(tmp_path, monkeypatch):
     monkeypatch.setenv("TELEGRAM_HOME_CHANNEL", "env_value")
 
     from importlib import reload
-    import zed_cli.config as _hc_config
+    import hermes_cli.config as _hc_config
     reload(_hc_config)
 
     send_cmd._load_zed_env()
@@ -394,8 +394,9 @@ def test_load_zed_env_handles_missing_files(tmp_path, monkeypatch):
     monkeypatch.setenv("ZED_HOME", str(zed_home))
 
     from importlib import reload
-    import zed_cli.config as _hc_config
+    import hermes_cli.config as _hc_config
     reload(_hc_config)
 
     # Should not raise.
     send_cmd._load_zed_env()
+

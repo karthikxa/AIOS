@@ -1,7 +1,7 @@
 ﻿"""Tests for config.yaml structure validation (validate_config_structure)."""
 
 
-from zed_cli.config import validate_config_structure, ConfigIssue
+from hermes_cli.config import validate_config_structure, ConfigIssue
 
 
 class TestCustomProvidersValidation:
@@ -205,3 +205,4 @@ class TestConfigIssueDataclass:
         a = ConfigIssue("error", "msg", "hint")
         b = ConfigIssue("error", "msg", "hint")
         assert a == b
+

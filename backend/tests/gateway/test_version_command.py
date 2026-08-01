@@ -2,7 +2,7 @@
 
 import asyncio
 
-from zed_cli.banner import format_banner_version_label
+from hermes_cli.banner import format_banner_version_label
 
 
 def test_gateway_version_command_returns_release_line():
@@ -10,3 +10,4 @@ def test_gateway_version_command_returns_release_line():
 
     result = asyncio.run(GatewayRunner._handle_version_command(None, None))  # type: ignore[arg-type]
     assert result == format_banner_version_label()
+

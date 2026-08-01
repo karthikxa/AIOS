@@ -5,6 +5,7 @@ import { SKILLS_CATALOG, getSkillById } from './skills-catalog.js';
 import { showToast } from './toast.js';
 
 let currentEditingAgentId = null;
+const editPageCleanupFns = [];
 const state = {
   name: '',
   desc: '',
@@ -65,16 +66,22 @@ export function initEditAgentPage() {
   const changeAvatarBtn = document.getElementById('eaChangeAvatarBtn');
   const avatarDropdown = document.getElementById('eaAvatarDropdown');
   
+  // Clean up previous listeners if re-initialized
+  for (const fn of editPageCleanupFns) fn();
+  editPageCleanupFns.length = 0;
+
   changeAvatarBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
     avatarDropdown.classList.toggle('show');
   });
 
-  document.addEventListener('click', (e) => {
+  const onDocClickForAvatar = (e) => {
     if (avatarDropdown && !avatarDropdown.contains(e.target) && e.target !== changeAvatarBtn) {
       avatarDropdown.classList.remove('show');
     }
-  });
+  };
+  document.addEventListener('click', onDocClickForAvatar);
+  editPageCleanupFns.push(() => document.removeEventListener('click', onDocClickForAvatar));
 
   const avatarOptionElements = avatarDropdown?.querySelectorAll('.avatar-option');
   avatarOptionElements?.forEach(opt => {
@@ -124,11 +131,13 @@ export function initEditAgentPage() {
     }
   });
 
-  document.addEventListener('click', (e) => {
+  const onDocClickForModel = (e) => {
     if (primaryModelDropdown && !primaryModelDropdown.contains(e.target) && e.target !== primaryModelTrigger) {
       primaryModelDropdown.style.display = 'none';
     }
-  });
+  };
+  document.addEventListener('click', onDocClickForModel);
+  editPageCleanupFns.push(() => document.removeEventListener('click', onDocClickForModel));
 
   // Save changes button logic
   const btnSave = document.getElementById('btnEditAgentSave');
@@ -144,6 +153,15 @@ export function initEditAgentPage() {
     if (!currentEditingAgentId) {
       console.error('[Edit] No agent ID to update');
       showToast('Error: No agent selected for editing.', 'error');
+      return;
+    }
+
+    const existingAgent = agentsStore.agents.find(a => a.id === currentEditingAgentId);
+    if (!existingAgent) {
+      showToast('Error: This agent no longer exists.', 'error');
+      currentEditingAgentId = null;
+      editPage.style.display = 'none';
+      agentPage.style.display = 'flex';
       return;
     }
 
@@ -175,7 +193,6 @@ export function initEditAgentPage() {
       status: state.status,
       model: state.model,
       provider: state.provider,
-      schedule: agent.schedule || 'Manual',
       skills: state.skills
     });
 
@@ -269,17 +286,19 @@ export function initEditAgentPage() {
   window.openEditAgentPage = openEditAgentPage;
 
   // Subscriptions to refresh lists when stores change
-  pluginsStore.subscribe(() => {
+  const unsubPlugins = pluginsStore.subscribe(() => {
     if (editPage.style.display === 'flex') {
       renderEditAgentPlugins();
     }
   });
+  editPageCleanupFns.push(unsubPlugins);
 
-  modelsStore.subscribe(() => {
+  const unsubModels = modelsStore.subscribe(() => {
     if (editPage.style.display === 'flex') {
       renderModels();
     }
   });
+  editPageCleanupFns.push(unsubModels);
 }
 
 export function openEditAgentPage(agentId) {
@@ -436,7 +455,7 @@ function updateOverviewTab() {
     if (state.model === 'Zed Pro') {
       logoHtml = `<img src="assets/models/zed-pro.svg" alt="Zed Pro" style="width: 16px; height: 16px; object-fit: contain; border-radius: 50%;" />`;
     } else if (currentModel && currentModel.logoSrc) {
-      logoHtml = `<img src="${currentModel.logoSrc}" alt="${state.model}" style="width: 16px; height: 16px; object-fit: contain; border-radius: 3px;" />`;
+      logoHtml = `<img src="${currentModel.logoSrc}" alt="${escapeHtml(state.model)}" style="width: 16px; height: 16px; object-fit: contain; border-radius: 3px;" />`;
     } else if (currentModel && currentModel.logoSvg) {
       logoHtml = currentModel.logoSvg;
     } else {
@@ -451,7 +470,7 @@ function updateOverviewTab() {
     oModel.innerHTML = `
       <div style="display: flex; align-items: center; gap: 6px;">
         ${logoHtml}
-        <span>${state.model}</span>
+        <span>${escapeHtml(state.model)}</span>
       </div>
     `;
   }
@@ -777,11 +796,11 @@ function renderEditAgentPlugins() {
       <div class="ea-list-item-row">
         <div class="ea-item-left-col">
           <div class="ea-item-icon-box">
-            <img src="${item.logo}" alt="${item.name}">
+            <img src="${item.logo}" alt="${escapeHtml(item.name)}">
           </div>
-          <div class="ea-item-name">${item.name}</div>
+          <div class="ea-item-name">${escapeHtml(item.name)}</div>
         </div>
-        <div class="ea-item-desc">${item.desc}</div>
+        <div class="ea-item-desc">${escapeHtml(item.desc)}</div>
         <div class="ea-item-right-actions">
           <span class="ea-badge-connected">
             <span class="ea-badge-connected-dot"></span>
@@ -809,9 +828,9 @@ function renderEditAgentSkills() {
       <div class="ea-list-item-row" data-skill-id="${item.id}" style="cursor:pointer;">
         <div class="ea-item-left-col">
           <div style="color:${isSelected ? '#4F46E5' : '#9CA3AF'};display:flex;align-items:center;margin-right:8px;">${item.icon}</div>
-          <div class="ea-item-name">${item.name}</div>
+          <div class="ea-item-name">${escapeHtml(item.name)}</div>
         </div>
-        <div class="ea-item-desc">${item.desc}</div>
+        <div class="ea-item-desc">${escapeHtml(item.desc)}</div>
         <div class="ea-item-right-actions">
           <span class="ea-badge-tools">${item.toolCount} tools</span>
           <span class="ea-badge-active" style="${isSelected ? 'color:#047857;background:#ECFDF5;' : 'color:#9CA3AF;background:#F3F4F6;'}">${isSelected ? 'Active' : 'Inactive'}</span>
@@ -860,25 +879,25 @@ function showEditSkillDetailModal(skillId) {
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="width:40px;height:40px;border-radius:10px;background:#F3F4F6;display:flex;align-items:center;justify-content:center;color:#4F46E5;">${skill.icon}</div>
           <div>
-            <h2 style="margin:0;font-size:18px;font-weight:700;color:#111;">${skill.name}</h2>
-            <span style="font-size:12px;color:#6B7280;">${skill.category}</span>
+            <h2 style="margin:0;font-size:18px;font-weight:700;color:#111;">${escapeHtml(skill.name)}</h2>
+            <span style="font-size:12px;color:#6B7280;">${escapeHtml(skill.category)}</span>
           </div>
         </div>
         <button class="modal-close-btn" style="background:none;border:none;cursor:pointer;padding:4px;color:#9CA3AF;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <div style="padding:16px 24px;">
-        <p style="font-size:14px;color:#374151;line-height:1.6;margin:0 0 20px 0;">${skill.desc}</p>
+        <p style="font-size:14px;color:#374151;line-height:1.6;margin:0 0 20px 0;">${escapeHtml(skill.desc)}</p>
         <h4 style="font-size:13px;font-weight:600;color:#111;margin:0 0 8px 0;">Tools Used</h4>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;">
-          ${skill.tools.map(t => `<span style="font-size:12px;background:#EFF6FF;color:#4F46E5;padding:3px 10px;border-radius:9999px;font-weight:500;">${t}</span>`).join('')}
+          ${skill.tools.map(t => `<span style="font-size:12px;background:#EFF6FF;color:#4F46E5;padding:3px 10px;border-radius:9999px;font-weight:500;">${escapeHtml(t)}</span>`).join('')}
         </div>
         <h4 style="font-size:13px;font-weight:600;color:#111;margin:0 0 8px 0;">How It Works</h4>
         <ol style="font-size:13px;color:#374151;margin:0 0 20px 0;padding-left:20px;line-height:1.8;">
-          ${skill.steps.map(s => `<li>${s}</li>`).join('')}
+          ${skill.steps.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
         </ol>
         <h4 style="font-size:13px;font-weight:600;color:#111;margin:0 0 8px 0;">Example Uses</h4>
         <ul style="font-size:13px;color:#374151;margin:0 0 20px 0;padding-left:20px;line-height:1.8;">
-          ${skill.examples.map(e => `<li style="color:#6B7280;">"${e}"</li>`).join('')}
+          ${skill.examples.map(e => `<li style="color:#6B7280;">"${escapeHtml(e)}"</li>`).join('')}
         </ul>
       </div>
       <div style="padding:16px 24px;border-top:1px solid #F3F4F6;display:flex;justify-content:flex-end;gap:8px;">
@@ -923,7 +942,7 @@ function renderModels() {
     if (isZed || (m.logoSrc && m.logoSrc.includes("zed-pro"))) {
       logoHtml = `<img src="assets/models/zed-pro.svg" alt="Zed Pro" style="width: 18px; height: 18px; object-fit: contain; border-radius: 50%; flex-shrink: 0;">`;
     } else if (m.logoSrc) {
-      logoHtml = `<img src="${m.logoSrc}" alt="${m.name}" style="width: 18px; height: 18px; object-fit: contain; border-radius: 4px; flex-shrink: 0;">`;
+      logoHtml = `<img src="${m.logoSrc}" alt="${escapeHtml(m.name)}" style="width: 18px; height: 18px; object-fit: contain; border-radius: 4px; flex-shrink: 0;">`;
     } else if (m.logoSvg) {
       logoHtml = m.logoSvg;
     } else {
@@ -939,7 +958,7 @@ function renderModels() {
       <div class="ea-dropdown-option-row ${isSelected ? 'selected' : ''}" data-model="${m.name}" data-provider="${m.provider}" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 6px; cursor: pointer; transition: background 0.15s; background: ${isSelected ? '#F3F4F6' : 'transparent'};">
         <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
           ${logoHtml}
-          <span style="font-size: 13.5px; font-weight: 550; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${m.name}</span>
+          <span style="font-size: 13.5px; font-weight: 550; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(m.name)}</span>
         </div>
         <span style="font-size: 11px; font-weight: 550; color: #047857; background: #ECFDF5; padding: 2px 6px; border-radius: 6px; flex-shrink: 0;">Active</span>
       </div>

@@ -65,7 +65,7 @@ def _make_event(text):
 
 def _fake_switch_result():
     """A successful ModelSwitchResult that bypasses real provider resolution."""
-    from zed_cli.model_switch import ModelSwitchResult
+    from hermes_cli.model_switch import ModelSwitchResult
 
     return ModelSwitchResult(
         success=True,
@@ -100,14 +100,14 @@ def _setup_isolated_home(tmp_path, monkeypatch, model_yaml_value):
     # picker contents. The handler imports it as a local alias at call time, so
     # patching the source-module attribute takes effect.
     monkeypatch.setattr(
-        "zed_cli.model_switch.list_picker_providers",
+        "hermes_cli.model_switch.list_picker_providers",
         lambda **kw: [{"slug": "openrouter", "name": "OpenRouter", "models": ["gpt-5.5"]}],
     )
     # switch_model is imported as a local alias inside the handler
-    # (`from zed_cli.model_switch import switch_model as _switch_model`),
+    # (`from hermes_cli.model_switch import switch_model as _switch_model`),
     # so patching the source-module attribute takes effect at call time.
     monkeypatch.setattr(
-        "zed_cli.model_switch.switch_model",
+        "hermes_cli.model_switch.switch_model",
         lambda **kw: _fake_switch_result(),
     )
     # The confirmation builder resolves context length for display, which
@@ -115,12 +115,12 @@ def _setup_isolated_home(tmp_path, monkeypatch, model_yaml_value):
     # OpenRouter models catalog). Stub it â€” these tests don't assert on the
     # displayed context, and the closure imports it lazily from this module.
     monkeypatch.setattr(
-        "zed_cli.model_switch.resolve_display_context_length",
+        "hermes_cli.model_switch.resolve_display_context_length",
         lambda *a, **k: 272000,
     )
     # save_config writes to ``get_zed_home() / config.yaml`` â€” point it here.
-    monkeypatch.setattr("zed_constants.get_zed_home", lambda: zed_home)
-    monkeypatch.setattr("zed_cli.config.get_zed_home", lambda: zed_home)
+    monkeypatch.setattr("hermes_constants.get_zed_home", lambda: zed_home)
+    monkeypatch.setattr("hermes_cli.config.get_zed_home", lambda: zed_home)
     return cfg_path
 
 
@@ -201,3 +201,4 @@ async def test_picker_tap_session_flag_does_not_persist(tmp_path, monkeypatch):
     written = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
     assert written["model"]["default"] == "old-model"
     assert written["model"]["provider"] == "openai-codex"
+

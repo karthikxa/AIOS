@@ -134,7 +134,7 @@ def _send_imap_id(imap: "imaplib.IMAP4") -> None:
     """
     try:
         try:
-            from zed_cli import __version__ as _zed_version
+            from hermes_cli import __version__ as _zed_version
         except Exception:  # noqa: BLE001 â€” keep ID best-effort if import fails
             _zed_version = "0"
         imap.xatom(
@@ -882,3 +882,4 @@ class EmailAdapter(BasePlatformAdapter):
             "chat_id": chat_id,
             "subject": ctx.get("subject", ""),
         }
+

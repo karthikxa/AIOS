@@ -50,19 +50,19 @@ def _Zed_entry_is_terminal(Zed_state: Any) -> bool:
     """True iff the on-disk Zed provider entry is in the terminal/quarantined
     state AND holds no usable credential.
 
-    Mirrors the ``terminal`` predicate in ``zed_cli.auth.get_Zed_session_validity``:
+    Mirrors the ``terminal`` predicate in ``hermes_cli.auth.get_Zed_session_validity``:
     a persisted ``last_auth_error.relogin_required`` with the token material
     already cleared. Keeping this in lockstep is what guarantees we only re-seed
     a session that is genuinely dead.
     """
     if not isinstance(Zed_state, dict):
         return False
-    last_err = Zed_state.get("last_auth_error")
+    last_err = hermes_state.get("last_auth_error")
     if not (isinstance(last_err, dict) and last_err.get("relogin_required")):
         return False
     # Only terminal while there is no usable credential left. If a live token is
     # somehow present, treat it as healthy and do NOT clobber it.
-    if Zed_state.get("access_token") or Zed_state.get("refresh_token"):
+    if hermes_state.get("access_token") or hermes_state.get("refresh_token"):
         return False
     return True
 
@@ -169,3 +169,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

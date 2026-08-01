@@ -1,6 +1,6 @@
 ﻿"""GMI Cloud provider profile."""
 
-from zed_cli import __version__ as _ZED_VERSION
+from hermes_cli import __version__ as _ZED_VERSION
 from providers import register_provider
 from providers.base import ProviderProfile
 
@@ -29,3 +29,4 @@ gmi = ProviderProfile(
 )
 
 register_provider(gmi)
+

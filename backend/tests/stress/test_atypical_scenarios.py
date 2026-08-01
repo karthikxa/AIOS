@@ -52,7 +52,7 @@ def scenario(name):
                 if m.startswith(("zed_cli", "plugins", "gateway")):
                     del sys.modules[m]
             sys.path.insert(0, str(WT))
-            from zed_cli import kanban_db as kb  # noqa: F401
+            from hermes_cli import kanban_db as kb  # noqa: F401
             print(f"\nâ•â•â• {name} â•â•â•")
             try:
                 fn(home, kb)
@@ -235,7 +235,7 @@ def _(home, kb):
     ]
     for bad in bad_metas:
         r = subprocess.run(
-            [sys.executable, "-m", "zed_cli.main", "kanban",
+            [sys.executable, "-m", "hermes_cli.main", "kanban",
              "complete", tid, "--metadata", bad],
             capture_output=True, text=True, env=env,
         )
@@ -432,7 +432,7 @@ def _(home, kb):
         # Verify resolve_workspace (which the dispatcher calls) doesn't
         # allow escape.
         try:
-            from zed_cli.kanban_db import resolve_workspace
+            from hermes_cli.kanban_db import resolve_workspace
             resolved = resolve_workspace(task)
             # If resolve succeeded, check it's actually escape-safe.
             resolved_abs = str(Path(resolved).resolve())
@@ -691,7 +691,7 @@ def _idempotency_race_worker(zed_home: str, key: str, result_file: str,
     os.environ["ZED_HOME"] = zed_home
     os.environ["HOME"] = zed_home
     sys.path.insert(0, str(WT))
-    from zed_cli import kanban_db as kb
+    from hermes_cli import kanban_db as kb
 
     # Spin until the barrier file exists (crude sync across processes)
     while not os.path.exists(barrier_path):
@@ -980,7 +980,7 @@ def _(home, kb):
     kb.init_db()
     # Set a session token so the ws check doesnt bomb on import
     try:
-        from zed_cli import web_server as ws  # noqa
+        from hermes_cli import web_server as ws  # noqa
     except Exception:
         pass
 
@@ -1057,3 +1057,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -3939,7 +3939,8 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
         // Try WebSocket first (real-time push, <5ms latency on HF)
         try {
-          agentWs = new WebSocket(buildAgentWebSocketUrl(hfUrl));
+          const wsUrl = hfUrl ? buildAgentWebSocketUrl(hfUrl) : `ws://${window.location.hostname || '127.0.0.1'}:4000/ws`;
+          agentWs = new WebSocket(wsUrl);
           await new Promise((resolve, reject) => {
             const t = setTimeout(() => reject(new Error('WS timeout')), 3000);
             agentWs.onopen  = () => { clearTimeout(t); usingWs = true; resolve(); };
@@ -5145,7 +5146,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   }
 
   // ── Desktop Pop-up (Computer Desktop above chatbox) ─────────────
-  const desktopFrame = document.getElementById('desktopFrame');
+  let desktopFrame = document.getElementById('desktopFrame');
   const desktopConnectingOverlay = document.getElementById('desktopConnectingOverlay');
   const subagentComputerPopup = document.getElementById('subagentComputerPopup');
   const closeComputerPopupBtn = document.getElementById('closeComputerPopupBtn');
@@ -5220,14 +5221,11 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
     return true;
   }
 
-  // On localhost: set/update noVNC URL (versioned so it auto-updates when URL changes)
-  const KASM_URL_VERSION = '10';  // Increment to force localStorage refresh
-  // Direct connection to VNC via backend proxy (single-port architecture)
-  const CORRECT_KASM_URL = '/desktop/vnc.html?autoconnect=true&password=headless&resize=scale&reconnect=true&reconnect_delay=1000';
-  // Always update localStorage on load to ensure correct URL
+  // On localhost: clear any stale kasm_url / VNC URL — we use Playwright MJPEG stream (port 4000) instead.
+  // The /desktop/vnc.html path is no longer served (no VNC server running).
   if (isLocal) {
-    localStorage.setItem('kasm_url', CORRECT_KASM_URL);
-    localStorage.setItem('kasm_url_version', KASM_URL_VERSION);
+    localStorage.removeItem('kasm_url');
+    localStorage.removeItem('kasm_url_version');
   }
 
   function getSavedDesktopUrl() {
@@ -5305,25 +5303,63 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
     if (desktopStreamStarted && !frameIsBlank) return;
     desktopStreamStarted = true;
 
-    // ── Priority 0: Local desktop agent MJPEG stream (via backend proxy) ──
+    // ── Priority 0: Local desktop agent MJPEG stream (port 4000) ──
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname;
     if (isLocal) {
-      const agentUrl = '/api/desktop';
-      fetch(agentUrl + '/status').then(r => r.json()).then(d => {
-        if (d.running) {
-          // Replace iframe with MJPEG img for live desktop stream
-          const img = document.createElement('img');
-          img.id = 'desktopFrame';
-          img.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;display:block;';
-          img.src = agentUrl + '/stream.mjpeg';
-          img.alt = 'Desktop Agent Live Stream';
-          desktopFrame.parentNode.replaceChild(img, desktopFrame);
-          desktopFrame = img;
+      const agentHost = window.location.hostname || '127.0.0.1';
+      const agentBaseUrl = `http://${agentHost}:4000`;
+      const agentWsBase = `ws://${agentHost}:4000`;
+      fetch(agentBaseUrl + '/health').then(r => r.json()).then(d => {
+        if (d && (d.status === 'ok' || d.desktop)) {
+          // ── WebSocket canvas live stream ──────────────────────────────
+          const viewport = document.getElementById('splitPaneViewport');
+          if (!viewport) return;
+          // Remove old frame
+          if (desktopFrame && desktopFrame.parentNode) desktopFrame.parentNode.removeChild(desktopFrame);
+          // Create canvas for rendering frames
+          const canvas = document.createElement('canvas');
+          canvas.id = 'desktopFrame';
+          canvas.style.cssText = 'width:100%;height:100%;display:block;background:#111;';
+          viewport.appendChild(canvas);
+          desktopFrame = canvas;
+          const ctx = canvas.getContext('2d');
           // Update header
           const urlEl = document.getElementById('splitPaneHeaderUrl');
-          if (urlEl) { urlEl.textContent = 'Desktop Agent'; urlEl.style.display = 'inline'; }
+          if (urlEl) { urlEl.textContent = 'Desktop Agent (Live)'; urlEl.style.display = 'inline'; }
           const browserLabel = document.getElementById('splitPaneBrowserLabel');
           if (browserLabel) browserLabel.textContent = 'Zed is using Desktop';
           if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
+          // Connect WebSocket stream
+          let streamWs = null;
+          let streamRetry = null;
+          function connectStreamWs() {
+            if (streamRetry) clearTimeout(streamRetry);
+            streamWs = new WebSocket(agentWsBase + '/stream');
+            streamWs.binaryType = 'blob';
+            streamWs.onopen = () => {
+              if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
+            };
+            streamWs.onmessage = (e) => {
+              try {
+                const msg = JSON.parse(e.data);
+                if (msg.type === 'frame' && msg.data) {
+                  canvas.width = msg.width || 1920;
+                  canvas.height = msg.height || 1080;
+                  const img = new Image();
+                  img.onload = () => ctx.drawImage(img, 0, 0);
+                  img.src = 'data:image/jpeg;base64,' + msg.data;
+                }
+              } catch(_) {}
+            };
+            streamWs.onerror = () => {};
+            streamWs.onclose = () => {
+              // Reconnect after 1s
+              streamRetry = setTimeout(connectStreamWs, 1000);
+            };
+          }
+          connectStreamWs();
+          // Store ref for cleanup on tab switch
+          window._desktopStreamWs = { close: () => { if (streamWs) streamWs.close(); if (streamRetry) clearTimeout(streamRetry); } };
           return;
         }
       }).catch(() => {});
@@ -5534,12 +5570,14 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
     const computerSplitPane = document.getElementById('computerSplitPane');
 
     if (shouldShow) {
+      localStorage.setItem('agent_split_open', 'true');
       localStorage.setItem('computer_split_open', 'false');
       mainContent.classList.add('agent-split-mode');
       agentSplitPane.style.display = 'flex';
       if (computerSplitPane) computerSplitPane.style.display = 'none';
       mainContent.classList.remove('computer-split-mode');
     } else {
+      localStorage.setItem('agent_split_open', 'false');
       mainContent.classList.remove('agent-split-mode');
       agentSplitPane.style.display = 'none';
     }
@@ -5549,6 +5587,10 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   // the same cloud noVNC URL; Chrome itself remains on the browser service.
   if (localStorage.getItem('computer_split_open') === 'true') {
     requestAnimationFrame(() => toggleComputerSplit(true));
+  }
+
+  if (localStorage.getItem('agent_split_open') === 'true') {
+    requestAnimationFrame(() => toggleAgentSplit(true));
   }
 
   if (modeCapsule) {

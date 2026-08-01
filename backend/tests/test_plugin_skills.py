@@ -70,8 +70,8 @@ class TestIsValidNamespace:
 class TestPluginSkillRegistry:
     @pytest.fixture
     def pm(self, monkeypatch):
-        from zed_cli import plugins as plugins_mod
-        from zed_cli.plugins import PluginManager
+        from hermes_cli import plugins as plugins_mod
+        from hermes_cli.plugins import PluginManager
 
         fresh = PluginManager()
         monkeypatch.setattr(plugins_mod, "_plugin_manager", fresh)
@@ -119,8 +119,8 @@ class TestPluginSkillRegistry:
 class TestPluginContextRegisterSkill:
     @pytest.fixture
     def ctx(self, tmp_path, monkeypatch):
-        from zed_cli import plugins as plugins_mod
-        from zed_cli.plugins import PluginContext, PluginManager, PluginManifest
+        from hermes_cli import plugins as plugins_mod
+        from hermes_cli.plugins import PluginContext, PluginManager, PluginManifest
 
         pm = PluginManager()
         monkeypatch.setattr(plugins_mod, "_plugin_manager", pm)
@@ -164,8 +164,8 @@ class TestSkillViewQualifiedName:
     @pytest.fixture(autouse=True)
     def _isolate(self, tmp_path, monkeypatch):
         """Fresh plugin manager + empty SKILLS_DIR for each test."""
-        from zed_cli import plugins as plugins_mod
-        from zed_cli.plugins import PluginManager
+        from hermes_cli import plugins as plugins_mod
+        from hermes_cli.plugins import PluginManager
 
         self.pm = PluginManager()
         monkeypatch.setattr(plugins_mod, "_plugin_manager", self.pm)
@@ -272,8 +272,8 @@ class TestSkillViewPluginGuards:
     def _isolate(self, tmp_path, monkeypatch):
         import sys
 
-        from zed_cli import plugins as plugins_mod
-        from zed_cli.plugins import PluginManager
+        from hermes_cli import plugins as plugins_mod
+        from hermes_cli.plugins import PluginManager
 
         self.pm = PluginManager()
         monkeypatch.setattr(plugins_mod, "_plugin_manager", self.pm)
@@ -296,7 +296,7 @@ class TestSkillViewPluginGuards:
         from tools.skills_tool import skill_view
 
         self._reg(tmp_path, "---\nname: foo\n---\nBody.\n")
-        monkeypatch.setattr("zed_cli.plugins._get_disabled_plugins", lambda: {"myplugin"})
+        monkeypatch.setattr("hermes_cli.plugins._get_disabled_plugins", lambda: {"myplugin"})
 
         result = json.loads(skill_view("myplugin:foo"))
         assert result["success"] is False
@@ -329,8 +329,8 @@ class TestSkillViewPluginGuards:
 class TestBundleContextBanner:
     @pytest.fixture(autouse=True)
     def _isolate(self, tmp_path, monkeypatch):
-        from zed_cli import plugins as plugins_mod
-        from zed_cli.plugins import PluginManager
+        from hermes_cli import plugins as plugins_mod
+        from hermes_cli.plugins import PluginManager
 
         self.pm = PluginManager()
         monkeypatch.setattr(plugins_mod, "_plugin_manager", self.pm)
@@ -385,3 +385,4 @@ class TestBundleContextBanner:
         self._setup_bundle(tmp_path)
         result = json.loads(skill_view("myplugin:foo"))
         assert "foo body." in result["content"]
+

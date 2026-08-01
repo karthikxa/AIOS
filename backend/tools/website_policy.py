@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 
 logger = logging.getLogger(__name__)
 
@@ -280,3 +280,4 @@ def check_website_access(url: str, config_path: Optional[Path] = None) -> Option
                 ),
             }
     return None
+

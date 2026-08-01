@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from zed_constants import display_zed_home
+from hermes_constants import display_zed_home
 
 logger = logging.getLogger(__name__)
 
@@ -348,7 +348,7 @@ def _resolve_model_override(model_obj: Optional[Dict[str, Any]]) -> tuple:
     # silently hijacks a job that meant to use the configured custom endpoint.
     if provider_name == "custom":
         try:
-            from zed_cli.runtime_provider import has_named_custom_provider
+            from hermes_cli.runtime_provider import has_named_custom_provider
             if not has_named_custom_provider("custom"):
                 provider_name = None
         except Exception:
@@ -356,7 +356,7 @@ def _resolve_model_override(model_obj: Optional[Dict[str, Any]]) -> tuple:
     if model_name and not provider_name:
         # Pin to the current main provider so the job is stable
         try:
-            from zed_cli.config import load_config
+            from hermes_cli.config import load_config
             cfg = load_config()
             model_cfg = cfg.get("model", {})
             if isinstance(model_cfg, dict):
@@ -408,7 +408,7 @@ def _validate_cron_script_path(script: Optional[str]) -> Optional[str]:
     if not script or not script.strip():
         return None  # empty/None = clearing the field, always OK
 
-    from zed_constants import get_zed_home
+    from hermes_constants import get_zed_home
 
     raw = script.strip()
 
@@ -909,3 +909,4 @@ registry.register(
     check_fn=check_cronjob_requirements,
     emoji="â°",
 )
+

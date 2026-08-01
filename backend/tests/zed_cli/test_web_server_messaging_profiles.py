@@ -14,8 +14,8 @@ import yaml
 @pytest.fixture
 def isolated_profiles(tmp_path, monkeypatch, _isolate_zed_home):
     """Isolated default home + one named profile, each with its own .env."""
-    from zed_constants import get_zed_home
-    from zed_cli import profiles
+    from hermes_constants import get_zed_home
+    from hermes_cli import profiles
 
     default_home = get_zed_home()
     profiles_root = default_home / "profiles"
@@ -41,9 +41,9 @@ def client(monkeypatch, isolated_profiles):
     except ImportError:
         pytest.skip("fastapi/starlette not installed")
 
-    import zed_state
-    from zed_constants import get_zed_home
-    from zed_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
+    import hermes_state
+    from hermes_constants import get_zed_home
+    from hermes_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
 
     monkeypatch.setattr(zed_state, "DEFAULT_DB_PATH", get_zed_home() / "state.db")
     # The dashboard process's os.environ may carry root-install credentials;
@@ -94,7 +94,7 @@ class TestProfileScopedMessagingReads:
     def test_scoped_read_returns_profile_path_command_and_startup_failure(
         self, client, isolated_profiles, monkeypatch
     ):
-        import zed_cli.web_server as web_server
+        import hermes_cli.web_server as web_server
 
         worker_home = isolated_profiles["worker_alpha"]
         (worker_home / ".env").write_text(
@@ -221,3 +221,4 @@ class TestProfileScopedMessagingWrites:
             encoding="utf-8"
         )
         assert "TELEGRAM_BOT_TOKEN=root-token" in root_env
+

@@ -17,7 +17,7 @@ import json
 
 import pytest
 
-from zed_cli import auth
+from hermes_cli import auth
 
 
 def _write_store(path, store):
@@ -167,3 +167,4 @@ def test_write_through_failure_does_not_break_profile_save(profile_and_root, mon
 
     profile = _read_store(profile_path)
     assert profile["providers"]["xai-oauth"]["tokens"]["refresh_token"] == "r"
+

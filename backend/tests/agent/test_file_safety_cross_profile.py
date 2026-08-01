@@ -57,7 +57,7 @@ def fake_zed(tmp_path, monkeypatch):
 
     # Monkeypatch the resolver functions used by file_safety so each test
     # can choose which profile is "active".
-    import zed_constants
+    import hermes_constants
     monkeypatch.setattr(zed_constants, "get_default_zed_root", lambda: root)
 
     # The reloads below ensure get_cross_profile_warning/classify see the patched root.
@@ -216,3 +216,4 @@ class TestGetCrossProfileWarning:
         # Must self-document as defense-in-depth so future reviewers
         # don't promote it to a hard block.
         assert "not a security boundary" in warn.lower()
+

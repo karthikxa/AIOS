@@ -7,7 +7,7 @@ boundaries.
 """
 import pytest
 
-from zed_state import SessionDB
+from hermes_state import SessionDB
 
 
 @pytest.fixture
@@ -146,3 +146,4 @@ class TestContentHydration:
         assert asst, "expected an assistant message"
         # tool_calls should be a list after hydration, not a string
         assert isinstance(asst[0].get("tool_calls"), list)
+

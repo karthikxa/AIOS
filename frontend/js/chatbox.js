@@ -1,9 +1,24 @@
 // Chat Box input interactions
 export function initChatBox(onSend) {
-  const chatPromptInput = document.getElementById('chatPromptInput');
-  const btnSend = document.getElementById('btnSend');
-  const attachBtn = document.getElementById('attachBtn');
-  const attachDropdown = document.getElementById('attachDropdown');
+const chatPromptInput = document.getElementById('chatPromptInput');
+const btnSend = document.getElementById('btnSend');
+const attachBtn = document.getElementById('attachBtn');
+const attachDropdown = document.getElementById('attachDropdown');
+const activeModelLabel = document.getElementById('activeModelName');
+
+// Resolve current active model name from the global models store.
+// Falls back to the visible label if store is unavailable.
+function getActiveModelName() {
+  try {
+    const state = modelsStore?.getState?.();
+    const active = state?.activeModel;
+    if (active) return active;
+  } catch {
+    // no-op
+  }
+  if (activeModelLabel?.textContent) return activeModelLabel.textContent.trim();
+  return '';
+}
 
   // ── Slash & Mention Popover (dynamic from backend) ────────────────────
   // Fetch all tools from backend and build slash commands with monochrome icons

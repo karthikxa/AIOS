@@ -228,8 +228,8 @@ def _discord_tools_loaded() -> bool:
     if not (os.environ.get("DISCORD_BOT_TOKEN") or "").strip():
         return False
     try:
-        from zed_cli.config import load_config
-        from zed_cli.tools_config import _get_platform_tools
+        from hermes_cli.config import load_config
+        from hermes_cli.tools_config import _get_platform_tools
         cfg = load_config()
         enabled = _get_platform_tools(cfg, "discord", include_default_mcp_servers=False)
         return "discord" in enabled or "discord_admin" in enabled
@@ -420,7 +420,7 @@ def build_session_context_prompt(
     lines.append("")
     lines.append("**Delivery options for scheduled tasks:**")
 
-    from zed_constants import display_zed_home
+    from hermes_constants import display_zed_home
 
     # Origin delivery
     if context.source.platform == Platform.LOCAL:
@@ -754,7 +754,7 @@ class SessionStore:
         # Initialize SQLite session database
         self._db = None
         try:
-            from zed_state import SessionDB
+            from hermes_state import SessionDB
             self._db = SessionDB()
         except Exception as e:
             print(f"[gateway] Warning: SQLite session store unavailable, falling back to JSONL: {e}")
@@ -824,7 +824,7 @@ class SessionStore:
         if source is not None and source.profile:
             return source.profile
         try:
-            from zed_cli.profiles import get_active_profile_name
+            from hermes_cli.profiles import get_active_profile_name
             return get_active_profile_name() or "default"
         except Exception:
             return None
@@ -1499,3 +1499,4 @@ def build_session_context(
         context.updated_at = session_entry.updated_at
     
     return context
+

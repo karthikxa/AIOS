@@ -3,7 +3,7 @@
 import os
 from unittest.mock import patch
 
-from zed_cli.model_switch import list_authenticated_providers
+from hermes_cli.model_switch import list_authenticated_providers
 
 
 # Minimum set of models that must be present for opencode-go no matter
@@ -58,3 +58,4 @@ def test_opencode_go_not_appears_when_no_creds():
         # opencode-go should not be in results
         opencode_go = next((p for p in providers if p["slug"] == "opencode-go"), None)
         assert opencode_go is None, "opencode-go should not appear without credentials"
+

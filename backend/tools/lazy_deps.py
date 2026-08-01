@@ -244,7 +244,7 @@ def _allow_lazy_installs() -> bool:
     if os.environ.get("ZED_DISABLE_LAZY_INSTALLS") == "1":
         return False
     try:
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
         cfg = load_config()
     except Exception:
         return True
@@ -355,7 +355,7 @@ def _is_present(spec: str) -> bool:
 def _venv_pip_install(specs: tuple[str, ...], *, timeout: int = 300) -> _InstallResult:
     """Install ``specs`` into the active venv using uv â†’ pip â†’ ensurepip ladder.
 
-    Mirrors the strategy in ``zed_cli.tools_config._pip_install`` but
+    Mirrors the strategy in ``hermes_cli.tools_config._pip_install`` but
     kept independent here so this module has no CLI dependency.
     """
     if not specs:
@@ -647,3 +647,4 @@ def ensure_and_bind(
 
     target_globals.update(bindings)
     return True
+

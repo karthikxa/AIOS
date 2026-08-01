@@ -1,15 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { UnifiedComposer } from './components/assistant-ui/unified-composer';
+import { PluginConnectDialog } from './components/PluginConnectDialog';
 import './index.css';
 
-
-// Mount the Unified Composer into the chat input area
-const container = document.getElementById('composer-trigger-popover-root');
-if (container) {
-  container.style.display = 'block';
-  const root = createRoot(container);
-  root.render(React.createElement(UnifiedComposer));
+// 1. Mount PluginConnectDialog if container is present
+const pluginDialogContainer = document.getElementById('plugin-dialog-root');
+if (pluginDialogContainer) {
+  const root = createRoot(pluginDialogContainer);
+  root.render(React.createElement(PluginConnectDialog));
 }
-
-

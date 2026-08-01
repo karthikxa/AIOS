@@ -887,7 +887,7 @@ class TestLoadGatewayConfig:
 
         monkeypatch.setenv("ZED_HOME", str(zed_home))
 
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
 
         config = load_config()
 
@@ -1045,3 +1045,4 @@ class TestHomeChannelEnvOverrides:
             home = config.platforms[platform].home_channel
             assert home is not None, f"{platform.value}: home_channel should not be None"
             assert (home.chat_id, home.name) == expected, platform.value
+

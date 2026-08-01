@@ -1270,7 +1270,7 @@ def execute_code(
             child_env["TZ"] = _tz_name
         child_env.pop("ZED_TIMEZONE", None)
 
-        from zed_constants import apply_subprocess_home_env
+        from hermes_constants import apply_subprocess_home_env
         apply_subprocess_home_env(child_env)
 
         # Resolve interpreter + CWD based on execute_code mode.
@@ -1575,7 +1575,7 @@ def _load_config() -> dict:
     key cleanly falls back to DEFAULT_EXECUTION_MODE.
     """
     try:
-        from zed_cli.config import read_raw_config
+        from hermes_cli.config import read_raw_config
 
         cfg = read_raw_config().get("code_execution", {})
         return cfg if isinstance(cfg, dict) else {}
@@ -1846,3 +1846,4 @@ registry.register(
     emoji="ðŸ",
     max_result_size_chars=100_000,
 )
+

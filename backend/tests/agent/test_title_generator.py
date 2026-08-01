@@ -52,11 +52,11 @@ class TestGenerateTitle:
     def test_title_language_reads_config(self):
         cfg = {"auxiliary": {"title_generation": {"language": "  French "}}}
 
-        with patch("zed_cli.config.load_config", return_value=cfg):
+        with patch("hermes_cli.config.load_config", return_value=cfg):
             assert _title_language() == "French"
-        with patch("zed_cli.config.load_config", return_value={}):
+        with patch("hermes_cli.config.load_config", return_value={}):
             assert _title_language() == ""
-        with patch("zed_cli.config.load_config", side_effect=RuntimeError("bad config")):
+        with patch("hermes_cli.config.load_config", side_effect=RuntimeError("bad config")):
             assert _title_language() == ""
 
     def test_strips_quotes(self):
@@ -273,3 +273,4 @@ class TestMaybeAutoTitle:
 
     def test_skips_if_no_session_db(self):
         maybe_auto_title(None, "sess-1", "hello", "response", [])  # no db
+

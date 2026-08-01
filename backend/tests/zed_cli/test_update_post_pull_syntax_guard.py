@@ -17,7 +17,7 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-from zed_cli import main as zed_main
+from hermes_cli import main as zed_main
 
 
 # ---------------------------------------------------------------------------
@@ -119,9 +119,9 @@ def test_validate_critical_files_syntax_detects_break_in_main_py(tmp_path):
 def test_validate_critical_files_syntax_tolerates_missing_files(tmp_path):
     """A refactor may legitimately remove one of the critical files â€” the
     guard should skip missing files, not falsely flag the install as broken."""
-    # Populate everything except zed_constants.py
+    # Populate everything except hermes_constants.py
     for relpath in zed_main._UPDATE_CRITICAL_FILES:
-        if relpath == "zed_constants.py":
+        if relpath == "hermes_constants.py":
             continue
         path = tmp_path / relpath
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -151,3 +151,4 @@ def test_production_tree_passes_syntax_guard():
         f"Critical-path file {failing_path} fails to parse on current main; "
         f"zed update would brick users. Error: {error}"
     )
+

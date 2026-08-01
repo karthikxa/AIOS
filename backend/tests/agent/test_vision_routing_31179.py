@@ -65,7 +65,7 @@ def _fresh_modules():
     for mod in list(sys.modules.keys()):
         if mod.startswith(("agent.auxiliary_client", "agent.image_routing",
                            "tools.vision_tools", "tools.browser_tool",
-                           "zed_cli.config")):
+                           "hermes_cli.config")):
             del sys.modules[mod]
 
 
@@ -295,3 +295,4 @@ model:
         import tools.browser_tool
         with patch.object(tools.browser_tool, "check_browser_requirements", return_value=True):
             assert tools.browser_tool.check_browser_vision_requirements() is True
+

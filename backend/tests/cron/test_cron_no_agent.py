@@ -29,7 +29,7 @@ def zed_env(tmp_path, monkeypatch):
 
     # Reload modules that cache get_zed_home() at import time.
     import importlib
-    import zed_constants
+    import hermes_constants
     importlib.reload(zed_constants)
     import cron.jobs
     importlib.reload(cron.jobs)
@@ -329,3 +329,4 @@ def test_run_job_script_path_traversal_still_blocked(zed_env):
     ok, output = _run_job_script("/etc/passwd")
     assert ok is False
     assert "Blocked" in output or "outside" in output
+

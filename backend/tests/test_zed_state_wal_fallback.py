@@ -18,8 +18,8 @@ from unittest.mock import patch
 
 import pytest
 
-import zed_state
-from zed_state import (
+import hermes_state
+from hermes_state import (
     SessionDB,
     apply_wal_with_fallback,
     format_session_db_unavailable,
@@ -58,17 +58,17 @@ def _open_blocking(path, reason="locking protocol", **kwargs):
 @pytest.fixture(autouse=True)
 def _reset_last_init_error():
     """Reset the module-global last-error before and after each test."""
-    zed_state._set_last_init_error(None)
+    hermes_state._set_last_init_error(None)
     yield
-    zed_state._set_last_init_error(None)
+    hermes_state._set_last_init_error(None)
 
 
 @pytest.fixture(autouse=True)
 def _reset_wal_fallback_warned_paths():
     """Reset the WAL-fallback warned-paths set so dedup doesn't leak between tests."""
-    zed_state._wal_fallback_warned_paths.clear()
+    hermes_state._wal_fallback_warned_paths.clear()
     yield
-    zed_state._wal_fallback_warned_paths.clear()
+    hermes_state._wal_fallback_warned_paths.clear()
 
 
 class TestApplyWalWithFallback:
@@ -269,7 +269,7 @@ class TestGetLastInitError:
         thread B succeeds concurrently.  thread A's /resume handler must
         still see A's cause â€” not B's None.
         """
-        zed_state._set_last_init_error("OperationalError: locking protocol")
+        hermes_state._set_last_init_error("OperationalError: locking protocol")
         # Now a "successful" init happens on another path â€” must NOT clear
         db = SessionDB(db_path=tmp_path / "ok2.db")
         try:
@@ -299,7 +299,7 @@ class TestGetLastInitError:
         def gated_connect(*args, **kwargs):
             return real_connect(str(target), factory=_BothPragmasFailConnection, **kwargs)
 
-        with patch("zed_state.sqlite3.connect", side_effect=gated_connect):
+        with patch("hermes_state.sqlite3.connect", side_effect=gated_connect):
             with pytest.raises(sqlite3.OperationalError):
                 SessionDB(db_path=target)
 
@@ -312,12 +312,12 @@ class TestGetLastInitError:
 class TestFormatSessionDbUnavailable:
     def test_bare_message_when_no_cause(self):
         """No init error recorded â†’ generic message."""
-        zed_state._set_last_init_error(None)
+        hermes_state._set_last_init_error(None)
         assert format_session_db_unavailable() == "Session database not available."
 
     def test_includes_cause(self):
         """Cause is surfaced for slash-command error strings."""
-        zed_state._set_last_init_error("OperationalError: generic SQLite error")
+        hermes_state._set_last_init_error("OperationalError: generic SQLite error")
         msg = format_session_db_unavailable()
         assert "generic SQLite error" in msg
         assert msg.startswith("Session database not available:")
@@ -325,7 +325,7 @@ class TestFormatSessionDbUnavailable:
 
     def test_adds_nfs_hint_for_locking_protocol(self):
         """Locking-protocol cause gets an NFS/SMB pointer for the user."""
-        zed_state._set_last_init_error("OperationalError: locking protocol")
+        hermes_state._set_last_init_error("OperationalError: locking protocol")
         msg = format_session_db_unavailable()
         assert "locking protocol" in msg
         assert "NFS/SMB" in msg
@@ -333,7 +333,7 @@ class TestFormatSessionDbUnavailable:
 
     def test_custom_prefix(self):
         """Callers can customize the prefix for context-specific messages."""
-        zed_state._set_last_init_error("OperationalError: locking protocol")
+        hermes_state._set_last_init_error("OperationalError: locking protocol")
         msg = format_session_db_unavailable(prefix="Cannot /resume")
         assert msg.startswith("Cannot /resume:")
 
@@ -350,7 +350,7 @@ class TestSessionDbUsesWalFallback:
         def gated_connect(*args, **kwargs):
             return real_connect(str(target), factory=factory, **kwargs)
 
-        with patch("zed_state.sqlite3.connect", side_effect=gated_connect):
+        with patch("hermes_state.sqlite3.connect", side_effect=gated_connect):
             db = SessionDB(db_path=target)
 
         try:
@@ -367,3 +367,4 @@ class TestSessionDbUsesWalFallback:
             assert get_last_init_error() is None
         finally:
             db.close()
+

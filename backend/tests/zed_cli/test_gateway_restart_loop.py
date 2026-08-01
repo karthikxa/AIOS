@@ -12,7 +12,7 @@ from argparse import Namespace
 
 import pytest
 
-from zed_cli.cron import (
+from hermes_cli.cron import (
     _contains_gateway_lifecycle_command,
     cron_command,
 )
@@ -199,7 +199,7 @@ class TestGatewaySelfTargetingGuard:
 
     def test_stop_refuses_inside_gateway(self, monkeypatch):
         monkeypatch.setenv("_ZED_GATEWAY", "1")
-        from zed_cli.gateway import gateway_command
+        from hermes_cli.gateway import gateway_command
         args = Namespace(gateway_command="stop", all=False, system=False)
         with pytest.raises(SystemExit) as exc_info:
             gateway_command(args)
@@ -207,7 +207,7 @@ class TestGatewaySelfTargetingGuard:
 
     def test_restart_refuses_inside_gateway(self, monkeypatch):
         monkeypatch.setenv("_ZED_GATEWAY", "1")
-        from zed_cli.gateway import gateway_command
+        from hermes_cli.gateway import gateway_command
         args = Namespace(gateway_command="restart", all=False, system=False)
         with pytest.raises(SystemExit) as exc_info:
             gateway_command(args)
@@ -219,7 +219,7 @@ class TestGatewaySelfTargetingGuard:
         # real signal delivery, which would trip the live-system guard) by
         # short-circuiting the first downstream call with a sentinel.
         monkeypatch.delenv("_ZED_GATEWAY", raising=False)
-        import zed_cli.gateway as gw
+        import hermes_cli.gateway as gw
 
         class _Reached(Exception):
             pass
@@ -238,7 +238,7 @@ class TestGatewaySelfTargetingGuard:
         # unset. The first thing restart does after the guard is the s6
         # dispatch check â€” sentinel it so we never reach real signal delivery.
         monkeypatch.delenv("_ZED_GATEWAY", raising=False)
-        import zed_cli.gateway as gw
+        import hermes_cli.gateway as gw
 
         class _Reached(Exception):
             pass
@@ -357,3 +357,4 @@ class TestTerminalToolGatewayLifecycleGuard:
         # approval flow handles it (here mocked as approved).
         assert result["exit_code"] == 0
         assert calls == ["systemctl restart zed-gateway"]
+

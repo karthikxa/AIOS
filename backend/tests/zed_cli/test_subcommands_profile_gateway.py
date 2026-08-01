@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import argparse
 
-from zed_cli.subcommands.gateway import build_gateway_parser
-from zed_cli.subcommands.profile import build_profile_parser
+from hermes_cli.subcommands.gateway import build_gateway_parser
+from hermes_cli.subcommands.profile import build_profile_parser
 
 
 def _h_gateway(args):  # pragma: no cover - identity only
@@ -121,3 +121,4 @@ def test_gateway_enroll_dispatch():
     assert ns.token == "tok"
     assert ns.connector_url == "wss://connector.example.com/relay"
     assert ns.gateway_id == "gw-1"
+

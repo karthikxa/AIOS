@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from zed_cli.runtime_provider import (
+from hermes_cli.runtime_provider import (
     _VALID_API_MODES,
     _maybe_apply_codex_app_server_runtime,
 )
@@ -296,3 +296,4 @@ class TestSpawnEnvIsolation:
         )
         assert "sandbox_workspace_write.network_access=false" in cmd
         assert all("danger" not in part for part in cmd)
+

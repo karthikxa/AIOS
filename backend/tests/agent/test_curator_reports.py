@@ -24,7 +24,7 @@ def curator_env(tmp_path, monkeypatch):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
     import importlib
-    import zed_constants
+    import hermes_constants
     importlib.reload(zed_constants)
     from agent import curator
     importlib.reload(curator)
@@ -433,3 +433,4 @@ def test_curator_report_has_no_cron_section_when_nothing_changes(curator_env_wit
     payload = json.loads((run_dir / "run.json").read_text())
     assert payload["cron_rewrites"]["jobs_updated"] == 0
     assert payload["counts"]["cron_jobs_rewritten"] == 0
+

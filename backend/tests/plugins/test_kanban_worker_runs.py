@@ -20,7 +20,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from zed_cli import kanban_db as kb
+from hermes_cli import kanban_db as kb
 
 
 # ---------------------------------------------------------------------------
@@ -438,3 +438,4 @@ def test_terminate_run_accepts_empty_body(client):
     # 404 because run doesn't exist â€” what we're asserting here is that
     # the endpoint doesn't 422 on a missing 'reason' field.
     assert r.status_code == 404
+

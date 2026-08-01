@@ -36,7 +36,7 @@ def _restore_tool_modules():
         if name == "tools"
         or name.startswith("tools.")
         or name == "zed_cli"
-        or name.startswith("zed_cli.")
+        or name.startswith("hermes_cli.")
         or name == "modal"
         or name.startswith("modal.")
     }
@@ -60,11 +60,11 @@ def _install_modal_test_modules(
     _reset_modules(("tools", "zed_cli", "modal"))
 
     zed_cli = types.ModuleType("zed_cli")
-    zed_cli.__path__ = []  # type: ignore[attr-defined]
+    hermes_cli.__path__ = []  # type: ignore[attr-defined]
     sys.modules["zed_cli"] = zed_cli
     zed_home = tmp_path / "zed-home"
     os.environ["ZED_HOME"] = str(zed_home)
-    sys.modules["zed_cli.config"] = types.SimpleNamespace(
+    sys.modules["hermes_cli.config"] = types.SimpleNamespace(
         get_zed_home=lambda: zed_home,
     )
 
@@ -256,3 +256,4 @@ def test_resolve_modal_image_uses_snapshot_ids_and_registry_images(tmp_path):
     assert state["from_id_calls"] == ["im-snapshot123"]
     assert state["registry_calls"][0][0] == "python:3.11"
     assert "ensurepip" in state["registry_calls"][0][1][0]
+

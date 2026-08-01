@@ -36,7 +36,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from zed_state import SessionDB
+from hermes_state import SessionDB
 
 
 def _build_agent_with_db(db: SessionDB, session_id: str):
@@ -176,7 +176,7 @@ def test_skipped_compression_returns_messages_unchanged(tmp_path: Path) -> None:
 class _NoLockSubsystemDB:
     """Wraps a real SessionDB but simulates a pre-#34351 version skew.
 
-    A long-lived process can hold ``zed_state.SessionDB`` bound to the
+    A long-lived process can hold ``hermes_state.SessionDB`` bound to the
     OLD class in memory (no compression-lock methods) while a lazily
     re-imported ``conversation_compression.py`` calls the NEW lock code.
     ``try_acquire_compression_lock`` then raises ``AttributeError`` â€” which
@@ -310,3 +310,4 @@ def test_review_fork_disables_compression_to_prevent_stale_parent_fork() -> None
         "conversation_loop.py only short-circuit when compression_enabled is "
         "False â€” this flag MUST be cleared on the review fork."
     )
+

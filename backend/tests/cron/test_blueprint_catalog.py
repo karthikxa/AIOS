@@ -159,7 +159,7 @@ def isolated_home(tmp_path, monkeypatch):
     home = tmp_path / ".zed"
     home.mkdir()
     monkeypatch.setenv("ZED_HOME", str(home))
-    import zed_constants
+    import hermes_constants
     importlib.reload(zed_constants)
     import cron.jobs as jobs
     importlib.reload(jobs)
@@ -168,14 +168,14 @@ def isolated_home(tmp_path, monkeypatch):
 
 class TestCommandHandler:
     def test_bare_lists_catalog(self, isolated_home):
-        from zed_cli.blueprint_cmd import handle_blueprint_command
+        from hermes_cli.blueprint_cmd import handle_blueprint_command
 
         res = handle_blueprint_command("")
         assert "morning-brief" in res.text and "Automation Blueprints" in res.text
         assert res.agent_seed is None
 
     def test_name_seeds_agent(self, isolated_home):
-        from zed_cli.blueprint_cmd import handle_blueprint_command
+        from hermes_cli.blueprint_cmd import handle_blueprint_command
 
         # `/blueprint <name>` (no inline slots) now seeds the agent to ask
         # the user for each value conversationally instead of dumping fields.
@@ -187,7 +187,7 @@ class TestCommandHandler:
         assert "* * *" in res.agent_seed
 
     def test_name_match_is_forgiving(self, isolated_home):
-        from zed_cli.blueprint_cmd import handle_blueprint_command, match_blueprint
+        from hermes_cli.blueprint_cmd import handle_blueprint_command, match_blueprint
 
         # prefix match
         r, cands = match_blueprint("morning")
@@ -200,7 +200,7 @@ class TestCommandHandler:
         assert res.agent_seed is not None
 
     def test_fill_creates_job(self, isolated_home):
-        from zed_cli.blueprint_cmd import handle_blueprint_command
+        from hermes_cli.blueprint_cmd import handle_blueprint_command
 
         res = handle_blueprint_command("morning-brief time=07:30 deliver=telegram")
         assert "Scheduled" in res.text
@@ -211,14 +211,14 @@ class TestCommandHandler:
         assert jobs[0].get("deliver") == "telegram"
 
     def test_unknown_blueprint(self, isolated_home):
-        from zed_cli.blueprint_cmd import handle_blueprint_command
+        from hermes_cli.blueprint_cmd import handle_blueprint_command
 
         res = handle_blueprint_command("zzz-nope-nothing")
         assert "No automation blueprint" in res.text
         assert res.agent_seed is None
 
     def test_bad_value_names_slot(self, isolated_home):
-        from zed_cli.blueprint_cmd import handle_blueprint_command
+        from hermes_cli.blueprint_cmd import handle_blueprint_command
 
         res = handle_blueprint_command("morning-brief time=99:99")
         assert "Can't set up" in res.text and "time" in res.text
@@ -243,3 +243,4 @@ class TestDocsGenerator:
         # Each entry must round-trip through json and carry the surfaces.
         json.dumps(index)
         assert all("command" in e and "appUrl" in e for e in index)
+

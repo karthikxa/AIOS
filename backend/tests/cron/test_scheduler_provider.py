@@ -57,7 +57,7 @@ def test_desktop_ticker_calls_tick_then_stops():
     """The desktop dashboard ticker loop calls cron.scheduler.tick and exits
     once the stop_event is set. Desktop has no live adapters, so it ticks with
     no adapters/loop."""
-    from zed_cli.web_server import _start_desktop_cron_ticker
+    from hermes_cli.web_server import _start_desktop_cron_ticker
 
     calls = []
     stop = threading.Event()
@@ -166,7 +166,7 @@ def test_inprocess_provider_stop_is_noop():
 
 def test_default_config_cron_provider_is_empty():
     """The new cron.provider key defaults to empty (= built-in)."""
-    from zed_cli.config import DEFAULT_CONFIG
+    from hermes_cli.config import DEFAULT_CONFIG
 
     assert DEFAULT_CONFIG["cron"]["provider"] == ""
 
@@ -188,7 +188,7 @@ def test_load_unknown_cron_scheduler_returns_none():
 
 def test_resolve_defaults_to_builtin(monkeypatch):
     """Empty cron.provider â†’ built-in."""
-    import zed_cli.config as cfg
+    import hermes_cli.config as cfg
     from cron import scheduler_provider as sp
 
     monkeypatch.setattr(cfg, "load_config", lambda: {"cron": {"provider": ""}})
@@ -198,7 +198,7 @@ def test_resolve_defaults_to_builtin(monkeypatch):
 
 def test_resolve_no_cron_section_falls_back_to_builtin(monkeypatch):
     """Config with no cron section at all â†’ built-in (cfg_get returns default)."""
-    import zed_cli.config as cfg
+    import hermes_cli.config as cfg
     from cron import scheduler_provider as sp
 
     monkeypatch.setattr(cfg, "load_config", lambda: {})
@@ -208,7 +208,7 @@ def test_resolve_no_cron_section_falls_back_to_builtin(monkeypatch):
 
 def test_resolve_unknown_provider_falls_back_to_builtin(monkeypatch):
     """A named provider that doesn't exist â†’ built-in (cron never dies)."""
-    import zed_cli.config as cfg
+    import hermes_cli.config as cfg
     from cron import scheduler_provider as sp
 
     monkeypatch.setattr(cfg, "load_config", lambda: {"cron": {"provider": "nope-not-real"}})
@@ -218,7 +218,7 @@ def test_resolve_unknown_provider_falls_back_to_builtin(monkeypatch):
 
 def test_resolve_unavailable_provider_falls_back(monkeypatch):
     """A provider that loads but reports is_available()==False â†’ built-in."""
-    import zed_cli.config as cfg
+    import hermes_cli.config as cfg
     import plugins.cron as pc
     from cron import scheduler_provider as sp
     from cron.scheduler_provider import CronScheduler
@@ -242,7 +242,7 @@ def test_resolve_unavailable_provider_falls_back(monkeypatch):
 
 def test_resolve_available_provider_is_used(monkeypatch):
     """A provider that loads and is available is returned (not the fallback)."""
-    import zed_cli.config as cfg
+    import hermes_cli.config as cfg
     import plugins.cron as pc
     from cron import scheduler_provider as sp
     from cron.scheduler_provider import CronScheduler
@@ -332,3 +332,4 @@ def test_fire_due_missing_job_does_not_run(monkeypatch):
 
     assert InProcessCronScheduler().fire_due("gone") is False
     assert ran == []
+

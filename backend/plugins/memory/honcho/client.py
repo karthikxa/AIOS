@@ -20,8 +20,8 @@ import hashlib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from zed_constants import get_zed_home
-from zed_cli.profiles import _get_default_zed_home
+from hermes_constants import get_zed_home
+from hermes_cli.profiles import _get_default_zed_home
 from plugins.plugin_utils import SingletonSlot
 from typing import Any, TYPE_CHECKING
 
@@ -64,7 +64,7 @@ def resolve_active_host() -> str:
         return explicit
 
     try:
-        from zed_cli.profiles import get_active_profile_name
+        from hermes_cli.profiles import get_active_profile_name
         profile = get_active_profile_name()
         return profile_host_key(profile)
     except Exception:
@@ -804,7 +804,7 @@ def get_honcho_client(config: HonchoClientConfig | None = None) -> Honcho:
         resolved_timeout = config.timeout
         if not resolved_base_url or resolved_timeout is None:
             try:
-                from zed_cli.config import load_config
+                from hermes_cli.config import load_config
                 zed_cfg = load_config()
                 honcho_cfg = zed_cfg.get("honcho", {})
                 if isinstance(honcho_cfg, dict):
@@ -880,3 +880,4 @@ def get_honcho_client(config: HonchoClientConfig | None = None) -> Honcho:
 def reset_honcho_client() -> None:
     """Reset the Honcho client singleton (useful for testing)."""
     _honcho_client_slot.reset()
+

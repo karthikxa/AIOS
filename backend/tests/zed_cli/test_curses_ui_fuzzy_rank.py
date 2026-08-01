@@ -1,5 +1,5 @@
 ﻿"""Tests for the ranked fuzzy scorer used by the searchable curses pickers."""
-from zed_cli.curses_ui import (
+from hermes_cli.curses_ui import (
     _SearchState,
     _filter_indices,
     _fuzzy_score,
@@ -125,3 +125,4 @@ def test_filter_indices_stable_for_equal_scores():
     # Identical labels score identically; original order is the tiebreak.
     items = ["ab", "ab", "ab"]
     assert _filter_indices(items, "ab") == [0, 1, 2]
+

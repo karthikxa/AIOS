@@ -23,8 +23,8 @@ def _restore_stdout():
 def server():
     with patch.dict("sys.modules", {
         "zed_constants": MagicMock(get_zed_home=MagicMock(return_value="/tmp/zed_test")),
-        "zed_cli.env_loader": MagicMock(),
-        "zed_cli.banner": MagicMock(),
+        "hermes_cli.env_loader": MagicMock(),
+        "hermes_cli.banner": MagicMock(),
         "zed_state": MagicMock(),
     }):
         import importlib
@@ -947,7 +947,7 @@ def test_make_agent_accepts_list_system_prompt(server, monkeypatch):
     monkeypatch.setitem(sys.modules, "run_agent", types.SimpleNamespace(AIAgent=_Agent))
     monkeypatch.setitem(
         sys.modules,
-        "zed_cli.runtime_provider",
+        "hermes_cli.runtime_provider",
         types.SimpleNamespace(
             resolve_runtime_provider=lambda **_kwargs: {
                 "provider": "test",
@@ -1043,7 +1043,7 @@ def test_slash_exec_handles_plugin_commands_in_live_gateway(server):
     server._sessions[sid] = {"session_key": sid, "agent": None, "slash_worker": worker}
 
     with patch(
-        "zed_cli.plugins.get_plugin_command_handler",
+        "hermes_cli.plugins.get_plugin_command_handler",
         lambda name: (lambda arg: f"plugin:{arg}") if name == "plugin-cmd" else None,
     ):
         resp = server.handle_request({
@@ -1073,7 +1073,7 @@ def test_slash_exec_plugin_lookup_failure_falls_back_to_worker(server):
     server._sessions[sid] = {"session_key": sid, "agent": None, "slash_worker": worker}
 
     with patch(
-        "zed_cli.plugins.get_plugin_command_handler",
+        "hermes_cli.plugins.get_plugin_command_handler",
         side_effect=RuntimeError("discovery boom"),
     ):
         resp = server.handle_request({
@@ -1106,7 +1106,7 @@ def test_slash_exec_plugin_handler_error_returns_output(server):
     server._sessions[sid] = {"session_key": sid, "agent": None, "slash_worker": worker}
 
     with patch(
-        "zed_cli.plugins.get_plugin_command_handler",
+        "hermes_cli.plugins.get_plugin_command_handler",
         lambda name: handler if name == "plugin-cmd" else None,
     ):
         resp = server.handle_request({
@@ -1353,7 +1353,7 @@ def test_command_dispatch_awaits_async_plugin_handler(server):
         return f"async:{arg}"
 
     with patch(
-        "zed_cli.plugins.get_plugin_command_handler",
+        "hermes_cli.plugins.get_plugin_command_handler",
         lambda name: _handler if name == "async-cmd" else None,
     ):
         resp = server.handle_request({
@@ -1465,3 +1465,4 @@ def test_dispatch_unknown_long_method_still_goes_inline(server):
     resp = server.dispatch({"id": "r4", "method": "some.method", "params": {}})
 
     assert resp["result"] == {"ok": True}
+

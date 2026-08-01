@@ -165,7 +165,7 @@ def _resolve_matrix_bang_command(name: str) -> str | None:
         candidates.append(hyphenated)
 
     try:
-        from zed_cli.commands import is_gateway_known_command
+        from hermes_cli.commands import is_gateway_known_command
 
         for candidate in candidates:
             if is_gateway_known_command(candidate):
@@ -342,7 +342,7 @@ MAX_MESSAGE_LENGTH = 4000
 
 # Store directory for E2EE keys and sync state.
 # Uses get_zed_home() so each profile gets its own Matrix store.
-from zed_constants import get_zed_dir as _get_zed_dir
+from hermes_constants import get_zed_dir as _get_zed_dir
 
 _STORE_DIR = _get_zed_dir("platforms/matrix/store", "matrix/store")
 _CRYPTO_DB_PATH = _STORE_DIR / "crypto.db"
@@ -1993,7 +1993,7 @@ class MatrixAdapter(BasePlatformAdapter):
             )
 
         try:
-            from zed_cli.providers import get_label
+            from hermes_cli.providers import get_label
             provider_label = get_label(current_provider)
         except Exception:
             provider_label = current_provider
@@ -4106,3 +4106,4 @@ class MatrixAdapter(BasePlatformAdapter):
             result = result.replace(f"\x00PROTECTED{idx}\x00", original)
 
         return result
+

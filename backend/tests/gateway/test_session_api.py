@@ -8,7 +8,7 @@ from aiohttp.test_utils import TestClient, TestServer
 
 from gateway.config import PlatformConfig
 from gateway.platforms.api_server import APIServerAdapter
-from zed_state import SessionDB
+from hermes_state import SessionDB
 
 
 @pytest.fixture
@@ -438,3 +438,4 @@ async def test_session_header_rejected_without_api_key(adapter, session_db):
         assert resp.status == 403
         data = await resp.json()
         assert "X-Zed-Session-Key requires API key" in data["error"]["message"]
+

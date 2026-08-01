@@ -1296,7 +1296,7 @@ class LineAdapter(BasePlatformAdapter):
             return web.Response(status=404, text="not found")
 
         try:
-            from zed_constants import get_zed_home
+            from hermes_constants import get_zed_home
             zed_home = Path(get_zed_home()).resolve()
         except Exception:
             zed_home = Path.home().joinpath(".zed").resolve()
@@ -1579,7 +1579,7 @@ def interactive_setup() -> None:
     """Minimal stdin wizard for ``zed setup line``.
 
     Mirrors the irc/teams style: prompts for the two required vars, plus
-    one optional public URL. Writes to ``~/.zed/.env`` via ``zed_cli.config``.
+    one optional public URL. Writes to ``~/.zed/.env`` via ``hermes_cli.config``.
     """
     print()
     print("LINE Messaging API setup")
@@ -1589,9 +1589,9 @@ def interactive_setup() -> None:
     print()
 
     try:
-        from zed_cli.config import get_env_var, set_env_var
+        from hermes_cli.config import get_env_var, set_env_var
     except ImportError:
-        print("zed_cli.config not available; set LINE_* vars manually in ~/.zed/.env")
+        print("hermes_cli.config not available; set LINE_* vars manually in ~/.zed/.env")
         return
 
     def _prompt(var: str, prompt: str, *, secret: bool = False) -> None:
@@ -1599,7 +1599,7 @@ def interactive_setup() -> None:
         suffix = " [keep current]" if existing else ""
         try:
             if secret:
-                from zed_cli.secret_prompt import masked_secret_prompt
+                from hermes_cli.secret_prompt import masked_secret_prompt
                 value = masked_secret_prompt(f"{prompt}{suffix}: ")
             else:
                 value = input(f"{prompt}{suffix}: ").strip()
@@ -1650,3 +1650,4 @@ def register(ctx) -> None:
             "to fetch the reply via a fresh free token."
         ),
     )
+

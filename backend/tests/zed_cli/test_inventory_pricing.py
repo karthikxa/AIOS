@@ -5,8 +5,8 @@ columns + Free/Pro badges and gate paid models on free Nous accounts, the
 same way the `zed model` CLI picker does.
 """
 
-import zed_cli.inventory as inv
-import zed_cli.models as models_mod
+import hermes_cli.inventory as inv
+import hermes_cli.models as models_mod
 
 
 def _patch_pricing(monkeypatch, *, free_tier, pricing, unavailable=None):
@@ -96,3 +96,4 @@ def test_apply_pricing_failure_is_swallowed(monkeypatch):
     inv._apply_pricing(rows)  # must not raise
 
     assert "pricing" not in rows[0]
+

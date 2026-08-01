@@ -728,7 +728,7 @@ class TestXAIBackendWiring:
 class TestXAIProviderOAuthPath:
     """Verifies the provider works when credentials come from the OAuth
     runtime resolver (``zed auth`` sign-in) rather than an env-var key.
-    Patches at the ``zed_cli.runtime_provider.resolve_runtime_provider``
+    Patches at the ``hermes_cli.runtime_provider.resolve_runtime_provider``
     boundary so the full ``tools.xai_http.resolve_xai_http_credentials``
     chain is exercised end-to-end.
     """
@@ -755,7 +755,7 @@ class TestXAIProviderOAuthPath:
             return _mock_resp(_responses_payload(json.dumps({"results": []})))
 
         with patch(
-            "zed_cli.runtime_provider.resolve_runtime_provider",
+            "hermes_cli.runtime_provider.resolve_runtime_provider",
             return_value=oauth_runtime,
         ), patch.object(xai_provider, "_load_xai_web_config", return_value={}), \
              patch("httpx.post", side_effect=fake_post):
@@ -764,3 +764,4 @@ class TestXAIProviderOAuthPath:
         assert result["success"] is True
         assert captured["url"] == "https://api.x.ai/v1/responses"
         assert captured["headers"].get("Authorization") == "Bearer ya29.fake-oauth-access-token"
+

@@ -522,7 +522,7 @@ class GoogleChatAdapter(BasePlatformAdapter):
         # made the in-memory version of this heuristic flaky for
         # multi-restart sessions).
         try:
-            from zed_constants import get_zed_home as _get_zed_home
+            from hermes_constants import get_zed_home as _get_zed_home
             _zed_home = _get_zed_home()
         except (ModuleNotFoundError, ImportError):
             _zed_home = _Path.home() / ".zed"
@@ -3037,14 +3037,14 @@ def interactive_setup() -> None:
     prompt for env vars, persist them to ``~/.zed/.env`` so the next
     gateway restart picks them up.
     """
-    from zed_cli.cli_output import (
+    from hermes_cli.cli_output import (
         print_info,
         print_success,
         print_warning,
         prompt,
         prompt_yes_no,
     )
-    from zed_cli.config import get_env_value, save_env_value
+    from hermes_cli.config import get_env_value, save_env_value
 
     existing_sub = get_env_value("GOOGLE_CHAT_SUBSCRIPTION_NAME")
     if existing_sub:
@@ -3346,3 +3346,4 @@ def register(ctx) -> None:
             "space/thread."
         ),
     )
+

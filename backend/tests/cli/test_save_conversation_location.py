@@ -26,9 +26,9 @@ def zed_home(tmp_path, monkeypatch):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.setenv("ZED_HOME", str(home))
     # Clear any cached zed_home computation
-    import zed_constants
+    import hermes_constants
     if hasattr(zed_constants, "_zed_home_cache"):
-        zed_constants._zed_home_cache = None
+        hermes_constants._zed_home_cache = None
     return home
 
 
@@ -99,3 +99,4 @@ def test_save_conversation_empty_history_does_nothing(zed_home, capsys):
     assert not saved_dir.exists() or not list(saved_dir.iterdir())
     out = capsys.readouterr().out
     assert "No conversation to save" in out
+

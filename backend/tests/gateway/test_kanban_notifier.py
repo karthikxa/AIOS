@@ -4,7 +4,7 @@ from pathlib import Path
 
 from gateway.config import Platform
 from gateway.run import GatewayRunner
-from zed_cli import kanban_db as kb
+from hermes_cli import kanban_db as kb
 
 
 class RecordingAdapter:
@@ -233,3 +233,4 @@ def test_notifier_redelivers_same_kind_on_dispatch_cycle(tmp_path, monkeypatch):
         f"deliveries (texts: {[d['text'] for d in adapter.sent]})"
     )
     assert "crashed" in adapter.sent[1]["text"].lower()
+

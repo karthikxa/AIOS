@@ -50,7 +50,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +81,7 @@ def write_approval_enabled(subsystem: str) -> bool:
     if subsystem not in _SUBSYSTEMS:
         return False
     try:
-        from zed_cli.config import load_config, cfg_get
+        from hermes_cli.config import load_config, cfg_get
         cfg = load_config()
         raw = cfg_get(cfg, subsystem, CONFIG_KEY, default=False)
     except Exception:
@@ -491,3 +491,4 @@ def skill_pending_diff(record: Dict[str, Any]) -> str:
     )
     text = "".join(diff)
     return text or "(no textual change)"
+

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from cli import ZedCLI
-from zed_cli.commands import resolve_command
+from hermes_cli.commands import resolve_command
 
 
 def _make_cli():
@@ -99,3 +99,4 @@ def test_profile_command_reports_custom_root_profile(monkeypatch, tmp_path, caps
     out = capsys.readouterr().out
     assert "Profile: coder" in out
     assert f"Home:    {profile_home}" in out
+

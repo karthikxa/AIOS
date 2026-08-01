@@ -95,8 +95,8 @@ const initialModels = [
   },
   {
     id: "qwen",
-    name: "Alibaba / Qwen",
-    provider: "Alibaba / Qwen",
+    name: "Qwen",
+    provider: "Qwen",
     desc: "open-weight; Alibaba Cloud Qwen series",
     badge: null,
     tags: ["Open-source"],
@@ -248,8 +248,8 @@ const initialModels = [
   },
   {
     id: "groq",
-    name: "Groq (compound)",
-    provider: "Groq (compound)",
+    name: "Groq",
+    provider: "Groq",
     desc: "Groq's own compound routing models (multi-model ensemble)",
     badge: null,
     tags: ["Official"],
@@ -283,6 +283,60 @@ const initialModels = [
       orgId: "",
       overrides: ""
     }
+  },
+
+  // Nous free models via Hermes Nous auth
+  {
+    id: "stepfun/step-3.7-flash",
+    name: "Step 3.7 Flash",
+    provider: "Nous Research",
+    desc: "Nous free model — routed via Hermes Nous auth.",
+    tags: ["Free"],
+    status: "connected",
+    logoClass: "logo-stepfun",
+    logoSrc: "assets/models/stepfun.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { baseUrl: "https://inference-api.nousresearch.com/v1", endpoint: "nous" }
+  },
+  {
+    id: "tencent/hy3",
+    name: "Hy3",
+    provider: "Tencent",
+    desc: "Tencent HyperCLOVA via Hermes.",
+    tags: ["Fast"],
+    status: "connected",
+    logoClass: "logo-hy3",
+    logoSrc: "assets/models/hy3.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { baseUrl: "https://inference-api.nousresearch.com/v1", endpoint: "nous" }
+  },
+  {
+    id: "poolside/laguna-s-2.1",
+    name: "Laguna S 2.1",
+    provider: "Nous Research",
+    desc: "Nous free model — routed via Hermes Nous auth.",
+    tags: ["Free"],
+    status: "connected",
+    logoClass: "logo-poolside",
+    logoSrc: "assets/models/poolside.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { baseUrl: "https://inference-api.nousresearch.com/v1", endpoint: "nous" }
+  },
+  {
+    id: "inclusionai/ling-3.0-flash",
+    name: "Ling 3.0 Flash",
+    provider: "Nous Research",
+    desc: "Nous free model — routed via Hermes Nous auth.",
+    tags: ["Free"],
+    status: "connected",
+    logoClass: "logo-ling",
+    logoSrc: "assets/models/ling-3.0-flash.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { baseUrl: "https://inference-api.nousresearch.com/v1", endpoint: "nous" }
   },
 
   // 2. Individual Models (type: "official")
@@ -525,11 +579,11 @@ const initialModels = [
     settings: { apiKey: "", baseUrl: "" }
   },
 
-  // Alibaba / Qwen
+  // Qwen
   {
     id: "qwen3-coder-480b-free",
     name: "Qwen3 Coder 480B (free)",
-    provider: "Alibaba / Qwen",
+    provider: "Qwen",
     desc: "Free code-focused Qwen3 model.",
     tags: ["Coding"],
     status: "disconnected",
@@ -542,7 +596,7 @@ const initialModels = [
   {
     id: "qwen3-32b-groq",
     name: "Qwen3 32B (Groq)",
-    provider: "Alibaba / Qwen",
+    provider: "Qwen",
     desc: "Qwen3 32B model hosted on Groq.",
     tags: ["Ultra-fast"],
     status: "disconnected",
@@ -555,7 +609,7 @@ const initialModels = [
   {
     id: "qwen3-next-80b-free",
     name: "Qwen3-Next 80B (free)",
-    provider: "Alibaba / Qwen",
+    provider: "Qwen",
     desc: "Free next-gen Qwen3 80B model.",
     tags: ["Latest"],
     status: "disconnected",
@@ -801,11 +855,11 @@ const initialModels = [
     settings: { apiKey: "", baseUrl: "" }
   },
 
-  // Groq (compound)
+  // Groq
   {
     id: "compound-groq",
     name: "Compound (Groq)",
-    provider: "Groq (compound)",
+    provider: "Groq",
     desc: "Ensemble router model hosted on Groq.",
     tags: ["Ensemble"],
     status: "disconnected",
@@ -818,7 +872,7 @@ const initialModels = [
   {
     id: "compound-mini-groq",
     name: "Compound Mini (Groq)",
-    provider: "Groq (compound)",
+    provider: "Groq",
     desc: "Lightweight ensemble model hosted on Groq.",
     tags: ["Ensemble"],
     status: "disconnected",
@@ -842,6 +896,632 @@ const initialModels = [
     type: "official",
     isPrimary: false,
     settings: { apiKey: "", baseUrl: "" }
+  },
+
+  // 2. Individual Models (type: "official")
+  {
+    id: "gpt-oss-20b-free",
+    name: "GPT-OSS 20B (free)",
+    provider: "OpenAI",
+    desc: "Free 20B open-weight OpenAI release.",
+    tags: ["Lightweight"],
+    status: "disconnected",
+    logoClass: "logo-openai",
+    logoSrc: "assets/models/openai.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "gpt-oss-20b-groq",
+    name: "GPT-OSS 20B (Groq)",
+    provider: "OpenAI",
+    desc: "20B open-weight OpenAI release hosted on Groq.",
+    tags: ["Ultra-fast"],
+    status: "disconnected",
+    logoClass: "logo-openai",
+    logoSrc: "assets/models/openai.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "gpt-oss-20b-pollinations",
+    name: "GPT-OSS 20B (Pollinations)",
+    provider: "OpenAI",
+    desc: "20B open-weight OpenAI release hosted on Pollinations.",
+    tags: ["Creative"],
+    status: "disconnected",
+    logoClass: "logo-openai",
+    logoSrc: "assets/models/openai.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "gpt-oss-safeguard-20b-groq",
+    name: "GPT-OSS Safeguard 20B (Groq)",
+    provider: "OpenAI",
+    desc: "Moderation aligned open-weight OpenAI release on Groq.",
+    tags: ["Safety"],
+    status: "disconnected",
+    logoClass: "logo-openai",
+    logoSrc: "assets/models/openai.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+
+  // Google
+  {
+    id: "gemini-2.5-flash",
+    name: "Gemini 2.5 Flash",
+    provider: "Google",
+    desc: "High-speed Google Gemini model.",
+    tags: ["High-speed"],
+    status: "disconnected",
+    logoClass: "logo-google",
+    logoSrc: "assets/models/google.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://generativelanguage.googleapis.com" }
+  },
+  {
+    id: "gemini-2.5-flash-lite",
+    name: "Gemini 2.5 Flash-Lite",
+    provider: "Google",
+    desc: "Highly efficient Google Gemini model.",
+    tags: ["Efficient"],
+    status: "disconnected",
+    logoClass: "logo-google",
+    logoSrc: "assets/models/google.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://generativelanguage.googleapis.com" }
+  },
+  {
+    id: "gemini-3-flash-preview",
+    name: "Gemini 3 Flash Preview",
+    provider: "Google",
+    desc: "Preview version of Gemini 3 Flash.",
+    tags: ["BETA"],
+    status: "disconnected",
+    logoClass: "logo-google",
+    logoSrc: "assets/models/google.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://generativelanguage.googleapis.com" }
+  },
+  {
+    id: "gemini-3-pro",
+    name: "Gemini 3 Pro",
+    provider: "Google",
+    desc: "Google's next generation flagship model.",
+    tags: ["BETA"],
+    status: "disconnected",
+    logoClass: "logo-google",
+    logoSrc: "assets/models/google.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://generativelanguage.googleapis.com" }
+  },
+  {
+    id: "gemini-3.1-flash-lite-preview",
+    name: "Gemini 3.1 Flash-Lite Preview",
+    provider: "Google",
+    desc: "Preview version of Gemini 3.1 Flash-Lite.",
+    tags: ["BETA"],
+    status: "disconnected",
+    logoClass: "logo-google",
+    logoSrc: "assets/models/google.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://generativelanguage.googleapis.com" }
+  },
+  {
+    id: "gemini-3.5-flash",
+    name: "Gemini 3.5 Flash",
+    provider: "Google",
+    desc: "Advanced Google Gemini 3.5 model.",
+    tags: ["Latest"],
+    status: "disconnected",
+    logoClass: "logo-google",
+    logoSrc: "assets/models/google.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://generativelanguage.googleapis.com" }
+  },
+  {
+    id: "gemma-4-26b-a4b-free",
+    name: "Gemma 4 26B-A4B (free)",
+    provider: "Google",
+    desc: "Free open-weight Gemma 4 model.",
+    tags: ["Open-weights"],
+    status: "disconnected",
+    logoClass: "logo-google",
+    logoSrc: "assets/models/google.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "gemma-4-26b-it",
+    name: "Gemma 4 26B IT",
+    provider: "Google",
+    desc: "Instruction-tuned Gemma 4 26B.",
+    tags: ["Instruct"],
+    status: "disconnected",
+    logoClass: "logo-google",
+    logoSrc: "assets/models/google.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "gemma-4-31b-it",
+    name: "Gemma 4 31B IT",
+    provider: "Google",
+    desc: "Instruction-tuned Gemma 4 31B.",
+    tags: ["Instruct"],
+    status: "disconnected",
+    logoClass: "logo-google",
+    logoSrc: "assets/models/google.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+
+  // Meta
+  {
+    id: "llama-3.1-8b-instant",
+    name: "Llama 3.1 8B Instant",
+    provider: "Meta",
+    desc: "Fast, efficient Llama 3.1 8B model.",
+    tags: ["High-speed"],
+    status: "disconnected",
+    logoClass: "logo-meta",
+    logoSrc: "assets/models/meta.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "llama-3.2-3b-free",
+    name: "Llama 3.2 3B (free)",
+    provider: "Meta",
+    desc: "Free lightweight Llama 3.2 3B model.",
+    tags: ["Free"],
+    status: "disconnected",
+    logoClass: "logo-meta",
+    logoSrc: "assets/models/meta.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "llama-3.3-70b",
+    name: "Llama 3.3 70B",
+    provider: "Meta",
+    desc: "State-of-the-art Llama 3.3 70B model.",
+    tags: ["High-accuracy"],
+    status: "disconnected",
+    logoClass: "logo-meta",
+    logoSrc: "assets/models/meta.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "llama-3.3-70b-or-free",
+    name: "Llama 3.3 70B (OR free)",
+    provider: "Meta",
+    desc: "Free alternative Llama 3.3 70B model.",
+    tags: ["Free"],
+    status: "disconnected",
+    logoClass: "logo-meta",
+    logoSrc: "assets/models/meta.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "llama-4-scout",
+    name: "Llama 4 Scout",
+    provider: "Meta",
+    desc: "Next-gen Llama 4 preview model.",
+    tags: ["BETA"],
+    status: "disconnected",
+    logoClass: "logo-meta",
+    logoSrc: "assets/models/meta.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+
+  // Qwen
+  {
+    id: "qwen3-coder-480b-free",
+    name: "Qwen3 Coder 480B (free)",
+    provider: "Qwen",
+    desc: "Free code-focused Qwen3 model.",
+    tags: ["Coding"],
+    status: "disconnected",
+    logoClass: "logo-qwen",
+    logoSrc: "assets/models/qwen.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "qwen3-32b-groq",
+    name: "Qwen3 32B (Groq)",
+    provider: "Qwen",
+    desc: "Qwen3 32B model hosted on Groq.",
+    tags: ["Ultra-fast"],
+    status: "disconnected",
+    logoClass: "logo-qwen",
+    logoSrc: "assets/models/qwen.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "qwen3-next-80b-free",
+    name: "Qwen3-Next 80B (free)",
+    provider: "Qwen",
+    desc: "Free next-gen Qwen3 80B model.",
+    tags: ["Latest"],
+    status: "disconnected",
+    logoClass: "logo-qwen",
+    logoSrc: "assets/models/qwen.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+
+  // NVIDIA
+  {
+    id: "nemotron-3-super-120b-free",
+    name: "Nemotron 3 Super 120B (free)",
+    provider: "NVIDIA",
+    desc: "Free Nemotron 3 120B model.",
+    tags: ["Free"],
+    status: "disconnected",
+    logoClass: "logo-nvidia",
+    logoSrc: "assets/models/nvidia.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://integrate.api.nvidia.com/v1" }
+  },
+  {
+    id: "nemotron-3-super-120b-kilo",
+    name: "Nemotron 3 Super 120B (Kilo)",
+    provider: "NVIDIA",
+    desc: "Kilo instance of Nemotron 3 120B.",
+    tags: ["High-speed"],
+    status: "disconnected",
+    logoClass: "logo-nvidia",
+    logoSrc: "assets/models/nvidia.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://integrate.api.nvidia.com/v1" }
+  },
+  {
+    id: "nemotron-3-nano-30b-free",
+    name: "Nemotron 3 Nano 30B (free)",
+    provider: "NVIDIA",
+    desc: "Free lightweight Nemotron 3 Nano.",
+    tags: ["Free"],
+    status: "disconnected",
+    logoClass: "logo-nvidia",
+    logoSrc: "assets/models/nvidia.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://integrate.api.nvidia.com/v1" }
+  },
+  {
+    id: "nemotron-3-nano-30b-reasoning-free",
+    name: "Nemotron 3 Nano 30B Reasoning (free)",
+    provider: "NVIDIA",
+    desc: "Reasoning specialized free Nemotron 3 Nano.",
+    tags: ["Reasoning"],
+    status: "disconnected",
+    logoClass: "logo-nvidia",
+    logoSrc: "assets/models/nvidia.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://integrate.api.nvidia.com/v1" }
+  },
+  {
+    id: "nemotron-nano-9b-v2-free",
+    name: "Nemotron Nano 9B v2 (free)",
+    provider: "NVIDIA",
+    desc: "Free 9B Nemotron Nano v2.",
+    tags: ["Lightweight"],
+    status: "disconnected",
+    logoClass: "logo-nvidia",
+    logoSrc: "assets/models/nvidia.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://integrate.api.nvidia.com/v1" }
+  },
+  {
+    id: "nemotron-nano-12b-vl-free",
+    name: "Nemotron Nano 12B VL (free)",
+    provider: "NVIDIA",
+    desc: "Free vision-language Nemotron Nano.",
+    tags: ["Vision"],
+    status: "disconnected",
+    logoClass: "logo-nvidia",
+    logoSrc: "assets/models/nvidia.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://integrate.api.nvidia.com/v1" }
+  },
+
+  // Zhipu AI
+  {
+    id: "glm-4.5-air-free",
+    name: "GLM-4.5 Air (free)",
+    provider: "Zhipu AI",
+    desc: "Free GLM-4.5 Air model.",
+    tags: ["Free"],
+    status: "disconnected",
+    logoClass: "logo-zhipu",
+    logoSrc: "assets/models/zhipu.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://open.bigmodel.cn/api/paas/v4" }
+  },
+  {
+    id: "glm-4.7-cerebras",
+    name: "GLM-4.7 (Cerebras)",
+    provider: "Zhipu AI",
+    desc: "GLM-4.7 model hosted on Cerebras.",
+    tags: ["Ultra-fast"],
+    status: "disconnected",
+    logoClass: "logo-zhipu",
+    logoSrc: "assets/models/zhipu.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://open.bigmodel.cn/api/paas/v4" }
+  },
+
+  // Liquid AI
+  {
+    id: "liquid-lfm-2.5-1.2b-free",
+    name: "Liquid LFM 2.5 1.2B (free)",
+    provider: "Liquid AI",
+    desc: "Free Liquid LFM 2.5 1.2B model.",
+    tags: ["Non-transformer"],
+    status: "disconnected",
+    logoClass: "logo-liquid",
+    logoSrc: "assets/models/liquid.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://api.liquid.ai/v1" }
+  },
+  {
+    id: "liquid-lfm-2.5-1.2b-thinking-free",
+    name: "Liquid LFM 2.5 1.2B Thinking (free)",
+    provider: "Liquid AI",
+    desc: "Free reasoning Liquid LFM 2.5 1.2B model.",
+    tags: ["Reasoning"],
+    status: "disconnected",
+    logoClass: "logo-liquid",
+    logoSrc: "assets/models/liquid.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://api.liquid.ai/v1" }
+  },
+
+  // Poolside
+  {
+    id: "poolside-laguna-m.1-free",
+    name: "Poolside Laguna M.1 (free)",
+    provider: "Poolside",
+    desc: "Free Poolside Laguna M.1 model.",
+    tags: ["Coding"],
+    status: "disconnected",
+    logoClass: "logo-poolside",
+    logoText: "PS",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "poolside-laguna-m.1-kilo",
+    name: "Poolside Laguna M.1 (Kilo)",
+    provider: "Poolside",
+    desc: "Kilo instance of Poolside Laguna M.1.",
+    tags: ["Coding"],
+    status: "disconnected",
+    logoClass: "logo-poolside",
+    logoText: "PS",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "poolside-laguna-xs.2-free",
+    name: "Poolside Laguna XS.2 (free)",
+    provider: "Poolside",
+    desc: "Free Poolside Laguna XS.2 model.",
+    tags: ["Coding"],
+    status: "disconnected",
+    logoClass: "logo-poolside",
+    logoText: "PS",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "poolside-laguna-xs.2-kilo",
+    name: "Poolside Laguna XS.2 (Kilo)",
+    provider: "Poolside",
+    desc: "Kilo instance of Poolside Laguna XS.2.",
+    tags: ["Coding"],
+    status: "disconnected",
+    logoClass: "logo-poolside",
+    logoText: "PS",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+
+  // Moonshot AI
+  {
+    id: "kimi-k2.6-or-free",
+    name: "Kimi K2.6 (OR free)",
+    provider: "Moonshot AI",
+    desc: "Free Moonshot Kimi K2.6 model.",
+    tags: ["Long-context"],
+    status: "disconnected",
+    logoClass: "logo-moonshot",
+    logoSrc: "assets/models/moonshot.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://api.moonshot.cn/v1" }
+  },
+
+  // Mistral AI
+  {
+    id: "dolphin-mistral-24b-venice-free",
+    name: "Dolphin Mistral 24B Venice (free)",
+    provider: "Mistral AI",
+    desc: "Free Dolphin Mistral model hosted on Venice.",
+    tags: ["Fine-tune"],
+    status: "disconnected",
+    logoClass: "logo-mistral",
+    logoSrc: "assets/models/mistral.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "https://api.mistral.ai/v1" }
+  },
+
+  // StepFun
+  {
+    id: "stepfun-step-3.7-flash-kilo",
+    name: "StepFun Step 3.7 Flash (Kilo)",
+    provider: "StepFun",
+    desc: "Kilo instance of StepFun Step 3.7 Flash.",
+    tags: ["Chinese"],
+    status: "disconnected",
+    logoClass: "logo-stepfun",
+    logoSrc: "assets/models/stepfun.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+
+  // Groq
+  {
+    id: "compound-groq",
+    name: "Compound (Groq)",
+    provider: "Groq",
+    desc: "Ensemble router model hosted on Groq.",
+    tags: ["Ensemble"],
+    status: "disconnected",
+    logoClass: "logo-groq",
+    logoSrc: "assets/models/groq.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+  {
+    id: "compound-mini-groq",
+    name: "Compound Mini (Groq)",
+    provider: "Groq",
+    desc: "Lightweight ensemble model hosted on Groq.",
+    tags: ["Ensemble"],
+    status: "disconnected",
+    logoClass: "logo-groq",
+    logoSrc: "assets/models/groq.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+
+  // Nous Research
+  {
+    id: "hermes-3-405b-free",
+    name: "Hermes 3 405B (free)",
+    provider: "Nous Research",
+    desc: "Nous Research Hermes 3 405B model.",
+    tags: ["Instruct"],
+    status: "disconnected",
+    logoClass: "logo-nous",
+    logoSrc: "assets/models/nous.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { apiKey: "", baseUrl: "" }
+  },
+
+  // ── Free models via FreeLLMAPI proxy ──────────────────────────────────
+  {
+    id: "premium-step-3.7-flash",
+    name: "Step 3.7 Flash",
+    provider: "StepFun",
+    desc: "StepFun Step 3.7 Flash via Hermes.",
+    tags: ["Fast"],
+    status: "connected",
+    logoClass: "logo-stepfun",
+    logoSrc: "assets/models/stepfun.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { baseUrl: "/v1", endpoint: "step-3.7-flash" }
+  },
+  {
+    id: "premium-tencent-hy3",
+    name: "Hy3",
+    provider: "Tencent",
+    desc: "Tencent HyperCLOVA via Hermes.",
+    tags: ["Fast"],
+    status: "connected",
+    logoClass: "logo-tencent",
+    logoSrc: "assets/models/tencent.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { baseUrl: "/v1", endpoint: "tencent/hy3" }
+  },
+  {
+    id: "premium-poolside-laguna-s-2.1",
+    name: "Laguna S 2.1",
+    provider: "Poolside",
+    desc: "Poolside Laguna S 2.1 via Hermes.",
+    tags: ["Coding"],
+    status: "connected",
+    logoClass: "logo-poolside",
+    logoSrc: "assets/models/poolside.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { baseUrl: "/v1", endpoint: "poolside/laguna-s-2.1" }
+  },
+  {
+    id: "premium-inclusionai-ling-3.0-flash",
+    name: "Ling 3.0 Flash",
+    provider: "Inclusion AI",
+    desc: "Inclusion AI Ling 3.0 Flash via Hermes.",
+    tags: ["Fast"],
+    status: "connected",
+    logoClass: "logo-inclusionai",
+    logoSrc: "assets/models/inclusionai.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { baseUrl: "/v1", endpoint: "inclusionai/ling-3.0-flash" }
+  },
+  {
+    id: "premium-poolside-laguna-xs-2.1",
+    name: "Laguna XS 2.1",
+    provider: "Poolside",
+    desc: "Poolside Laguna XS 2.1 via Hermes.",
+    tags: ["Coding"],
+    status: "connected",
+    logoClass: "logo-poolside",
+    logoSrc: "assets/models/poolside.svg",
+    type: "official",
+    isPrimary: false,
+    settings: { baseUrl: "/v1", endpoint: "poolside/laguna-xs-2.1" }
   }
 ];
 

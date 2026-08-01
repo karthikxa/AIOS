@@ -10,7 +10,7 @@ import time
 from unittest.mock import MagicMock, patch
 
 
-from zed_cli.main import _session_browse_picker
+from hermes_cli.main import _session_browse_picker
 
 
 # â”€â”€â”€ Sample session data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -390,7 +390,7 @@ class TestSessionBrowseArgparse:
         # by checking that argparse doesn't error on "sessions browse"
         # Re-create the parser portion
         # Instead, let's just verify the import works and the function exists
-        from zed_cli.main import _session_browse_picker
+        from hermes_cli.main import _session_browse_picker
         assert callable(_session_browse_picker)
 
     def test_browse_default_limit_is_500(self):
@@ -539,3 +539,4 @@ class TestEdgeCases:
         assert "just now" in output
         assert "2h ago" in output
         assert "3d ago" in output
+

@@ -1,9 +1,9 @@
-﻿"""Tests for zed_cli.logs â€” log viewing and filtering."""
+﻿"""Tests for hermes_cli.logs â€” log viewing and filtering."""
 
 from datetime import datetime, timedelta
 
 
-from zed_cli.logs import (
+from hermes_cli.logs import (
     LOG_FILES,
     _extract_level,
     _extract_logger_name,
@@ -251,3 +251,4 @@ class TestLogFiles:
         assert "errors" in LOG_FILES
         assert "gateway" in LOG_FILES
         assert "gui" in LOG_FILES
+

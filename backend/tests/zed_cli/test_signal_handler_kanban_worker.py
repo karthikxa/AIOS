@@ -228,3 +228,4 @@ def test_real_handler_uses_os_exit_for_kanban_workers():
         "raising KeyboardInterrupt orphans the process when non-daemon "
         "threads are alive (see #28181)"
     )
+

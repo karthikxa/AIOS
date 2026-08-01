@@ -1105,8 +1105,8 @@ def interactive_setup() -> None:
     ``zed_cli/setup.py::_setup_mattermost`` function this migration
     removes.
     """
-    from zed_cli.config import get_env_value, save_env_value
-    from zed_cli.cli_output import (
+    from hermes_cli.config import get_env_value, save_env_value
+    from hermes_cli.cli_output import (
         prompt,
         prompt_yes_no,
         print_header,
@@ -1206,12 +1206,12 @@ def _is_connected(config) -> bool:
     """Mattermost is considered connected when BOTH MATTERMOST_TOKEN and
     MATTERMOST_URL are set.
 
-    Looks up via ``zed_cli.gateway.get_env_value`` at call time (not via
+    Looks up via ``hermes_cli.gateway.get_env_value`` at call time (not via
     the plugin's own bound import) so tests that patch
     ``gateway_mod.get_env_value`` can suppress ambient env vars.  Matches
     what the legacy connected-platforms check did before this migration.
     """
-    import zed_cli.gateway as gateway_mod
+    import hermes_cli.gateway as gateway_mod
     return bool(
         (gateway_mod.get_env_value("MATTERMOST_TOKEN") or "").strip()
         and (gateway_mod.get_env_value("MATTERMOST_URL") or "").strip()
@@ -1266,3 +1266,4 @@ def register(ctx) -> None:
         emoji="ðŸ’¬",
         allow_update_command=True,
     )
+

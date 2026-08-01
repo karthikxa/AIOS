@@ -8,7 +8,7 @@ tests/tui_gateway/test_custom_provider_session_persistence.py for the
 end-to-end persist/resume round-trip.
 """
 
-import zed_cli.runtime_provider as rp
+import hermes_cli.runtime_provider as rp
 
 
 def test_matches_legacy_custom_providers_list(monkeypatch):
@@ -97,3 +97,4 @@ def test_identity_resolves_back_through_named_lookup(monkeypatch):
     assert entry is not None
     assert entry["base_url"] == "https://api.mimo.example/v1"
     assert entry["api_key"] == "sk-entry"
+

@@ -62,7 +62,7 @@ except ImportError:
 def _get_sessions_dir() -> Path:
     """Return the sessions directory using ZED_HOME."""
     try:
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         return get_zed_home() / "sessions"
     except ImportError:
         return Path(os.environ.get("ZED_HOME", Path.home() / ".zed")) / "sessions"
@@ -71,7 +71,7 @@ def _get_sessions_dir() -> Path:
 def _get_session_db():
     """Get a SessionDB instance for reading message transcripts."""
     try:
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
         return SessionDB()
     except Exception as e:
         logger.debug("SessionDB unavailable: %s", e)
@@ -98,7 +98,7 @@ def _load_sessions_index() -> dict:
 def _load_channel_directory() -> dict:
     """Load the cached channel directory for available targets."""
     try:
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         directory_file = get_zed_home() / "channel_directory.json"
     except ImportError:
         directory_file = Path(
@@ -362,7 +362,7 @@ class EventBridge:
 
         # Check if state.db has changed
         try:
-            from zed_constants import get_zed_home
+            from hermes_constants import get_zed_home
             db_file = get_zed_home() / "state.db"
         except ImportError:
             db_file = Path(os.environ.get("ZED_HOME", Path.home() / ".zed")) / "state.db"
@@ -895,3 +895,4 @@ def run_mcp_server(verbose: bool = False) -> None:
         asyncio.run(_run())
     except KeyboardInterrupt:
         bridge.stop()
+

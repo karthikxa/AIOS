@@ -23,8 +23,8 @@ def server():
             "zed_constants": MagicMock(
                 get_zed_home=MagicMock(return_value="/tmp/zed_test_compaction")
             ),
-            "zed_cli.env_loader": MagicMock(),
-            "zed_cli.banner": MagicMock(),
+            "hermes_cli.env_loader": MagicMock(),
+            "hermes_cli.banner": MagicMock(),
             "zed_state": MagicMock(),
         },
     ):
@@ -71,3 +71,4 @@ def test_compaction_status_contains_marker():
     )
 
     assert COMPACTION_STATUS_MARKER in COMPACTION_STATUS
+

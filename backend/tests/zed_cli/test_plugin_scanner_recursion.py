@@ -14,7 +14,7 @@ from typing import Any, Dict
 import pytest
 import yaml
 
-from zed_cli.plugins import PluginManager
+from hermes_cli.plugins import PluginManager
 
 
 # â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -355,3 +355,4 @@ class TestRegisterImageGenProvider:
         assert image_gen_registry.get_provider("not a provider") is None
 
         image_gen_registry._reset_for_tests()
+

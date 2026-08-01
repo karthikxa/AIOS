@@ -376,14 +376,14 @@ class TestResolveVisionMainFirst:
         ), patch(
             "agent.auxiliary_client.OpenAI",
         ) as mock_openai, patch(
-            "zed_cli.auth.resolve_api_key_provider_credentials",
+            "hermes_cli.auth.resolve_api_key_provider_credentials",
             return_value={
                 "provider": "copilot",
                 "api_key": "copilot-api-token",
                 "base_url": "https://api.githubcopilot.com",
             },
         ), patch(
-            "zed_cli.copilot_auth.copilot_request_headers",
+            "hermes_cli.copilot_auth.copilot_request_headers",
             side_effect=fake_headers,
         ):
             mock_client = MagicMock()
@@ -413,14 +413,14 @@ class TestResolveVisionMainFirst:
         with patch(
             "agent.auxiliary_client.OpenAI",
         ) as mock_openai, patch(
-            "zed_cli.auth.resolve_api_key_provider_credentials",
+            "hermes_cli.auth.resolve_api_key_provider_credentials",
             return_value={
                 "provider": "copilot",
                 "api_key": "copilot-api-token",
                 "base_url": "https://api.githubcopilot.com",
             },
         ), patch(
-            "zed_cli.copilot_auth.copilot_request_headers",
+            "hermes_cli.copilot_auth.copilot_request_headers",
             side_effect=fake_headers,
         ):
             mock_client = MagicMock()
@@ -498,3 +498,4 @@ def test_aggregator_providers_constant_removed():
         "treating aggregators specially. If you re-added it, the main-first "
         "policy may have regressed."
     )
+

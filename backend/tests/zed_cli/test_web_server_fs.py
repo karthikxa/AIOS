@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from zed_cli import web_server
+from hermes_cli import web_server
 
 pytest.importorskip("starlette.testclient")
 from starlette.testclient import TestClient
@@ -186,3 +186,4 @@ def test_fs_endpoints_require_auth(tmp_path):
     assert list_response.status_code == 401
     assert read_response.status_code == 401
     assert default_response.status_code == 401
+

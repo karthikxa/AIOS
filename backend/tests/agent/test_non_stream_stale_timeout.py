@@ -183,8 +183,9 @@ providers:
     monkeypatch.delenv("ZED_API_CALL_STALE_TIMEOUT", raising=False)
 
     import importlib
-    from zed_cli import timeouts as to_mod
+    from hermes_cli import timeouts as to_mod
     importlib.reload(to_mod)
 
     agent = _make_agent(tmp_path)
     assert agent._compute_non_stream_stale_timeout({"input": "hi"}) == 1800.0
+

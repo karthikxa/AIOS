@@ -9,7 +9,7 @@ import contextlib
 
 import uvicorn
 
-from zed_cli import web_server
+from hermes_cli import web_server
 
 
 def _stub_uvicorn(monkeypatch):
@@ -75,3 +75,4 @@ def test_start_server_enables_ws_ping_for_half_open_detection(monkeypatch):
 
     assert captured["ws_ping_interval"] == 20.0
     assert captured["ws_ping_timeout"] == 20.0
+

@@ -14,9 +14,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from zed_cli import kanban as kanban_cli
-from zed_cli import kanban_db as kb
-from zed_cli import kanban_specify as spec
+from hermes_cli import kanban as kanban_cli
+from hermes_cli import kanban_db as kb
+from hermes_cli import kanban_specify as spec
 
 
 @pytest.fixture
@@ -335,3 +335,4 @@ def test_cli_specify_author_passed_through(kanban_home, capsys):
     with kb.connect() as conn:
         comments = kb.list_comments(conn, tid)
     assert comments and comments[0].author == "custom-agent"
+

@@ -502,3 +502,4 @@ class XAIVideoGenProvider(VideoGenProvider):
 def register(ctx) -> None:
     """Plugin entry point â€” wire ``XAIVideoGenProvider`` into the registry."""
     ctx.register_video_gen_provider(XAIVideoGenProvider())
+

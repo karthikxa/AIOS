@@ -872,3 +872,4 @@ class TestResolveUpdatePrompt:
 
         assert not (tmp_path / ".zed" / ".update_response").exists()
         assert 10 in adapter._update_prompt_state
+

@@ -26,7 +26,7 @@ _IS_WINDOWS = platform.system() == "Windows"
 from pathlib import Path
 from typing import Dict, Optional, Any
 
-from zed_constants import (
+from hermes_constants import (
     find_node_executable,
     get_zed_dir,
     with_zed_node_path,
@@ -1195,3 +1195,4 @@ class WhatsAppAdapter(WhatsAppBehaviorMixin, BasePlatformAdapter):
         except Exception as e:
             print(f"[{self.name}] Error building event: {e}")
             return None
+

@@ -272,7 +272,7 @@ def setup_isolated_home(enabled: bool) -> Path:
         # hand â€” it never materializes the secret in a local variable in
         # this module, which both avoids a hand-rolled parser bug and keeps
         # static analysis from tainting the transcript records with the key.
-        from zed_cli.env_loader import load_zed_dotenv
+        from hermes_cli.env_loader import load_zed_dotenv
         load_zed_dotenv(zed_home=str(Path.home() / ".zed"))
 
     cfg = {
@@ -547,3 +547,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

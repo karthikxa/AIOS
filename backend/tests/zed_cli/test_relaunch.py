@@ -1,10 +1,10 @@
-﻿"""Tests for zed_cli.relaunch â€” unified self-relaunch utility."""
+﻿"""Tests for hermes_cli.relaunch â€” unified self-relaunch utility."""
 
 import sys
 
 import pytest
 
-from zed_cli import relaunch as relaunch_mod
+from hermes_cli import relaunch as relaunch_mod
 
 
 class TestResolveZedBin:
@@ -112,7 +112,7 @@ class TestBuildRelaunchArgv:
     def test_falls_back_to_python_module(self, monkeypatch):
         monkeypatch.setattr(relaunch_mod, "resolve_zed_bin", lambda: None)
         argv = relaunch_mod.build_relaunch_argv(["--resume", "abc"])
-        assert argv == [sys.executable, "-m", "zed_cli.main", "--resume", "abc"]
+        assert argv == [sys.executable, "-m", "hermes_cli.main", "--resume", "abc"]
 
     def test_preserves_inherited_flags(self, monkeypatch):
         monkeypatch.setattr(relaunch_mod, "resolve_zed_bin", lambda: "/usr/bin/zed")
@@ -275,7 +275,7 @@ class TestResolveZedBinWindowsPyGuard:
     def test_windows_py_argv0_with_no_zed_on_path_returns_none(self, monkeypatch, tmp_path):
         """Bulletproof fallback: if argv0 is .py on Windows AND zed.exe
         isn't on PATH, return None so the caller falls back to
-        python -m zed_cli.main."""
+        python -m hermes_cli.main."""
         script = tmp_path / "main.py"
         script.write_text("# stub")
 
@@ -284,3 +284,4 @@ class TestResolveZedBinWindowsPyGuard:
         monkeypatch.setattr(relaunch_mod.shutil, "which", lambda name: None)
 
         assert relaunch_mod.resolve_zed_bin() is None
+

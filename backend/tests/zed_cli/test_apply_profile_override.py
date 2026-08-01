@@ -44,7 +44,7 @@ def _run_apply_profile_override(
 
     monkeypatch.setattr(sys, "argv", argv or ["zed", "gateway", "start"])
 
-    from zed_cli.main import _apply_profile_override
+    from hermes_cli.main import _apply_profile_override
     _apply_profile_override()
 
     return os.environ.get("ZED_HOME")
@@ -104,7 +104,7 @@ class TestApplyProfileOverrideZedHomeGuard:
         monkeypatch.setenv("ZED_HOME", str(profile_dir))
         monkeypatch.setattr(sys, "argv", ["zed", "gateway", "start"])
 
-        from zed_cli.main import _apply_profile_override
+        from hermes_cli.main import _apply_profile_override
         _apply_profile_override()
 
         assert os.environ.get("ZED_HOME") == str(profile_dir), (
@@ -143,7 +143,7 @@ class TestApplyProfileOverrideZedHomeGuard:
 
         monkeypatch.setattr(pwd, "getpwnam", lambda name: SimpleNamespace(pw_dir=str(user_home)))
 
-        from zed_cli.main import _apply_profile_override
+        from hermes_cli.main import _apply_profile_override
         _apply_profile_override()
 
         assert os.environ.get("ZED_HOME") == str(profile_dir)
@@ -159,7 +159,7 @@ class TestApplyProfileOverrideZedHomeGuard:
         monkeypatch.setattr(sys, "argv", ["zed", "gateway", "start"])
         (zed_root / "active_profile").write_text("default")
 
-        from zed_cli.main import _apply_profile_override
+        from hermes_cli.main import _apply_profile_override
         _apply_profile_override()
 
         assert os.environ.get("ZED_HOME") is None
@@ -193,7 +193,7 @@ class TestApplyProfileOverrideZedHomeGuard:
         monkeypatch.delenv("ZED_HOME", raising=False)
         monkeypatch.setattr(sys, "argv", list(argv))
 
-        from zed_cli.main import _apply_profile_override
+        from hermes_cli.main import _apply_profile_override
         _apply_profile_override()
 
         assert os.environ.get("ZED_HOME") is None
@@ -277,7 +277,7 @@ class TestSupervisedChildIgnoresStickyProfile:
         monkeypatch.setenv("ZED_S6_SUPERVISED_CHILD", "1")
         monkeypatch.setattr(sys, "argv", ["zed", "gateway", "run"])
 
-        from zed_cli.main import _apply_profile_override
+        from hermes_cli.main import _apply_profile_override
         _apply_profile_override()
 
         assert os.environ.get("ZED_HOME") == str(zed_root), (
@@ -316,10 +316,11 @@ class TestSupervisedChildIgnoresStickyProfile:
         monkeypatch.setenv("ZED_S6_SUPERVISED_CHILD", "1")
         monkeypatch.setattr(sys, "argv", ["zed", "-p", "coder", "gateway", "run"])
 
-        from zed_cli.main import _apply_profile_override
+        from hermes_cli.main import _apply_profile_override
         _apply_profile_override()
 
         result = os.environ.get("ZED_HOME")
         assert result is not None
         assert result.endswith("coder")
+
 

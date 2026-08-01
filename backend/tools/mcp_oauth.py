@@ -48,7 +48,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
-from zed_constants import secure_parent_dir
+from hermes_constants import secure_parent_dir
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +116,7 @@ def _get_token_dir() -> Path:
     Layout: ``ZED_HOME/mcp-tokens/``
     """
     try:
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         base = Path(get_zed_home())
     except ImportError:
         base = Path(os.environ.get("ZED_HOME", str(Path.home() / ".zed")))
@@ -774,3 +774,4 @@ def build_oauth_auth(
         callback_handler=_wait_for_callback,
         timeout=float(cfg.get("timeout", 300)),
     )
+

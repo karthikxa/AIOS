@@ -305,7 +305,7 @@ class TestCallbackSubprocess:
         """Registering via register_from_config makes
         get_pre_tool_call_block_message surface the block â€” the real
         end-to-end control flow used by run_agent._invoke_tool."""
-        from zed_cli import plugins
+        from hermes_cli import plugins
 
         script = _write_script(
             tmp_path, "block.sh",
@@ -511,7 +511,7 @@ class TestParseHooksBlock:
 
 class TestIdempotentRegistration:
     def test_double_call_registers_once(self, tmp_path, monkeypatch):
-        from zed_cli import plugins
+        from hermes_cli import plugins
 
         script = _write_script(tmp_path, "h.sh",
                                "#!/usr/bin/env bash\nprintf '{}\\n'\n")
@@ -535,7 +535,7 @@ class TestIdempotentRegistration:
     ):
         """Same script used for different matchers under one event must
         register both callbacks â€” dedupe keys on (event, matcher, command)."""
-        from zed_cli import plugins
+        from hermes_cli import plugins
 
         script = _write_script(tmp_path, "h.sh",
                                "#!/usr/bin/env bash\nprintf '{}\\n'\n")
@@ -735,3 +735,4 @@ class TestAllowlistConcurrency:
 
         assert len(tmp_paths_seen) == 2
         assert tmp_paths_seen[0] != tmp_paths_seen[1]
+

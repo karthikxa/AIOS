@@ -7,11 +7,15 @@ The AI agent controls this separate desktop. 4K resolution, live MJPEG stream.
 import asyncio
 import base64
 import json
+import logging
 import os
 import sys
 import time
 from pathlib import Path
 from typing import Optional
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("desktop-agent")
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, Response, StreamingResponse, HTMLResponse
@@ -33,8 +37,9 @@ _AGENT_API_KEY = os.environ.get("AGENT_API_KEY", "")
 
 @app.middleware("http")
 async def auth_middleware(request, call_next):
-    # Skip auth for health endpoint
-    if request.url.path == "/health":
+    # Skip auth for health, stream, and screenshot endpoints
+    skip = ("/health", "/stream.mjpeg", "/stream", "/screenshot")
+    if any(request.url.path.startswith(p) for p in skip):
         return await call_next(request)
     # If AGENT_API_KEY is set, require it
     if _AGENT_API_KEY:
@@ -44,7 +49,12 @@ async def auth_middleware(request, call_next):
             return JSONResponse(status_code=403, content={"error": "Unauthorized"})
     return await call_next(request)
 
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:8001", "http://localhost:8000", "http://127.0.0.1:8001"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 LLM_KEY = os.environ.get("LLM_API_KEY", "no-auth")
 LLM_MODEL = os.environ.get("LLM_MODEL", "auto")
@@ -568,17 +578,80 @@ async def plan(): return {"plan": _planner.to_dict(), "text": _planner.to_text()
 
 @app.get("/stream.mjpeg")
 async def mjpeg():
+    """MJPEG stream via screenshot polling — reliable fallback, ~15fps."""
     async def gen():
         bnd = "frame"
         while True:
             try:
-                png = await get_page().screenshot(type="jpeg", quality=85)
-                yield f"--{bnd}\r\nContent-Type: image/jpeg\r\nContent-Length: {len(png)}\r\n\r\n".encode() + png + b"\r\n"
-                await asyncio.sleep(0.1)
-            except asyncio.CancelledError: raise
-            except Exception: await asyncio.sleep(0.5)
-    return StreamingResponse(gen(), media_type="multipart/x-mixed-replace; boundary=frame",
-                             headers={"Cache-Control": "no-store"})
+                if _page and not _page.is_closed():
+                    jpg = await _page.screenshot(type="jpeg", quality=80)
+                    yield (
+                        f"--{bnd}\r\nContent-Type: image/jpeg\r\n"
+                        f"Content-Length: {len(jpg)}\r\n\r\n"
+                    ).encode() + jpg + b"\r\n"
+                await asyncio.sleep(0.067)  # ~15fps
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                await asyncio.sleep(0.5)
+    return StreamingResponse(
+        gen(),
+        media_type="multipart/x-mixed-replace; boundary=frame",
+        headers={"Cache-Control": "no-store", "Access-Control-Allow-Origin": "*"},
+    )
+
+
+@app.get("/screenshot")
+async def screenshot():
+    """Single JPEG screenshot — for polling fallback."""
+    jpg = await get_page().screenshot(type="jpeg", quality=80)
+    return Response(jpg, media_type="image/jpeg", headers={"Cache-Control": "no-store"})
+
+@app.websocket("/stream")
+async def stream_ws(ws: WebSocket):
+    """WebSocket live stream using Playwright CDP startScreencast — event-driven, not polling."""
+    await ws.accept()
+    queue: asyncio.Queue = asyncio.Queue(maxsize=2)
+
+    try:
+        cdp = await _context.new_cdp_session(_page)
+        await cdp.send("Page.startScreencast", {
+            "format": "jpeg", "quality": 80,
+            "maxWidth": DESKTOP_WIDTH, "maxHeight": DESKTOP_HEIGHT
+        })
+
+        async def on_frame(params):
+            data = params.get("data", "")
+            sid  = params.get("sessionId")
+            if data:
+                try: queue.put_nowait({"data": data, "width": DESKTOP_WIDTH, "height": DESKTOP_HEIGHT})
+                except asyncio.QueueFull: pass
+            try: await cdp.send("Page.screencastFrameAck", {"sessionId": sid})
+            except Exception: pass
+
+        cdp.on("Page.screencastFrame", lambda p: asyncio.ensure_future(on_frame(p)))
+
+        while True:
+            try:
+                frame = await asyncio.wait_for(queue.get(), timeout=1.0)
+                await ws.send_json({"type": "frame", **frame})
+            except asyncio.TimeoutError:
+                # Send keepalive ping
+                try: await ws.send_json({"type": "ping"})
+                except Exception: break
+            except WebSocketDisconnect:
+                break
+            except Exception:
+                break
+
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        try: await ws.send_json({"type": "error", "text": str(e)})
+        except Exception: pass
+    finally:
+        try: await cdp.send("Page.stopScreencast")
+        except Exception: pass
 
 @app.get("/health")
 def health(): return {"status": "ok", "desktop": f"{DESKTOP_WIDTH}x{DESKTOP_HEIGHT}", "platform": sys.platform}
@@ -588,3 +661,4 @@ async def startup(): await init_desktop()
 
 @app.on_event("shutdown")
 async def shutdown(): await close_desktop()
+

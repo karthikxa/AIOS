@@ -1,4 +1,4 @@
-﻿"""Tests for zed_cli.auth._update_config_for_provider clearing stale fields.
+﻿"""Tests for hermes_cli.auth._update_config_for_provider clearing stale fields.
 
 When the user switches from a custom provider (e.g. MiniMax with
 ``api_mode: anthropic_messages``, ``api_key: mxp-...``) to a built-in
@@ -15,8 +15,8 @@ from __future__ import annotations
 
 import yaml
 
-from zed_cli.auth import _update_config_for_provider
-from zed_cli.config import clear_model_endpoint_credentials, get_config_path
+from hermes_cli.auth import _update_config_for_provider
+from hermes_cli.config import clear_model_endpoint_credentials, get_config_path
 
 
 def _read_model_cfg() -> dict:
@@ -99,3 +99,4 @@ class TestUpdateConfigForProviderClearsStaleCustomFields:
         _seed_custom_provider_config(api_mode="codex_responses")
         _update_config_for_provider("openrouter", "https://openrouter.ai/api/v1")
         assert "api_mode" not in _read_model_cfg()
+

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-import zed_cli.model_switch as ms
+import hermes_cli.model_switch as ms
 
 
 def _reset_guard():
@@ -58,3 +58,4 @@ def test_prewarm_never_raises_on_failure():
         t.join(timeout=10)
         assert not t.is_alive()
     _reset_guard()
+

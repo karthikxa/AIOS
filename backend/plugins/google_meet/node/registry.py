@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 
 
 def _default_path() -> Path:
@@ -110,3 +110,4 @@ class NodeRegistry:
         if len(nodes) == 1:
             return nodes[0]
         return None
+

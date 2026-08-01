@@ -1,10 +1,10 @@
-﻿"""Tests for zed_cli.partial_compress â€” the pure split/parse helpers
+﻿"""Tests for hermes_cli.partial_compress â€” the pure split/parse helpers
 behind ``/compress here [N]`` (boundary-aware "summarize up to here").
 
 Inspired by Claude Code's Rewind "Summarize up to here" action.
 """
 
-from zed_cli.partial_compress import (
+from hermes_cli.partial_compress import (
     DEFAULT_KEEP_LAST,
     MAX_KEEP_LAST,
     parse_partial_compress_args,
@@ -196,3 +196,4 @@ def test_rejoin_tool_seam_left_alone():
     tail = [{"role": "user", "content": "u"}]
     out = rejoin_compressed_head_and_tail(head, tail)
     assert out == head + tail
+

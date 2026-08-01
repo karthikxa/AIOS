@@ -1,8 +1,8 @@
-﻿"""Unit tests for zed_cli.xai_retirement (May 15, 2026 model retirement)."""
+﻿"""Unit tests for hermes_cli.xai_retirement (May 15, 2026 model retirement)."""
 from __future__ import annotations
 
 
-from zed_cli.xai_retirement import (
+from hermes_cli.xai_retirement import (
     MIGRATION_GUIDE_URL,
     RETIREMENT_DATE,
     RetirementIssue,
@@ -272,3 +272,4 @@ class TestModuleConstants:
             "grok-imagine-image-pro",
         }
         assert set(_RETIRED_MODELS.keys()) == expected
+

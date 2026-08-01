@@ -8,10 +8,10 @@ from __future__ import annotations
 
 import pytest
 
-from zed_cli.dashboard_auth.base import (
+from hermes_cli.dashboard_auth.base import (
     InvalidCodeError, RefreshExpiredError, assert_protocol_compliance,
 )
-from tests.zed_cli.conftest_dashboard_auth import StubAuthProvider
+from tests.hermes_cli.conftest_dashboard_auth import StubAuthProvider
 
 
 def _pkce_payload(ls) -> dict:
@@ -148,3 +148,4 @@ def test_stub_revoke_is_silent():
     p = StubAuthProvider()
     # Best-effort; must never raise.
     p.revoke_session(refresh_token="anything")
+

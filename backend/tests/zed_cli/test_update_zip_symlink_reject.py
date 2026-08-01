@@ -41,7 +41,7 @@ def test_update_via_zip_rejects_symlink_member(tmp_path, monkeypatch):
         target="/etc/passwd",
     )
 
-    from zed_cli.main import _update_via_zip
+    from hermes_cli.main import _update_via_zip
 
     args = type("Args", (), {})()
 
@@ -98,7 +98,7 @@ def test_update_via_zip_accepts_normal_member(tmp_path, monkeypatch, capsys):
     fake_root = tmp_path / "install_dir"
     fake_root.mkdir()
 
-    from zed_cli import main as zed_main
+    from hermes_cli import main as zed_main
 
     monkeypatch.setattr(zed_main, "PROJECT_ROOT", fake_root)
 
@@ -129,3 +129,4 @@ def test_update_via_zip_accepts_normal_member(tmp_path, monkeypatch, capsys):
     # confirming the extraction + copy phases ran past the validation gate.
     assert (fake_root / "README.md").exists()
     assert (fake_root / "README.md").read_text() == "ok\n"
+

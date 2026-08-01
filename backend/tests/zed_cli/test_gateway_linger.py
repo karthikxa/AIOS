@@ -2,7 +2,7 @@
 
 from types import SimpleNamespace
 
-import zed_cli.gateway as gateway
+import hermes_cli.gateway as gateway
 
 
 class TestEnsureLingerEnabled:
@@ -132,3 +132,4 @@ def test_systemd_install_calls_linger_helper(monkeypatch, tmp_path, capsys):
     ]
     assert helper_calls == [True]
     assert "User service installed and enabled" in out
+

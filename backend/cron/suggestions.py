@@ -36,7 +36,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from zed_time import now as _zed_now
 from utils import atomic_replace
 
@@ -255,3 +255,4 @@ def clear_resolved() -> int:
         if removed:
             _save_raw(kept)
         return removed
+

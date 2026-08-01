@@ -3,7 +3,7 @@
 import time
 import pytest
 
-from zed_state import SessionDB
+from hermes_state import SessionDB
 from agent.insights import (
     InsightsEngine,
     _estimate_cost,
@@ -730,3 +730,4 @@ class TestEdgeCases:
         # Depending on timing, might catch the session if created <1s ago
         # Just verify it doesn't crash
         assert "empty" in report
+

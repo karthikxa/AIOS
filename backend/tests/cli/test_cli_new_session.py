@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from zed_state import SessionDB
+from hermes_state import SessionDB
 from tools.todo_tool import TodoStore
 
 
@@ -306,3 +306,4 @@ def test_new_session_with_duplicate_title_surfaces_error(capsys):
     captured = capsys.readouterr()
     assert "New session started: Dup" not in captured.out
     assert "New session started!" in captured.out
+

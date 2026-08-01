@@ -28,7 +28,7 @@ def _make_runner():
 
 def test_start_is_known_gateway_command():
     """Telegram sends /start automatically; gateway should intercept it as a no-op."""
-    from zed_cli.commands import GATEWAY_KNOWN_COMMANDS, resolve_command
+    from hermes_cli.commands import GATEWAY_KNOWN_COMMANDS, resolve_command
 
     cmd = resolve_command("start")
     assert "start" in GATEWAY_KNOWN_COMMANDS
@@ -86,3 +86,4 @@ async def test_help_keeps_non_telegram_slash_command_mentions_unchanged(monkeypa
     )
 
     assert "`/Linear`" in result
+

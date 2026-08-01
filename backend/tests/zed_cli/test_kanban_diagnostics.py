@@ -1,4 +1,4 @@
-﻿"""Tests for zed_cli.kanban_diagnostics â€” rule-engine that produces
+﻿"""Tests for hermes_cli.kanban_diagnostics â€” rule-engine that produces
 structured distress signals (diagnostics) for kanban tasks.
 
 These tests exercise each rule in isolation using minimal in-memory
@@ -14,8 +14,8 @@ from pathlib import Path
 
 import pytest
 
-from zed_cli import kanban_db as kb
-from zed_cli import kanban_diagnostics as kd
+from hermes_cli import kanban_db as kb
+from hermes_cli import kanban_diagnostics as kd
 
 
 # ---------------------------------------------------------------------------
@@ -748,3 +748,4 @@ def test_severity_at_or_above_uses_threshold_semantics():
     assert kd.severity_at_or_above("error", "critical") is False
     assert kd.severity_at_or_above("mystery", "warning") is False
     assert kd.severity_at_or_above("warning", None) is True
+

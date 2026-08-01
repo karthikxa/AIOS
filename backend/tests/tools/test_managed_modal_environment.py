@@ -35,7 +35,7 @@ def _restore_tool_and_agent_modules():
         if name in {"tools", "agent", "zed_cli"}
         or name.startswith("tools.")
         or name.startswith("agent.")
-        or name.startswith("zed_cli.")
+        or name.startswith("hermes_cli.")
     }
     try:
         yield
@@ -48,9 +48,9 @@ def _install_fake_tools_package(*, credential_mounts=None):
     _reset_modules(("tools", "agent", "zed_cli"))
 
     zed_cli = types.ModuleType("zed_cli")
-    zed_cli.__path__ = []  # type: ignore[attr-defined]
+    hermes_cli.__path__ = []  # type: ignore[attr-defined]
     sys.modules["zed_cli"] = zed_cli
-    sys.modules["zed_cli.config"] = types.SimpleNamespace(
+    sys.modules["hermes_cli.config"] = types.SimpleNamespace(
         get_zed_home=lambda: Path(tempfile.gettempdir()) / "zed-home",
     )
 
@@ -324,3 +324,4 @@ def test_managed_modal_execute_times_out_and_cancels(monkeypatch):
         "returncode": 124,
     }
     assert any(call[0] == "POST" and call[1].endswith("/cancel") for call in calls)
+

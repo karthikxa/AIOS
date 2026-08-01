@@ -7,11 +7,11 @@ from __future__ import annotations
 
 import pytest
 
-from zed_cli.dashboard_auth import clear_providers, get_provider
-from zed_cli.dashboard_auth.base import (
+from hermes_cli.dashboard_auth import clear_providers, get_provider
+from hermes_cli.dashboard_auth.base import (
     DashboardAuthProvider, LoginStart, Session,
 )
-from zed_cli.plugins import PluginContext, PluginManifest
+from hermes_cli.plugins import PluginContext, PluginManifest
 
 
 class _Stub(DashboardAuthProvider):
@@ -88,3 +88,4 @@ def test_plugin_ctx_silently_ignores_non_provider(caplog):
         and "DashboardAuthProvider" in rec.message
         for rec in caplog.records
     )
+

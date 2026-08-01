@@ -21,7 +21,7 @@ from pathlib import Path
 
 import pytest
 
-from zed_cli.setup_whatsapp_cloud import (
+from hermes_cli.setup_whatsapp_cloud import (
     _validate_phone_number_id,
     _validate_waba_id,
     _validate_app_id,
@@ -404,3 +404,4 @@ class TestProfilePolishGuidance:
         assert f"waba_id={waba}" in out
         # Without WABA, we tell the user they'll need to pick their account
         assert "select your WhatsApp Business Account" not in out
+

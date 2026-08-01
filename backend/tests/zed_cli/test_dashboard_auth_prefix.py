@@ -38,9 +38,9 @@ pytestmark = pytest.mark.xdist_group("dashboard_auth_app_state")
 
 from fastapi.testclient import TestClient
 
-from zed_cli import web_server
-from zed_cli.dashboard_auth import clear_providers, register_provider
-from tests.zed_cli.conftest_dashboard_auth import StubAuthProvider
+from hermes_cli import web_server
+from hermes_cli.dashboard_auth import clear_providers, register_provider
+from tests.hermes_cli.conftest_dashboard_auth import StubAuthProvider
 
 
 @pytest.fixture
@@ -234,7 +234,7 @@ class TestPublicUrlOverride:
 
     @pytest.fixture
     def patch_config(self, monkeypatch):
-        """Replace ``zed_cli.config.load_config`` with a stub
+        """Replace ``hermes_cli.config.load_config`` with a stub
         returning the given ``public_url``. Pass ``None`` to set no
         config-side value."""
 
@@ -243,7 +243,7 @@ class TestPublicUrlOverride:
             if public_url is not None:
                 cfg = {"dashboard": {"public_url": public_url}}
             monkeypatch.setattr(
-                "zed_cli.config.load_config", lambda: cfg
+                "hermes_cli.config.load_config", lambda: cfg
             )
 
         return _set
@@ -396,7 +396,7 @@ class TestPublicUrlOverride:
         silently discarded. Regression for #42780."""
         import logging
 
-        from zed_cli.dashboard_auth import prefix as prefix_mod
+        from hermes_cli.dashboard_auth import prefix as prefix_mod
 
         # Reset the per-value dedup cache so the warning fires in-test
         # regardless of test ordering.
@@ -428,7 +428,7 @@ class TestPublicUrlOverride:
         misconfigured deploy doesn't flood the logs."""
         import logging
 
-        from zed_cli.dashboard_auth import prefix as prefix_mod
+        from hermes_cli.dashboard_auth import prefix as prefix_mod
 
         prefix_mod._warned_malformed_public_urls.clear()
         patch_config(None)
@@ -455,7 +455,7 @@ class TestPublicUrlOverride:
         """A correctly-formed value must not produce a spurious warning."""
         import logging
 
-        from zed_cli.dashboard_auth import prefix as prefix_mod
+        from hermes_cli.dashboard_auth import prefix as prefix_mod
 
         prefix_mod._warned_malformed_public_urls.clear()
         patch_config(None)
@@ -560,7 +560,7 @@ class TestCookiePathRespectsPrefix:
         spec-compatible without Secure."""
         from fastapi import FastAPI
         from fastapi.responses import Response
-        from zed_cli.dashboard_auth.cookies import set_pkce_cookie
+        from hermes_cli.dashboard_auth.cookies import set_pkce_cookie
 
         app = FastAPI()
 
@@ -641,3 +641,4 @@ class TestCookiePathRespectsPrefix:
         assert "Path=/zed" in at_cookies[0]
         assert "Secure" in at_cookies[0]
         assert "HttpOnly" in at_cookies[0]
+

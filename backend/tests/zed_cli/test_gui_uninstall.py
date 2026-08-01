@@ -1,4 +1,4 @@
-﻿"""Tests for zed_cli.gui_uninstall â€” GUI-only uninstall + install discovery.
+﻿"""Tests for hermes_cli.gui_uninstall â€” GUI-only uninstall + install discovery.
 
 Covers the cross-platform artifact discovery, the agent/GUI detection the
 desktop UI gates options on, and that ``uninstall_gui`` removes only GUI
@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-import zed_cli.gui_uninstall as gu
+import hermes_cli.gui_uninstall as gu
 
 
 def _make_agent(zed_home: Path) -> Path:
@@ -225,7 +225,7 @@ def test_run_uninstall_yes_keep_data_is_non_interactive(tmp_path, monkeypatch):
     test checkout) â€” we call run_uninstall in-process against a throwaway
     ZED_HOME with all the destructive externals stubbed out.
     """
-    import zed_cli.uninstall as uninstall
+    import hermes_cli.uninstall as uninstall
 
     zed_home = tmp_path / ".zed"
     agent_root = zed_home / "zed-agent"
@@ -249,7 +249,7 @@ def test_run_uninstall_yes_keep_data_is_non_interactive(tmp_path, monkeypatch):
     # Make input() blow up so a regression that reaches a prompt fails loudly.
     monkeypatch.setattr("builtins.input", lambda *a, **k: pytest.fail("prompted in --yes mode"))
 
-    from zed_cli import gui_uninstall as gu_mod
+    from hermes_cli import gui_uninstall as gu_mod
     monkeypatch.setattr(gu_mod, "packaged_gui_app_paths", lambda: [])
     monkeypatch.setattr(gu_mod, "desktop_userdata_dir", lambda: tmp_path / "none")
 
@@ -265,7 +265,7 @@ def test_run_uninstall_yes_keep_data_is_non_interactive(tmp_path, monkeypatch):
 
 def test_run_uninstall_yes_full_wipes_home(tmp_path, monkeypatch):
     """``--yes --full`` removes the whole ZED_HOME non-interactively."""
-    import zed_cli.uninstall as uninstall
+    import hermes_cli.uninstall as uninstall
 
     zed_home = tmp_path / ".zed"
     (zed_home / "zed-agent" / "zed_cli").mkdir(parents=True)
@@ -282,7 +282,7 @@ def test_run_uninstall_yes_full_wipes_home(tmp_path, monkeypatch):
     monkeypatch.setattr(uninstall, "_discover_named_profiles", lambda: [])
     monkeypatch.setattr("builtins.input", lambda *a, **k: pytest.fail("prompted in --yes mode"))
 
-    from zed_cli import gui_uninstall as gu_mod
+    from hermes_cli import gui_uninstall as gu_mod
     monkeypatch.setattr(gu_mod, "packaged_gui_app_paths", lambda: [])
     monkeypatch.setattr(gu_mod, "desktop_userdata_dir", lambda: tmp_path / "none")
 
@@ -292,13 +292,13 @@ def test_run_uninstall_yes_full_wipes_home(tmp_path, monkeypatch):
 
 
 def test_uninstall_module_main_gui_mode(tmp_path, monkeypatch):
-    """`python -m zed_cli.uninstall --mode gui` runs the GUI-only path.
+    """`python -m hermes_cli.uninstall --mode gui` runs the GUI-only path.
 
     This is the lightweight, venv-independent entrypoint the desktop launches
     with a system Python (so lite/full don't rmtree their own running venv on
     Windows). Verify it dispatches by mode without prompting.
     """
-    import zed_cli.uninstall as uninstall
+    import hermes_cli.uninstall as uninstall
 
     zed_home = tmp_path / ".zed"
     agent_root = zed_home / "zed-agent"
@@ -309,7 +309,7 @@ def test_uninstall_module_main_gui_mode(tmp_path, monkeypatch):
     (zed_home / "config.yaml").write_text("x: 1\n")
 
     monkeypatch.setattr(uninstall, "get_zed_home", lambda: zed_home)
-    from zed_cli import gui_uninstall as gu_mod
+    from hermes_cli import gui_uninstall as gu_mod
     monkeypatch.setattr(gu_mod, "packaged_gui_app_paths", lambda: [])
     monkeypatch.setattr(gu_mod, "desktop_userdata_dir", lambda: tmp_path / "none")
     monkeypatch.setattr(gu_mod, "get_zed_home", lambda: zed_home)
@@ -326,7 +326,7 @@ def test_uninstall_module_main_gui_mode(tmp_path, monkeypatch):
 
 def test_uninstall_module_main_rejects_bad_mode():
     """An invalid --mode exits non-zero (argparse), never silently full-wipes."""
-    import zed_cli.uninstall as uninstall
+    import hermes_cli.uninstall as uninstall
 
     with pytest.raises(SystemExit) as exc:
         uninstall.main(["--mode", "nuke"])
@@ -335,7 +335,7 @@ def test_uninstall_module_main_rejects_bad_mode():
 
 def test_uninstall_args_namespace_mode_mapping():
     """_UninstallArgs maps mode â†’ the gui/full flags run_uninstall reads."""
-    import zed_cli.uninstall as uninstall
+    import hermes_cli.uninstall as uninstall
 
     gui = uninstall._UninstallArgs(mode="gui")
     assert gui.gui is True and gui.full is False and gui.yes is True
@@ -345,4 +345,5 @@ def test_uninstall_args_namespace_mode_mapping():
 
     full = uninstall._UninstallArgs(mode="full")
     assert full.gui is False and full.full is True and full.yes is True
+
 

@@ -34,7 +34,7 @@ import os
 from typing import Any, Optional
 
 from tools.registry import registry, tool_error
-from zed_cli.config import cfg_get, load_config
+from hermes_cli.config import cfg_get, load_config
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ def _profile_has_kanban_toolset() -> bool:
     # negligible overhead. The check_fn results are further TTL-cached
     # (~30s) by the tool registry.
     try:
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
         cfg = load_config()
         toolsets = cfg.get("toolsets", [])
         return "kanban" in toolsets
@@ -173,7 +173,7 @@ def _connect(board: Optional[str] = None):
     â†’ ``default``). Per-tool ``board`` lets a Telegram-side agent override
     the env-pinned active board without restarting Zed.
     """
-    from zed_cli import kanban_db as kb
+    from hermes_cli import kanban_db as kb
     return kb, kb.connect(board=board)
 
 
@@ -914,7 +914,7 @@ def _maybe_auto_subscribe(conn: Any, task_id: str) -> bool:
         notifier_profile = os.environ.get("ZED_PROFILE")
 
         # Lazy-import to keep the module-level dependency light
-        from zed_cli import kanban_db as _kb
+        from hermes_cli import kanban_db as _kb
         _kb.add_notify_sub(
             conn, task_id=task_id,
             platform=platform, chat_id=chat_id,
@@ -1528,3 +1528,4 @@ registry.register(
     check_fn=_check_kanban_mode,
     emoji="ðŸ”—",
 )
+

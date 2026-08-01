@@ -353,7 +353,7 @@ class WebhookAdapter(BasePlatformAdapter):
 
     def _reload_dynamic_routes(self) -> None:
         """Reload agent-created subscriptions from disk if the file changed."""
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         zed_home = get_zed_home()
         subs_path = zed_home / _DYNAMIC_ROUTES_FILENAME
         if not subs_path.exists():
@@ -431,7 +431,7 @@ class WebhookAdapter(BasePlatformAdapter):
             # the single-profile gateway (don't 404 a would-be valid route).
             return None
         try:
-            from zed_cli.profiles import profiles_to_serve
+            from hermes_cli.profiles import profiles_to_serve
             served = {name for name, _ in profiles_to_serve(multiplex=True)}
         except Exception:
             return _PROFILE_REJECTED
@@ -1020,3 +1020,4 @@ class WebhookAdapter(BasePlatformAdapter):
             metadata = {"thread_id": thread_id}
 
         return await adapter.send(chat_id, content, metadata=metadata)
+

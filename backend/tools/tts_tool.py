@@ -52,18 +52,18 @@ from pathlib import Path
 from typing import Callable, Dict, Any, Optional
 from urllib.parse import urljoin
 
-from zed_constants import display_zed_home
+from hermes_constants import display_zed_home
 
 logger = logging.getLogger(__name__)
 def get_env_value(name, default=None):
     """Read env values through the live config module.
 
-    Tests may monkeypatch and later restore ``zed_cli.config.get_env_value``
+    Tests may monkeypatch and later restore ``hermes_cli.config.get_env_value``
     before this module is imported. Resolve the helper at call time so TTS does
     not keep a stale imported function for the rest of the test process.
     """
     try:
-        from zed_cli.config import get_env_value as _get_env_value
+        from hermes_cli.config import get_env_value as _get_env_value
     except ImportError:
         return os.getenv(name, default)
     value = _get_env_value(name)
@@ -205,7 +205,7 @@ GEMINI_TTS_CHANNELS = 1
 GEMINI_TTS_SAMPLE_WIDTH = 2  # 16-bit PCM (L16)
 
 def _get_default_output_dir() -> str:
-    from zed_constants import get_zed_dir
+    from hermes_constants import get_zed_dir
     return str(get_zed_dir("cache/audio", "audio_cache"))
 
 DEFAULT_OUTPUT_DIR = _get_default_output_dir()
@@ -333,11 +333,11 @@ def _load_tts_config() -> Dict[str, Any]:
     for any missing fields.
     """
     try:
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
         config = load_config()
         return config.get("tts", {})
     except ImportError:
-        logger.debug("zed_cli.config not available, using default TTS config")
+        logger.debug("hermes_cli.config not available, using default TTS config")
         return {}
     except Exception as e:
         logger.warning("Failed to load TTS config: %s", e, exc_info=True)
@@ -506,7 +506,7 @@ def _dispatch_to_plugin_provider(
         return None
     try:
         from agent.tts_registry import get_provider
-        from zed_cli.plugins import _ensure_plugins_discovered
+        from hermes_cli.plugins import _ensure_plugins_discovered
 
         _ensure_plugins_discovered()
         plugin_provider = get_provider(key)
@@ -1503,7 +1503,7 @@ def _resolve_gemini_persona_prompt_path(gemini_config: Dict[str, Any]) -> Option
     path = Path(expanded).expanduser()
     if not path.is_absolute():
         try:
-            from zed_constants import get_zed_home
+            from hermes_constants import get_zed_home
             path = get_zed_home() / path
         except Exception:
             path = Path.cwd() / path
@@ -1905,7 +1905,7 @@ def _get_piper_voices_dir() -> Path:
     Resolves to ``~/.zed/cache/piper-voices/`` under the active
     ZED_HOME so voice downloads follow profile boundaries.
     """
-    from zed_constants import get_zed_dir
+    from hermes_constants import get_zed_dir
     root = Path(get_zed_dir("cache/piper-voices", "piper_voices_cache"))
     root.mkdir(parents=True, exist_ok=True)
     return root
@@ -2842,3 +2842,4 @@ registry.register(
     check_fn=check_tts_requirements,
     emoji="ðŸ”Š",
 )
+

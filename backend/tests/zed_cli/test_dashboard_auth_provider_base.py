@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from zed_cli.dashboard_auth.base import (
+from hermes_cli.dashboard_auth.base import (
     DashboardAuthProvider,
     Session,
     LoginStart,
@@ -122,7 +122,7 @@ def test_assert_protocol_compliance_rejects_missing_display_name():
 # ---------------------------------------------------------------------------
 
 
-from zed_cli.dashboard_auth import (  # noqa: E402  (after-imports for clarity)
+from hermes_cli.dashboard_auth import (  # noqa: E402  (after-imports for clarity)
     register_provider,
     get_provider,
     list_providers,
@@ -180,3 +180,4 @@ def test_registry_clear_drops_all():
     clear_providers()
     assert get_provider("ok") is None
     assert list_providers() == []
+

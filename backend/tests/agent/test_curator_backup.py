@@ -23,7 +23,7 @@ def backup_env(monkeypatch, tmp_path):
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
     # Reload so get_zed_home picks up the env var fresh.
-    import zed_constants
+    import hermes_constants
     importlib.reload(zed_constants)
     from agent import curator_backup
     importlib.reload(curator_backup)
@@ -337,7 +337,7 @@ def _write_cron_jobs(home: Path, jobs: list) -> Path:
 
 def _reload_cron_jobs(home: Path):
     """Reload cron.jobs so its module-level ZED_DIR picks up the tmp HOME."""
-    import zed_constants
+    import hermes_constants
     importlib.reload(zed_constants)
     if "cron.jobs" in sys.modules:
         import cron.jobs as _cj
@@ -651,3 +651,4 @@ def test_rollback_does_not_delete_the_snapshot_it_restores_from(backup_env, monk
         "the pre-rollback safety snapshot pruned away the snapshot being "
         "restored â€” the oldest restore point is destroyed by restoring to it"
     )
+

@@ -188,7 +188,7 @@ async def test_sethome_updates_running_config_for_same_process_restart(tmp_path,
     def _fake_save_env_value(key, value):
         saved[key] = value
 
-    monkeypatch.setattr("zed_cli.config.save_env_value", _fake_save_env_value)
+    monkeypatch.setattr("hermes_cli.config.save_env_value", _fake_save_env_value)
 
     runner, _adapter = make_restart_runner()
     source = make_restart_source(chat_id="home-42")
@@ -220,7 +220,7 @@ async def test_sethome_preserves_thread_target_for_same_process_restart(tmp_path
     def _fake_save_env_value(key, value):
         saved[key] = value
 
-    monkeypatch.setattr("zed_cli.config.save_env_value", _fake_save_env_value)
+    monkeypatch.setattr("hermes_cli.config.save_env_value", _fake_save_env_value)
 
     runner, _adapter = make_restart_runner()
     source = make_restart_source(chat_id="parent-42", thread_id="topic-7")
@@ -688,3 +688,4 @@ async def test_restart_shutdown_notification_anchors_telegram_dm_topic():
         "direct_messages_topic_id": "20197",
         "telegram_reply_to_message_id": "462",
     }
+

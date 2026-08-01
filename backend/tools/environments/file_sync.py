@@ -25,7 +25,7 @@ except ImportError:
 from pathlib import Path
 from typing import Callable
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from tools.environments.base import _file_mtime_key
 
 logger = logging.getLogger(__name__)
@@ -401,3 +401,4 @@ class FileSyncManager:
                 suffix = remote_path[len(remote_dir):]
                 return host_dir + suffix
         return None
+

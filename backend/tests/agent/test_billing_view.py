@@ -31,8 +31,8 @@ from agent.billing_view import (
     parse_money,
     validate_charge_amount,
 )
-import zed_cli.nous_billing as nb
-from zed_cli.nous_billing import (
+import hermes_cli.nous_billing as nb
+from hermes_cli.nous_billing import (
     BillingAuthError,
     BillingError,
     BillingRateLimited,
@@ -375,3 +375,4 @@ def test_validate_amount_rejections(raw, err_substr):
     v = validate_charge_amount(raw, min_usd=Decimal("10"), max_usd=Decimal("10000"))
     assert not v.ok
     assert err_substr.lower() in (v.error or "").lower()
+

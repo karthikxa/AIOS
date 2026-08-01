@@ -356,10 +356,10 @@ class TestSetupWizardDeploymentShape:
 
         # Bypass config.yaml + connection test side effects.
         monkeypatch.setattr(
-            "zed_cli.config.load_config", lambda: {"memory": {}}, raising=False,
+            "hermes_cli.config.load_config", lambda: {"memory": {}}, raising=False,
         )
         monkeypatch.setattr(
-            "zed_cli.config.save_config", lambda c: None, raising=False,
+            "hermes_cli.config.save_config", lambda c: None, raising=False,
         )
 
         class _FakeClientCfg:
@@ -728,3 +728,4 @@ class TestMigratePinKey:
         block = {"pinUserPeer": True}
         assert honcho_cli._migrate_pin_key(block) is False
         assert block == {"pinUserPeer": True}
+

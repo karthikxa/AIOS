@@ -20,7 +20,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import IO, Callable, Protocol
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from tools.interrupt import is_interrupted
 
 logger = logging.getLogger(__name__)
@@ -893,3 +893,4 @@ class BaseEnvironment(ABC):
         from tools.terminal_tool import _transform_sudo_command
 
         return _transform_sudo_command(command)
+

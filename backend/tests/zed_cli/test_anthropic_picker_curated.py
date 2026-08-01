@@ -13,7 +13,7 @@ Bug â€” newly-routed curated aliases vanished on a native Anthropic setup
 
 from unittest.mock import patch
 
-from zed_cli import models as M
+from hermes_cli import models as M
 
 
 def test_anthropic_curated_alias_survives_when_live_omits_it():
@@ -56,3 +56,4 @@ def test_anthropic_falls_back_to_curated_when_live_unavailable():
 
     assert result == list(M._PROVIDER_MODELS["anthropic"])
     assert "claude-fable-5" in result
+

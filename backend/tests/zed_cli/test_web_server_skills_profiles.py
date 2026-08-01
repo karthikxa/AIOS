@@ -1,7 +1,7 @@
-"""Regression tests for dashboard profile-scoped skills/toolsets management.
+﻿"""Regression tests for dashboard profile-scoped skills/toolsets management.
 
 "Set as active" on the Profiles page only flips the sticky ``active_profile``
-file (future CLI/gateway runs) — it never retargets the running dashboard
+file (future CLI/gateway runs) â€” it never retargets the running dashboard
 process. Before the ``profile`` parameter existed, toggling a skill after
 "activating" a profile silently wrote into the dashboard's own config.
 These tests pin the new behavior: reads and writes land in the REQUESTED
@@ -23,8 +23,8 @@ def _write_skill(skills_dir, name, description="test skill"):
 @pytest.fixture
 def isolated_profiles(tmp_path, monkeypatch, _isolate_zed_home):
     """Isolated default home + one named profile, each with its own skills."""
-    from zed_constants import get_zed_home
-    from zed_cli import profiles
+    from hermes_constants import get_zed_home
+    from hermes_cli import profiles
 
     default_home = get_zed_home()
     profiles_root = default_home / "profiles"
@@ -48,9 +48,9 @@ def client(monkeypatch, isolated_profiles):
     except ImportError:
         pytest.skip("fastapi/starlette not installed")
 
-    import zed_state
-    from zed_constants import get_zed_home
-    from zed_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
+    import hermes_state
+    from hermes_constants import get_zed_home
+    from hermes_cli.web_server import app, _SESSION_HEADER_NAME, _SESSION_TOKEN
 
     monkeypatch.setattr(zed_state, "DEFAULT_DB_PATH", get_zed_home() / "state.db")
     c = TestClient(app)
@@ -89,7 +89,7 @@ class TestProfileScopedSkills:
 
         worker_cfg = _load_cfg(isolated_profiles["worker_alpha"])
         assert "worker-skill" in worker_cfg.get("skills", {}).get("disabled", [])
-        # The dashboard's own config must stay untouched — this was the bug.
+        # The dashboard's own config must stay untouched â€” this was the bug.
         default_cfg = _load_cfg(isolated_profiles["default"])
         assert "worker-skill" not in default_cfg.get("skills", {}).get("disabled", [])
 
@@ -158,9 +158,9 @@ class TestProfileScopedHubActions:
         self, client, isolated_profiles, monkeypatch
     ):
         """Hub installs must go through a fresh ``hermes -p <profile>``
-        subprocess — the in-process scope can't reach skills_hub's
+        subprocess â€” the in-process scope can't reach skills_hub's
         import-time SKILLS_DIR binding."""
-        import zed_cli.web_server as web_server
+        import hermes_cli.web_server as web_server
 
         calls = []
 
@@ -187,7 +187,7 @@ class TestProfileScopedHubActions:
     def test_hub_install_without_profile_keeps_legacy_argv(
         self, client, isolated_profiles, monkeypatch
     ):
-        import zed_cli.web_server as web_server
+        import hermes_cli.web_server as web_server
 
         calls = []
 
@@ -211,3 +211,4 @@ class TestProfileScopedHubActions:
             json={"identifier": "official/demo", "profile": "ghost"},
         )
         assert resp.status_code == 404
+

@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 import pytest
 
-from zed_cli.nous_account import NousPortalAccountInfo
+from hermes_cli.nous_account import NousPortalAccountInfo
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -71,10 +71,10 @@ def _enable_managed_nous_tools(monkeypatch):
     The _install_fake_tools_package() helper resets and reimports tool modules,
     so a simple monkeypatch on tool_backend_helpers doesn't survive.  We patch
     the *source* modules that the reimported modules will import from â€” both
-    zed_cli.nous_account â€” so the function body returns True.
+    hermes_cli.nous_account â€” so the function body returns True.
     """
     monkeypatch.setattr(
-        "zed_cli.nous_account.get_nous_portal_account_info",
+        "hermes_cli.nous_account.get_nous_portal_account_info",
         lambda: NousPortalAccountInfo(
             logged_in=True,
             source="jwt",
@@ -250,7 +250,7 @@ def test_browser_use_availability_skips_refresh_for_expired_cached_gateway_token
         return "fresh-token"
 
     monkeypatch.setattr(
-        "zed_cli.auth.resolve_nous_access_token",
+        "hermes_cli.auth.resolve_nous_access_token",
         _record_refresh,
     )
 
@@ -617,3 +617,4 @@ class TestShellEscapeBypass:
     def test_benign_command_not_flagged(self):
         from tools.approval import detect_dangerous_command
         assert detect_dangerous_command("ls -la")[0] is False
+

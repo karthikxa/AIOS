@@ -59,7 +59,7 @@ agent:
     root.joinpath("config.yaml").write_text("toolsets:\n  - kanban\n", encoding="utf-8")
     monkeypatch.setenv("ZED_HOME", str(root))
 
-    from zed_cli import kanban_db as kb
+    from hermes_cli import kanban_db as kb
 
     monkeypatch.setattr(kb, "_resolve_zed_argv", lambda: ["zed"])
 
@@ -107,7 +107,7 @@ toolsets:
     )
     monkeypatch.setenv("ZED_HOME", str(root))
 
-    from zed_cli import kanban_db as kb
+    from hermes_cli import kanban_db as kb
 
     resolved = kb._resolve_worker_cli_toolsets(str(profile))
 
@@ -116,3 +116,4 @@ toolsets:
     assert "web" in resolved
     assert "kanban" in resolved  # recovered worker lifecycle surface
     assert resolved != ["kanban"]
+

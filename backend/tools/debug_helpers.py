@@ -28,7 +28,7 @@ import os
 import uuid
 from typing import Any, Dict
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 
 logger = logging.getLogger(__name__)
 
@@ -103,3 +103,4 @@ class DebugSession:
             "log_path": str(self.log_dir / f"{self.tool_name}_debug_{self.session_id}.json"),
             "total_calls": len(self._calls),
         }
+

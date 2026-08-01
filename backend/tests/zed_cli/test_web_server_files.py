@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 from starlette.testclient import TestClient
 
-from zed_cli import web_server
+from hermes_cli import web_server
 
 
 def _client_with_app_state():
@@ -488,3 +488,4 @@ def test_stream_upload_cleans_temp_on_cancellation(forced_files_client):
     # ... and no .upload temp file was left behind.
     leftovers = [p.name for p in target.parent.iterdir() if ".upload" in p.name]
     assert leftovers == [], f"temp upload files leaked on cancellation: {leftovers}"
+

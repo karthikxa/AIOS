@@ -125,7 +125,7 @@ def resolve_cron_scheduler() -> "CronScheduler":
 
     name = ""
     try:
-        from zed_cli.config import cfg_get, load_config
+        from hermes_cli.config import cfg_get, load_config
         name = (cfg_get(load_config(), "cron", "provider", default="") or "").strip()
     except Exception:
         pass
@@ -175,3 +175,4 @@ class InProcessCronScheduler(CronScheduler):
             except Exception as e:
                 logger.debug("Cron tick error: %s", e)
             stop_event.wait(interval)
+

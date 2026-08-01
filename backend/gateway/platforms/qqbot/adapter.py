@@ -1189,7 +1189,7 @@ class QQAdapter(BasePlatformAdapter):
         Writes via ``tmp + rename`` so a partial write can't fool the reader.
         """
         try:
-            from zed_constants import get_zed_home
+            from hermes_constants import get_zed_home
             home = get_zed_home()
             response_path = home / ".update_response"
             tmp = response_path.with_suffix(".tmp")
@@ -3194,3 +3194,4 @@ class QQAdapter(BasePlatformAdapter):
             return True
         self._seen_messages[msg_id] = now
         return False
+

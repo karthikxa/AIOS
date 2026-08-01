@@ -1,7 +1,7 @@
 ﻿"""Tests for Nous subscription feature detection."""
 
-from zed_cli.nous_account import NousPortalAccountInfo, NousToolAccessInfo
-from zed_cli import nous_subscription as ns
+from hermes_cli.nous_account import NousPortalAccountInfo, NousToolAccessInfo
+from hermes_cli import nous_subscription as ns
 
 
 _POOL_COVERAGE = {
@@ -414,11 +414,11 @@ def _capture_checklist(monkeypatch, *, selected_idx):
         captured["pre_selected"] = list(pre_selected or [])
         return list(selected_idx)
 
-    import zed_cli.setup as setup_mod
+    import hermes_cli.setup as setup_mod
 
     monkeypatch.setattr(setup_mod, "prompt_checklist", _fake_checklist, raising=False)
     monkeypatch.setattr(
-        "zed_cli.config.save_config", lambda cfg: None, raising=False
+        "hermes_cli.config.save_config", lambda cfg: None, raising=False
     )
     return captured
 
@@ -854,3 +854,4 @@ def test_apply_gateway_defaults_sets_stt_use_gateway(monkeypatch):
     assert "stt" in changed
     assert config["stt"]["provider"] == "openai"
     assert config["stt"]["use_gateway"] is True
+

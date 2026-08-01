@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from zed_cli import claw as claw_mod
+from hermes_cli import claw as claw_mod
 
 
 # ---------------------------------------------------------------------------
@@ -797,3 +797,4 @@ class TestWarnIfOpenclawRunning:
         captured = capsys.readouterr()
         assert "OpenClaw appears to be running" in captured.out
         assert "Non-interactive session" in captured.out
+

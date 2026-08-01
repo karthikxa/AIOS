@@ -10,7 +10,7 @@ once that provider is active.
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from zed_cli import memory_setup
+from hermes_cli import memory_setup
 
 
 class TestMemorySetupProviderRouting:
@@ -95,3 +95,4 @@ class TestInstallDependenciesRunner:
         cmd, _ = self._run_with_missing_dep(tmp_path, lambda b: None)
         assert cmd is None  # no install attempted
         assert "cannot install dependencies" in capsys.readouterr().out
+

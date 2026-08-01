@@ -71,7 +71,7 @@ def get_tool_output_limits() -> Dict[str, int]:
     if _cached_limits is not None:
         return _cached_limits
     try:
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
         cfg = load_config() or {}
         section = cfg.get("tool_output") if isinstance(cfg, dict) else None
         if not isinstance(section, dict):
@@ -108,3 +108,4 @@ def get_max_lines() -> int:
 def get_max_line_length() -> int:
     """Shortcut for file-ops callers that only need the per-line cap."""
     return get_tool_output_limits()["max_line_length"]
+

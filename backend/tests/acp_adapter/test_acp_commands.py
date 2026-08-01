@@ -86,14 +86,14 @@ def test_acp_real_agent_gets_session_db_for_recall(monkeypatch):
     monkeypatch.setitem(sys.modules, "run_agent", mod("run_agent", AIAgent=CapturingAgent))
     monkeypatch.setitem(
         sys.modules,
-        "zed_cli.config",
-        mod("zed_cli.config", load_config=lambda: {"model": {"default": "m", "provider": "p"}}),
+        "hermes_cli.config",
+        mod("hermes_cli.config", load_config=lambda: {"model": {"default": "m", "provider": "p"}}),
     )
     monkeypatch.setitem(
         sys.modules,
-        "zed_cli.runtime_provider",
+        "hermes_cli.runtime_provider",
         mod(
-            "zed_cli.runtime_provider",
+            "hermes_cli.runtime_provider",
             resolve_runtime_provider=lambda **_kwargs: {
                 "provider": "p",
                 "api_mode": "chat_completions",
@@ -196,3 +196,4 @@ async def test_acp_prompt_drains_queued_turns_after_current_run():
     assert state.queued_prompts == []
     agent_messages = [u for _sid, u in conn.updates if getattr(u, "session_update", None) == "agent_message_chunk"]
     assert len(agent_messages) >= 2
+

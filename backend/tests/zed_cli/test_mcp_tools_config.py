@@ -1,13 +1,13 @@
-﻿"""Tests for MCP tools interactive configuration in zed_cli.tools_config."""
+﻿"""Tests for MCP tools interactive configuration in hermes_cli.tools_config."""
 
 from unittest.mock import patch
 
-from zed_cli.tools_config import _configure_mcp_tools_interactive
+from hermes_cli.tools_config import _configure_mcp_tools_interactive
 
 # Patch targets: imports happen inside the function body, so patch at source
 _PROBE = "tools.mcp_tool.probe_mcp_server_tools"
-_CHECKLIST = "zed_cli.curses_ui.curses_checklist"
-_SAVE = "zed_cli.tools_config.save_config"
+_CHECKLIST = "hermes_cli.curses_ui.curses_checklist"
+_SAVE = "hermes_cli.tools_config.save_config"
 
 
 def test_no_mcp_servers_prints_info(capsys):
@@ -293,3 +293,4 @@ def test_empty_tools_server_skipped(capsys):
     assert len(checklist_calls) == 0
     captured = capsys.readouterr()
     assert "no tools found" in captured.out
+

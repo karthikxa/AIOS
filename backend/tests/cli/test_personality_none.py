@@ -150,7 +150,7 @@ class TestGatewayPersonalityNone:
         (tmp_path / "config.yaml").write_text(yaml.dump({"agent": {"personalities": {}}}))
 
         with patch("gateway.run._zed_home", tmp_path), \
-             patch("zed_constants.display_zed_home", return_value="~/.zed/profiles/coder"):
+             patch("hermes_constants.display_zed_home", return_value="~/.zed/profiles/coder"):
             event = self._make_event("")
             result = await runner._handle_personality_command(event)
 
@@ -222,3 +222,4 @@ class TestPersonalityDictFormat:
         from cli import ZedCLI
         result = ZedCLI._resolve_personality_prompt("You are helpful.")
         assert result == "You are helpful."
+

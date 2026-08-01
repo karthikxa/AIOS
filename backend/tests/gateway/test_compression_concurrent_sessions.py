@@ -25,7 +25,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from zed_state import SessionDB
+from hermes_state import SessionDB
 
 
 # ---------------------------------------------------------------------------
@@ -227,3 +227,4 @@ def test_concurrent_compressions_same_session_serialize(tmp_path: Path) -> None:
         "Compression lock leaked: still held on the parent session_id after both "
         "threads joined. Future compression on the child session would deadlock."
     )
+

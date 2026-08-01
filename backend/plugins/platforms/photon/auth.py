@@ -88,7 +88,7 @@ E164_RE = re.compile(r"^\+[1-9]\d{6,14}$")
 def _auth_json_path() -> Path:
     """Resolve ``~/.zed/auth.json`` honouring the active Zed profile."""
     try:
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         return Path(get_zed_home()) / "auth.json"
     except Exception:
         return Path(os.path.expanduser("~/.zed")) / "auth.json"
@@ -252,9 +252,9 @@ def _persist_runtime_env(spectrum_project_id: str, project_secret: str) -> None:
     caller â€” same CodeQL-clean-flow rationale as the rest of this module.
     """
     try:
-        from zed_cli.config import save_env_value
+        from hermes_cli.config import save_env_value
     except ImportError:
-        logger.warning("photon: zed_cli.config unavailable â€” skipping .env write")
+        logger.warning("photon: hermes_cli.config unavailable â€” skipping .env write")
         return
     try:
         save_env_value("PHOTON_PROJECT_ID", spectrum_project_id)
@@ -916,7 +916,7 @@ def _configured_operator_phone() -> Optional[str]:
 
 def _get_config_env_value(key: str) -> Optional[str]:
     try:
-        from zed_cli.config import get_env_value
+        from hermes_cli.config import get_env_value
     except Exception:
         return os.getenv(key)
     return get_env_value(key)
@@ -1044,3 +1044,4 @@ def credential_summary() -> Dict[str, str]:
         "phone_number": _present_phone(),
         "assigned_phone_number": _present_assigned_phone(),
     }
+

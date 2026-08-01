@@ -4,7 +4,7 @@ import argparse
 
 import pytest
 
-from zed_cli.bundles import (
+from hermes_cli.bundles import (
     bundles_command,
     register_cli,
 )
@@ -90,3 +90,4 @@ class TestBundlesCli:
         bundles_command(_parse(["reload"]))
         out = capsys.readouterr().out
         assert "No changes" in out or "0" in out
+

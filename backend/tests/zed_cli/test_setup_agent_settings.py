@@ -1,6 +1,6 @@
 ﻿"""Tests for agent-settings copy in the interactive setup wizard."""
 
-from zed_cli.setup import setup_agent_settings
+from hermes_cli.setup import setup_agent_settings
 
 
 def test_setup_agent_settings_uses_displayed_max_iterations_value(tmp_path, monkeypatch, capsys):
@@ -21,11 +21,11 @@ def test_setup_agent_settings_uses_displayed_max_iterations_value(tmp_path, monk
 
     prompt_answers = iter(["60", "all", "0.5"])
 
-    monkeypatch.setattr("zed_cli.setup.prompt", lambda *args, **kwargs: next(prompt_answers))
-    monkeypatch.setattr("zed_cli.setup.prompt_choice", lambda *args, **kwargs: 4)
-    monkeypatch.setattr("zed_cli.setup.save_env_value", lambda *args, **kwargs: None)
-    monkeypatch.setattr("zed_cli.setup.remove_env_value", lambda *args, **kwargs: None)
-    monkeypatch.setattr("zed_cli.setup.save_config", lambda *args, **kwargs: None)
+    monkeypatch.setattr("hermes_cli.setup.prompt", lambda *args, **kwargs: next(prompt_answers))
+    monkeypatch.setattr("hermes_cli.setup.prompt_choice", lambda *args, **kwargs: 4)
+    monkeypatch.setattr("hermes_cli.setup.save_env_value", lambda *args, **kwargs: None)
+    monkeypatch.setattr("hermes_cli.setup.remove_env_value", lambda *args, **kwargs: None)
+    monkeypatch.setattr("hermes_cli.setup.save_config", lambda *args, **kwargs: None)
 
     setup_agent_settings(config)
 
@@ -54,19 +54,19 @@ def test_setup_agent_settings_prefers_config_over_stale_env(tmp_path, monkeypatc
 
     # Simulate stale .env value â€” the wizard must ignore this.
     monkeypatch.setattr(
-        "zed_cli.setup.get_env_value",
+        "hermes_cli.setup.get_env_value",
         lambda key: "60" if key == "ZED_MAX_ITERATIONS" else "",
     )
-    monkeypatch.setattr("zed_cli.setup.prompt", lambda *args, **kwargs: next(prompt_answers))
-    monkeypatch.setattr("zed_cli.setup.prompt_choice", lambda *args, **kwargs: 4)
-    monkeypatch.setattr("zed_cli.setup.save_env_value", lambda *args, **kwargs: None)
+    monkeypatch.setattr("hermes_cli.setup.prompt", lambda *args, **kwargs: next(prompt_answers))
+    monkeypatch.setattr("hermes_cli.setup.prompt_choice", lambda *args, **kwargs: 4)
+    monkeypatch.setattr("hermes_cli.setup.save_env_value", lambda *args, **kwargs: None)
 
     removed_keys: list[str] = []
     monkeypatch.setattr(
-        "zed_cli.setup.remove_env_value",
+        "hermes_cli.setup.remove_env_value",
         lambda key: (removed_keys.append(key), True)[1],
     )
-    monkeypatch.setattr("zed_cli.setup.save_config", lambda *args, **kwargs: None)
+    monkeypatch.setattr("hermes_cli.setup.save_config", lambda *args, **kwargs: None)
 
     setup_agent_settings(config)
 
@@ -76,3 +76,4 @@ def test_setup_agent_settings_prefers_config_over_stale_env(tmp_path, monkeypatc
     assert "Press Enter to keep 60." not in out
     # And the stale .env entry gets cleaned up
     assert "ZED_MAX_ITERATIONS" in removed_keys
+

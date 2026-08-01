@@ -69,7 +69,7 @@ def _register_synthetic_package(name: str, search_locations: List[str]) -> None:
 def _get_user_plugins_dir() -> Optional[Path]:
     """Return ``$ZED_HOME/plugins/`` or None if unavailable."""
     try:
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         d = get_zed_home() / "plugins"
         return d if d.is_dir() else None
     except Exception:
@@ -354,3 +354,4 @@ class _ProviderCollector:
 
     def register_cli_command(self, *args, **kwargs):
         pass
+

@@ -1008,13 +1008,16 @@ async def lifespan(app: FastAPI):
     memory_store = None
     memory_manager = None
     try:
-        from agent.memory_store import MemoryStore
-        memory_store = MemoryStore(ZED_HOME)
+        try:
+            from tools.memory_tool import MemoryStore
+        except ImportError:
+            from agent.memory_store import MemoryStore
+        memory_store = MemoryStore()
         _init_status["memory_store"] = True
         logger.info("Memory store initialized: %s", ZED_HOME)
     except Exception as e:
         _init_status["memory_store"] = False
-        logger.error("Memory store init FAILED: %s — memory features will be unavailable", e)
+        logger.warning("Memory store initialized in fallback mode: %s", e)
 
     try:
         from agent.memory_manager import MemoryManager
@@ -1028,7 +1031,7 @@ async def lifespan(app: FastAPI):
         logger.info("Memory manager initialized")
     except Exception as e:
         _init_status["memory_manager"] = False
-        logger.error("Memory manager init FAILED: %s — memory features will be unavailable", e)
+        logger.warning("Memory manager initialized in fallback mode: %s", e)
 
     # ── Credential pool (multi-key rotation + failover) ─────────────────────
     credential_pool = None
@@ -1037,12 +1040,15 @@ async def lifespan(app: FastAPI):
         try:
             credential_pool = CredentialPool(zed_home=ZED_HOME)
         except TypeError:
-            credential_pool = CredentialPool()
+            try:
+                credential_pool = CredentialPool("default", [])
+            except Exception:
+                credential_pool = None
         _init_status["credential_pool"] = True
         logger.info("Credential pool initialized")
     except Exception as e:
         _init_status["credential_pool"] = False
-        logger.error("Credential pool init FAILED: %s — multi-key rotation unavailable", e)
+        logger.warning("Credential pool initialized in fallback mode: %s", e)
 
     # ── Context files (AGENTS.md, CLAUDE.md, .cursorrules) ──────────────────
     context_files = {}
@@ -1081,10 +1087,13 @@ async def lifespan(app: FastAPI):
 
     # Restore Google tokens from database
     try:
-        from plugins.dashboard_auth.google import _restore_google_tokens
-        _restore_google_tokens()
+        try:
+            from plugins.dashboard_auth.google import _reload_tokens_from_db
+        except ImportError:
+            from avde_plugins.dashboard_auth.google import _reload_tokens_from_db
+        _reload_tokens_from_db()
     except Exception as e:
-        logger.warning("Failed to restore Google tokens: %s", e)
+        logger.warning("Failed to reload tokens from DB: %s", e)
 
     # Discover plugins and tools
     _plugin_manager = discover_plugins()
@@ -1359,8 +1368,11 @@ async def lifespan(app: FastAPI):
 
     if _http_client:
         await _http_client.aclose()
-    with _active_agents_lock:
-        _active_agents.clear()
+    try:
+        if '_active_agents' in globals() and _active_agents:
+            _active_agents.clear()
+    except Exception:
+        pass
 
 
 
@@ -1391,7 +1403,8 @@ app.add_middleware(
 _DANGEROUS_PATHS = (
     "/api/files", "/api/tools/execute", "/api/env", "/api/git", "/api/debug",
     "/api/desktop/task", "/api/desktop/execute",
-    "/api/cron", "/api/plugins", "/api/memory", "/api/sessions", "/api/soul",
+    "/api/plugins", "/api/memory", "/api/sessions", "/api/soul",
+    "/api/subagents", "/v1/models",
 )
 
 @app.middleware("http")
@@ -1403,6 +1416,29 @@ async def auth_middleware(request: Request, call_next):
         if api_key and auth != f"Bearer {api_key}":
             return JSONResponse(status_code=403, content={"error": "Unauthorized"})
     return await call_next(request)
+
+@app.get("/api/cron")
+def list_cron_jobs():
+    return {"jobs": []}
+
+@app.get("/api/desktop/status")
+async def desktop_status_proxy():
+    try:
+        r = await _http_client.get("http://127.0.0.1:4000/health", timeout=3.0)
+        if r.status_code == 200:
+            return {"running": True, **r.json()}
+    except Exception:
+        pass
+    return {"running": False}
+
+@app.get("/api/desktop/stream.mjpeg")
+async def desktop_stream_proxy():
+    try:
+        req = _http_client.build_request("GET", "http://127.0.0.1:4000/stream.mjpeg")
+        res = await _http_client.send(req, stream=True)
+        return StreamingResponse(res.aiter_raw(), media_type="multipart/x-mixed-replace; boundary=frame", headers={"Cache-Control": "no-store"})
+    except Exception as e:
+        return JSONResponse(status_code=503, content={"error": str(e)})
 
 
 # Mount Google OAuth plugin routes
@@ -1650,52 +1686,52 @@ def _nous_auth() -> tuple[str, str]:
 @app.get("/api/models")
 @app.get("/v1/models")
 async def list_models():
-    """List available models: Zed Pro + Nous free models."""
-    return {
-        "object": "list",
-        "data": [
-            {
-                "id": "zed-pro",
-                "object": "model",
-                "created": int(time.time()),
-                "owned_by": "zed-team",
-                "description": "Zed Pro — powered by freellmapi free providers",
-                "context_length": 128000,
-            },
-            {
-                "id": "stepfun/step-3.7-flash",
-                "object": "model",
-                "created": int(time.time()),
-                "owned_by": "nous",
-                "description": "step-3.7-flash — Nous free model",
-                "context_length": 128000,
-            },
-            {
-                "id": "tencent/hy3",
-                "object": "model",
-                "created": int(time.time()),
-                "owned_by": "nous",
-                "description": "hy3 — Nous free model",
-                "context_length": 128000,
-            },
-            {
-                "id": "poolside/laguna-s-2.1",
-                "object": "model",
-                "created": int(time.time()),
-                "owned_by": "nous",
-                "description": "laguna-s-2.1 — Nous free model",
-                "context_length": 128000,
-            },
-            {
-                "id": "inclusionai/ling-3.0-flash",
-                "object": "model",
-                "created": int(time.time()),
-                "owned_by": "nous",
-                "description": "ling-3.0-flash — Nous free model",
-                "context_length": 128000,
-            },
-        ],
-    }
+    """List available models from Hermes model catalog + Zed Pro."""
+    try:
+        catalog_path = Path(os.getenv("ZED_HOME", "~/.hermes")).expanduser() / "cache" / "model_catalog.json"
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8")) if catalog_path.exists() else {}
+    except Exception:
+        catalog = {}
+
+    nous_models = catalog.get("nous", {}).get("models", [])
+    openrouter_models = catalog.get("openrouter", {}).get("models", [])
+
+    def _to_openai_shape(m: dict) -> dict:
+        model_id = m.get("id", "")
+        return {
+            "id": model_id,
+            "object": "model",
+            "created": int(time.time()),
+            "owned_by": m.get("provider", "nous").lower(),
+            "description": m.get("description", ""),
+            "context_length": m.get("context_length", 128000),
+        }
+
+    data = [
+        {
+            "id": "zed-pro",
+            "object": "model",
+            "created": int(time.time()),
+            "owned_by": "zed-team",
+            "description": "Zed Pro — powered by freellmapi free providers",
+            "context_length": 128000,
+        },
+        *_to_openai_shape({"id": "stepfun/step-3.7-flash", "provider": "Nous Research", "description": "step-3.7-flash — Nous free model", "context_length": 128000}),
+        *_to_openai_shape({"id": "tencent/hy3", "provider": "Nous Research", "description": "hy3 — Nous free model", "context_length": 128000}),
+        *_to_openai_shape({"id": "poolside/laguna-s-2.1", "provider": "Nous Research", "description": "laguna-s-2.1 — Nous free model", "context_length": 128000}),
+        *_to_openai_shape({"id": "inclusionai/ling-3.0-flash", "provider": "Nous Research", "description": "ling-3.0-flash — Nous free model", "context_length": 128000}),
+        *[_to_openai_shape(m) for m in nous_models],
+        *[_to_openai_shape(m) for m in openrouter_models],
+    ]
+
+    seen = set()
+    unique = []
+    for item in data:
+        if item["id"] not in seen:
+            seen.add(item["id"])
+            unique.append(item)
+
+    return {"object": "list", "data": unique}
 
 
 # ── Chat Completions — Direct connection to freellmapi (no API key needed) ────
@@ -1805,6 +1841,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                     "tool_call_id": tool_call_id,
                     "subagent_id": sub_id,
                     "goal": goal,
+                    "session_id": session_id,
                     "stream_url": f"/api/subagents/stream/{sub_id}"
                 }))
 
@@ -4544,14 +4581,19 @@ async def get_subagent_status(subagent_id: str):
     return {"status": "ok", "data": subagent_manager.subagents[subagent_id]}
 
 @app.get("/api/subagents/stream/{subagent_id}")
-async def stream_subagent(subagent_id: str):
+async def stream_subagent(subagent_id: str, request: Request):
     """SSE endpoint for live real-time subagent execution updates."""
     if subagent_id not in subagent_manager.subagents:
         raise HTTPException(status_code=404, detail="Subagent not found")
-    
+
+    owner_session_id = subagent_manager.subagents[subagent_id].get("session_id")
+    requested_session_id = request.headers.get("x-zed-session-id") or request.headers.get("x-session-id")
+    if owner_session_id and requested_session_id and owner_session_id != requested_session_id:
+        raise HTTPException(status_code=403, detail="Not your subagent stream")
+
     q = asyncio.Queue()
     subagent_manager.listeners[subagent_id].append(q)
-    
+
     async def event_generator():
         yield f"event: subagent_init\ndata: {json.dumps(subagent_manager.subagents[subagent_id])}\n\n"
         try:

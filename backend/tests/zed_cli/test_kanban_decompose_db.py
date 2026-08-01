@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from zed_cli import kanban_db as kb
+from hermes_cli import kanban_db as kb
 
 
 @pytest.fixture
@@ -228,3 +228,4 @@ def test_decompose_per_child_workspace_override(kanban_home):
         inh = kb.get_task(conn, child_ids[1])
     assert over.workspace_path == "/other/repo"
     assert inh.workspace_path == proj
+

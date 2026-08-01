@@ -1,7 +1,7 @@
 ﻿"""Tests for Kanban task file attachments (#35338).
 
 Covers three layers:
-  * ``zed_cli.kanban_db`` accessors (add/list/get/delete + path helpers)
+  * ``hermes_cli.kanban_db`` accessors (add/list/get/delete + path helpers)
   * the dashboard REST surface (upload / list / download / delete)
   * worker-context surfacing so a kanban worker sees the absolute paths
 
@@ -20,7 +20,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from zed_cli import kanban_db as kb
+from hermes_cli import kanban_db as kb
 
 
 # ---------------------------------------------------------------------------
@@ -289,3 +289,4 @@ def test_upload_unknown_task_404(client):
 
 def test_download_unknown_attachment_404(client):
     assert client.get("/api/plugins/kanban/attachments/424242").status_code == 404
+

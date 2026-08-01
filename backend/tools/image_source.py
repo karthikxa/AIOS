@@ -214,7 +214,7 @@ def _media_cache_roots() -> list:
     downloaded inbound media and the tools' own URL-download temp dirs. Covers
     the consolidated ``cache/`` layout and the legacy flat directories.
     """
-    from zed_constants import get_zed_home
+    from hermes_constants import get_zed_home
 
     home = get_zed_home()
     return [
@@ -336,3 +336,4 @@ def _finalize(data: bytes, declared_mime: str, origin: str, src: str) -> Resolve
             return ResolvedImage(data=data, mime="image/svg+xml", origin=origin)
         raise NotAnImage("source is not a recognized image", src=src, origin=origin)
     return ResolvedImage(data=data, mime=sniffed, origin=origin)
+

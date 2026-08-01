@@ -1,11 +1,11 @@
-﻿"""Tests for zed_cli.model_normalize â€” provider-aware model name normalization.
+﻿"""Tests for hermes_cli.model_normalize â€” provider-aware model name normalization.
 
 Covers issue #5211: opencode-go model names with dots (e.g. minimax-m2.7)
 must NOT be mangled to hyphens (minimax-m2-7).
 """
 import pytest
 
-from zed_cli.model_normalize import (
+from hermes_cli.model_normalize import (
     normalize_model_for_provider,
     _DOT_TO_HYPHEN_PROVIDERS,
     _normalize_for_deepseek,
@@ -263,3 +263,4 @@ class TestDeepseekCanonicalAndReasonerMapping:
     ])
     def test_unknown_names_fall_back_to_chat(self, model):
         assert _normalize_for_deepseek(model) == "deepseek-chat"
+

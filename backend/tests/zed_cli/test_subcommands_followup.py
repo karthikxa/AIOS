@@ -12,15 +12,15 @@ import argparse
 
 import pytest
 
-from zed_cli.subcommands.acp import build_acp_parser
-from zed_cli.subcommands.claw import build_claw_parser
-from zed_cli.subcommands.insights import build_insights_parser
-from zed_cli.subcommands.mcp import build_mcp_parser
-from zed_cli.subcommands.memory import build_memory_parser
-from zed_cli.subcommands.pairing import build_pairing_parser
-from zed_cli.subcommands.plugins import build_plugins_parser
-from zed_cli.subcommands.skills import build_skills_parser
-from zed_cli.subcommands.tools import build_tools_parser
+from hermes_cli.subcommands.acp import build_acp_parser
+from hermes_cli.subcommands.claw import build_claw_parser
+from hermes_cli.subcommands.insights import build_insights_parser
+from hermes_cli.subcommands.mcp import build_mcp_parser
+from hermes_cli.subcommands.memory import build_memory_parser
+from hermes_cli.subcommands.pairing import build_pairing_parser
+from hermes_cli.subcommands.plugins import build_plugins_parser
+from hermes_cli.subcommands.skills import build_skills_parser
+from hermes_cli.subcommands.tools import build_tools_parser
 
 
 def _h(name):
@@ -64,3 +64,4 @@ def test_mcp_and_acp_accept_hooks_flag():
     # acp takes --accept-hooks at top level
     ns = parser.parse_args(["acp", "--accept-hooks"])
     assert ns.accept_hooks is True
+

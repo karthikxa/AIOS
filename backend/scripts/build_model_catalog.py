@@ -33,7 +33,7 @@ sys.path.insert(0, REPO_ROOT)
 # Ensure ZED_HOME is set for imports that touch it at module level.
 os.environ.setdefault("ZED_HOME", os.path.join(os.path.expanduser("~"), ".zed"))
 
-from zed_cli.models import OPENROUTER_MODELS, _PROVIDER_MODELS  # noqa: E402
+from hermes_cli.models import OPENROUTER_MODELS, _PROVIDER_MODELS  # noqa: E402
 
 OUTPUT_PATH = os.path.join(REPO_ROOT, "website", "static", "api", "model-catalog.json")
 CATALOG_VERSION = 1
@@ -93,3 +93,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+

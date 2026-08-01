@@ -90,7 +90,7 @@ for name in list(sys.modules):
     if (name.startswith("tools.")
             or name.startswith("agent.")
             or name.startswith("plugins.")
-            or name.startswith("zed_cli.")):
+            or name.startswith("hermes_cli.")):
         sys.modules.pop(name, None)
 
 # Try importing transcription_registry â€” only exists on PR side.
@@ -429,3 +429,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+

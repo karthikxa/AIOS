@@ -327,7 +327,7 @@ class TestAdapterInit:
             staticmethod(lambda: {"enabled": True, "effort": "xhigh"}),
         )
         monkeypatch.setattr("gateway.run.GatewayRunner._load_fallback_model", staticmethod(lambda: None))
-        monkeypatch.setattr("zed_cli.tools_config._get_platform_tools", lambda *_: set())
+        monkeypatch.setattr("hermes_cli.tools_config._get_platform_tools", lambda *_: set())
 
         adapter = APIServerAdapter(PlatformConfig(enabled=True))
         monkeypatch.setattr(adapter, "_ensure_session_db", lambda: None)
@@ -361,7 +361,7 @@ class TestAdapterInit:
         )
         monkeypatch.setattr("gateway.run.GatewayRunner._load_fallback_model", staticmethod(lambda: None))
         monkeypatch.setattr("gateway.run._current_max_iterations", lambda: 200)
-        monkeypatch.setattr("zed_cli.tools_config._get_platform_tools", lambda *_: set())
+        monkeypatch.setattr("hermes_cli.tools_config._get_platform_tools", lambda *_: set())
 
         adapter = APIServerAdapter(PlatformConfig(enabled=True))
         monkeypatch.setattr(adapter, "_ensure_session_db", lambda: None)
@@ -654,12 +654,12 @@ class TestModelsEndpoint:
 
     def test_resolve_model_name_default_profile(self):
         """Default profile falls back to 'zed-agent'."""
-        with patch("zed_cli.profiles.get_active_profile_name", return_value="default"):
+        with patch("hermes_cli.profiles.get_active_profile_name", return_value="default"):
             assert APIServerAdapter._resolve_model_name("") == "zed-agent"
 
     def test_resolve_model_name_named_profile(self):
         """Named profile uses the profile name as model name."""
-        with patch("zed_cli.profiles.get_active_profile_name", return_value="lucas"):
+        with patch("hermes_cli.profiles.get_active_profile_name", return_value="lucas"):
             assert APIServerAdapter._resolve_model_name("") == "lucas"
 
     @pytest.mark.asyncio
@@ -789,13 +789,13 @@ class TestToolsetsEndpoint:
             ("web", "Web Tools", "Search and extract"),
         ]
         with patch(
-            "zed_cli.tools_config._get_effective_configurable_toolsets",
+            "hermes_cli.tools_config._get_effective_configurable_toolsets",
             return_value=fake_toolsets,
         ), patch(
-            "zed_cli.tools_config._get_platform_tools",
+            "hermes_cli.tools_config._get_platform_tools",
             return_value={"default"},
         ), patch(
-            "zed_cli.tools_config._toolset_has_keys",
+            "hermes_cli.tools_config._toolset_has_keys",
             return_value=True,
         ), patch(
             "toolsets.resolve_toolset",
@@ -832,13 +832,13 @@ class TestToolsetsEndpoint:
             return ["some_tool"]
 
         with patch(
-            "zed_cli.tools_config._get_effective_configurable_toolsets",
+            "hermes_cli.tools_config._get_effective_configurable_toolsets",
             return_value=fake_toolsets,
         ), patch(
-            "zed_cli.tools_config._get_platform_tools",
+            "hermes_cli.tools_config._get_platform_tools",
             return_value=set(),
         ), patch(
-            "zed_cli.tools_config._toolset_has_keys",
+            "hermes_cli.tools_config._toolset_has_keys",
             return_value=False,
         ), patch(
             "toolsets.resolve_toolset",
@@ -856,10 +856,10 @@ class TestToolsetsEndpoint:
     @pytest.mark.asyncio
     async def test_toolsets_requires_auth_when_key_configured(self, auth_adapter):
         with patch(
-            "zed_cli.tools_config._get_effective_configurable_toolsets",
+            "hermes_cli.tools_config._get_effective_configurable_toolsets",
             return_value=[],
         ), patch(
-            "zed_cli.tools_config._get_platform_tools",
+            "hermes_cli.tools_config._get_platform_tools",
             return_value=set(),
         ):
             app = _create_app(auth_adapter)
@@ -3350,7 +3350,7 @@ class TestSessionIdHeader:
         app = _create_app(auth_adapter)
         async with TestClient(TestServer(app)) as cli:
             with patch.object(auth_adapter, "_run_agent", new_callable=AsyncMock) as mock_run, \
-                 patch("zed_state.SessionDB", side_effect=Exception("DB unavailable")):
+                 patch("hermes_state.SessionDB", side_effect=Exception("DB unavailable")):
                 mock_run.return_value = (mock_result, {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0})
 
                 resp = await cli.post(
@@ -3544,3 +3544,4 @@ class TestSessionKeyHeader:
             assert resp.status == 200
             data = await resp.json()
             assert data["features"]["session_key_header"] == "X-Zed-Session-Key"
+

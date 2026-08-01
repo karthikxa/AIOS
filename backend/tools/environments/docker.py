@@ -93,7 +93,7 @@ def _normalize_env_dict(env: dict | None) -> dict[str, str]:
 def _load_zed_env_vars() -> dict[str, str]:
     """Load ~/.zed/.env values without failing Docker command execution."""
     try:
-        from zed_cli.config import load_env
+        from hermes_cli.config import load_env
 
         return load_env() or {}
     except Exception:
@@ -128,7 +128,7 @@ def _get_active_profile_name() -> str:
     same process don't retroactively relabel running containers.
     """
     try:
-        from zed_cli.profiles import get_active_profile_name
+        from hermes_cli.profiles import get_active_profile_name
 
         return get_active_profile_name() or "default"
     except Exception:
@@ -1310,3 +1310,4 @@ class DockerEnvironment(BaseEnvironment):
             return True
         thread.join(timeout=timeout)
         return not thread.is_alive()
+

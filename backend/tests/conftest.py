@@ -384,7 +384,7 @@ def _hermetic_environment(tmp_path, monkeypatch):
     #    ~/.zed/plugins/ (which, per step 3, is now empty â€” but the
     #    singleton might still be cached from a previous test).
     try:
-        import zed_cli.plugins as _plugins_mod
+        import hermes_cli.plugins as _plugins_mod
         monkeypatch.setattr(_plugins_mod, "_plugin_manager", None)
     except Exception:
         pass
@@ -655,7 +655,7 @@ def _live_system_guard(request, monkeypatch):
     _ZED_TOKENS = (
         "zed-gateway",
         "zed.service",
-        "zed_cli.main gateway",
+        "hermes_cli.main gateway",
         "zed_cli/main.py gateway",
         "gateway/run.py",
         "zed gateway",
@@ -714,7 +714,7 @@ def _live_system_guard(request, monkeypatch):
                 low = cmd_str.lower()
                 # pkill -f pattern: catch zed-themed patterns + a
                 # plain "python" -f which would catch the live gateway
-                # whose cmdline contains "python -m zed_cli.main".
+                # whose cmdline contains "python -m hermes_cli.main".
                 if (
                     "zed" in low
                     or "gateway" in low
@@ -741,7 +741,7 @@ def _live_system_guard(request, monkeypatch):
                 "intentional."
             )
         # Block any subprocess that would run `zed update` (or the
-        # equivalent `python -m zed_cli.main update`).  These commands
+        # equivalent `python -m hermes_cli.main update`).  These commands
         # run `git fetch origin + git pull` against the REAL checkout,
         # overwriting files like pyproject.toml mid-test-run and corrupting
         # every subsequent subprocess that reads them.  The corruption is
@@ -756,7 +756,7 @@ def _live_system_guard(request, monkeypatch):
             # zed update / zed update --gateway / setsid bash -c ... zed update
             ("zed" in low and "update" in low.split())
             or
-            # python -m zed_cli.main update --gateway
+            # python -m hermes_cli.main update --gateway
             ("zed_cli" in low and "update" in low.split())
             or
             # venv/bin/zed update  (absolute path variant used in tests)
@@ -884,3 +884,4 @@ def _live_system_guard(request, monkeypatch):
         pass
 
     yield
+

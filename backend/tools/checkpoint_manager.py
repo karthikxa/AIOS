@@ -57,7 +57,7 @@ import shutil
 import subprocess
 import time
 from pathlib import Path
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from typing import Dict, List, Optional, Set, Tuple
 
 from utils import env_int
@@ -1666,3 +1666,4 @@ def clear_legacy(checkpoint_base: Optional[Path] = None) -> Dict[str, int]:
         except OSError as exc:
             logger.warning("Could not delete legacy archive %s: %s", child, exc)
     return out
+

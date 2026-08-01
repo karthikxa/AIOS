@@ -2,8 +2,8 @@
 
 import pytest
 
-from zed_cli import auth
-from zed_cli.auth import AuthError
+from hermes_cli import auth
+from hermes_cli.auth import AuthError
 
 
 def test_read_xai_oauth_tokens_uses_credential_pool_when_provider_tokens_empty(monkeypatch):
@@ -77,3 +77,4 @@ def test_read_xai_oauth_tokens_still_requires_usable_tokens(monkeypatch):
 
     assert exc.value.code == "xai_auth_missing_access_token"
     assert exc.value.relogin_required is True
+

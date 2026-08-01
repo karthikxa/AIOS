@@ -4,16 +4,16 @@ from __future__ import annotations
 
 
 def test_zed_client_tag_includes_current_version():
-    """The client tag must reflect zed_cli.__version__ verbatim."""
-    from zed_cli import __version__
-    from agent.portal_tags import zed_client_tag
+    """The client tag must reflect hermes_cli.__version__ verbatim."""
+    from hermes_cli import __version__
+    from agent.portal_tags import hermes_client_tag
 
     assert zed_client_tag() == f"client=zed-client-v{__version__}"
 
 
 def test_zed_client_tag_format():
     """The client tag has the exact shape Nous Portal expects."""
-    from agent.portal_tags import zed_client_tag
+    from agent.portal_tags import hermes_client_tag
 
     tag = zed_client_tag()
     assert tag.startswith("client=zed-client-v")
@@ -24,7 +24,7 @@ def test_zed_client_tag_format():
 
 def test_nous_portal_tags_contains_product_and_client():
     """Every Nous Portal request gets BOTH the product tag and the version tag."""
-    from agent.portal_tags import zed_client_tag, nous_portal_tags
+    from agent.portal_tags import hermes_client_tag, nous_portal_tags
 
     tags = nous_portal_tags()
     assert "product=zed-agent" in tags
@@ -59,3 +59,4 @@ def test_nous_provider_profile_uses_helper():
     assert profile is not None
     body = profile.build_extra_body()
     assert body["tags"] == nous_portal_tags()
+

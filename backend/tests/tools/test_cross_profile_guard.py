@@ -37,7 +37,7 @@ def fake_zed(tmp_path, monkeypatch):
 
     monkeypatch.setenv("ZED_HOME", str(sec_home))
 
-    import zed_constants
+    import hermes_constants
     monkeypatch.setattr(zed_constants, "get_default_zed_root", lambda: root)
 
     import agent.file_safety as fs
@@ -256,3 +256,4 @@ class TestSystemPromptActiveProfile:
         # Both branches present (default and named profile).
         assert "Active Zed profile: default" in src
         assert "Active Zed profile: {active_profile}" in src
+

@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from zed_constants import display_zed_home
+from hermes_constants import display_zed_home
 from gateway.config import Platform, load_gateway_config
 from plugins.teams_pipeline.meetings import (
     enrich_meeting_with_call_record,
@@ -459,3 +459,4 @@ def _cmd_validate(args) -> None:
     store = TeamsPipelineStore(_store_path(getattr(args, "store_path", None)))
     snapshot = _validate_configuration_snapshot(store)
     print(json.dumps(snapshot, indent=2, sort_keys=True))
+

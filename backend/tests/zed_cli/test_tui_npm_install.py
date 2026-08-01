@@ -9,7 +9,7 @@ import pytest
 
 @pytest.fixture
 def main_mod():
-    import zed_cli.main as m
+    import hermes_cli.main as m
 
     return m
 
@@ -504,3 +504,4 @@ def test_make_tui_argv_omits_workspace_when_tui_has_own_lockfile(
     assert install_cmd[:2] == ["/bin/npm", "install"]
     # cwd must be tui_dir (standalone), not parent
     assert calls[0][1]["cwd"] == str(tui_dir)
+

@@ -20,7 +20,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from typing import Any, Optional
 from utils import atomic_json_write
 
@@ -170,7 +170,7 @@ def looks_like_gateway_command_line(command: str | None) -> bool:
 
     Lifecycle decisions (is the gateway up? did restart relaunch it?) must not
     fire on loose substring matches.  The previous ``"... gateway" in cmdline``
-    test also matched ``zed_cli.main gateway status`` and even unrelated
+    test also matched ``hermes_cli.main gateway status`` and even unrelated
     processes like ``python -m tui_gateway`` -- which made ``restart()`` race
     against a still-draining old process and ``status``/``start`` report false
     positives.  This requires the actual ``gateway`` subcommand followed by
@@ -207,7 +207,7 @@ def looks_like_gateway_command_line(command: str | None) -> bool:
 
     joined = " ".join(tokens)
     has_gateway_entry = (
-        "zed_cli.main" in joined
+        "hermes_cli.main" in joined
         or "zed_cli/main.py" in joined
         or any(t.rsplit("/", 1)[-1] in ("zed", "zed.exe") for t in tokens)
     )
@@ -1163,3 +1163,4 @@ def is_gateway_running(
 ) -> bool:
     """Check if the gateway daemon is currently running."""
     return get_running_pid(pid_path, cleanup_stale=cleanup_stale) is not None
+

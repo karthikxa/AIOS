@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from zed_cli.nous_billing import (
+from hermes_cli.nous_billing import (
     BillingError,
     _absolutize_portal_url,
     _raise_for_error,
@@ -51,3 +51,4 @@ def test_raise_for_error_attaches_absolute_portal_url(_preview):
         exc_info.value.portal_url
         == "https://nas-pr-412.zedteam.wtf/billing?topup=open"
     )
+

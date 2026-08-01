@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Callable
 from enum import Enum
 
-from zed_cli.config import get_zed_home
+from hermes_cli.config import get_zed_home
 from utils import env_int, is_truthy_value
 
 logger = logging.getLogger(__name__)
@@ -812,10 +812,10 @@ def load_gateway_config() -> GatewayConfig:
 
             # Managed scope: overlay administrator-pinned values so the gateway
             # honors them too. This loader builds its own dict instead of going
-            # through zed_cli.config.load_config, so without this a managed
+            # through hermes_cli.config.load_config, so without this a managed
             # session_reset / quick_commands / stt / model would be ignored by
             # the messaging gateway. Fail-open via the shared helper.
-            from zed_cli import managed_scope
+            from hermes_cli import managed_scope
             yaml_cfg = managed_scope.apply_managed_overlay(yaml_cfg)
 
             # Map config.yaml keys â†’ GatewayConfig.from_dict() schema.
@@ -920,7 +920,7 @@ def load_gateway_config() -> GatewayConfig:
             # Iterate built-in platforms plus any registered plugin platforms
             # so plugin authors get the same shared-key bridging (#24836).
             try:
-                from zed_cli.plugins import discover_plugins
+                from hermes_cli.plugins import discover_plugins
                 discover_plugins()  # idempotent
                 from gateway.platform_registry import platform_registry as _pr
             except Exception as e:
@@ -1360,7 +1360,7 @@ def _validate_gateway_config(config: "GatewayConfig") -> None:
     # without changing placeholder values get a clear startup error instead
     # of a confusing "auth failed" from the platform API.
     try:
-        from zed_cli.auth import has_usable_secret
+        from hermes_cli.auth import has_usable_secret
     except ImportError:
         has_usable_secret = None  # type: ignore[assignment]
 
@@ -2064,7 +2064,7 @@ def _apply_env_overrides(config: GatewayConfig) -> None:
     # for the same bug class in commit 7849a3d73; this is the runtime
     # counterpart.
     try:
-        from zed_cli.plugins import discover_plugins
+        from hermes_cli.plugins import discover_plugins
         discover_plugins()  # idempotent
         from gateway.platform_registry import platform_registry
         for entry in platform_registry.plugin_entries():
@@ -2193,3 +2193,4 @@ def _apply_env_overrides(config: GatewayConfig) -> None:
 
     for platform_config in config.platforms.values():
         platform_config.extra.pop("_enabled_explicit", None)
+

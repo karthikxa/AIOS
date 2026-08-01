@@ -14,7 +14,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterable
 
-from zed_cli.commands import SlashCommandCompleter
+from hermes_cli.commands import SlashCommandCompleter
 
 
 def _run(tmp_path: Path, word: str) -> list[tuple[str, str]]:
@@ -88,3 +88,4 @@ def test_at_file_bare_without_colon_lists_files(tmp_path, monkeypatch):
 
     assert any(t == "@file:readme.md" for t in texts), texts
     assert not any(t == "@file:src/" for t in texts)
+

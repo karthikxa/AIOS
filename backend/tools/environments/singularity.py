@@ -14,7 +14,7 @@ import uuid
 from pathlib import Path
 from typing import Optional
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from tools.environments.base import (
     BaseEnvironment,
     _load_json_store,
@@ -263,3 +263,4 @@ class SingularityEnvironment(BaseEnvironment):
             snapshots = _load_snapshots()
             snapshots[self._task_id] = str(self._overlay_dir)
             _save_snapshots(snapshots)
+

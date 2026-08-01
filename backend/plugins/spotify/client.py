@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 
 import httpx
 
-from zed_cli.auth import (
+from hermes_cli.auth import (
     AuthError,
     resolve_spotify_runtime_credentials,
 )
@@ -433,3 +433,4 @@ def normalize_spotify_uris(values: Iterable[str], expected_type: Optional[str] =
 
 def compact_json(data: Any) -> str:
     return json.dumps(data, ensure_ascii=False)
+

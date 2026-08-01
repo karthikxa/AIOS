@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 try:
-    from zed_constants import get_zed_home
+    from hermes_constants import get_zed_home
 except ImportError:
     import os as _os
     def get_zed_home() -> Path:  # type: ignore[misc]
@@ -585,7 +585,7 @@ def scan_sessions(
     at the end.
     """
     try:
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
     except Exception as exc:
         return {"sessions": [], "aggregate": {}, "error": f"Could not import SessionDB: {exc}", "scan_meta": {"mode": "failed", "sessions_total": 0, "sessions_rescanned": 0, "sessions_reused": 0}}
 
@@ -1059,3 +1059,4 @@ async def reset_state():
     except Exception:
         pass
     return {"ok": True}
+

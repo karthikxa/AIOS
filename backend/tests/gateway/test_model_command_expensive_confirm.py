@@ -42,7 +42,7 @@ def _make_event(text):
 
 
 def _fake_switch_result():
-    from zed_cli.model_switch import ModelSwitchResult
+    from hermes_cli.model_switch import ModelSwitchResult
 
     return ModelSwitchResult(
         success=True,
@@ -80,13 +80,13 @@ def _setup_isolated_home(tmp_path, monkeypatch, *, warn):
     monkeypatch.setattr(gateway_run, "_zed_home", zed_home)
     monkeypatch.setattr("agent.models_dev.fetch_models_dev", lambda: {})
     monkeypatch.setattr(
-        "zed_cli.model_switch.switch_model",
+        "hermes_cli.model_switch.switch_model",
         lambda **kw: _fake_switch_result(),
     )
-    monkeypatch.setattr("zed_constants.get_zed_home", lambda: zed_home)
-    monkeypatch.setattr("zed_cli.config.get_zed_home", lambda: zed_home)
+    monkeypatch.setattr("hermes_constants.get_zed_home", lambda: zed_home)
+    monkeypatch.setattr("hermes_cli.config.get_zed_home", lambda: zed_home)
     monkeypatch.setattr(
-        "zed_cli.model_cost_guard.expensive_model_warning",
+        "hermes_cli.model_cost_guard.expensive_model_warning",
         (lambda *a, **kw: _fake_warning()) if warn else (lambda *a, **kw: None),
     )
     return cfg_path
@@ -184,3 +184,4 @@ async def test_typed_model_cheap_switches_without_prompt(tmp_path, monkeypatch):
     assert "gpt-5.5-pro" in result
     overrides = list(runner._session_model_overrides.values())
     assert len(overrides) == 1
+

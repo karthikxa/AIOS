@@ -1,7 +1,7 @@
 ﻿"""Tests for the Chronos cron-fire webhook ON THE DASHBOARD APP (web_server).
 
 Regression guard for the relocation bug: the fire webhook MUST live on the
-dashboard FastAPI app (`zed_cli.web_server.app`) â€” the agent's public HTTP
+dashboard FastAPI app (`hermes_cli.web_server.app`) â€” the agent's public HTTP
 surface on hosted deployments â€” not only on the aiohttp APIServerAdapter (which
 hosted agents don't expose). It must:
   - be a registered route on the dashboard app,
@@ -16,8 +16,8 @@ hosted agents don't expose). It must:
 import pytest
 from starlette.testclient import TestClient
 
-from zed_cli import web_server
-from zed_cli.dashboard_auth.public_paths import PUBLIC_API_PATHS
+from hermes_cli import web_server
+from hermes_cli.dashboard_auth.public_paths import PUBLIC_API_PATHS
 
 
 def _client(auth_required: bool):
@@ -140,3 +140,4 @@ def test_valid_token_accepts_and_fires(monkeypatch):
         client.close()
     # background task ran the fire for the resolved profile
     assert fired == [("default", "j1")]
+

@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 
 logger = logging.getLogger(__name__)
 
@@ -351,7 +351,7 @@ def _main() -> int:
     import sys
 
     try:
-        from zed_cli.env_loader import load_zed_dotenv
+        from hermes_cli.env_loader import load_zed_dotenv
         load_zed_dotenv()
     except Exception:
         pass
@@ -427,3 +427,4 @@ def _main() -> int:
 if __name__ == "__main__":
     import sys
     sys.exit(_main())
+

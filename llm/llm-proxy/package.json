@@ -17,6 +17,18 @@
     "desktop:dist:win": "npm run build -w client && npm --prefix desktop run dist:win"
   },
   "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
     "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "croner": "^10.0.1",
+    "file-type": "^21.3.2",
+    "jszip": "^3.10.1",
+    "linkedom": "^0.18.12",
+    "markdown-it": "^14.1.1",
+    "node-edge-tts": "^1.2.10",
+    "pdfjs-dist": "^5.5.207",
+    "sharp": "^0.34.5"
   }
 }

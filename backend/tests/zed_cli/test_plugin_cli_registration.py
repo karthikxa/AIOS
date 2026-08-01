@@ -12,7 +12,7 @@ import sys
 from unittest.mock import MagicMock
 
 
-from zed_cli.plugins import (
+from hermes_cli.plugins import (
     PluginContext,
     PluginManager,
     PluginManifest,
@@ -183,3 +183,4 @@ class TestProviderCollectorCliNoop:
         )
         # Should not store anything â€” CLI is discovered via file convention
         assert not hasattr(collector, "_cli_commands")
+

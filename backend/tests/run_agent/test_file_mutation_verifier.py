@@ -363,7 +363,7 @@ class TestVerifierEnabled:
         agent = _bare_agent()
         # With no env and no config present, safe default is True.
         # load_config may surface a user config.yaml in some envs â€” stub it.
-        import zed_cli.config as _cfg_mod
+        import hermes_cli.config as _cfg_mod
         monkeypatch.setattr(_cfg_mod, "load_config", lambda: {})
         assert agent._file_mutation_verifier_enabled() is True
 
@@ -375,7 +375,7 @@ class TestVerifierEnabled:
 
     def test_env_enables_over_config(self, monkeypatch):
         monkeypatch.setenv("ZED_FILE_MUTATION_VERIFIER", "1")
-        import zed_cli.config as _cfg_mod
+        import hermes_cli.config as _cfg_mod
         monkeypatch.setattr(
             _cfg_mod, "load_config",
             lambda: {"display": {"file_mutation_verifier": False}},
@@ -385,7 +385,7 @@ class TestVerifierEnabled:
 
     def test_config_disables_when_no_env(self, monkeypatch):
         monkeypatch.delenv("ZED_FILE_MUTATION_VERIFIER", raising=False)
-        import zed_cli.config as _cfg_mod
+        import hermes_cli.config as _cfg_mod
         monkeypatch.setattr(
             _cfg_mod, "load_config",
             lambda: {"display": {"file_mutation_verifier": False}},
@@ -407,3 +407,4 @@ def test_file_mutating_tools_set_shape():
     track it.  This test fails loudly on unilateral additions.
     """
     assert _FILE_MUTATING_TOOLS == frozenset({"write_file", "patch"})
+

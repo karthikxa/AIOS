@@ -2,8 +2,8 @@
 
 
 def test_sessions_delete_accepts_unique_id_prefix(monkeypatch, capsys):
-    import zed_cli.main as main_mod
-    import zed_state
+    import hermes_cli.main as main_mod
+    import hermes_state
 
     captured = {}
 
@@ -38,8 +38,8 @@ def test_sessions_delete_accepts_unique_id_prefix(monkeypatch, capsys):
 
 
 def test_sessions_delete_reports_not_found_when_prefix_is_unknown(monkeypatch, capsys):
-    import zed_cli.main as main_mod
-    import zed_state
+    import hermes_cli.main as main_mod
+    import hermes_state
 
     class FakeDB:
         def resolve_session_id(self, session_id):
@@ -66,8 +66,8 @@ def test_sessions_delete_reports_not_found_when_prefix_is_unknown(monkeypatch, c
 
 def test_sessions_delete_handles_eoferror_on_confirm(monkeypatch, capsys):
     """sessions delete should not crash when stdin is closed (non-TTY)."""
-    import zed_cli.main as main_mod
-    import zed_state
+    import hermes_cli.main as main_mod
+    import hermes_state
 
     class FakeDB:
         def resolve_session_id(self, session_id):
@@ -94,8 +94,8 @@ def test_sessions_delete_handles_eoferror_on_confirm(monkeypatch, capsys):
 
 def test_sessions_prune_handles_eoferror_on_confirm(monkeypatch, capsys):
     """sessions prune should not crash when stdin is closed (non-TTY)."""
-    import zed_cli.main as main_mod
-    import zed_state
+    import hermes_cli.main as main_mod
+    import hermes_state
 
     class FakeDB:
         def prune_sessions(self, **kwargs):
@@ -115,3 +115,4 @@ def test_sessions_prune_handles_eoferror_on_confirm(monkeypatch, capsys):
 
     output = capsys.readouterr().out
     assert "Cancelled" in output
+

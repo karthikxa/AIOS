@@ -23,7 +23,7 @@ def isolated_kanban_home(monkeypatch):
     for mod in list(sys.modules.keys()):
         if mod.startswith("zed_cli") or mod.startswith("zed_state") or mod == "zed_constants":
             del sys.modules[mod]
-    from zed_cli import kanban_db
+    from hermes_cli import kanban_db
     yield kanban_db, test_home
     # Cleanup is best-effort; tempfile dir survives but pytest isolation
     # gives each test its own monkeypatched ZED_HOME so no cross-test
@@ -148,7 +148,8 @@ def test_dispatch_result_has_auto_assigned_default_field():
     """Schema-level invariant: DispatchResult exposes the
     auto_assigned_default field so CLI / dashboard / gateway can surface
     the new routing decisions."""
-    from zed_cli.kanban_db import DispatchResult
+    from hermes_cli.kanban_db import DispatchResult
     r = DispatchResult()
     assert hasattr(r, "auto_assigned_default")
     assert r.auto_assigned_default == []
+

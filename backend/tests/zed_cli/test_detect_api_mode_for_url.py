@@ -1,4 +1,4 @@
-﻿"""Tests for zed_cli.runtime_provider._detect_api_mode_for_url.
+﻿"""Tests for hermes_cli.runtime_provider._detect_api_mode_for_url.
 
 The helper maps base URLs to api_modes for three cases:
   * api.openai.com  â†’ codex_responses
@@ -14,7 +14,7 @@ future update to the detection logic lives in one place.
 
 from __future__ import annotations
 
-from zed_cli.runtime_provider import _detect_api_mode_for_url
+from hermes_cli.runtime_provider import _detect_api_mode_for_url
 
 
 class TestCodexResponsesDetection:
@@ -80,3 +80,4 @@ class TestDefaultCase:
 
     def test_localhost_returns_none(self):
         assert _detect_api_mode_for_url("http://localhost:11434/v1") is None
+

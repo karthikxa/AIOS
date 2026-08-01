@@ -162,7 +162,7 @@ def test_lift_helper_accepts_alias_and_rejects_garbage(isolated_home):
     for mod in list(sys.modules.keys()):
         if mod.startswith("zed_cli"):
             del sys.modules[mod]
-    rp = importlib.import_module("zed_cli.runtime_provider")
+    rp = importlib.import_module("hermes_cli.runtime_provider")
 
     out: dict = {}
     rp._lift_max_output_tokens({"max_output_tokens": 8192}, out)
@@ -176,3 +176,4 @@ def test_lift_helper_accepts_alias_and_rejects_garbage(isolated_home):
         out = {}
         rp._lift_max_output_tokens(bad, out)
         assert "max_output_tokens" not in out
+

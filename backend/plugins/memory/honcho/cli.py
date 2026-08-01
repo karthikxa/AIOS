@@ -10,9 +10,9 @@ import os
 import sys
 from pathlib import Path
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from plugins.memory.honcho.client import _host_block, profile_host_key, resolve_active_host, resolve_config_path, HOST
-from zed_cli.config import cfg_get
+from hermes_cli.config import cfg_get
 
 
 def clone_honcho_for_profile(profile_name: str) -> bool:
@@ -165,7 +165,7 @@ def cmd_sync(args) -> None:
     have one yet. Inherits settings from the default host block.
     """
     try:
-        from zed_cli.profiles import list_profiles
+        from hermes_cli.profiles import list_profiles
         profiles = list_profiles()
     except Exception as e:
         print(f"  Could not list profiles: {e}\n")
@@ -210,7 +210,7 @@ def sync_honcho_profiles_quiet() -> int:
     Called from `zed update` -- no output, no exceptions.
     """
     try:
-        from zed_cli.profiles import list_profiles
+        from hermes_cli.profiles import list_profiles
         profiles = list_profiles()
     except Exception:
         return 0
@@ -491,7 +491,7 @@ def _prompt(label: str, default: str | None = None, secret: bool = False) -> str
     sys.stdout.flush()
     if secret:
         if sys.stdin.isatty():
-            from zed_cli.secret_prompt import masked_secret_prompt
+            from hermes_cli.secret_prompt import masked_secret_prompt
             val = masked_secret_prompt("")
         else:
             # Non-TTY (piped input, test runners) â€” read plaintext
@@ -888,7 +888,7 @@ def cmd_setup(args) -> None:
 
     # --- Auto-enable Honcho as memory provider in config.yaml ---
     try:
-        from zed_cli.config import load_config, save_config
+        from hermes_cli.config import load_config, save_config
         zed_config = load_config()
         zed_config.setdefault("memory", {})["provider"] = "honcho"
         save_config(zed_config)
@@ -937,7 +937,7 @@ def _active_profile_name() -> str:
     if _profile_override:
         return _profile_override
     try:
-        from zed_cli.profiles import get_active_profile_name
+        from hermes_cli.profiles import get_active_profile_name
         return get_active_profile_name()
     except Exception:
         return "default"
@@ -949,7 +949,7 @@ def _all_profile_host_configs() -> list[tuple[str, str, dict]]:
     Reads honcho.json once and maps each profile to its host block.
     """
     try:
-        from zed_cli.profiles import list_profiles
+        from hermes_cli.profiles import list_profiles
         profiles = list_profiles()
     except Exception:
         return [(_active_profile_name(), _host_key(), {})]
@@ -1674,7 +1674,7 @@ def honcho_command(args) -> None:
         # Redirect to memory setup â€” honcho setup goes through the unified path
         print("\n  Honcho is configured via the memory provider system.")
         print("  Running 'zed memory setup'...\n")
-        from zed_cli.memory_setup import cmd_setup_provider
+        from hermes_cli.memory_setup import cmd_setup_provider
         cmd_setup_provider("honcho")
         return
     elif sub is None:
@@ -1808,3 +1808,4 @@ def register_cli(subparser) -> None:
     subs.add_parser("sync", help="Sync Honcho config to all existing profiles")
 
     subparser.set_defaults(func=honcho_command)
+

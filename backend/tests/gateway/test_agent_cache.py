@@ -1599,7 +1599,7 @@ class TestAgentCacheMessageCountRebaseline:
         writes), turn appends its own rows, then the post-turn re-baseline
         runs â€” so the NEXT turn's guard sees no external change and reuses.
         """
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB(db_path=tmp_path / "sessions.db")
         db.create_session("s1", source="telegram")
@@ -1634,7 +1634,7 @@ class TestAgentCacheMessageCountRebaseline:
         """After the re-baseline, a DIFFERENT process appending to the same
         session must still flip the guard to rebuild (the #45966 fix holds).
         """
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
 
         db = SessionDB(db_path=tmp_path / "sessions.db")
         db.create_session("s1", source="telegram")
@@ -1663,7 +1663,7 @@ class TestAgentCacheMessageCountRebaseline:
     def test_rebaseline_is_fail_safe_and_skips_legacy_and_pending(self, tmp_path):
         """Re-baseline must never crash and must leave legacy 2-tuples and
         pending-sentinel entries untouched."""
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
         from gateway.run import _AGENT_PENDING_SENTINEL
 
         db = SessionDB(db_path=tmp_path / "sessions.db")
@@ -1706,3 +1706,4 @@ class TestAgentCacheMessageCountRebaseline:
         runner._refresh_agent_cache_message_count("telegram:s1", "s1")
         with runner._agent_cache_lock:
             assert runner._agent_cache["telegram:s1"][2] == 5
+

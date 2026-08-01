@@ -39,19 +39,19 @@ def _run_setup_feishu(
     def mock_get(name):
         return existing_env.get(name, "")
 
-    with patch("zed_cli.gateway.save_env_value", side_effect=mock_save), \
-         patch("zed_cli.gateway.get_env_value", side_effect=mock_get), \
-         patch("zed_cli.gateway.prompt_yes_no", side_effect=prompt_yes_no_responses), \
-         patch("zed_cli.gateway.prompt_choice", side_effect=prompt_choice_responses), \
-         patch("zed_cli.gateway.prompt", side_effect=prompt_responses), \
-         patch("zed_cli.gateway.print_info"), \
-         patch("zed_cli.gateway.print_success"), \
-         patch("zed_cli.gateway.print_warning"), \
-         patch("zed_cli.gateway.print_error"), \
-         patch("zed_cli.gateway.color", side_effect=lambda t, c: t), \
+    with patch("hermes_cli.gateway.save_env_value", side_effect=mock_save), \
+         patch("hermes_cli.gateway.get_env_value", side_effect=mock_get), \
+         patch("hermes_cli.gateway.prompt_yes_no", side_effect=prompt_yes_no_responses), \
+         patch("hermes_cli.gateway.prompt_choice", side_effect=prompt_choice_responses), \
+         patch("hermes_cli.gateway.prompt", side_effect=prompt_responses), \
+         patch("hermes_cli.gateway.print_info"), \
+         patch("hermes_cli.gateway.print_success"), \
+         patch("hermes_cli.gateway.print_warning"), \
+         patch("hermes_cli.gateway.print_error"), \
+         patch("hermes_cli.gateway.color", side_effect=lambda t, c: t), \
          patch("gateway.platforms.feishu.qr_register", return_value=qr_result):
 
-        from zed_cli.gateway import _setup_feishu
+        from hermes_cli.gateway import _setup_feishu
         _setup_feishu()
 
     return saved_env
@@ -277,3 +277,4 @@ class TestSetupFeishuAdapterIntegration:
             from gateway.platforms.feishu import FeishuAdapter
             adapter = FeishuAdapter(PlatformConfig())
             assert adapter._group_policy == "open"
+

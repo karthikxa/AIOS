@@ -879,9 +879,9 @@ class TestRunJobSessionPersistence:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
+             patch("hermes_state.SessionDB", return_value=fake_db), \
              patch(
-                 "zed_cli.runtime_provider.resolve_runtime_provider",
+                 "hermes_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "test-key",
                      "base_url": "https://example.invalid/v1",
@@ -926,9 +926,9 @@ class TestRunJobSessionPersistence:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
+             patch("hermes_state.SessionDB", return_value=fake_db), \
              patch(
-                 "zed_cli.runtime_provider.resolve_runtime_provider",
+                 "hermes_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "test-key",
                      "base_url": "https://example.invalid/v1",
@@ -963,9 +963,9 @@ class TestRunJobSessionPersistence:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
+             patch("hermes_state.SessionDB", return_value=fake_db), \
              patch(
-                 "zed_cli.runtime_provider.resolve_runtime_provider",
+                 "hermes_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1000,9 +1000,9 @@ class TestRunJobSessionPersistence:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
+             patch("hermes_state.SessionDB", return_value=fake_db), \
              patch(
-                 "zed_cli.runtime_provider.resolve_runtime_provider",
+                 "hermes_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1028,9 +1028,9 @@ class TestRunJobSessionPersistence:
             patch("cron.scheduler._zed_home", tmp_path),
             patch("cron.scheduler._resolve_origin", return_value=None),
             patch("dotenv.load_dotenv"),
-            patch("zed_state.SessionDB", return_value=fake_db),
+            patch("hermes_state.SessionDB", return_value=fake_db),
             patch(
-                "zed_cli.runtime_provider.resolve_runtime_provider",
+                "hermes_cli.runtime_provider.resolve_runtime_provider",
                 return_value={
                     "api_key": "test-key",
                     "base_url": "https://example.invalid/v1",
@@ -1140,7 +1140,7 @@ class TestRunJobSessionPersistence:
         with patches[0], patches[1], patches[2], patches[3], patches[4], \
              patch("run_agent.AIAgent") as mock_agent_cls, \
              patch(
-                 "zed_cli.tools_config._get_platform_tools",
+                 "hermes_cli.tools_config._get_platform_tools",
                  return_value={"web", "file"},
              ):
             mock_agent = MagicMock()
@@ -1167,9 +1167,9 @@ class TestRunJobSessionPersistence:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
+             patch("hermes_state.SessionDB", return_value=fake_db), \
              patch(
-                 "zed_cli.runtime_provider.resolve_runtime_provider",
+                 "hermes_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1243,9 +1243,9 @@ class TestRunJobSessionPersistence:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
+             patch("hermes_state.SessionDB", return_value=fake_db), \
              patch(
-                 "zed_cli.runtime_provider.resolve_runtime_provider",
+                 "hermes_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1282,9 +1282,9 @@ class TestRunJobSessionPersistence:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
+             patch("hermes_state.SessionDB", return_value=fake_db), \
              patch(
-                 "zed_cli.runtime_provider.resolve_runtime_provider",
+                 "hermes_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1370,9 +1370,9 @@ class TestRunJobSessionPersistence:
                 return {"final_response": "ok"}
 
         with patch("cron.scheduler._zed_home", tmp_path), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
+             patch("hermes_state.SessionDB", return_value=fake_db), \
              patch(
-                 "zed_cli.runtime_provider.resolve_runtime_provider",
+                 "hermes_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1436,9 +1436,9 @@ class TestRunJobSessionPersistence:
                 return {"final_response": "ok"}
 
         with patch("cron.scheduler._zed_home", tmp_path), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
+             patch("hermes_state.SessionDB", return_value=fake_db), \
              patch(
-                 "zed_cli.runtime_provider.resolve_runtime_provider",
+                 "hermes_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1494,7 +1494,7 @@ class TestRunJobConfigLogging:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_cli.runtime_provider.resolve_runtime_provider",
+             patch("hermes_cli.runtime_provider.resolve_runtime_provider",
                    return_value={"provider": "openrouter", "api_key": "x",
                                  "base_url": "https://example.invalid",
                                  "api_mode": "chat_completions"}), \
@@ -1528,7 +1528,7 @@ class TestRunJobConfigLogging:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_cli.runtime_provider.resolve_runtime_provider",
+             patch("hermes_cli.runtime_provider.resolve_runtime_provider",
                    return_value={"provider": "openrouter", "api_key": "x",
                                  "base_url": "https://example.invalid",
                                  "api_mode": "chat_completions"}), \
@@ -1566,8 +1566,8 @@ class TestRunJobConfigEnvVarExpansion:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
-             patch("zed_cli.runtime_provider.resolve_runtime_provider",
+             patch("hermes_state.SessionDB", return_value=fake_db), \
+             patch("hermes_cli.runtime_provider.resolve_runtime_provider",
                    return_value=self._RUNTIME), \
              patch("run_agent.AIAgent") as mock_agent_cls:
             mock_agent = MagicMock()
@@ -1599,8 +1599,8 @@ class TestRunJobConfigEnvVarExpansion:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
-             patch("zed_cli.runtime_provider.resolve_runtime_provider",
+             patch("hermes_state.SessionDB", return_value=fake_db), \
+             patch("hermes_cli.runtime_provider.resolve_runtime_provider",
                    return_value=self._RUNTIME), \
              patch("tools.mcp_tool.discover_mcp_tools", return_value=[]), \
              patch("run_agent.AIAgent") as mock_agent_cls:
@@ -1628,8 +1628,8 @@ class TestRunJobConfigEnvVarExpansion:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
-             patch("zed_cli.runtime_provider.resolve_runtime_provider",
+             patch("hermes_state.SessionDB", return_value=fake_db), \
+             patch("hermes_cli.runtime_provider.resolve_runtime_provider",
                    return_value=self._RUNTIME), \
              patch("run_agent.AIAgent") as mock_agent_cls:
             mock_agent = MagicMock()
@@ -1657,8 +1657,8 @@ class TestRunJobConfigEnvVarExpansion:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
-             patch("zed_cli.runtime_provider.resolve_runtime_provider",
+             patch("hermes_state.SessionDB", return_value=fake_db), \
+             patch("hermes_cli.runtime_provider.resolve_runtime_provider",
                    return_value=self._RUNTIME), \
              patch("run_agent.AIAgent") as mock_agent_cls:
             mock_agent = MagicMock()
@@ -1699,9 +1699,9 @@ class TestRunJobSkillBacked:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
+             patch("hermes_state.SessionDB", return_value=fake_db), \
              patch(
-                 "zed_cli.runtime_provider.resolve_runtime_provider",
+                 "hermes_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1759,9 +1759,9 @@ class TestRunJobSkillBacked:
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("tools.credential_files._resolve_zed_home", return_value=tmp_path), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
+             patch("hermes_state.SessionDB", return_value=fake_db), \
              patch(
-                 "zed_cli.runtime_provider.resolve_runtime_provider",
+                 "hermes_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1797,9 +1797,9 @@ class TestRunJobSkillBacked:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
+             patch("hermes_state.SessionDB", return_value=fake_db), \
              patch(
-                 "zed_cli.runtime_provider.resolve_runtime_provider",
+                 "hermes_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -1843,9 +1843,9 @@ class TestRunJobSkillBacked:
         with patch("cron.scheduler._zed_home", tmp_path), \
              patch("cron.scheduler._resolve_origin", return_value=None), \
              patch("dotenv.load_dotenv"), \
-             patch("zed_state.SessionDB", return_value=fake_db), \
+             patch("hermes_state.SessionDB", return_value=fake_db), \
              patch(
-                 "zed_cli.runtime_provider.resolve_runtime_provider",
+                 "hermes_cli.runtime_provider.resolve_runtime_provider",
                  return_value={
                      "api_key": "***",
                      "base_url": "https://example.invalid/v1",
@@ -2089,7 +2089,7 @@ class TestRunJobWakeGate:
             "requested_provider": None,
         }
         with patch(
-            "zed_cli.runtime_provider.resolve_runtime_provider",
+            "hermes_cli.runtime_provider.resolve_runtime_provider",
             return_value=fake_runtime,
         ):
             yield
@@ -2759,3 +2759,4 @@ class TestHomeTargetEnvVarRegistry:
         from cron.scheduler import _HOME_TARGET_ENV_VARS
 
         assert _HOME_TARGET_ENV_VARS.get("whatsapp") == "WHATSAPP_HOME_CHANNEL"
+

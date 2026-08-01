@@ -20,9 +20,9 @@ import pytest
 
 @pytest.fixture
 def fresh_constants(monkeypatch, tmp_path):
-    """Import zed_constants fresh and reset the one-shot warn flag."""
+    """import hermes_constants fresh and reset the one-shot warn flag."""
     import importlib
-    import zed_constants
+    import hermes_constants
     importlib.reload(zed_constants)
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.delenv("ZED_HOME", raising=False)
@@ -114,3 +114,4 @@ class TestGetZedHomeProfileWarning:
 
         assert result == tmp_path / ".zed"
         assert "ZED_HOME fallback" not in capsys.readouterr().err
+

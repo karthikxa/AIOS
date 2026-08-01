@@ -10,8 +10,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from zed_cli import profiles as profiles_mod
-from zed_cli import profile_describer as describer
+from hermes_cli import profiles as profiles_mod
+from hermes_cli import profile_describer as describer
 
 
 @pytest.fixture
@@ -166,3 +166,4 @@ def test_describer_returns_false_when_profile_missing(profile_env, monkeypatch):
     outcome = describer.describe_profile("ghost")
     assert outcome.ok is False
     assert "not found" in outcome.reason
+

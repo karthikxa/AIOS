@@ -11397,3 +11397,16 @@ main.main-content.computer-split-mode #splitPaneProgressBody {
 
 /* (plugin dialog now rendered via React shadcn components) */
 
+
+/* Agents Page Container Card ("The Box") */
+.agents-table-container-card {
+  border-radius: 12px;
+  border: 1px solid #E4E4E7;
+  background: #FFFFFF;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,.1), 0 1px 2px -1px rgba(0,0,0,.1);
+}

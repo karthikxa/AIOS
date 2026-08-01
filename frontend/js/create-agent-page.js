@@ -4,6 +4,8 @@ import { pluginsStore } from './plugins-page.js';
 import { SKILLS_CATALOG, getSkillById } from './skills-catalog.js';
 import { showToast } from './toast.js';
 
+let createPageCleanupFns = [];
+
 export function initCreateAgentPage() {
   const createAgentPage = document.getElementById('createAgentPageView');
   const agentPage = document.getElementById('agentPageView');
@@ -77,16 +79,22 @@ export function initCreateAgentPage() {
   const changeAvatarBtn = document.getElementById('caChangeAvatarBtn');
   const avatarDropdown = document.getElementById('caAvatarDropdown');
   
+  // Clean up previous listeners if re-initialized
+  for (const fn of createPageCleanupFns) fn();
+  createPageCleanupFns = [];
+
   changeAvatarBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
     avatarDropdown.classList.toggle('show');
   });
 
-  document.addEventListener('click', (e) => {
+  const onDocClickForAvatar = (e) => {
     if (avatarDropdown && !avatarDropdown.contains(e.target) && e.target !== changeAvatarBtn) {
       avatarDropdown.classList.remove('show');
     }
-  });
+  };
+  document.addEventListener('click', onDocClickForAvatar);
+  createPageCleanupFns.push(() => document.removeEventListener('click', onDocClickForAvatar));
 
   const avatarOptionElements = avatarDropdown?.querySelectorAll('.avatar-option');
   avatarOptionElements?.forEach(opt => {
@@ -328,9 +336,10 @@ export function initCreateAgentPage() {
   }
 
   // Subscribe to updates
-  pluginsStore.subscribe(() => {
+  const unsubPlugins = pluginsStore.subscribe(() => {
     renderCreateAgentPlugins();
   });
+  createPageCleanupFns.push(unsubPlugins);
 
   // Form Field: Model Selection Accordion/List
   const modelsListContainer = createAgentPage.querySelector('.ca-models-list');
@@ -424,9 +433,10 @@ export function initCreateAgentPage() {
   }
 
   // Subscribe to model store changes to update list dynamically
-  modelsStore.subscribe(() => {
+  const unsubModels = modelsStore.subscribe(() => {
     renderModels();
   });
+  createPageCleanupFns.push(unsubModels);
 
   // Step 6: Advanced Settings toggle
   const advHeader = document.getElementById('caAdvHeader');

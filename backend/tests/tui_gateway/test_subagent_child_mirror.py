@@ -23,8 +23,8 @@ def server():
             "zed_constants": MagicMock(
                 get_zed_home=MagicMock(return_value="/tmp/zed_test_child_mirror")
             ),
-            "zed_cli.env_loader": MagicMock(),
-            "zed_cli.banner": MagicMock(),
+            "hermes_cli.env_loader": MagicMock(),
+            "hermes_cli.banner": MagicMock(),
             "zed_state": MagicMock(),
         },
     ):
@@ -269,3 +269,4 @@ def test_text_routes_to_watch_transport_without_contextvar(server, monkeypatch):
     ]
     assert ("message.start", "live-1", None) in routed
     assert ("message.delta", "live-1", {"text": "streamed reply"}) in routed
+

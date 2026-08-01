@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 # full-width digits / Unicode word chars can't sneak through.
 _SAFE_IDENTIFIER_RE = re.compile(r"^[A-Za-z0-9@.+\-]+$")
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 
 
 def normalize_whatsapp_identifier(value: str) -> str:
@@ -153,3 +153,4 @@ def canonical_whatsapp_identifier(identifier: str) -> str:
     # when no lid-mapping files are present.
     aliases = expand_whatsapp_aliases(normalized)
     return min(aliases, key=lambda candidate: (len(candidate), candidate))
+

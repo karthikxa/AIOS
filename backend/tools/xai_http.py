@@ -30,7 +30,7 @@ def has_xai_credentials() -> bool:
     if os.environ.get("XAI_API_KEY", "").strip():
         return True
     try:
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
 
         auth_path = get_zed_home() / "auth.json"
         if not auth_path.exists():
@@ -48,12 +48,12 @@ def has_xai_credentials() -> bool:
 def get_env_value(name: str, default=None):
     """Read ``name`` from ``~/.zed/.env`` first, then ``os.environ``.
 
-    Wraps :func:`zed_cli.config.get_env_value` so tests can patch
+    Wraps :func:`hermes_cli.config.get_env_value` so tests can patch
     ``tools.xai_http.get_env_value`` to inject dotenv-only secrets into the
     xAI credential resolver.
     """
     try:
-        from zed_cli.config import get_env_value as _zed_get_env_value
+        from hermes_cli.config import get_env_value as _zed_get_env_value
 
         value = _zed_get_env_value(name)
         if value is not None:
@@ -66,7 +66,7 @@ def get_env_value(name: str, default=None):
 def zed_xai_user_agent() -> str:
     """Return a stable Zed-specific User-Agent for xAI HTTP calls."""
     try:
-        from zed_cli import __version__
+        from hermes_cli import __version__
     except Exception:
         __version__ = "unknown"
     return f"Zed-Agent/{__version__}"
@@ -76,7 +76,7 @@ def resolve_xai_http_credentials(*, force_refresh: bool = False) -> Dict[str, st
     """Resolve bearer credentials for direct xAI HTTP endpoints.
 
     Prefers Zed-managed xAI OAuth credentials when available, then falls back
-    to ``XAI_API_KEY`` resolved via ``zed_cli.config.get_env_value`` so keys
+    to ``XAI_API_KEY`` resolved via ``hermes_cli.config.get_env_value`` so keys
     stored in ``~/.zed/.env`` (the standard Zed location) are honored â€”
     not just ones already exported into ``os.environ``. This keeps direct xAI
     endpoints (images, TTS, STT, etc.) aligned with the main runtime auth model
@@ -90,7 +90,7 @@ def resolve_xai_http_credentials(*, force_refresh: bool = False) -> Dict[str, st
     """
     if not force_refresh:
         try:
-            from zed_cli.runtime_provider import resolve_runtime_provider
+            from hermes_cli.runtime_provider import resolve_runtime_provider
 
             runtime = resolve_runtime_provider(requested="xai-oauth")
             access_token = str(runtime.get("api_key") or "").strip()
@@ -105,7 +105,7 @@ def resolve_xai_http_credentials(*, force_refresh: bool = False) -> Dict[str, st
             pass
 
     try:
-        from zed_cli.auth import resolve_xai_oauth_runtime_credentials
+        from hermes_cli.auth import resolve_xai_oauth_runtime_credentials
 
         creds = resolve_xai_oauth_runtime_credentials(force_refresh=force_refresh)
         access_token = str(creds.get("api_key") or "").strip()
@@ -126,3 +126,4 @@ def resolve_xai_http_credentials(*, force_refresh: bool = False) -> Dict[str, st
         "api_key": api_key,
         "base_url": base_url,
     }
+

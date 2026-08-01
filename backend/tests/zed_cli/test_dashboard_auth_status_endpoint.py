@@ -16,9 +16,9 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from zed_cli import web_server
-from zed_cli.dashboard_auth import clear_providers, register_provider
-from tests.zed_cli.conftest_dashboard_auth import StubAuthProvider
+from hermes_cli import web_server
+from hermes_cli.dashboard_auth import clear_providers, register_provider
+from tests.hermes_cli.conftest_dashboard_auth import StubAuthProvider
 
 # These tests mutate ``web_server.app.state.auth_required`` so they share
 # the same xdist group as the other dashboard-auth gated_app tests.
@@ -133,3 +133,4 @@ def test_status_includes_host_detail_in_loopback_mode(loopback_client):
     body = r.json()
     missing = _HOST_DETAIL_FIELDS - set(body.keys())
     assert not missing, f"loopback /api/status should keep host detail: {missing}"
+

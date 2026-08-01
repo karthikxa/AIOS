@@ -57,7 +57,7 @@ def _patch_oauth_flow(
     # run headless, so force the GUI path to True â€” the URL capture relies on
     # webbrowser.open() being invoked.
     monkeypatch.setattr(
-        "zed_cli.auth._can_open_graphical_browser", lambda: True
+        "hermes_cli.auth._can_open_graphical_browser", lambda: True
     )
     monkeypatch.setattr("builtins.input", lambda *_a, **_kw: callback_code)
 
@@ -174,3 +174,4 @@ def test_callback_state_mismatch_aborts(monkeypatch, tmp_path, caplog):
     assert "url" not in captured_token, (
         "token exchange must NOT happen when state mismatches"
     )
+

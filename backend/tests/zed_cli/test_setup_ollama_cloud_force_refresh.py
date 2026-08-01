@@ -12,7 +12,7 @@ def test_setup_ollama_cloud_passes_force_refresh(monkeypatch):
     # The ollama-cloud branch lives in ``_model_flow_api_key_provider``, which was
     # extracted from main.py into zed_cli/model_setup_flows.py (god-file
     # decomposition Phase 2). Inspect the module the code now lives in.
-    import zed_cli.model_setup_flows as flows_mod
+    import hermes_cli.model_setup_flows as flows_mod
     import inspect
 
     src = inspect.getsource(flows_mod)
@@ -30,3 +30,4 @@ def test_setup_ollama_cloud_passes_force_refresh(monkeypatch):
         "user enters their key, not an hour later when the cache TTL expires. "
         f"Snippet: {snippet[:500]}"
     )
+

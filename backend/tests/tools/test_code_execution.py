@@ -212,9 +212,9 @@ class TestExecuteCode(unittest.TestCase):
 
     def test_repo_root_modules_are_importable(self):
         """Sandboxed scripts can import modules that live at the repo root."""
-        result = self._run('import zed_constants; print(zed_constants.__file__)')
+        result = self._run('import hermes_constants; print(hermes_constants.__file__)')
         self.assertEqual(result["status"], "success")
-        self.assertIn("zed_constants.py", result["output"])
+        self.assertIn("hermes_constants.py", result["output"])
 
     def test_single_tool_call(self):
         """Script calls terminal and prints the result."""
@@ -860,7 +860,7 @@ class TestLoadConfig(unittest.TestCase):
 
     def test_returns_code_execution_section(self):
         from tools.code_execution_tool import _load_config
-        with patch("zed_cli.config.read_raw_config",
+        with patch("hermes_cli.config.read_raw_config",
                    return_value={"code_execution": {"timeout": 120, "max_tool_calls": 10}}):
             result = _load_config()
         self.assertEqual(result, {"timeout": 120, "max_tool_calls": 10})
@@ -870,7 +870,7 @@ class TestLoadConfig(unittest.TestCase):
         mock_cli = MagicMock()
         mock_cli.CLI_CONFIG = {"code_execution": {"timeout": 999}}
         with patch.dict("sys.modules", {"cli": mock_cli}), \
-             patch("zed_cli.config.read_raw_config", return_value={}):
+             patch("hermes_cli.config.read_raw_config", return_value={}):
             result = _load_config()
         self.assertEqual(result, {})
 
@@ -967,3 +967,4 @@ for i in range(15000):
 
 if __name__ == "__main__":
     unittest.main()
+

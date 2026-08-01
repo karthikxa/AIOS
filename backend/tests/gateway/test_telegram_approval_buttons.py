@@ -491,7 +491,7 @@ class TestTelegramApprovalCallback:
         context = MagicMock()
 
         with patch("tools.approval.resolve_gateway_approval") as mock_resolve:
-            with patch("zed_constants.get_zed_home", return_value=tmp_path):
+            with patch("hermes_constants.get_zed_home", return_value=tmp_path):
                 # Allow the caller â€” the new fail-closed allowlist gate
                 # (#24457) rejects empty TELEGRAM_ALLOWED_USERS, but this
                 # test isn't exercising that gate; it's verifying the
@@ -521,7 +521,7 @@ class TestTelegramApprovalCallback:
         update.callback_query = query
         context = MagicMock()
 
-        with patch("zed_constants.get_zed_home", return_value=tmp_path):
+        with patch("hermes_constants.get_zed_home", return_value=tmp_path):
             with patch.dict(os.environ, {"TELEGRAM_ALLOWED_USERS": "111"}):
                 await adapter._handle_callback_query(update, context)
 
@@ -551,7 +551,7 @@ class TestTelegramApprovalCallback:
         update.callback_query = query
         context = MagicMock()
 
-        with patch("zed_constants.get_zed_home", return_value=tmp_path):
+        with patch("hermes_constants.get_zed_home", return_value=tmp_path):
             with patch.dict(os.environ, {"TELEGRAM_ALLOWED_USERS": ""}):
                 await adapter._handle_callback_query(update, context)
 
@@ -581,10 +581,11 @@ class TestTelegramApprovalCallback:
         update.callback_query = query
         context = MagicMock()
 
-        with patch("zed_constants.get_zed_home", return_value=tmp_path):
+        with patch("hermes_constants.get_zed_home", return_value=tmp_path):
             with patch.dict(os.environ, {"TELEGRAM_ALLOWED_USERS": "111"}):
                 await adapter._handle_callback_query(update, context)
 
         query.answer.assert_called_once()
         query.edit_message_text.assert_called_once()
         assert (tmp_path / ".update_response").read_text() == "n"
+

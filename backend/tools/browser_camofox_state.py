@@ -13,7 +13,7 @@ import uuid
 from pathlib import Path
 from typing import Dict, Optional
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 
 CAMOFOX_STATE_DIR_NAME = "browser_auth"
 CAMOFOX_STATE_SUBDIR = "camofox"
@@ -45,3 +45,4 @@ def get_camofox_identity(task_id: Optional[str] = None) -> Dict[str, str]:
         "user_id": f"zed_{user_digest}",
         "session_key": f"task_{session_digest}",
     }
+

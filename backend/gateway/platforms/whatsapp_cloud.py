@@ -79,7 +79,7 @@ from gateway.platforms.base import (
     SUPPORTED_DOCUMENT_TYPES,
 )
 from gateway.platforms.whatsapp_common import WhatsAppBehaviorMixin
-from zed_constants import get_zed_dir
+from hermes_constants import get_zed_dir
 
 logger = logging.getLogger(__name__)
 
@@ -1954,3 +1954,4 @@ class WhatsAppCloudAdapter(WhatsAppBehaviorMixin, BasePlatformAdapter):
             media_urls=media_urls,
             media_types=media_types,
         )
+

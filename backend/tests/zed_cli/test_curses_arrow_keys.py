@@ -16,7 +16,7 @@ if sys.platform == "win32":
     pytest.skip("curses is not available on Windows", allow_module_level=True)
 import curses
 
-from zed_cli.curses_ui import (
+from hermes_cli.curses_ui import (
     NAV_CANCEL,
     NAV_DOWN,
     NAV_NONE,
@@ -107,3 +107,4 @@ def test_escape_uses_short_timeout_then_restores_blocking():
     # blocking mode (-1) is restored.
     assert fake.timeouts[0] > 0
     assert fake.timeouts[-1] == -1
+

@@ -7,7 +7,7 @@ import pytest
 from prompt_toolkit.document import Document
 from prompt_toolkit.formatted_text import to_plain_text
 
-from zed_cli.commands import SlashCommandCompleter, _file_size_label
+from hermes_cli.commands import SlashCommandCompleter, _file_size_label
 
 
 def _display_names(completions):
@@ -186,7 +186,7 @@ class TestIntegration:
         # scheme guard it reached _path_completions and called os.listdir on
         # every keystroke. Assert no completions AND that the filesystem is
         # never touched while a URL is under the cursor.
-        import zed_cli.commands as commands_mod
+        import hermes_cli.commands as commands_mod
 
         def _fail(*_args, **_kwargs):
             raise AssertionError("os.listdir must not run for a URL token")
@@ -225,3 +225,4 @@ class TestFileSizeLabel:
 
     def test_nonexistent(self):
         assert _file_size_label("/nonexistent_xyz") == ""
+

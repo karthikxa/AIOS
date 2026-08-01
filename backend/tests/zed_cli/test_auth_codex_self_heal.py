@@ -14,8 +14,8 @@ import json
 
 import pytest
 
-import zed_cli.auth as auth
-from zed_cli.auth import AuthError, _refresh_codex_auth_tokens, resolve_codex_runtime_credentials
+import hermes_cli.auth as auth
+from hermes_cli.auth import AuthError, _refresh_codex_auth_tokens, resolve_codex_runtime_credentials
 
 STALE = {"access_token": "stale-access", "refresh_token": "stale-refresh"}
 
@@ -206,3 +206,4 @@ def test_missing_singleton_access_token_reraises_when_codex_cli_half_token(tmp_p
         resolve_codex_runtime_credentials()
 
     assert ei.value.code == "codex_auth_missing_access_token"
+

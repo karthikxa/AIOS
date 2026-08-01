@@ -313,7 +313,7 @@ class TestOpenRouterProfile:
         and NO reasoning field in extra_body.
 
         Covers the full real config range produced by
-        ``zed_constants.parse_reasoning_effort`` â€”
+        ``hermes_constants.parse_reasoning_effort`` â€”
         ``VALID_REASONING_EFFORTS = (minimal, low, medium, high, xhigh)``.
         """
         p = get_provider_profile("openrouter")
@@ -487,3 +487,4 @@ class TestBaseProfile:
         eb, tl = p.build_api_kwargs_extras()
         assert eb == {}
         assert tl == {}
+

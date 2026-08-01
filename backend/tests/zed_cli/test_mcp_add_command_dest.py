@@ -109,3 +109,4 @@ class TestMcpAddCommandDest:
         assert args.command == "mcp"
         assert args.mcp_command == "docker"
         assert args.args == ["mcp", "gateway", "run", "--profile", "research"]
+

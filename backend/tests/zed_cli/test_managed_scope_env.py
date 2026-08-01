@@ -11,14 +11,14 @@ def env_homes(tmp_path, monkeypatch):
     managed = tmp_path / "managed"
     managed.mkdir()
     monkeypatch.setenv("ZED_MANAGED_DIR", str(managed))
-    from zed_cli import managed_scope
+    from hermes_cli import managed_scope
 
     managed_scope.invalidate_managed_cache()
     return home, managed
 
 
 def test_managed_env_beats_user_env(env_homes, monkeypatch):
-    from zed_cli.env_loader import load_zed_dotenv
+    from hermes_cli.env_loader import load_zed_dotenv
 
     home, managed = env_homes
     (home / ".env").write_text("OPENAI_API_BASE=https://user.example/v1\n", encoding="utf-8")
@@ -28,7 +28,7 @@ def test_managed_env_beats_user_env(env_homes, monkeypatch):
 
 
 def test_managed_env_beats_shell(env_homes, monkeypatch):
-    from zed_cli.env_loader import load_zed_dotenv
+    from hermes_cli.env_loader import load_zed_dotenv
 
     home, managed = env_homes
     monkeypatch.setenv("OPENAI_API_BASE", "https://shell.example/v1")
@@ -38,7 +38,7 @@ def test_managed_env_beats_shell(env_homes, monkeypatch):
 
 
 def test_managed_env_leaves_unmanaged_keys_alone(env_homes, monkeypatch):
-    from zed_cli.env_loader import load_zed_dotenv
+    from hermes_cli.env_loader import load_zed_dotenv
 
     home, managed = env_homes
     (home / ".env").write_text("USER_ONLY=keepme\n", encoding="utf-8")
@@ -49,10 +49,11 @@ def test_managed_env_leaves_unmanaged_keys_alone(env_homes, monkeypatch):
 
 
 def test_no_managed_env_is_noop(env_homes, monkeypatch):
-    from zed_cli.env_loader import load_zed_dotenv
+    from hermes_cli.env_loader import load_zed_dotenv
 
     home, managed = env_homes  # managed dir exists but has no .env
     monkeypatch.setenv("SOME_VALUE", "from_shell")
     (home / ".env").write_text("SOME_VALUE=from_user\n", encoding="utf-8")
     load_zed_dotenv(zed_home=str(home))
     assert os.environ["SOME_VALUE"] == "from_user"
+

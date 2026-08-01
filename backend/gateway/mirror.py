@@ -14,7 +14,7 @@ import logging
 from datetime import datetime
 from typing import Optional
 
-from zed_cli.config import get_zed_home
+from hermes_cli.config import get_zed_home
 
 logger = logging.getLogger(__name__)
 
@@ -154,7 +154,7 @@ def _append_to_sqlite(session_id: str, message: dict) -> None:
     """Append a message to the SQLite session database."""
     db = None
     try:
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
         db = SessionDB()
         db.append_message(
             session_id=session_id,
@@ -166,3 +166,4 @@ def _append_to_sqlite(session_id: str, message: dict) -> None:
     finally:
         if db is not None:
             db.close()
+

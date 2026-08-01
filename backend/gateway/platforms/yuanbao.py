@@ -103,7 +103,7 @@ logger = logging.getLogger(__name__)
 # Version / platform constants (used in AUTH_BIND and sign-token headers)
 # ---------------------------------------------------------------------------
 try:
-    from zed_cli import __version__ as _ZED_VERSION
+    from hermes_cli import __version__ as _ZED_VERSION
 except ImportError:
     _ZED_VERSION = "0.0.0"
 
@@ -1617,7 +1617,7 @@ class AutoSetHomeMiddleware(InboundMiddleware):
                 adapter._auto_sethome_done = True  # DM seen â€” no further upgrades needed
             if _should_set:
                 try:
-                    from zed_constants import get_zed_home
+                    from hermes_constants import get_zed_home
                     from utils import atomic_yaml_write
                     import yaml
 
@@ -5356,3 +5356,4 @@ async def send_yuanbao_direct(
 ) -> Dict[str, Any]:
     """Delegate to ``OutboundManager.send_direct``."""
     return await adapter._outbound.send_direct(chat_id, message, media_files)
+

@@ -23,7 +23,7 @@ Usage:
 # IMPORTANT: zed_bootstrap must be the very first import â€” UTF-8 stdio
 # on Windows.  No-op on POSIX.  See zed_bootstrap.py for full rationale.
 try:
-    import zed_bootstrap  # noqa: F401
+    import hermes_bootstrap  # noqa: F401
 except ModuleNotFoundError:
     # Graceful fallback when zed_bootstrap isn't registered in the venv
     # yet â€” happens during partial ``zed update`` where git-reset landed

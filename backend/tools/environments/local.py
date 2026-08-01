@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 
 from tools.environments.base import BaseEnvironment, _pipe_stdin
-from zed_cli._subprocess_compat import windows_hide_flags
+from hermes_cli._subprocess_compat import windows_hide_flags
 
 _IS_WINDOWS = platform.system() == "Windows"
 
@@ -102,7 +102,7 @@ def _build_provider_env_blocklist() -> frozenset:
     blocked: set[str] = set()
 
     try:
-        from zed_cli.auth import PROVIDER_REGISTRY
+        from hermes_cli.auth import PROVIDER_REGISTRY
         for pconfig in PROVIDER_REGISTRY.values():
             blocked.update(pconfig.api_key_env_vars)
             if pconfig.auth_type == "aws_sdk":
@@ -113,7 +113,7 @@ def _build_provider_env_blocklist() -> frozenset:
         pass
 
     try:
-        from zed_cli.config import OPTIONAL_ENV_VARS
+        from hermes_cli.config import OPTIONAL_ENV_VARS
         for name, metadata in OPTIONAL_ENV_VARS.items():
             category = metadata.get("category")
             if category in {"tool", "messaging"}:
@@ -194,7 +194,7 @@ _ZED_PROVIDER_ENV_BLOCKLIST = _build_provider_env_blocklist()
 def _inject_context_zed_home(env: dict) -> None:
     """Bridge the context-local Zed home override into subprocess env."""
     try:
-        from zed_constants import get_zed_home_override
+        from hermes_constants import get_zed_home_override
 
         value = get_zed_home_override()
         if value:
@@ -227,7 +227,7 @@ def _sanitize_subprocess_env(base_env: dict | None, extra_env: dict | None = Non
 
     _inject_context_zed_home(sanitized)
 
-    from zed_constants import apply_subprocess_home_env
+    from hermes_constants import apply_subprocess_home_env
     apply_subprocess_home_env(sanitized)
 
     return sanitized
@@ -384,7 +384,7 @@ def _make_run_env(env: dict) -> dict:
 
     _inject_context_zed_home(run_env)
 
-    from zed_constants import apply_subprocess_home_env
+    from hermes_constants import apply_subprocess_home_env
     apply_subprocess_home_env(run_env)
 
     # Inject ContextVar-based session vars into subprocess env.
@@ -408,7 +408,7 @@ def _read_terminal_shell_init_config() -> tuple[list[str], bool]:
     execution never breaks because the config file is unreadable.
     """
     try:
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
 
         cfg = load_config() or {}
         terminal_cfg = cfg.get("terminal") or {}
@@ -524,7 +524,7 @@ class LocalEnvironment(BaseEnvironment):
             # accepts forward slashes in filesystem paths, and we control
             # the path so we can guarantee no spaces.
             try:
-                from zed_constants import get_zed_home
+                from hermes_constants import get_zed_home
                 cache_dir = get_zed_home() / "cache" / "terminal"
             except Exception:
                 cache_dir = Path(tempfile.gettempdir()) / "zed_terminal"
@@ -745,3 +745,4 @@ class LocalEnvironment(BaseEnvironment):
                 os.unlink(f)
             except OSError:
                 pass
+

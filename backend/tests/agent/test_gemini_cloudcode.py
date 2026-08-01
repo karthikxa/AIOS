@@ -1112,20 +1112,20 @@ class TestGeminiHttpErrorParsing:
 
 class TestProviderRegistration:
     def test_registry_entry(self):
-        from zed_cli.auth import PROVIDER_REGISTRY
+        from hermes_cli.auth import PROVIDER_REGISTRY
 
         assert "google-gemini-cli" in PROVIDER_REGISTRY
         assert PROVIDER_REGISTRY["google-gemini-cli"].auth_type == "oauth_external"
 
     def test_google_gemini_alias_still_goes_to_api_key_gemini(self):
         """Regression guard: don't shadow the existing google-gemini â†’ gemini alias."""
-        from zed_cli.auth import resolve_provider
+        from hermes_cli.auth import resolve_provider
 
         assert resolve_provider("google-gemini") == "gemini"
 
     def test_runtime_provider_raises_when_not_logged_in(self):
-        from zed_cli.auth import AuthError
-        from zed_cli.runtime_provider import resolve_runtime_provider
+        from hermes_cli.auth import AuthError
+        from hermes_cli.runtime_provider import resolve_runtime_provider
 
         with pytest.raises(AuthError) as exc_info:
             resolve_runtime_provider(requested="google-gemini-cli")
@@ -1133,7 +1133,7 @@ class TestProviderRegistration:
 
     def test_runtime_provider_returns_correct_shape_when_logged_in(self):
         from agent.google_oauth import GoogleCredentials, save_credentials
-        from zed_cli.runtime_provider import resolve_runtime_provider
+        from hermes_cli.runtime_provider import resolve_runtime_provider
 
         save_credentials(GoogleCredentials(
             access_token="live-tok",
@@ -1152,18 +1152,18 @@ class TestProviderRegistration:
         assert result["email"] == "t@e.com"
 
     def test_determine_api_mode(self):
-        from zed_cli.providers import determine_api_mode
+        from hermes_cli.providers import determine_api_mode
 
         assert determine_api_mode("google-gemini-cli", "cloudcode-pa://google") == "chat_completions"
 
     def test_oauth_capable_set_preserves_existing(self):
-        from zed_cli.auth_commands import _OAUTH_CAPABLE_PROVIDERS
+        from hermes_cli.auth_commands import _OAUTH_CAPABLE_PROVIDERS
 
         for required in ("anthropic", "nous", "openai-codex", "qwen-oauth", "google-gemini-cli"):
             assert required in _OAUTH_CAPABLE_PROVIDERS
 
     def test_config_env_vars_registered(self):
-        from zed_cli.config import OPTIONAL_ENV_VARS
+        from hermes_cli.config import OPTIONAL_ENV_VARS
 
         for key in (
             "ZED_GEMINI_CLIENT_ID",
@@ -1175,14 +1175,14 @@ class TestProviderRegistration:
 
 class TestAuthStatus:
     def test_not_logged_in(self):
-        from zed_cli.auth import get_auth_status
+        from hermes_cli.auth import get_auth_status
 
         s = get_auth_status("google-gemini-cli")
         assert s["logged_in"] is False
 
     def test_logged_in_reports_email_and_project(self):
         from agent.google_oauth import GoogleCredentials, save_credentials
-        from zed_cli.auth import get_auth_status
+        from hermes_cli.auth import get_auth_status
 
         save_credentials(GoogleCredentials(
             access_token="tok", refresh_token="rt",
@@ -1199,7 +1199,7 @@ class TestAuthStatus:
 
 class TestGquotaCommand:
     def test_gquota_registered(self):
-        from zed_cli.commands import COMMANDS
+        from hermes_cli.commands import COMMANDS
 
         assert "/gquota" in COMMANDS
 
@@ -1223,3 +1223,4 @@ class TestRunGeminiOauthLoginPure:
         assert result["email"] == "u@e.com"
         assert result["project_id"] == "p"
         assert isinstance(result["expires_at_ms"], int)
+

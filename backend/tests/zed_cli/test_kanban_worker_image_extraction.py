@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from zed_cli import kanban_db as kb
+from hermes_cli import kanban_db as kb
 from agent.image_routing import (
     build_native_content_parts,
     extract_image_refs,
@@ -236,3 +236,4 @@ class TestBuildPartsFromTaskBody:
 
         assert paths == [str(real)]
         assert urls == []
+

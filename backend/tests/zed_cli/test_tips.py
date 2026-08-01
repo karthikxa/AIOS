@@ -1,6 +1,6 @@
 ﻿"""Tests for zed_cli/tips.py â€” random tip display at session start."""
 
-from zed_cli.tips import TIPS, get_random_tip
+from hermes_cli.tips import TIPS, get_random_tip
 
 
 class TestTipsCorpus:
@@ -58,7 +58,7 @@ class TestTipIntegrationInCLI:
 
     def test_tip_import_works(self):
         """The import used in cli.py must succeed."""
-        from zed_cli.tips import get_random_tip
+        from hermes_cli.tips import get_random_tip
         assert callable(get_random_tip)
 
     def test_tip_display_format(self):
@@ -69,3 +69,4 @@ class TestTipIntegrationInCLI:
         # Should not contain nested/broken Rich tags
         assert markup.count("[/]") == 1
         assert "[dim #B8860B]" in markup
+

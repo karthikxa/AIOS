@@ -1,6 +1,6 @@
 ﻿import textwrap
 
-from zed_cli.config import load_config, save_config
+from hermes_cli.config import load_config, save_config
 
 
 def _write_config(tmp_path, body: str):
@@ -167,3 +167,4 @@ def test_save_config_falls_back_to_positional_matching_for_duplicate_names(monke
     assert "api_key: ${SECOND_SECRET}" in saved
     assert "first-secret" not in saved
     assert "second-secret" not in saved
+

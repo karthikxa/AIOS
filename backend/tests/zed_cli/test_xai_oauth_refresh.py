@@ -4,7 +4,7 @@ import base64
 import json
 import time
 
-from zed_cli import auth
+from hermes_cli import auth
 
 
 def _jwt_with_exp(exp: int) -> str:
@@ -41,3 +41,4 @@ def test_xai_oauth_token_not_expiring_beyond_one_hour_skew() -> None:
         token,
         auth.XAI_ACCESS_TOKEN_REFRESH_SKEW_SECONDS,
     )
+

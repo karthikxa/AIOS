@@ -28,7 +28,7 @@ import logging
 import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
-from zed_cli.config import cfg_get
+from hermes_cli.config import cfg_get
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ def _register_synthetic_package(name: str, search_locations: List[str]) -> None:
 def _get_user_plugins_dir() -> Optional[Path]:
     """Return ``$ZED_HOME/plugins/`` or None if unavailable."""
     try:
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         d = get_zed_home() / "plugins"
         return d if d.is_dir() else None
     except Exception:
@@ -344,7 +344,7 @@ def _get_active_memory_provider() -> Optional[str]:
     no plugin loading.
     """
     try:
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
         config = load_config()
         return cfg_get(config, "memory", "provider") or None
     except Exception:
@@ -448,3 +448,4 @@ def discover_plugin_cli_commands() -> List[dict]:
         logger.debug("Failed to scan CLI for memory plugin '%s': %s", active_provider, e)
 
     return results
+

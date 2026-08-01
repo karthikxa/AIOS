@@ -34,7 +34,7 @@ import threading
 import time
 import urllib.request
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ def _load_security_config() -> dict:
         "tirith_fail_open": True,
     }
     try:
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
         cfg = load_config().get("security", {}) or {}
     except Exception:
         cfg = {}
@@ -820,3 +820,4 @@ def _is_app_tld_finding(finding: dict) -> bool:
         if val is not None and ".app" in str(val).lower():
             return True
     return False
+

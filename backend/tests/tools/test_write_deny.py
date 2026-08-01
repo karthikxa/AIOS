@@ -35,7 +35,7 @@ class TestWriteDenyExactPaths:
         # ``~/.zed``) must be write-denied. The hermetic test conftest
         # points ZED_HOME at a tempdir â€” resolve via get_zed_home()
         # to match the denylist.
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         path = str(get_zed_home() / ".env")
         assert _is_write_denied(path) is True
 
@@ -58,7 +58,7 @@ class TestWriteDenyExactPaths:
         monkeypatch.setenv("ZED_HOME", str(profile_home))
 
         # Sanity check: ZED_HOME does point to the profile dir, not the root.
-        from zed_constants import get_zed_home, get_default_zed_root
+        from hermes_constants import get_zed_home, get_default_zed_root
         assert get_zed_home() == profile_home
         assert get_default_zed_root() == root
 
@@ -121,8 +121,9 @@ class TestWriteAllowed:
         assert _is_write_denied("/home/user/project/main.py") is False
 
     def test_zed_control_files_requested_writable(self):
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
 
         home = get_zed_home()
         for name in ["auth.json", "config.yaml", "webhook_subscriptions.json"]:
             assert _is_write_denied(str(home / name)) is False, f"{name} should be writable"
+

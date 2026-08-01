@@ -12,7 +12,7 @@ import contextlib
 import socket
 
 
-from zed_cli import auth as auth_mod
+from hermes_cli import auth as auth_mod
 
 
 def _cap(fn):
@@ -146,3 +146,4 @@ class TestSshUserAtHost:
         monkeypatch.setenv("USER", "dave")
         monkeypatch.setattr(socket, "gethostname", lambda: "")
         assert auth_mod._ssh_user_at_host() == "dave@<this-host>"
+

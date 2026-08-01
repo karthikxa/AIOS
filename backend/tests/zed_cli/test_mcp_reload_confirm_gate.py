@@ -11,7 +11,7 @@ run silently.
 from __future__ import annotations
 
 
-from zed_cli.config import DEFAULT_CONFIG
+from hermes_cli.config import DEFAULT_CONFIG
 
 
 class TestMcpReloadConfirmDefault:
@@ -54,7 +54,7 @@ class TestUserConfigMerge:
         monkeypatch.setenv("ZED_HOME", str(home))
         # Force a fresh reimport of config.py so the ZED_HOME is honored.
         import importlib
-        import zed_cli.config as cfg_mod
+        import hermes_cli.config as cfg_mod
         importlib.reload(cfg_mod)
 
         cfg = cfg_mod.load_config()
@@ -83,8 +83,9 @@ class TestUserConfigMerge:
 
         monkeypatch.setenv("ZED_HOME", str(home))
         import importlib
-        import zed_cli.config as cfg_mod
+        import hermes_cli.config as cfg_mod
         importlib.reload(cfg_mod)
 
         cfg = cfg_mod.load_config()
         assert cfg["approvals"]["mcp_reload_confirm"] is False
+

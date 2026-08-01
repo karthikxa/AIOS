@@ -1,4 +1,4 @@
-﻿from zed_cli.web_server import _display_system_platform
+﻿from hermes_cli.web_server import _display_system_platform
 
 
 def test_windows_11_build_displays_as_windows_11():
@@ -42,3 +42,4 @@ def test_non_windows_platform_unchanged():
         "os_version": "#1 SMP",
         "platform": "Linux-6.8.0-x86_64-with-glibc2.39",
     }
+

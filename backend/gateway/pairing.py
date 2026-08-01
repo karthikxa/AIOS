@@ -32,7 +32,7 @@ from gateway.whatsapp_identity import (
     expand_whatsapp_aliases,
     normalize_whatsapp_identifier,
 )
-from zed_constants import get_zed_dir
+from hermes_constants import get_zed_dir
 from utils import atomic_replace
 
 
@@ -448,3 +448,4 @@ class PairingStore:
                 if not platform.startswith("_"):
                     platforms.append(platform)
         return platforms
+

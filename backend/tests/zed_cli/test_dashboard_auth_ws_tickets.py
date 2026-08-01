@@ -11,8 +11,8 @@ import threading
 
 import pytest
 
-from zed_cli.dashboard_auth import ws_tickets
-from zed_cli.dashboard_auth.ws_tickets import (
+from hermes_cli.dashboard_auth import ws_tickets
+from hermes_cli.dashboard_auth.ws_tickets import (
     TTL_SECONDS,
     TicketInvalid,
     _reset_for_tests,
@@ -229,3 +229,4 @@ class TestInternalCredential:
         # Consuming the internal credential leaves the ticket intact.
         ws_tickets.consume_internal_credential(cred)
         assert consume_ticket(ticket)["user_id"] == "u1"
+

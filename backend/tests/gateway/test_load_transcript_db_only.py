@@ -13,7 +13,7 @@ def test_load_transcript_returns_db_messages_when_no_jsonl(tmp_path, monkeypatch
     at zed_state import time, before pytest's ZED_HOME monkeypatch
     fires â€” the autouse fixture's ZED_HOME override doesn't help here.)
     """
-    import zed_state
+    import hermes_state
     monkeypatch.setattr(zed_state, "DEFAULT_DB_PATH", tmp_path / "state.db")
 
     config = GatewayConfig()
@@ -28,3 +28,4 @@ def test_load_transcript_returns_db_messages_when_no_jsonl(tmp_path, monkeypatch
     assert len(history) == 2
     assert history[0]["content"] == "hello"
     assert history[1]["content"] == "world"
+

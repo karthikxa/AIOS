@@ -11,7 +11,7 @@ import argparse
 
 import pytest
 
-from zed_cli.config import get_env_value, save_env_value
+from hermes_cli.config import get_env_value, save_env_value
 from plugins.platforms.photon.adapter import _env_enablement
 from plugins.platforms.photon import cli
 
@@ -108,3 +108,4 @@ def test_setup_hint_uses_gateway_service_command(monkeypatch: pytest.MonkeyPatch
     out = capsys.readouterr().out
     assert "Start the gateway:  zed gateway start" in out
     assert "--platform photon" not in out
+

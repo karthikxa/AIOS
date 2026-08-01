@@ -42,7 +42,7 @@ class NasCronClient:
 
     def _access_token(self) -> str:
         """The agent's existing Zed Portal access token (refresh-aware)."""
-        from zed_cli.auth import resolve_nous_access_token
+        from hermes_cli.auth import resolve_nous_access_token
         return resolve_nous_access_token()
 
     def _headers(self) -> Dict[str, str]:
@@ -121,3 +121,4 @@ class NasCronClient:
         data = self._get(_LIST_PATH, {})
         items = data.get("armed") if isinstance(data, dict) else None
         return items if isinstance(items, list) else []
+

@@ -66,7 +66,7 @@ def _zed_version() -> str:
     """Return the zed-agent version string, or "dev" if it can't be resolved.
 
     Tries the installed package metadata first (authoritative for a pip/uv
-    install), then the in-tree ``zed_cli.__version__`` (covers editable /
+    install), then the in-tree ``hermes_cli.__version__`` (covers editable /
     source checkouts where metadata may be stale or absent). Never raises â€”
     a version probe must not be able to break the health endpoint.
     """
@@ -77,7 +77,7 @@ def _zed_version() -> str:
     except Exception:
         pass
     try:
-        from zed_cli import __version__
+        from hermes_cli import __version__
 
         return __version__
     except Exception:
@@ -384,7 +384,7 @@ class ResponseStore:
         self._max_size = max_size
         if db_path is None:
             try:
-                from zed_cli.config import get_zed_home
+                from hermes_cli.config import get_zed_home
                 db_path = str(get_zed_home() / "response_store.db")
             except Exception:
                 db_path = ":memory:"
@@ -397,8 +397,8 @@ class ResponseStore:
         # Use shared WAL-fallback helper so response_store.db degrades
         # gracefully on NFS/SMB/FUSE-mounted ZED_HOME (same filesystem
         # issue addressed for state.db/kanban.db â€” see
-        # zed_state._WAL_INCOMPAT_MARKERS).
-        from zed_state import apply_wal_with_fallback
+        # hermes_state._WAL_INCOMPAT_MARKERS).
+        from hermes_state import apply_wal_with_fallback
         apply_wal_with_fallback(self._conn, db_label="response_store.db")
         self._conn.execute(
             """CREATE TABLE IF NOT EXISTS responses (
@@ -810,7 +810,7 @@ class APIServerAdapter(BasePlatformAdapter):
         if explicit and explicit.strip():
             return explicit.strip()
         try:
-            from zed_cli.profiles import get_active_profile_name
+            from hermes_cli.profiles import get_active_profile_name
             profile = get_active_profile_name()
             if profile and profile not in {"default", "custom"}:
                 return profile
@@ -1007,7 +1007,7 @@ class APIServerAdapter(BasePlatformAdapter):
         """
         if self._session_db is None:
             try:
-                from zed_state import SessionDB
+                from hermes_state import SessionDB
                 self._session_db = SessionDB()
             except Exception as e:
                 logger.debug("SessionDB unavailable for API server: %s", e)
@@ -1050,7 +1050,7 @@ class APIServerAdapter(BasePlatformAdapter):
             _load_gateway_config,
             GatewayRunner,
         )
-        from zed_cli.tools_config import _get_platform_tools
+        from hermes_cli.tools_config import _get_platform_tools
 
         runtime_kwargs = _resolve_runtime_agent_kwargs()
         reasoning_config = GatewayRunner._load_reasoning_config()
@@ -1264,8 +1264,8 @@ class APIServerAdapter(BasePlatformAdapter):
             return auth_err
 
         try:
-            from zed_cli.config import load_config
-            from zed_cli.tools_config import (
+            from hermes_cli.config import load_config
+            from hermes_cli.tools_config import (
                 _get_effective_configurable_toolsets,
                 _get_platform_tools,
                 _toolset_has_keys,
@@ -3375,7 +3375,7 @@ class APIServerAdapter(BasePlatformAdapter):
         trips NAS's HTTP timeout. The store CAS claim inside fire_due guards
         against double-fire on a NAS/scheduler retry.
         """
-        from zed_cli.config import cfg_get, load_config
+        from hermes_cli.config import cfg_get, load_config
         from plugins.cron.chronos.verify import get_fire_verifier
 
         auth = request.headers.get("Authorization", "")
@@ -4316,7 +4316,7 @@ class APIServerAdapter(BasePlatformAdapter):
             # Ported from openclaw/openclaw#64586.
             if is_network_accessible(self._host) and self._api_key:
                 try:
-                    from zed_cli.auth import has_usable_secret
+                    from hermes_cli.auth import has_usable_secret
                     if not has_usable_secret(self._api_key, min_length=8):
                         logger.error(
                             "[%s] Refusing to start: API_SERVER_KEY is set to a "
@@ -4404,3 +4404,4 @@ class APIServerAdapter(BasePlatformAdapter):
             "host": self._host,
             "port": self._port,
         }
+

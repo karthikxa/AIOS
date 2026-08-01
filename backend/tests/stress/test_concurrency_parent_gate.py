@@ -38,7 +38,7 @@ def run() -> int:
     os.environ["ZED_HOME"] = home
     os.environ["HOME"] = home
 
-    from zed_cli import kanban_db as kb
+    from hermes_cli import kanban_db as kb
 
     kb.init_db()
 
@@ -181,3 +181,4 @@ def run() -> int:
 
 if __name__ == "__main__":
     sys.exit(run())
+

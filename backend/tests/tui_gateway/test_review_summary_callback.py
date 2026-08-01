@@ -24,8 +24,8 @@ def server():
             "zed_constants": MagicMock(
                 get_zed_home=MagicMock(return_value="/tmp/zed_test_review_summary")
             ),
-            "zed_cli.env_loader": MagicMock(),
-            "zed_cli.banner": MagicMock(),
+            "hermes_cli.env_loader": MagicMock(),
+            "hermes_cli.banner": MagicMock(),
             "zed_state": MagicMock(),
         },
     ):
@@ -164,4 +164,5 @@ def test_load_memory_notifications_normalization(server, monkeypatch, raw, expec
     display = {} if raw is None else {"memory_notifications": raw}
     monkeypatch.setattr(server, "_load_cfg", lambda: {"display": display})
     assert server._load_memory_notifications() == expected
+
 

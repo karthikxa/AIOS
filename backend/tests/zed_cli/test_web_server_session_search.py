@@ -1,6 +1,6 @@
 ﻿import asyncio
 
-from zed_cli import web_server
+from hermes_cli import web_server
 
 
 class _FakeSessionDB:
@@ -60,7 +60,7 @@ class _FakeSessionDB:
 
 
 def test_desktop_session_search_merges_id_matches_before_content_matches(monkeypatch):
-    monkeypatch.setattr("zed_state.SessionDB", _FakeSessionDB)
+    monkeypatch.setattr("hermes_state.SessionDB", _FakeSessionDB)
 
     response = asyncio.run(web_server.search_sessions(q="20260603", limit=2))
 
@@ -88,3 +88,4 @@ def test_desktop_session_search_merges_id_matches_before_content_matches(monkeyp
             },
         ]
     }
+

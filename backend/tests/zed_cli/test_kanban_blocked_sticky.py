@@ -34,7 +34,7 @@ from pathlib import Path
 
 import pytest
 
-from zed_cli import kanban_db as kb
+from hermes_cli import kanban_db as kb
 
 
 @pytest.fixture
@@ -277,3 +277,4 @@ def test_protocol_violation_loop_is_broken(kanban_home: Path) -> None:
 # (landed via #28754 / #28781).  The original PR shipped a duplicate test
 # here; dropped during salvage to avoid two assertions of the same contract.
 # ---------------------------------------------------------------------------
+

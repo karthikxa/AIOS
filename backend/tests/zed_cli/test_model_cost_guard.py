@@ -2,7 +2,7 @@
 
 from agent.models_dev import ModelInfo
 from agent.usage_pricing import PricingEntry
-from zed_cli.model_cost_guard import expensive_model_warning
+from hermes_cli.model_cost_guard import expensive_model_warning
 
 
 def test_no_warning_when_known_prices_are_at_threshold():
@@ -95,3 +95,4 @@ def test_openai_gpt55_pro_warns_for_nous_portal_pricing(monkeypatch):
     assert warning.input_cost_per_million == Decimal("25.000000")
     assert warning.output_cost_per_million == Decimal("125.000000")
     assert "did you mean to select openai/gpt-5.5?" in warning.message
+

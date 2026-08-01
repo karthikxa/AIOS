@@ -23,8 +23,8 @@ pytestmark = pytest.mark.xdist_group("dashboard_auth_app_state")
 
 from fastapi.testclient import TestClient
 
-from zed_cli import web_server
-from zed_cli.dashboard_auth import (
+from hermes_cli import web_server
+from hermes_cli.dashboard_auth import (
     DashboardAuthProvider,
     InvalidCredentialsError,
     ProviderError,
@@ -33,10 +33,10 @@ from zed_cli.dashboard_auth import (
     clear_providers,
     register_provider,
 )
-from zed_cli.dashboard_auth.cookies import SESSION_AT_COOKIE, SESSION_RT_COOKIE
-from zed_cli.dashboard_auth.login_page import render_login_html
-from zed_cli.dashboard_auth.routes import _reset_password_rate_limit
-from tests.zed_cli.conftest_dashboard_auth import StubAuthProvider
+from hermes_cli.dashboard_auth.cookies import SESSION_AT_COOKIE, SESSION_RT_COOKIE
+from hermes_cli.dashboard_auth.login_page import render_login_html
+from hermes_cli.dashboard_auth.routes import _reset_password_rate_limit
+from tests.hermes_cli.conftest_dashboard_auth import StubAuthProvider
 
 
 # ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ class PasswordProvider(DashboardAuthProvider):
         )
 
     def refresh_session(self, *, refresh_token: str) -> Session:
-        from zed_cli.dashboard_auth import RefreshExpiredError
+        from hermes_cli.dashboard_auth import RefreshExpiredError
 
         p = _unsign(self._secret, refresh_token)
         if not p or p.get("kind") != "refresh" or p["exp"] <= int(time.time()):
@@ -446,3 +446,4 @@ class TestLoginPageRender:
             assert "<script>" in html
         finally:
             clear_providers()
+

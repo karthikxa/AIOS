@@ -42,9 +42,9 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from agent.memory_provider import MemoryProvider
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from tools.registry import tool_error
-from zed_cli.config import cfg_get
+from hermes_cli.config import cfg_get
 
 logger = logging.getLogger(__name__)
 
@@ -711,10 +711,10 @@ class HindsightMemoryProvider(MemoryProvider):
         import sys
         from pathlib import Path
 
-        from zed_cli.config import save_config
-        from zed_cli.secret_prompt import masked_secret_prompt
+        from hermes_cli.config import save_config
+        from hermes_cli.secret_prompt import masked_secret_prompt
 
-        from zed_cli.memory_setup import _CANCELLED, _curses_select, _print_cancelled_setup
+        from hermes_cli.memory_setup import _CANCELLED, _curses_select, _print_cancelled_setup
 
         print("\n  Configuring Hindsight memory:\n")
 
@@ -1889,3 +1889,4 @@ class HindsightMemoryProvider(MemoryProvider):
 def register(ctx) -> None:
     """Register Hindsight as a memory provider plugin."""
     ctx.register_memory_provider(HindsightMemoryProvider())
+

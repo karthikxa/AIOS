@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 
 from plugins.google_meet import process_manager as pm
 from plugins.google_meet.meet_bot import _is_safe_meet_url
@@ -475,3 +475,4 @@ if __name__ == "__main__":  # pragma: no cover
     register_cli(parser)
     ns = parser.parse_args()
     sys.exit(meet_command(ns))
+

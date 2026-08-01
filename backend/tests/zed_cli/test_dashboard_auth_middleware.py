@@ -24,10 +24,10 @@ import pytest
 pytestmark = pytest.mark.xdist_group("dashboard_auth_app_state")
 from fastapi.testclient import TestClient
 
-from zed_cli import web_server
-from zed_cli.dashboard_auth import clear_providers, register_provider
-from zed_cli.dashboard_auth.cookies import SESSION_AT_COOKIE
-from tests.zed_cli.conftest_dashboard_auth import StubAuthProvider
+from hermes_cli import web_server
+from hermes_cli.dashboard_auth import clear_providers, register_provider
+from hermes_cli.dashboard_auth.cookies import SESSION_AT_COOKIE
+from tests.hermes_cli.conftest_dashboard_auth import StubAuthProvider
 
 
 @pytest.fixture
@@ -466,12 +466,12 @@ class _UnreachableProvider(StubAuthProvider):
     display_name = "Unreachable IdP (test only)"
 
     def verify_session(self, *, access_token: str):
-        from zed_cli.dashboard_auth.base import ProviderError
+        from hermes_cli.dashboard_auth.base import ProviderError
 
         raise ProviderError("simulated: IDP/JWKS unreachable")
 
     def refresh_session(self, *, refresh_token: str):
-        from zed_cli.dashboard_auth.base import ProviderError
+        from hermes_cli.dashboard_auth.base import ProviderError
 
         raise ProviderError("simulated: IDP/JWKS unreachable")
 
@@ -569,3 +569,4 @@ def test_unverifiable_token_with_reachable_providers_redirects(_gated_state):
     r = client.get("/api/auth/me")
     assert r.status_code == 401
     assert "unreachable" not in r.text.lower()
+

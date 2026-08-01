@@ -44,7 +44,7 @@ def worker_loop(worker_id: int, zed_home: str, result_file: str) -> None:
     os.environ["HOME"] = zed_home
     sys.path.insert(0, WT)
 
-    from zed_cli import kanban_db as kb
+    from hermes_cli import kanban_db as kb
 
     events = []
     empty_polls = 0
@@ -124,7 +124,7 @@ def main():
     os.environ["ZED_HOME"] = home
     os.environ["HOME"] = home
     sys.path.insert(0, WT)
-    from zed_cli import kanban_db as kb
+    from hermes_cli import kanban_db as kb
 
     kb.init_db()
     conn = kb.connect()
@@ -299,3 +299,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

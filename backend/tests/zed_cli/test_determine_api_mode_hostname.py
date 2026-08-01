@@ -9,7 +9,7 @@ custom/unknown providers in ``resolve_custom_provider``.
 
 from __future__ import annotations
 
-from zed_cli.providers import determine_api_mode
+from hermes_cli.providers import determine_api_mode
 
 
 class TestOpenAIHostHardening:
@@ -41,3 +41,4 @@ class TestAnthropicHostHardening:
         # proxies) expose the Anthropic protocol under a ``/anthropic`` suffix.
         # That convention must still resolve to anthropic_messages.
         assert determine_api_mode("", "https://api.minimax.io/anthropic") == "anthropic_messages"
+

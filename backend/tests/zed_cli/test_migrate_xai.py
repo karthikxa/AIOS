@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from zed_cli.xai_retirement import (
+from hermes_cli.xai_retirement import (
     RetirementIssue,
     apply_migration,
     find_retired_xai_refs,
@@ -221,3 +221,4 @@ class TestIdempotence:
         assert issues_2 == []
         result_2 = apply_migration(trap_config, issues_2)
         assert result_2.config_changed is False
+

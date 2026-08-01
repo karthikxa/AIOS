@@ -177,7 +177,7 @@ async def test_run_agent_passes_priority_processing_to_gateway_agent(monkeypatch
         },
     )
 
-    import zed_cli.tools_config as tools_config
+    import hermes_cli.tools_config as tools_config
     monkeypatch.setattr(tools_config, "_get_platform_tools", lambda user_config, platform_key: {"core"})
 
     _CapturingAgent.last_init = None
@@ -193,3 +193,4 @@ async def test_run_agent_passes_priority_processing_to_gateway_agent(monkeypatch
     assert result["final_response"] == "ok"
     assert _CapturingAgent.last_init["service_tier"] == "priority"
     assert _CapturingAgent.last_init["request_overrides"] == {"service_tier": "priority"}
+

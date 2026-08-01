@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from zed_cli.config import (
+from hermes_cli.config import (
     get_container_exec_info,
 )
 
@@ -42,7 +42,7 @@ def container_env(tmp_path, monkeypatch):
 
 def test_get_container_exec_info_returns_metadata(container_env):
     """Reads .container-mode and returns all fields including exec_user."""
-    with patch("zed_constants.is_container", return_value=False):
+    with patch("hermes_constants.is_container", return_value=False):
         info = get_container_exec_info()
 
     assert info is not None
@@ -54,7 +54,7 @@ def test_get_container_exec_info_returns_metadata(container_env):
 
 def test_get_container_exec_info_none_inside_container(container_env):
     """Returns None when we're already inside a container."""
-    with patch("zed_constants.is_container", return_value=True):
+    with patch("hermes_constants.is_container", return_value=True):
         info = get_container_exec_info()
 
     assert info is None
@@ -67,7 +67,7 @@ def test_get_container_exec_info_none_without_file(tmp_path, monkeypatch):
     monkeypatch.setenv("ZED_HOME", str(zed_home))
     monkeypatch.delenv("ZED_DEV", raising=False)
 
-    with patch("zed_constants.is_container", return_value=False):
+    with patch("hermes_constants.is_container", return_value=False):
         info = get_container_exec_info()
 
     assert info is None
@@ -77,7 +77,7 @@ def test_get_container_exec_info_skipped_when_zed_dev(container_env, monkeypatch
     """Returns None when ZED_DEV=1 is set (dev mode bypass)."""
     monkeypatch.setenv("ZED_DEV", "1")
 
-    with patch("zed_constants.is_container", return_value=False):
+    with patch("hermes_constants.is_container", return_value=False):
         info = get_container_exec_info()
 
     assert info is None
@@ -87,7 +87,7 @@ def test_get_container_exec_info_not_skipped_when_zed_dev_zero(container_env, mo
     """ZED_DEV=0 does NOT trigger bypass â€” only '1' does."""
     monkeypatch.setenv("ZED_DEV", "0")
 
-    with patch("zed_constants.is_container", return_value=False):
+    with patch("hermes_constants.is_container", return_value=False):
         info = get_container_exec_info()
 
     assert info is not None
@@ -104,7 +104,7 @@ def test_get_container_exec_info_defaults():
             "# minimal file with no keys\n"
         )
 
-        with patch("zed_constants.is_container", return_value=False), \
+        with patch("hermes_constants.is_container", return_value=False), \
              patch.dict(get_container_exec_info.__globals__, {"get_zed_home": lambda: zed_home}), \
              patch.dict(os.environ, {}, clear=False):
             os.environ.pop("ZED_DEV", None)
@@ -126,7 +126,7 @@ def test_get_container_exec_info_docker_backend(container_env):
         "zed_bin=/opt/zed/bin/zed\n"
     )
 
-    with patch("zed_constants.is_container", return_value=False):
+    with patch("hermes_constants.is_container", return_value=False):
         info = get_container_exec_info()
 
     assert info["backend"] == "docker"
@@ -137,7 +137,7 @@ def test_get_container_exec_info_docker_backend(container_env):
 
 def test_get_container_exec_info_crashes_on_permission_error(container_env):
     """PermissionError propagates instead of being silently swallowed."""
-    with patch("zed_constants.is_container", return_value=False), \
+    with patch("hermes_constants.is_container", return_value=False), \
          patch("builtins.open", side_effect=PermissionError("permission denied")):
         with pytest.raises(PermissionError):
             get_container_exec_info()
@@ -171,7 +171,7 @@ def podman_container_info():
 def test_exec_in_container_calls_execvp(docker_container_info):
     """Verifies os.execvp is called with correct args: runtime, tty flags,
     user, env vars, container name, binary, and CLI args."""
-    from zed_cli.main import _exec_in_container
+    from hermes_cli.main import _exec_in_container
 
     with patch("shutil.which", return_value="/usr/bin/docker"), \
          patch("subprocess.run") as mock_run, \
@@ -202,7 +202,7 @@ def test_exec_in_container_calls_execvp(docker_container_info):
 
 def test_exec_in_container_non_tty_uses_i_only(docker_container_info):
     """Non-TTY mode uses -i instead of -it."""
-    from zed_cli.main import _exec_in_container
+    from hermes_cli.main import _exec_in_container
 
     with patch("shutil.which", return_value="/usr/bin/docker"), \
          patch("subprocess.run") as mock_run, \
@@ -220,7 +220,7 @@ def test_exec_in_container_non_tty_uses_i_only(docker_container_info):
 
 def test_exec_in_container_no_runtime_hard_fails(podman_container_info):
     """Hard fails when runtime not found (no fallback)."""
-    from zed_cli.main import _exec_in_container
+    from hermes_cli.main import _exec_in_container
 
     with patch("shutil.which", return_value=None), \
          patch("subprocess.run") as mock_run, \
@@ -236,7 +236,7 @@ def test_exec_in_container_no_runtime_hard_fails(podman_container_info):
 def test_exec_in_container_sudo_probe_sets_prefix(podman_container_info):
     """When first probe fails and sudo probe succeeds, execvp is called
     with sudo -n prefix."""
-    from zed_cli.main import _exec_in_container
+    from hermes_cli.main import _exec_in_container
 
     def which_side_effect(name):
         if name == "podman":
@@ -268,7 +268,7 @@ def test_exec_in_container_sudo_probe_sets_prefix(podman_container_info):
 def test_exec_in_container_probe_timeout_prints_message(docker_container_info):
     """TimeoutExpired from probe produces a human-readable error, not a
     raw traceback."""
-    from zed_cli.main import _exec_in_container
+    from hermes_cli.main import _exec_in_container
 
     with patch("shutil.which", return_value="/usr/bin/docker"), \
          patch("subprocess.run", side_effect=subprocess.TimeoutExpired(
@@ -284,7 +284,7 @@ def test_exec_in_container_probe_timeout_prints_message(docker_container_info):
 def test_exec_in_container_container_not_running_no_sudo(docker_container_info):
     """When runtime exists but container not found and no sudo available,
     prints helpful error about root containers."""
-    from zed_cli.main import _exec_in_container
+    from hermes_cli.main import _exec_in_container
 
     def which_side_effect(name):
         if name == "docker":
@@ -301,3 +301,4 @@ def test_exec_in_container_container_not_running_no_sudo(docker_container_info):
 
     mock_execvp.assert_not_called()
     assert exc_info.value.code == 1
+

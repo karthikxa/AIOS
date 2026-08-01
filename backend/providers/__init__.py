@@ -91,7 +91,7 @@ def list_providers() -> list[ProviderProfile]:
 def _user_plugins_dir() -> Path | None:
     """Return ``$ZED_HOME/plugins/model-providers/`` if it exists."""
     try:
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
 
         d = get_zed_home() / "plugins" / "model-providers"
         return d if d.is_dir() else None
@@ -189,3 +189,4 @@ def _discover_providers() -> None:
                 )
     except Exception:
         pass
+

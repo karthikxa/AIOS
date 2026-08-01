@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from zed_cli.prompt_size import (
+from hermes_cli.prompt_size import (
     _SKILLS_BLOCK_RE,
     compute_prompt_breakdown,
     render_breakdown,
@@ -116,3 +116,4 @@ def test_json_serializable(isolated_home):
     data = compute_prompt_breakdown("cli")
     # Round-trips cleanly for ``--json`` output.
     assert json.loads(json.dumps(data)) == json.loads(json.dumps(data))
+

@@ -112,8 +112,8 @@ class TestGatewayRunnerRegistration:
         # Stub out heavy dependencies if not already present
         stubs = [
             "dotenv",
-            "zed_cli.env_loader",
-            "zed_cli.config",
+            "hermes_cli.env_loader",
+            "hermes_cli.config",
             "zed_constants",
         ]
         _orig = {}
@@ -411,3 +411,4 @@ class TestP0PlatformScopedLock:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+

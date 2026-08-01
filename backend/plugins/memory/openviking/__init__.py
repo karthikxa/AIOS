@@ -754,7 +754,7 @@ def _is_local_openviking_url(value: str) -> bool:
 
 def _load_zed_openviking_config() -> dict:
     try:
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
 
         config = load_config()
         memory_config = config.get("memory", {}) if isinstance(config, dict) else {}
@@ -1048,7 +1048,7 @@ def _local_openviking_bind(endpoint: str) -> tuple[str, int]:
 
 def _openviking_server_log_path() -> Path:
     try:
-        from zed_constants import get_zed_home
+        from hermes_constants import get_zed_home
         home = get_zed_home()
     except Exception:
         home = Path(os.environ.get("ZED_HOME", "")).expanduser() if os.environ.get("ZED_HOME") else Path.home() / ".zed"
@@ -1805,8 +1805,8 @@ class OpenVikingMemoryProvider(MemoryProvider):
 
     def post_setup(self, zed_home: str, config: dict) -> None:
         """Custom setup that can reuse OpenViking's shared CLI config."""
-        from zed_cli.config import save_config
-        from zed_cli.memory_setup import _CANCELLED, _curses_select, _print_cancelled_setup, _prompt
+        from hermes_cli.config import save_config
+        from hermes_cli.memory_setup import _CANCELLED, _curses_select, _print_cancelled_setup, _prompt
 
         zed_home_path = Path(zed_home)
         env_path = zed_home_path / ".env"
@@ -3150,3 +3150,4 @@ class OpenVikingMemoryProvider(MemoryProvider):
 def register(ctx) -> None:
     """Register OpenViking as a memory provider plugin."""
     ctx.register_memory_provider(OpenVikingMemoryProvider())
+

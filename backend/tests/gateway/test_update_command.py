@@ -130,7 +130,7 @@ class TestHandleUpdateCommand:
 
     @pytest.mark.asyncio
     async def test_fallback_to_sys_executable(self, tmp_path):
-        """Falls back to sys.executable -m zed_cli.main when zed not on PATH."""
+        """Falls back to sys.executable -m hermes_cli.main when zed not on PATH."""
         runner = _make_runner()
         event = _make_event()
 
@@ -155,9 +155,9 @@ class TestHandleUpdateCommand:
 
         assert "Starting Zed update" in result
         call_args = mock_popen.call_args[0][0]
-        # The update_cmd uses sys.executable -m zed_cli.main
+        # The update_cmd uses sys.executable -m hermes_cli.main
         joined = " ".join(call_args) if isinstance(call_args, list) else call_args
-        assert "zed_cli.main" in joined or "bash" in call_args[0]
+        assert "hermes_cli.main" in joined or "bash" in call_args[0]
 
     @pytest.mark.asyncio
     async def test_resolve_zed_bin_prefers_which(self, tmp_path):
@@ -180,7 +180,7 @@ class TestHandleUpdateCommand:
              patch("importlib.util.find_spec", return_value=fake_spec):
             result = _resolve_zed_bin()
 
-        assert result == [sys.executable, "-m", "zed_cli.main"]
+        assert result == [sys.executable, "-m", "hermes_cli.main"]
 
     @pytest.mark.asyncio
     async def test_resolve_zed_bin_returns_none_when_both_fail(self):
@@ -436,7 +436,7 @@ class TestUpdateCommandPlatformGate:
         assert Platform.DISCORD not in GatewayRunner._UPDATE_ALLOWED_PLATFORMS
 
         # Make sure the plugin registry is populated so the fallback fires.
-        from zed_cli.plugins import PluginManager
+        from hermes_cli.plugins import PluginManager
         PluginManager().discover_and_load(force=True)
         from gateway.platform_registry import platform_registry
         discord_entry = platform_registry.get("discord")
@@ -465,7 +465,7 @@ class TestUpdateCommandPlatformGate:
 
         assert Platform.MATTERMOST not in GatewayRunner._UPDATE_ALLOWED_PLATFORMS
 
-        from zed_cli.plugins import PluginManager
+        from hermes_cli.plugins import PluginManager
         PluginManager().discover_and_load(force=True)
         from gateway.platform_registry import platform_registry
         mm_entry = platform_registry.get("mattermost")
@@ -491,7 +491,7 @@ class TestUpdateCommandPlatformGate:
 
         assert Platform.HOMEASSISTANT not in GatewayRunner._UPDATE_ALLOWED_PLATFORMS
 
-        from zed_cli.plugins import PluginManager
+        from hermes_cli.plugins import PluginManager
         PluginManager().discover_and_load(force=True)
         from gateway.platform_registry import platform_registry
         ha_entry = platform_registry.get("homeassistant")
@@ -929,3 +929,4 @@ class TestUpdateInHelp:
         import inspect
         source = inspect.getsource(GatewayRunner._handle_message)
         assert '"update"' in source
+

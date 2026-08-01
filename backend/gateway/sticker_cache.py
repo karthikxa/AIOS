@@ -14,7 +14,7 @@ import tempfile
 import time
 from typing import Optional
 
-from zed_cli.config import get_zed_home
+from hermes_cli.config import get_zed_home
 
 
 CACHE_PATH = get_zed_home() / "sticker_cache.json"
@@ -122,3 +122,4 @@ def build_animated_sticker_injection(emoji: str = "") -> str:
             f"I can't see animated ones yet, but the emoji suggests: {emoji}]"
         )
     return "[The user sent an animated sticker~ I can't see animated ones yet]"
+

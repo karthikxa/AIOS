@@ -166,3 +166,4 @@ class TestSaveUrlImage:
         path1 = save_url_image(f"{base}/image.png", prefix="xai_collision")
         path2 = save_url_image(f"{base}/image.png", prefix="xai_collision")
         assert path1 != path2, "filename collision â€” uuid suffix isn't doing its job"
+

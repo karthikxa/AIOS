@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from zed_cli.model_switch import (
+from hermes_cli.model_switch import (
     _ZED_MODEL_WARNING,
     _check_zed_model_warning,
     is_nous_zed_non_agentic,
@@ -82,3 +82,4 @@ def test_none_like_inputs_are_safe() -> None:
     assert is_nous_zed_non_agentic("") is False
     # Defensive: the helper shouldn't crash on None-ish falsy input either.
     assert _check_zed_model_warning("") == ""
+

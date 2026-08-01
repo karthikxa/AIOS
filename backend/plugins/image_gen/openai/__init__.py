@@ -84,7 +84,7 @@ _SIZES = {
 def _load_openai_config() -> Dict[str, Any]:
     """Read ``image_gen`` from config.yaml (returns {} on any failure)."""
     try:
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
 
         cfg = load_config()
         section = cfg.get("image_gen") if isinstance(cfg, dict) else None
@@ -412,3 +412,4 @@ class OpenAIImageGenProvider(ImageGenProvider):
 def register(ctx) -> None:
     """Plugin entry point â€” wire ``OpenAIImageGenProvider`` into the registry."""
     ctx.register_image_gen_provider(OpenAIImageGenProvider())
+

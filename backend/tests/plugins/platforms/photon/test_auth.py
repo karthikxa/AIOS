@@ -130,7 +130,7 @@ def test_store_user_numbers_round_trip(tmp_zed_home: Path) -> None:
 def test_load_user_numbers_falls_back_to_home_channel(
     tmp_zed_home: Path,
 ) -> None:
-    from zed_cli.config import save_env_value
+    from hermes_cli.config import save_env_value
 
     save_env_value("PHOTON_HOME_CHANNEL", "+15551234567")
 
@@ -572,3 +572,4 @@ def test_login_device_flow_raises_when_token_invalid(
         photon_auth.login_device_flow(open_browser=False)
     # A token that failed validation must never be persisted.
     assert photon_auth.load_photon_token() is None
+

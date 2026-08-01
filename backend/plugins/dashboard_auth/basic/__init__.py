@@ -67,7 +67,7 @@ import secrets
 import time
 from typing import Any, Optional
 
-from zed_cli.dashboard_auth import (
+from hermes_cli.dashboard_auth import (
     DashboardAuthProvider,
     InvalidCredentialsError,
     LoginStart,
@@ -339,7 +339,7 @@ def _load_config_basic_auth_section() -> dict:
     not being a dict â€” every shape falls through to ``{}``.
     """
     try:
-        from zed_cli.config import cfg_get, load_config
+        from hermes_cli.config import cfg_get, load_config
 
         cfg = load_config()
     except Exception as exc:  # noqa: BLE001 â€” broad catch is intentional
@@ -489,3 +489,4 @@ def register(ctx) -> None:
         "dashboard-auth-basic: registered password provider (username=%s)",
         username,
     )
+

@@ -14,7 +14,7 @@ from gateway.config import GatewayConfig
 
 def _pin_db(monkeypatch, tmp_path):
     """Force SessionDB() to write into tmp_path instead of the real ~/.zed."""
-    import zed_state
+    import hermes_state
     monkeypatch.setattr(zed_state, "DEFAULT_DB_PATH", tmp_path / "state.db")
 
 
@@ -86,3 +86,4 @@ def test_recall_branch_a2_content_match_when_no_platform_id(tmp_path, monkeypatc
         None,
     )
     assert target is not None
+

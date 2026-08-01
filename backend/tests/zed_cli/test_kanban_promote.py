@@ -14,8 +14,8 @@ from pathlib import Path
 
 import pytest
 
-from zed_cli import kanban as kb_cli
-from zed_cli import kanban_db as kb
+from hermes_cli import kanban as kb_cli
+from hermes_cli import kanban_db as kb
 
 
 @pytest.fixture
@@ -252,3 +252,4 @@ def test_cli_promote_dedupes_duplicate_ids(kanban_home, capsys):
             (child,),
         ).fetchone()["n"]
     assert n == 1
+

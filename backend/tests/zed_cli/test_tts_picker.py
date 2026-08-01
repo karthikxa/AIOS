@@ -12,7 +12,7 @@ import pytest
 
 from agent import tts_registry
 from agent.tts_provider import TTSProvider
-from zed_cli import tools_config
+from hermes_cli import tools_config
 
 
 class _FakeTTSProvider(TTSProvider):
@@ -185,3 +185,4 @@ class TestVisibleProvidersInjectsTTSPlugins:
         assert all(not row.get("tts_plugin_name") for row in visible)
         # Hardcoded rows still present (sample one of the always-visible ones)
         assert "Microsoft Edge TTS" in names
+

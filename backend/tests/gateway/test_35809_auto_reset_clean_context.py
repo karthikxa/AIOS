@@ -39,7 +39,7 @@ import inspect
 from gateway import run as gateway_run
 from gateway.config import GatewayConfig, Platform
 from gateway.session import SessionSource, SessionStore
-from zed_state import SessionDB
+from hermes_state import SessionDB
 
 
 # ---------------------------------------------------------------------------
@@ -194,3 +194,4 @@ class TestAutoResetLoadsCleanContext:
         reloaded = store.get_or_create_session(source)
         assert reloaded.session_id == new_sid
         assert store.load_transcript(reloaded.session_id) == []
+

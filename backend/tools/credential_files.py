@@ -26,7 +26,7 @@ import posixpath
 from contextvars import ContextVar
 from pathlib import Path
 from typing import Dict, List, Optional
-from zed_cli.config import cfg_get
+from hermes_cli.config import cfg_get
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ _config_files: List[Dict[str, str]] | None = None
 
 
 def _resolve_zed_home() -> Path:
-    from zed_constants import get_zed_home
+    from hermes_constants import get_zed_home
     return get_zed_home()
 
 
@@ -137,7 +137,7 @@ def _load_config_files() -> List[Dict[str, str]]:
 
     result: List[Dict[str, str]] = []
     try:
-        from zed_cli.config import read_raw_config
+        from hermes_cli.config import read_raw_config
         zed_home = _resolve_zed_home()
         cfg = read_raw_config()
         cred_files = cfg_get(cfg, "terminal", "credential_files")
@@ -342,7 +342,7 @@ def iter_skills_files(
 # ---------------------------------------------------------------------------
 
 # The cache subdirectories that should be mirrored into remote backends.
-# Each tuple is (new_subpath, old_name) matching zed_constants.get_zed_dir().
+# Each tuple is (new_subpath, old_name) matching hermes_constants.get_zed_dir().
 _CACHE_DIRS: list[tuple[str, str]] = [
     ("cache/documents", "document_cache"),
     ("cache/images", "image_cache"),
@@ -361,7 +361,7 @@ def get_cache_directory_mounts(
     ``container_path`` keys.  The host path is resolved via
     ``get_zed_dir()`` for backward compatibility with old directory layouts.
     """
-    from zed_constants import get_zed_dir
+    from hermes_constants import get_zed_dir
 
     mounts: List[Dict[str, str]] = []
     for new_subpath, old_name in _CACHE_DIRS:
@@ -429,7 +429,7 @@ def iter_cache_files(
     Used by Modal to upload files individually and resync before each command.
     Skips symlinks.  The container paths use the new ``cache/<subdir>`` layout.
     """
-    from zed_constants import get_zed_dir
+    from hermes_constants import get_zed_dir
 
     result: List[Dict[str, str]] = []
     for new_subpath, old_name in _CACHE_DIRS:
@@ -451,5 +451,6 @@ def iter_cache_files(
 def clear_credential_files() -> None:
     """Reset the skill-scoped registry (e.g. on session reset)."""
     _get_registered().clear()
+
 
 

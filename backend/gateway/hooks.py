@@ -43,7 +43,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 import yaml
 
-from zed_cli.config import get_zed_home
+from hermes_cli.config import get_zed_home
 
 
 HOOKS_DIR = get_zed_home() / "hooks"
@@ -225,3 +225,4 @@ class HookRegistry:
             except Exception as e:
                 print(f"[hooks] Error in handler for '{event_type}': {e}", flush=True)
         return results
+

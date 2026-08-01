@@ -4,7 +4,7 @@ Covers the monthly_credits denominator path added when the portal /api/oauth/acc
 subscription block began carrying `monthly_credits`. Magnitudes-only fallback, clamp,
 and the non-finite / rollover guards (surfaced by adversarial review) are all asserted.
 """
-from zed_cli.nous_account import (
+from hermes_cli.nous_account import (
     NousPortalAccountInfo,
     NousPaidServiceAccessInfo,
     NousPortalSubscriptionInfo,
@@ -148,3 +148,4 @@ def test_zero_monthly_credits_no_divzero():
 def test_failopen_none_and_logged_out():
     assert build_nous_credits_snapshot(None) is None
     assert build_nous_credits_snapshot(_acct(logged_in=False)) is None
+

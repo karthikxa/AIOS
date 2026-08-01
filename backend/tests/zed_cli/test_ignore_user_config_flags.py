@@ -225,7 +225,7 @@ class TestArgparseFlagsRegistered:
 
     def test_main_py_registers_both_flags(self):
         """E2E: the real zed parser accepts both flags."""
-        from zed_cli._parser import build_top_level_parser
+        from hermes_cli._parser import build_top_level_parser
 
         parser, _subparsers, chat_parser = build_top_level_parser()
 
@@ -238,7 +238,8 @@ class TestArgparseFlagsRegistered:
 
         # And the cmd_chat env-var wiring must be present
         import inspect
-        import zed_cli.main as hm
+        import hermes_cli.main as hm
         src = inspect.getsource(hm)
         assert "ZED_IGNORE_USER_CONFIG" in src
         assert "ZED_IGNORE_RULES" in src
+

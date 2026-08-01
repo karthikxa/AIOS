@@ -63,7 +63,7 @@ class TestGatewayPidState:
         pid_path.write_text(json.dumps({
             "pid": dead_pid,
             "kind": "zed-gateway",
-            "argv": ["python", "-m", "zed_cli.main", "gateway", "run"],
+            "argv": ["python", "-m", "hermes_cli.main", "gateway", "run"],
             "start_time": 111,
         }))
 
@@ -81,7 +81,7 @@ class TestGatewayPidState:
         pid_path.write_text(json.dumps({
             "pid": os.getpid(),
             "kind": "zed-gateway",
-            "argv": ["python", "-m", "zed_cli.main", "gateway"],
+            "argv": ["python", "-m", "hermes_cli.main", "gateway"],
             "start_time": 123,
         }))
 
@@ -126,7 +126,7 @@ class TestGatewayPidState:
         pid_path.write_text(json.dumps({
             "pid": os.getpid(),
             "kind": "zed-gateway",
-            "argv": ["python", "-m", "zed_cli.main", "gateway"],
+            "argv": ["python", "-m", "hermes_cli.main", "gateway"],
             "start_time": 123,
         }))
 
@@ -138,7 +138,7 @@ class TestGatewayPidState:
         lock_path.write_text(json.dumps({
             "pid": os.getpid(),
             "kind": "zed-gateway",
-            "argv": ["python", "-m", "zed_cli.main", "gateway"],
+            "argv": ["python", "-m", "hermes_cli.main", "gateway"],
             "start_time": 123,
         }))
         monkeypatch.setattr(status, "is_gateway_runtime_lock_active", lambda lock_path=None: True)
@@ -163,7 +163,7 @@ class TestGatewayPidState:
         pid_path.write_text(json.dumps({
             "pid": os.getpid(),
             "kind": "zed-gateway",
-            "argv": ["python", "-m", "zed_cli.main", "gateway"],
+            "argv": ["python", "-m", "hermes_cli.main", "gateway"],
             "start_time": 123,
         }))
 
@@ -193,13 +193,13 @@ class TestGatewayPidState:
         pid_path.write_text(json.dumps({
             "pid": dead_foreign_pid,
             "kind": "zed-gateway",
-            "argv": ["python", "-m", "zed_cli.main", "gateway"],
+            "argv": ["python", "-m", "hermes_cli.main", "gateway"],
             "start_time": 123,
         }))
         lock_path.write_text(json.dumps({
             "pid": dead_foreign_pid,
             "kind": "zed-gateway",
-            "argv": ["python", "-m", "zed_cli.main", "gateway"],
+            "argv": ["python", "-m", "hermes_cli.main", "gateway"],
             "start_time": 123,
         }))
 
@@ -214,7 +214,7 @@ class TestGatewayPidState:
         pid_path.write_text(json.dumps({
             "pid": 99999,
             "kind": "zed-gateway",
-            "argv": ["python", "-m", "zed_cli.main", "gateway"],
+            "argv": ["python", "-m", "hermes_cli.main", "gateway"],
             "start_time": 123,
         }))
 
@@ -226,7 +226,7 @@ class TestGatewayPidState:
             lambda: {
                 "pid": os.getpid(),
                 "kind": "zed-gateway",
-                "argv": ["python", "-m", "zed_cli.main", "gateway"],
+                "argv": ["python", "-m", "hermes_cli.main", "gateway"],
                 "start_time": 123,
             },
         )
@@ -651,7 +651,7 @@ class TestScopedLocks:
             "pid": 840,
             "start_time": 123,
             "kind": "zed-gateway",
-            "argv": ["/usr/bin/python", "-m", "zed_cli.main", "gateway", "run"],
+            "argv": ["/usr/bin/python", "-m", "hermes_cli.main", "gateway", "run"],
         }))
 
         monkeypatch.setattr(status, "_pid_exists", lambda pid: True)
@@ -1091,3 +1091,4 @@ class TestCorruptStatusFiles:
         p = tmp_path / "gateway.pid"
         p.write_text("4242", encoding="utf-8")
         assert status._read_pid_record(p) == {"pid": 4242}
+

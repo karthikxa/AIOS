@@ -2,7 +2,7 @@
 
 import pytest
 
-from zed_state import SessionDB
+from hermes_state import SessionDB
 
 
 @pytest.fixture
@@ -49,3 +49,4 @@ def test_unarchiving_compression_tip_unarchives_projected_root(db):
     assert db.get_session("root")["archived"] == 0
     assert db.get_session("tip")["archived"] == 0
     assert [s["id"] for s in db.list_sessions_rich(order_by_last_active=True)] == ["tip"]
+

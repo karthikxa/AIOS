@@ -1223,7 +1223,7 @@ def interactive_setup() -> None:
 
     Prompts for the WebSocket URL and the optional allowlist / groups /
     auto-accept / home channel. Writes to ``~/.zed/.env`` via
-    ``zed_cli.config``.
+    ``hermes_cli.config``.
     """
     print()
     print("SimpleX Chat setup")
@@ -1234,10 +1234,10 @@ def interactive_setup() -> None:
     print()
 
     try:
-        from zed_cli.config import get_env_value, save_env_value
+        from hermes_cli.config import get_env_value, save_env_value
     except ImportError:
         print(
-            "zed_cli.config not available; set SIMPLEX_* vars manually in "
+            "hermes_cli.config not available; set SIMPLEX_* vars manually in "
             "~/.zed/.env"
         )
         return
@@ -1247,7 +1247,7 @@ def interactive_setup() -> None:
         suffix = " [keep current]" if existing else ""
         try:
             if secret:
-                from zed_cli.secret_prompt import masked_secret_prompt
+                from hermes_cli.secret_prompt import masked_secret_prompt
                 value = masked_secret_prompt(f"{prompt}{suffix}: ")
             else:
                 value = input(f"{prompt}{suffix}: ").strip()
@@ -1311,3 +1311,4 @@ def register(ctx) -> None:
             "as inline voice notes (audio extensions) or documents."
         ),
     )
+

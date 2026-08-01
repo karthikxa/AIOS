@@ -11,7 +11,7 @@ import builtins
 import io
 from unittest import mock
 
-import zed_cli.main as m
+import hermes_cli.main as m
 
 V2 = "/sys/fs/cgroup/memory.max"
 V1 = "/sys/fs/cgroup/memory/memory.limit_in_bytes"
@@ -121,3 +121,4 @@ class TestNodeOptionsTokenMerge:
 
     def test_preserves_other_flags(self):
         assert self._merge("--enable-source-maps", 4 * GB) == "--enable-source-maps --max-old-space-size=3072"
+

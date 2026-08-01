@@ -23,7 +23,7 @@ def mcp_loop():
 
 
 def test_override_propagates_to_mcp_loop(tmp_path, monkeypatch, mcp_loop):
-    from zed_constants import (
+    from hermes_constants import (
         get_zed_home,
         reset_zed_home_override,
         set_zed_home_override,
@@ -60,7 +60,7 @@ def test_oauth_token_paths_follow_override(tmp_path, monkeypatch, mcp_loop):
     """The actual symptom path: ZedTokenStorage resolving inside the
     probe's MCP-loop coroutine must land in the selected profile's
     mcp-tokens dir, not the process home's."""
-    from zed_constants import (
+    from hermes_constants import (
         reset_zed_home_override,
         set_zed_home_override,
     )
@@ -90,7 +90,7 @@ def test_concurrent_scopes_do_not_interfere(tmp_path, monkeypatch, mcp_loop):
     loop must each see their own home â€” the wrapper is task-local."""
     import threading
 
-    from zed_constants import (
+    from hermes_constants import (
         get_zed_home,
         reset_zed_home_override,
         set_zed_home_override,
@@ -137,3 +137,4 @@ def test_wrap_is_noop_without_override(mcp_loop):
     wrapped = mcp_loop._wrap_with_home_override(coro)
     assert wrapped is coro
     coro.close()
+

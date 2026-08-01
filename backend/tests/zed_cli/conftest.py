@@ -15,7 +15,7 @@ def all_assignees_spawnable(monkeypatch):
     those tasks into ``skipped_nonspawnable`` instead of spawning, which
     would break tests that assert spawn behavior.
     """
-    from zed_cli import profiles
+    from hermes_cli import profiles
     monkeypatch.setattr(profiles, "profile_exists", lambda name: True)
 
 
@@ -38,11 +38,11 @@ def _suppress_concurrent_zed_gate(request, monkeypatch):
     if request.node.get_closest_marker("real_concurrent_gate"):
         return
     try:
-        from zed_cli import main as _cli_main
+        from hermes_cli import main as _cli_main
     except Exception:
         return
     # raising=False: under pytest's per-test spawn isolation, a concurrent
-    # xdist worker importing a module that transitively touches zed_cli.main
+    # xdist worker importing a module that transitively touches hermes_cli.main
     # can briefly expose a partially-initialized module object here â€” one where
     # _detect_concurrent_zed_instances isn't defined yet. A bare setattr
     # would raise AttributeError and error the (unrelated) test. The attribute
@@ -54,3 +54,4 @@ def _suppress_concurrent_zed_gate(request, monkeypatch):
         lambda *_a, **_k: [],
         raising=False,
     )
+

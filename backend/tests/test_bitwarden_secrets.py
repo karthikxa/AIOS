@@ -45,9 +45,9 @@ def zed_home(tmp_path, monkeypatch):
     home.mkdir()
     monkeypatch.setenv("ZED_HOME", str(home))
     # Some modules cache get_zed_home; clear if needed.
-    import zed_constants
+    import hermes_constants
     if hasattr(zed_constants, "_ZED_HOME_CACHE"):
-        zed_constants._ZED_HOME_CACHE = None  # type: ignore[attr-defined]
+        hermes_constants._ZED_HOME_CACHE = None  # type: ignore[attr-defined]
     return home
 
 
@@ -616,7 +616,7 @@ def test_env_loader_skips_when_disabled(tmp_path, monkeypatch):
     monkeypatch.setenv("ZED_HOME", str(home))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
-    from zed_cli.env_loader import _apply_external_secret_sources
+    from hermes_cli.env_loader import _apply_external_secret_sources
     # Should be a no-op (returns None).
     assert _apply_external_secret_sources(home) is None
 
@@ -654,7 +654,7 @@ def test_env_loader_calls_bsm_when_enabled(tmp_path, monkeypatch):
         fake_apply,
     )
 
-    from zed_cli.env_loader import _apply_external_secret_sources
+    from hermes_cli.env_loader import _apply_external_secret_sources
     _apply_external_secret_sources(home)
 
     assert called["n"] == 1
@@ -880,3 +880,4 @@ def test_reset_cache_for_tests_deletes_disk_file(tmp_path):
     assert not cache_path.exists()
     # Idempotent
     bw._reset_cache_for_tests(home)
+

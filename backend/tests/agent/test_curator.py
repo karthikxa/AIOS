@@ -858,7 +858,7 @@ def test_curator_review_prompt_offers_support_file_actions():
 
 def test_cli_unpin_refuses_bundled_skill(curator_env, capsys):
     """zed curator unpin must refuse bundled/hub skills too (matches pin)."""
-    from zed_cli import curator as cli
+    from hermes_cli import curator as cli
     skills_dir = curator_env["home"] / "skills"
     _write_skill(skills_dir, "ship-skill")
     (skills_dir / ".bundled_manifest").write_text(
@@ -875,7 +875,7 @@ def test_cli_unpin_refuses_bundled_skill(curator_env, capsys):
 
 
 def test_cli_pin_refuses_bundled_skill(curator_env, capsys):
-    from zed_cli import curator as cli
+    from hermes_cli import curator as cli
     skills_dir = curator_env["home"] / "skills"
     _write_skill(skills_dir, "ship-skill")
     (skills_dir / ".bundled_manifest").write_text(
@@ -1097,9 +1097,9 @@ def test_curator_slot_is_canonical_aux_task():
     (test_aux_config.py) for the main tasks â€” this test pins `curator`
     specifically so the unification doesn't silently regress.
     """
-    from zed_cli.config import DEFAULT_CONFIG
-    from zed_cli.main import _AUX_TASKS
-    from zed_cli.web_server import _AUX_TASK_SLOTS
+    from hermes_cli.config import DEFAULT_CONFIG
+    from hermes_cli.main import _AUX_TASKS
+    from hermes_cli.web_server import _AUX_TASK_SLOTS
 
     # 1. DEFAULT_CONFIG.auxiliary â€” schema source
     assert "curator" in DEFAULT_CONFIG["auxiliary"], \
@@ -1119,3 +1119,4 @@ def test_curator_slot_is_canonical_aux_task():
 
     # 4. web/src/pages/ModelsPage.tsx is checked at build time; the tsx
     #    array and this tuple share a ``Must match _AUX_TASK_SLOTS`` comment.
+

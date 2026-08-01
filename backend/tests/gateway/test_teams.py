@@ -376,13 +376,13 @@ class TestTeamsPluginRegistration:
 class TestTeamsInteractiveSetup:
     def test_interactive_setup_persists_credentials(self, tmp_path, monkeypatch):
         """Regression for #19173: interactive_setup must import prompt helpers
-        from zed_cli.cli_output (not zed_cli.config) and persist
+        from hermes_cli.cli_output (not hermes_cli.config) and persist
         credentials to .env without crashing.
         """
         zed_home = tmp_path / "zed"
         monkeypatch.setenv("ZED_HOME", str(zed_home))
 
-        import zed_cli.cli_output as cli_output_mod
+        import hermes_cli.cli_output as cli_output_mod
 
         answers = iter(["client-id", "client-secret", "tenant-id", "aad-1, aad-2"])
         monkeypatch.setattr(cli_output_mod, "prompt", lambda *_a, **_kw: next(answers))
@@ -1125,3 +1125,4 @@ class TestTeamsMediaAttachments:
         result = await adapter.send_document("19:abc@thread.v2", "/no/such/file.pdf")
         assert not result.success
         adapter._app.send.assert_not_awaited()
+

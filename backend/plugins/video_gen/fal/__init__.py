@@ -197,7 +197,7 @@ def _clamp_duration(family: Dict[str, Any], duration: Optional[int]) -> Optional
 
 def _load_video_gen_section() -> Dict[str, Any]:
     try:
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
 
         cfg = load_config()
         section = cfg.get("video_gen") if isinstance(cfg, dict) else None
@@ -618,3 +618,4 @@ class FALVideoGenProvider(VideoGenProvider):
 def register(ctx) -> None:
     """Plugin entry point â€” wire ``FALVideoGenProvider`` into the registry."""
     ctx.register_video_gen_provider(FALVideoGenProvider())
+

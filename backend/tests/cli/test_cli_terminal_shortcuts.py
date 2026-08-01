@@ -8,7 +8,7 @@ not inserted into the prompt buffer and cleaned up later.
 from prompt_toolkit.input.vt100_parser import Vt100Parser
 from prompt_toolkit.keys import Keys
 
-from zed_cli.pt_input_extras import install_ignored_terminal_sequences
+from hermes_cli.pt_input_extras import install_ignored_terminal_sequences
 
 
 def _parse_keys(data: str):
@@ -47,3 +47,4 @@ def test_install_is_idempotent_and_setdefault_safe():
     # since the entries are now present.
     assert second == 0
     assert first in (0, 1, 2)  # 0 if a prior test in same process already installed
+

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, List
 
-from zed_cli.auth import get_auth_status
+from hermes_cli.auth import get_auth_status
 from plugins.spotify.client import (
     SpotifyAPIError,
     SpotifyAuthRequiredError,
@@ -452,3 +452,4 @@ SPOTIFY_LIBRARY_SCHEMA = {
         "required": ["kind", "action"],
     },
 }
+

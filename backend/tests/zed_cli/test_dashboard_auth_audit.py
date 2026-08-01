@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import pytest
 
-from zed_cli.dashboard_auth.audit import audit_log, AuditEvent
+from hermes_cli.dashboard_auth.audit import audit_log, AuditEvent
 
 
 @pytest.fixture
@@ -79,3 +79,4 @@ def test_audit_creates_logs_dir_if_missing(tmp_path, monkeypatch):
     audit_log(AuditEvent.LOGIN_START, provider="nous")
     assert (home / "logs").is_dir()
     assert (home / "logs" / "dashboard-auth.log").exists()
+

@@ -191,7 +191,7 @@ def test_subprocess_pkill_zed_gateway_blocked():
 
 
 def test_subprocess_pkill_python_dash_f_blocked():
-    """``pkill -f python`` matches the gateway's "python -m zed_cli.main"."""
+    """``pkill -f python`` matches the gateway's "python -m hermes_cli.main"."""
     with pytest.raises(RuntimeError, match="live-system guard"):
         subprocess.run(["pkill", "-f", "python"])
 
@@ -293,3 +293,4 @@ def test_bypass_marker_disables_guard():
     # so we get the real os.kill. Calling os.kill(os.getpid(), 0) just
     # checks that the PID exists â€” harmless.
     os.kill(os.getpid(), 0)  # No exception â€” guard is OFF.
+

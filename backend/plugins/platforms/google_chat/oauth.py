@@ -75,7 +75,7 @@ logger = logging.getLogger("gateway.platforms.google_chat_user_oauth")
 # Use the project's ZED_HOME helper so the token follows the user's
 # profile (e.g. tests can override via ZED_HOME=/tmp/...).
 try:
-    from zed_constants import display_zed_home, get_zed_home
+    from hermes_constants import display_zed_home, get_zed_home
 except (ModuleNotFoundError, ImportError):
     # Fallback for environments where zed_constants isn't importable
     # (mirrors the same fallback used by the google-workspace skill's
@@ -665,3 +665,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

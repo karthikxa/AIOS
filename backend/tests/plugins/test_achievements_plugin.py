@@ -54,13 +54,13 @@ def plugin_api(tmp_path, monkeypatch):
     # swap ``sys.modules['zed_state']`` with auto-restoration. Without
     # this, a raw ``sys.modules[...] = fake`` assignment would leak the
     # fake into later tests in the same xdist worker â€” breaking every
-    # test that does ``from zed_state import SessionDB``.
+    # test that does ``from hermes_state import SessionDB``.
     module._test_monkeypatch = monkeypatch
     yield module
 
 
 class _FakeSessionDB:
-    """Stand-in for zed_state.SessionDB that records scan calls."""
+    """Stand-in for hermes_state.SessionDB that records scan calls."""
 
     def __init__(self, session_count: int, scan_delay: float = 0):
         self.session_count = session_count
@@ -376,3 +376,4 @@ def test_partial_snapshots_do_not_persist_unlock_timestamps(plugin_api):
         "partial scans must not record unlock timestamps â€” a later session "
         "could change whether the badge deserves to be unlocked yet"
     )
+

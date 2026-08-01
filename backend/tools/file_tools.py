@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """File Tools Module - LLM agent file manipulation tools."""
 
 import errno
@@ -26,8 +26,8 @@ _EXPECTED_WRITE_ERRNOS = {errno.EACCES, errno.EPERM, errno.EROFS}
 # ---------------------------------------------------------------------------
 # Read-size guard: cap the character count returned to the model.
 # We're model-agnostic so we can't count tokens; characters are a safe proxy.
-# 100K chars â‰ˆ 25â€“35K tokens across typical tokenisers.  Files larger than
-# this in a single read are a context-window hazard â€” the model should use
+# 100K chars Ã¢â€°Ë† 25Ã¢â‚¬â€œ35K tokens across typical tokenisers.  Files larger than
+# this in a single read are a context-window hazard Ã¢â‚¬â€ the model should use
 # offset+limit to read the relevant section.
 #
 # Configurable via config.yaml:  file_read_max_chars: 200000
@@ -47,7 +47,7 @@ def _get_max_read_chars() -> int:
     if _max_read_chars_cached is not None:
         return _max_read_chars_cached
     try:
-        from zed_cli.config import load_config
+        from hermes_cli.config import load_config
         cfg = load_config()
         val = cfg.get("file_read_max_chars")
         if isinstance(val, (int, float)) and val > 0:
@@ -63,11 +63,11 @@ def _get_max_read_chars() -> int:
 _LARGE_FILE_HINT_BYTES = 512_000  # 512 KB
 
 # ---------------------------------------------------------------------------
-# Device path blocklist â€” reading these hangs the process (infinite output
+# Device path blocklist Ã¢â‚¬â€ reading these hangs the process (infinite output
 # or blocking on input).  Checked by path only (no I/O).
 # ---------------------------------------------------------------------------
 _BLOCKED_DEVICE_PATHS = frozenset({
-    # Infinite output â€” never reach EOF
+    # Infinite output Ã¢â‚¬â€ never reach EOF
     "/dev/zero", "/dev/random", "/dev/urandom", "/dev/full",
     # Blocks waiting for input
     "/dev/stdin", "/dev/tty", "/dev/console",
@@ -101,8 +101,8 @@ def _sentinel_free_abs_cwd(raw: str | None) -> str | None:
 
     Returns the expanded path only when *raw* is non-empty, not a sentinel (see
     ``_TERMINAL_CWD_SENTINELS``), and absolute. A relative anchor is meaningless
-    without knowing which cwd it is relative to â€” exactly the ambiguity that
-    misroutes worktree edits â€” so relative/sentinel/empty values yield ``None``.
+    without knowing which cwd it is relative to Ã¢â‚¬â€ exactly the ambiguity that
+    misroutes worktree edits Ã¢â‚¬â€ so relative/sentinel/empty values yield ``None``.
     """
     raw = str(raw or "").strip()
     if raw.lower() in _TERMINAL_CWD_SENTINELS:
@@ -117,7 +117,7 @@ def _configured_terminal_cwd() -> str | None:
     """Return ``$TERMINAL_CWD`` only when it names a real directory anchor.
 
     Sentinel values (see ``_TERMINAL_CWD_SENTINELS``) and relative paths are
-    rejected â€” a relative anchor is meaningless without knowing which cwd it is
+    rejected Ã¢â‚¬â€ a relative anchor is meaningless without knowing which cwd it is
     relative to, which is exactly the ambiguity that misroutes worktree edits.
     Only an absolute, sentinel-free value is honored.
     """
@@ -178,7 +178,7 @@ def _authoritative_workspace_root(task_id: str = "default") -> str | None:
     """Best-effort absolute workspace root for divergence checks.
 
     Prefers the live terminal cwd (the directory the agent is actually working
-    in). When no terminal command has run yet â€” so the live registry is empty â€”
+    in). When no terminal command has run yet Ã¢â‚¬â€ so the live registry is empty Ã¢â‚¬â€
     falls back to a registered task/session cwd override (TUI/Desktop/ACP
     sessions register a raw-keyed cwd before any tool runs), then to a
     sentinel-free absolute ``$TERMINAL_CWD``. This is what lets a worktree or
@@ -202,7 +202,7 @@ def _resolve_base_dir(task_id: str = "default") -> Path:
 
     Resolution order:
       1. The task's live terminal cwd (the directory the agent is actually
-         working in â€” e.g. a git worktree). Authoritative when known.
+         working in Ã¢â‚¬â€ e.g. a git worktree). Authoritative when known.
       2. A registered task/session cwd override (TUI/Desktop/ACP sessions
          register a raw-keyed workspace cwd before any terminal command runs).
       3. A sentinel-free, absolute ``$TERMINAL_CWD`` (the worktree path set by
@@ -213,7 +213,7 @@ def _resolve_base_dir(task_id: str = "default") -> Path:
     The returned base is ALWAYS absolute. This is the core invariant that
     prevents the worktree-cwd divergence bug: a relative or sentinel
     ``TERMINAL_CWD`` (commonly the literal ``"."`` from a stale config) is
-    meaningless as a resolution anchor â€” left to ``Path.resolve()`` it silently
+    meaningless as a resolution anchor Ã¢â‚¬â€ left to ``Path.resolve()`` it silently
     resolves against whatever the agent PROCESS cwd happens to be (e.g. the main
     repo while the terminal is in a worktree), routing edits to the wrong
     checkout. We therefore reject sentinel/relative ``TERMINAL_CWD`` values
@@ -257,7 +257,7 @@ def _path_resolution_warning(filepath: str, resolved: Path, task_id: str = "defa
 
     The workspace root is the live terminal cwd when known, else a registered
     task/session cwd override, else a sentinel-free absolute ``$TERMINAL_CWD``
-    â€” so a worktree or Desktop session whose terminal registry is still empty
+    Ã¢â‚¬â€ so a worktree or Desktop session whose terminal registry is still empty
     (no ``cd`` run yet) is warned on the very first write.
     """
     try:
@@ -270,7 +270,7 @@ def _path_resolution_warning(filepath: str, resolved: Path, task_id: str = "defa
         # Is `resolved` inside `root`?
         try:
             resolved.relative_to(root)
-            return None  # Inside the workspace â€” expected.
+            return None  # Inside the workspace Ã¢â‚¬â€ expected.
         except ValueError:
             return (
                 f"Relative path {filepath!r} resolved to {str(resolved)!r}, which is "
@@ -340,7 +340,7 @@ def _get_zed_config_resolved() -> str | None:
         return _zed_config_resolved
     _zed_config_resolved_loaded = True
     try:
-        from zed_cli.config import get_config_path
+        from hermes_cli.config import get_config_path
         _zed_config_resolved = str(get_config_path().resolve())
     except Exception:
         try:
@@ -421,21 +421,21 @@ def _check_cross_profile_path(filepath: str, task_id: str = "default") -> str | 
 
     Three detectors run in order:
 
-    * cross-profile (#TBD) â€” writes that hit another profile's
+    * cross-profile (#TBD) Ã¢â‚¬â€ writes that hit another profile's
       ``skills/plugins/cron/memories`` directory.
-    * sandbox-mirror (#32049) â€” writes that hit the
-      ``â€¦/sandboxes/<backend>/<task>/home/.zed/â€¦`` mirror created by a
+    * sandbox-mirror (#32049) Ã¢â‚¬â€ writes that hit the
+      ``Ã¢â‚¬Â¦/sandboxes/<backend>/<task>/home/.zed/Ã¢â‚¬Â¦`` mirror created by a
       non-local terminal backend (Docker, Daytona, etc.), where the host
       Zed process never reads the mirror and the authoritative file is
       left untouched.
-    * container-mirror (#32049 follow-up) â€” writes from inside a Docker
+    * container-mirror (#32049 follow-up) Ã¢â‚¬â€ writes from inside a Docker
       container whose bind-mounted home strips the ``sandboxes/`` prefix, so
-      the agent sees a plain ``/root/.zed/â€¦`` path.
+      the agent sees a plain ``/root/.zed/Ã¢â‚¬Â¦`` path.
 
     Returns ``None`` when the write is in-scope or outside Zed scope.
-    All detectors are soft guards â€” the agent can override any by
+    All detectors are soft guards Ã¢â‚¬â€ the agent can override any by
     passing ``cross_profile=True`` to its write tool after explicit user
-    direction. Defense-in-depth, NOT a security boundary â€” the terminal
+    direction. Defense-in-depth, NOT a security boundary Ã¢â‚¬â€ the terminal
     tool runs as the same OS user and can write any of these paths
     directly. See ``agent/file_safety.classify_cross_profile_target``,
     ``classify_sandbox_mirror_target`` and ``classify_container_mirror_target``
@@ -448,7 +448,7 @@ def _check_cross_profile_path(filepath: str, task_id: str = "default") -> str | 
             get_sandbox_mirror_warning,
         )
     except Exception:
-        # Fail open on import error â€” the existing sensitive-path guard
+        # Fail open on import error Ã¢â‚¬â€ the existing sensitive-path guard
         # plus the write_denied list still apply.
         return None
 
@@ -491,11 +491,11 @@ _file_ops_cache: dict = {}
 #   "last_key":     the key of the most recent read/search call (or None)
 #   "consecutive":  how many times that exact call has been repeated in a row
 #   "read_history": set of (path, offset, limit) tuples for get_read_files_summary
-#   "dedup":        dict mapping (resolved_path, offset, limit) â†’ mtime float
+#   "dedup":        dict mapping (resolved_path, offset, limit) Ã¢â€ â€™ mtime float
 #                   Used to skip re-reads of unchanged files.  Reset on
 #                   context compression (the original content is summarised
 #                   away so the model needs the full content again).
-#   "read_timestamps": dict mapping resolved_path â†’ modification-time float
+#   "read_timestamps": dict mapping resolved_path Ã¢â€ â€™ modification-time float
 #                      recorded when the file was last read (or written) by
 #                      this task.  Used by write_file and patch to detect
 #                      external changes between the agent's read and write.
@@ -553,7 +553,7 @@ _READ_TIMESTAMPS_CAP = 1000   # dict; external-edit detection for write/patch
 _READ_DEDUP_STATUS_MESSAGE = (
     "File unchanged since last read. The content from "
     "the earlier read_file result in this conversation is "
-    "still current â€” refer to that instead of re-reading."
+    "still current Ã¢â‚¬â€ refer to that instead of re-reading."
 )
 
 
@@ -619,10 +619,10 @@ def _is_internal_file_status_text(content: str) -> bool:
     the status message as the same class of corruption.
 
     Heuristic:
-      * Strict equality (after strip) â€” the verbatim shape.
+      * Strict equality (after strip) Ã¢â‚¬â€ the verbatim shape.
       * OR the stripped content contains the full status message AND is
         short enough that the status dominates it (<=2x the message length).
-        Short, status-dominated writes can't plausibly be real files â€”
+        Short, status-dominated writes can't plausibly be real files Ã¢â‚¬â€
         legitimate docs/notes that happen to quote this internal message
         are always dramatically longer.
     """
@@ -799,7 +799,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
 
         # Device path guard
         # Block paths that would hang the process (infinite output,
-        # blocking on input).  Pure path check â€” no I/O.
+        # blocking on input).  Pure path check Ã¢â‚¬â€ no I/O.
         if _is_blocked_device(path):
             return json.dumps({
                 "error": (
@@ -810,7 +810,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
 
         _resolved = _resolve_path_for_task(path, task_id)
 
-        # â”€â”€ Structured-document extraction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # Ã¢â€â‚¬Ã¢â€â‚¬ Structured-document extraction Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         # Try before the binary-extension guard so .docx/.xlsx can render as text.
         # Malformed documents fall through to the normal path/binary guard.
         from tools.read_extract import ExtractionError, extract_document_text, is_extractable_document
@@ -856,7 +856,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
                     result_dict["content"] = redact_sensitive_text(result_dict["content"], code_file=True)
                 return json.dumps(result_dict, ensure_ascii=False)
 
-        # â”€â”€ Binary file guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # Ã¢â€â‚¬Ã¢â€â‚¬ Binary file guard Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         # Block binary files by extension (no I/O).
         if has_binary_extension(str(_resolved)):
             _ext = _resolved.suffix.lower()
@@ -867,18 +867,18 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
                 ),
             })
 
-        # â”€â”€ Zed internal path guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # Ã¢â€â‚¬Ã¢â€â‚¬ Zed internal path guard Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         # Prevent prompt injection via catalog or hub metadata files,
         # and block credential stores under ZED_HOME.  Pass the
         # already-resolved path so a relative-path read against
         # TERMINAL_CWD == ZED_HOME (e.g. "auth.json") still hits the
-        # denylist â€” get_read_block_error's own resolve() runs against
+        # denylist Ã¢â‚¬â€ get_read_block_error's own resolve() runs against
         # the Python process cwd, which can differ.
         block_error = get_read_block_error(str(_resolved))
         if block_error:
             return json.dumps({"error": block_error})
 
-        # â”€â”€ Dedup check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # Ã¢â€â‚¬Ã¢â€â‚¬ Dedup check Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         # If we already read this exact (path, offset, limit) and the
         # file hasn't been modified since, return a lightweight stub
         # instead of re-sending the same content.  Saves context tokens.
@@ -919,7 +919,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
                                 f"BLOCKED: You have called read_file on this "
                                 f"exact region {hits + 1} times and the file "
                                 "has NOT changed. STOP calling read_file for "
-                                "this path â€” the content from your earlier "
+                                "this path Ã¢â‚¬â€ the content from your earlier "
                                 "read_file result in this conversation is "
                                 "still current. Proceed with your task using "
                                 "the information you already have."
@@ -936,14 +936,14 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
                         "content_returned": False,
                     }, ensure_ascii=False)
             except OSError:
-                pass  # stat failed â€” fall through to full read
+                pass  # stat failed Ã¢â‚¬â€ fall through to full read
 
-        # â”€â”€ Perform the read â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # Ã¢â€â‚¬Ã¢â€â‚¬ Perform the read Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         file_ops = _get_file_ops(task_id)
         result = file_ops.read_file(path, offset, limit)
         result_dict = result.to_dict()
 
-        # â”€â”€ Character-count guard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # Ã¢â€â‚¬Ã¢â€â‚¬ Character-count guard Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         # We're model-agnostic so we can't count tokens; characters are
         # the best proxy we have.  If the read produced an unreasonable
         # amount of content, reject it and tell the model to narrow down.
@@ -967,7 +967,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
                 "file_size": file_size,
             }, ensure_ascii=False)
 
-        # â”€â”€ Redact secrets (after guard check to skip oversized content) â”€â”€
+        # Ã¢â€â‚¬Ã¢â€â‚¬ Redact secrets (after guard check to skip oversized content) Ã¢â€â‚¬Ã¢â€â‚¬
         if result.content:
             result.content = redact_sensitive_text(result.content, code_file=True)
             result_dict["content"] = result.content
@@ -983,7 +983,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
                 "to keep context usage efficient."
             ))
 
-        # â”€â”€ Track for consecutive-loop detection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # Ã¢â€â‚¬Ã¢â€â‚¬ Track for consecutive-loop detection Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         read_key = ("read", path, offset, limit)
         with _read_tracker_lock:
             # Ensure "dedup" / "dedup_hits" keys exist (backward compat with
@@ -992,7 +992,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
                 task_data["dedup"] = {}
             if "dedup_hits" not in task_data:
                 task_data["dedup_hits"] = {}
-            # Real read succeeded â€” this key is no longer in a stub-loop, so
+            # Real read succeeded Ã¢â‚¬â€ this key is no longer in a stub-loop, so
             # reset its hit counter.  (File either changed or stat failed
             # earlier and we fell through.)
             task_data["dedup_hits"].pop(dedup_key, None)
@@ -1013,7 +1013,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
                 task_data["dedup"][dedup_key] = _mtime_now
                 task_data.setdefault("read_timestamps", {})[resolved_str] = _mtime_now
             except OSError:
-                pass  # Can't stat â€” skip tracking for this entry
+                pass  # Can't stat Ã¢â‚¬â€ skip tracking for this entry
 
             # Bound the per-task containers so a long CLI session doesn't
             # accumulate megabytes of dict/set state.  See _cap_read_tracker_data.
@@ -1060,7 +1060,7 @@ def read_file_tool(path: str, offset: int = 1, limit: int = 500, task_id: str = 
 def reset_file_dedup(task_id: str = None):
     """Clear the deduplication cache for file reads.
 
-    Called after context compression â€” the original read content has been
+    Called after context compression Ã¢â‚¬â€ the original read content has been
     summarised away, so the model needs the full content if it reads the
     same file again.  Without this, reads after compression would return
     a "file unchanged" stub pointing at content that no longer exists in
@@ -1089,7 +1089,7 @@ def notify_other_tool_call(task_id: str = "default"):
 
     Called by the tool dispatcher (model_tools.py) whenever a tool OTHER
     than read_file / search_files is executed.  This ensures we only warn
-    or block on *truly consecutive* repeated reads â€” if the agent does
+    or block on *truly consecutive* repeated reads Ã¢â‚¬â€ if the agent does
     anything else in between (write, patch, terminal, etc.) the counter
     resets and the next read is treated as fresh.
     """
@@ -1114,7 +1114,7 @@ def _invalidate_dedup_for_path(filepath: str, task_id: str) -> None:
     combinations for the written path because any cached range could now
     be stale.
 
-    Must be called with ``_read_tracker_lock`` **not** held â€” acquires it
+    Must be called with ``_read_tracker_lock`` **not** held Ã¢â‚¬â€ acquires it
     internally.
     """
     try:
@@ -1138,7 +1138,7 @@ def _update_read_timestamp(filepath: str, task_id: str) -> None:
     """Record the file's current modification time after a successful write.
 
     Called after write_file and patch so that consecutive edits by the
-    same task don't trigger false staleness warnings â€” each write
+    same task don't trigger false staleness warnings Ã¢â‚¬â€ each write
     refreshes the stored timestamp to match the file's new state.
 
     Also invalidates the dedup cache for the written path so that
@@ -1163,7 +1163,7 @@ def _check_file_staleness(filepath: str, task_id: str) -> str | None:
 
     Returns a warning string if the file is stale (mtime changed since
     the last read_file call for this task), or None if the file is fresh
-    or was never read.  Does not block â€” the write still proceeds.
+    or was never read.  Does not block Ã¢â‚¬â€ the write still proceeds.
     """
     try:
         resolved = str(_resolve_path_for_task(filepath, task_id))
@@ -1175,11 +1175,11 @@ def _check_file_staleness(filepath: str, task_id: str) -> str | None:
             return None
         read_mtime = task_data.get("read_timestamps", {}).get(resolved)
     if read_mtime is None:
-        return None  # File was never read â€” nothing to compare against
+        return None  # File was never read Ã¢â‚¬â€ nothing to compare against
     try:
         current_mtime = os.path.getmtime(resolved)
     except OSError:
-        return None  # Can't stat â€” file may have been deleted, let write handle it
+        return None  # Can't stat Ã¢â‚¬â€ file may have been deleted, let write handle it
     if current_mtime != read_mtime:
         return (
             f"Warning: {filepath} was modified since you last read it "
@@ -1196,7 +1196,7 @@ def write_file_tool(path: str, content: str, task_id: str = "default",
     ``cross_profile`` opts out of the soft cross-Zed-profile guard. The
     guard fires only on writes that land in another profile's
     skills/plugins/cron/memories directory; everything else is unaffected.
-    Pass ``True`` after explicit user direction â€” same shape as ``force``
+    Pass ``True`` after explicit user direction Ã¢â‚¬â€ same shape as ``force``
     on the terminal tool.
     """
     sensitive_err = _check_sensitive_path(path, task_id)
@@ -1213,7 +1213,7 @@ def write_file_tool(path: str, content: str, task_id: str = "default",
         )
     try:
         # Resolve once for the registry lock + stale check.  Failures here
-        # fall back to the legacy path â€” write proceeds, per-task staleness
+        # fall back to the legacy path Ã¢â‚¬â€ write proceeds, per-task staleness
         # check below still runs.
         try:
             _resolved = str(_resolve_path_for_task(path, task_id))
@@ -1230,12 +1230,12 @@ def write_file_tool(path: str, content: str, task_id: str = "default",
             _update_read_timestamp(path, task_id)
             return json.dumps(result_dict, ensure_ascii=False)
 
-        # Serialize the readâ†’modifyâ†’write region per-path so concurrent
+        # Serialize the readÃ¢â€ â€™modifyÃ¢â€ â€™write region per-path so concurrent
         # subagents can't interleave on the same file.  Different paths
         # remain fully parallel.
         with file_state.lock_path(_resolved):
             # Cross-agent staleness wins over per-task warning when both
-            # fire â€” its message names the sibling subagent.
+            # fire Ã¢â‚¬â€ its message names the sibling subagent.
             cross_warning = file_state.check_stale(task_id, _resolved)
             stale_warning = _check_file_staleness(path, task_id)
             # Workspace-divergence warning: relative path resolving outside the
@@ -1286,7 +1286,7 @@ def patch_tool(mode: str = "replace", path: str = None, old_string: str = None,
         for _m in _re.finditer(r'^\*\*\*\s+(?:Update|Add|Delete)\s+File:\s*(.+)$', patch, _re.MULTILINE):
             v4a_path = _m.group(1).strip()
             # V4A path headers come from patch CONTENT, not the explicit
-            # ``path=`` arg â€” so they're more attacker-influenceable (skill
+            # ``path=`` arg Ã¢â‚¬â€ so they're more attacker-influenceable (skill
             # content, web extract, prompt injection). Reject ``..`` traversal
             # in V4A headers: a legitimate multi-file patch from a single cwd
             # can always emit absolute paths or paths relative to the agent's
@@ -1310,7 +1310,7 @@ def patch_tool(mode: str = "replace", path: str = None, old_string: str = None,
                 return tool_error(cross_warning)
     try:
         # Resolve paths for locking.  Ordered + deduplicated so concurrent
-        # callers lock in the same order â€” prevents deadlock on overlapping
+        # callers lock in the same order Ã¢â‚¬â€ prevents deadlock on overlapping
         # multi-file V4A patches.
         _resolved_paths: list[str] = []
         _seen: set[str] = set()
@@ -1332,7 +1332,7 @@ def patch_tool(mode: str = "replace", path: str = None, old_string: str = None,
             for _r in _resolved_paths:
                 _locks.enter_context(file_state.lock_path(_r))
 
-            # Collect warnings â€” cross-agent registry first (names sibling),
+            # Collect warnings Ã¢â‚¬â€ cross-agent registry first (names sibling),
             # then per-task tracker as a fallback.
             stale_warnings: list[str] = []
             _path_to_resolved: dict[str, str] = {}
@@ -1359,7 +1359,7 @@ def patch_tool(mode: str = "replace", path: str = None, old_string: str = None,
                 if old_string is None or new_string is None:
                     return tool_error("old_string and new_string required")
                 # Pass the resolved ABSOLUTE path to the shell layer so it
-                # operates on the exact file the tool layer resolved â€” the
+                # operates on the exact file the tool layer resolved Ã¢â‚¬â€ the
                 # shell's own cwd may differ (worktree-cwd bug), and a relative
                 # path would let the two layers disagree about which file is
                 # being edited.
@@ -1398,7 +1398,7 @@ def patch_tool(mode: str = "replace", path: str = None, old_string: str = None,
                 _reset_patch_failures(task_id, [
                     _r for _r in (_path_to_resolved.get(_p) for _p in _paths_to_check) if _r
                 ])
-        # Hint when old_string not found â€” saves iterations where the agent
+        # Hint when old_string not found Ã¢â‚¬â€ saves iterations where the agent
         # retries with stale content instead of re-reading the file.
         # Suppressed when patch_replace already attached a rich "Did you mean?"
         # snippet (which is strictly more useful than the generic hint).
@@ -1414,7 +1414,7 @@ def patch_tool(mode: str = "replace", path: str = None, old_string: str = None,
 
             if failure_count >= 3:
                 # Escalating hint after multiple consecutive failures on the
-                # same path.  Most common cause is a stale view of the file â€”
+                # same path.  Most common cause is a stale view of the file Ã¢â‚¬â€
                 # the model is retrying with the same old_string against
                 # content that has since changed.  Surface the failure count
                 # so the model recognises it's in a loop and breaks out by
@@ -1498,7 +1498,7 @@ def search_tool(pattern: str, target: str = "content", path: str = ".",
             )
 
         result_json = json.dumps(result_dict, ensure_ascii=False)
-        # Hint when results were truncated â€” explicit next offset is clearer
+        # Hint when results were truncated Ã¢â‚¬â€ explicit next offset is clearer
         # than relying on the model to infer it from total_count vs match count.
         if result_dict.get("truncated"):
             next_offset = offset + limit
@@ -1523,7 +1523,7 @@ def _check_file_reqs():
 
 READ_FILE_SCHEMA = {
     "name": "read_file",
-    "description": "Read a text file with line numbers and pagination. Use this instead of cat/head/tail in terminal. Output format: 'LINE_NUM|CONTENT'. Suggests similar filenames if not found. Use offset and limit for large files. Reads exceeding ~100K characters are rejected; use offset and limit to read specific sections of large files. Jupyter notebooks (.ipynb), Word documents (.docx), and Excel workbooks (.xlsx) are auto-extracted to readable text. NOTE: Cannot read images or other binary files â€” use vision_analyze for images.",
+    "description": "Read a text file with line numbers and pagination. Use this instead of cat/head/tail in terminal. Output format: 'LINE_NUM|CONTENT'. Suggests similar filenames if not found. Use offset and limit for large files. Reads exceeding ~100K characters are rejected; use offset and limit to read specific sections of large files. Jupyter notebooks (.ipynb), Word documents (.docx), and Excel workbooks (.xlsx) are auto-extracted to readable text. NOTE: Cannot read images or other binary files Ã¢â‚¬â€ use vision_analyze for images.",
     "parameters": {
         "type": "object",
         "properties": {
@@ -1537,7 +1537,7 @@ READ_FILE_SCHEMA = {
 
 WRITE_FILE_SCHEMA = {
     "name": "write_file",
-    "description": "Write content to a file, completely replacing existing content. Use this instead of echo/cat heredoc in terminal. Creates parent directories automatically. OVERWRITES the entire file â€” use 'patch' for targeted edits. Auto-runs syntax checks on .py/.json/.yaml/.toml and other linted languages; only NEW errors introduced by this write are surfaced (pre-existing errors are filtered out).",
+    "description": "Write content to a file, completely replacing existing content. Use this instead of echo/cat heredoc in terminal. Creates parent directories automatically. OVERWRITES the entire file Ã¢â‚¬â€ use 'patch' for targeted edits. Auto-runs syntax checks on .py/.json/.yaml/.toml and other linted languages; only NEW errors introduced by this write are surfaced (pre-existing errors are filtered out).",
     "parameters": {
         "type": "object",
         "properties": {
@@ -1545,7 +1545,7 @@ WRITE_FILE_SCHEMA = {
             "content": {"type": "string", "description": "Complete content to write to the file"},
             "cross_profile": {
                 "type": "boolean",
-                "description": "Opt out of the cross-profile soft guard. Defaults to false. Set true ONLY after explicit user direction to edit another Zed profile's skills/plugins/cron/memories â€” by default these writes are blocked with a warning because they affect a different profile than the one this session is running under.",
+                "description": "Opt out of the cross-profile soft guard. Defaults to false. Set true ONLY after explicit user direction to edit another Zed profile's skills/plugins/cron/memories Ã¢â‚¬â€ by default these writes are blocked with a warning because they affect a different profile than the one this session is running under.",
                 "default": False,
             },
         },
@@ -1606,7 +1606,7 @@ PATCH_SCHEMA = {
 
 SEARCH_FILES_SCHEMA = {
     "name": "search_files",
-    "description": "Search file contents or find files by name. Use this instead of grep/rg/find/ls in terminal. Ripgrep-backed, faster than shell equivalents.\n\nContent search (target='content'): Regex search inside files. Output modes: full matches with line numbers, file paths only, or match counts.\n\nFile search (target='files'): Find files by glob pattern (e.g., '*.py', '*config*'). Also use this instead of ls â€” results sorted by modification time.",
+    "description": "Search file contents or find files by name. Use this instead of grep/rg/find/ls in terminal. Ripgrep-backed, faster than shell equivalents.\n\nContent search (target='content'): Regex search inside files. Output modes: full matches with line numbers, file paths only, or match counts.\n\nFile search (target='files'): Find files by glob pattern (e.g., '*.py', '*config*'). Also use this instead of ls Ã¢â‚¬â€ results sorted by modification time.",
     "parameters": {
         "type": "object",
         "properties": {
@@ -1639,7 +1639,7 @@ def _handle_write_file(args, **kw):
     if "content" not in args:
         return tool_error(
             "write_file: missing required field 'content'. The tool call included a "
-            "path but no content argument â€” this is almost always a dropped-arg bug "
+            "path but no content argument Ã¢â‚¬â€ this is almost always a dropped-arg bug "
             "under context pressure. Re-emit the tool call with the full content "
             "payload, or use execute_code with zed_tools.write_file() for very "
             "large files."
@@ -1676,7 +1676,8 @@ def _handle_search_files(args, **kw):
         output_mode=args.get("output_mode", "content"), context=args.get("context", 0), task_id=tid)
 
 
-registry.register(name="read_file", toolset="file", schema=READ_FILE_SCHEMA, handler=_handle_read_file, check_fn=_check_file_reqs, emoji="ðŸ“–", max_result_size_chars=100_000)
-registry.register(name="write_file", toolset="file", schema=WRITE_FILE_SCHEMA, handler=_handle_write_file, check_fn=_check_file_reqs, emoji="âœï¸", max_result_size_chars=100_000)
-registry.register(name="patch", toolset="file", schema=PATCH_SCHEMA, handler=_handle_patch, check_fn=_check_file_reqs, emoji="ðŸ”§", max_result_size_chars=100_000)
-registry.register(name="search_files", toolset="file", schema=SEARCH_FILES_SCHEMA, handler=_handle_search_files, check_fn=_check_file_reqs, emoji="ðŸ”Ž", max_result_size_chars=100_000)
+registry.register(name="read_file", toolset="file", schema=READ_FILE_SCHEMA, handler=_handle_read_file, check_fn=_check_file_reqs, emoji="Ã°Å¸â€œâ€“", max_result_size_chars=100_000)
+registry.register(name="write_file", toolset="file", schema=WRITE_FILE_SCHEMA, handler=_handle_write_file, check_fn=_check_file_reqs, emoji="Ã¢Å“ÂÃ¯Â¸Â", max_result_size_chars=100_000)
+registry.register(name="patch", toolset="file", schema=PATCH_SCHEMA, handler=_handle_patch, check_fn=_check_file_reqs, emoji="Ã°Å¸â€Â§", max_result_size_chars=100_000)
+registry.register(name="search_files", toolset="file", schema=SEARCH_FILES_SCHEMA, handler=_handle_search_files, check_fn=_check_file_reqs, emoji="Ã°Å¸â€Å½", max_result_size_chars=100_000)
+

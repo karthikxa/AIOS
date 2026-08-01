@@ -311,3 +311,4 @@ class TestEntryPointsImportBootstrap:
             f"configured before anything else initializes.  Move the "
             f"'import zed_bootstrap' line to be the first import."
         )
+

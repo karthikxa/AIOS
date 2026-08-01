@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-from zed_cli.config import (
+from hermes_cli.config import (
     check_config_version,
     get_config_path,
     get_env_path,
@@ -65,3 +65,4 @@ if __name__ == "__main__":
     except Exception as exc:
         print(f"[config-migrate] ERROR: {exc}", file=sys.stderr)
         raise SystemExit(1)
+

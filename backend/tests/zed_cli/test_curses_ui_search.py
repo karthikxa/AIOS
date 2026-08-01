@@ -1,4 +1,4 @@
-﻿from zed_cli.curses_ui import (
+﻿from hermes_cli.curses_ui import (
     _SearchState,
     _filter_indices,
     _handle_active_search_key,
@@ -66,3 +66,4 @@ def test_active_search_consumes_query_editing_and_confirm_keys():
         True,
         False,
     )
+

@@ -1658,7 +1658,7 @@ class TestDefaultInteractionDispatch:
         zed_home = tmp_path / "zed_home"
         zed_home.mkdir()
         monkeypatch.setattr(
-            "zed_constants.get_zed_home",
+            "hermes_constants.get_zed_home",
             lambda: zed_home,
         )
 
@@ -1679,7 +1679,7 @@ class TestDefaultInteractionDispatch:
         zed_home = tmp_path / "zed_home"
         zed_home.mkdir()
         monkeypatch.setattr(
-            "zed_constants.get_zed_home",
+            "hermes_constants.get_zed_home",
             lambda: zed_home,
         )
         from gateway.platforms.qqbot.keyboards import parse_interaction_event
@@ -2220,3 +2220,4 @@ class TestReadEventsClosedWsGuard:
         adapter._ws = None
         with pytest.raises(RuntimeError):
             asyncio.run(adapter._read_events())
+

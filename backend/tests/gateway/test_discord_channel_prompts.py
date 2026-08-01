@@ -231,7 +231,7 @@ async def test_run_agent_appends_channel_prompt_to_ephemeral_system_prompt(monke
         },
     )
 
-    import zed_cli.tools_config as tools_config
+    import hermes_cli.tools_config as tools_config
 
     monkeypatch.setattr(tools_config, "_get_platform_tools", lambda user_config, platform_key: {"core"})
 
@@ -256,3 +256,4 @@ async def test_run_agent_appends_channel_prompt_to_ephemeral_system_prompt(monke
     assert _CapturingAgent.last_init["ephemeral_system_prompt"] == (
         "Context prompt\n\nChannel prompt\n\nGlobal prompt"
     )
+

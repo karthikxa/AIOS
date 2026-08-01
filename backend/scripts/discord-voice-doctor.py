@@ -176,7 +176,7 @@ def check_env_vars():
 
     # Load .env
     try:
-        from zed_cli.env_loader import load_zed_dotenv
+        from hermes_cli.env_loader import load_zed_dotenv
 
         load_zed_dotenv(
             zed_home=ENV_FILE.parent,
@@ -394,3 +394,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

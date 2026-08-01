@@ -29,7 +29,7 @@ def store(tmp_path, monkeypatch):
     at zed_state import time, before pytest's ZED_HOME monkeypatch
     fires â€” the autouse fixture's ZED_HOME override doesn't help here.)
     """
-    import zed_state
+    import hermes_state
     monkeypatch.setattr(zed_state, "DEFAULT_DB_PATH", tmp_path / "state.db")
     config = GatewayConfig()
     s = SessionStore(sessions_dir=tmp_path, config=config)
@@ -194,3 +194,4 @@ class TestDMThreadIsolationCrossPlatform:
 
         thread_transcript = store.load_transcript(thread_entry.session_id)
         assert len(thread_transcript) == 0
+

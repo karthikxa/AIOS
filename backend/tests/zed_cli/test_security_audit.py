@@ -1,4 +1,4 @@
-﻿"""Unit tests for zed_cli.security_audit â€” parsers + OSV plumbing.
+﻿"""Unit tests for hermes_cli.security_audit â€” parsers + OSV plumbing.
 
 These never hit the live OSV API; HTTP is monkeypatched. The live-call path
 is exercised in the E2E test embedded in PR validation, not here.
@@ -11,7 +11,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 
-from zed_cli import security_audit as sa
+from hermes_cli import security_audit as sa
 
 
 # â”€â”€â”€ Parsers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -296,3 +296,4 @@ class TestExitCodes:
         assert data["finding_count"] == 1
         assert data["findings"][0]["severity"] == "HIGH"
         assert data["findings"][0]["fixed_versions"] == ["1.1"]
+

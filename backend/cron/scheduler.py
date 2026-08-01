@@ -38,9 +38,9 @@ from typing import List, Optional
 # the module) fail with ModuleNotFoundError for zed_time et al.
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from zed_constants import get_zed_home
-from zed_cli._subprocess_compat import windows_hide_flags
-from zed_cli.config import load_config, _expand_env_vars
+from hermes_constants import get_zed_home
+from hermes_cli._subprocess_compat import windows_hide_flags
+from hermes_cli.config import load_config, _expand_env_vars
 from zed_time import now as _zed_now
 
 logger = logging.getLogger(__name__)
@@ -156,7 +156,7 @@ def _resolve_cron_enabled_toolsets(job: dict, cfg: dict) -> list[str] | None:
     if per_job:
         return per_job
     try:
-        from zed_cli.tools_config import _get_platform_tools  # lazy: avoid heavy import at cron module load
+        from hermes_cli.tools_config import _get_platform_tools  # lazy: avoid heavy import at cron module load
         return sorted(_get_platform_tools(cfg or {}, "cron"))
     except Exception as exc:
         logger.warning(
@@ -343,7 +343,7 @@ def _plugin_cron_env_var(platform_name: str) -> str:
     support without editing this module.
     """
     try:
-        from zed_cli.plugins import discover_plugins
+        from hermes_cli.plugins import discover_plugins
         discover_plugins()  # idempotent
         from gateway.platform_registry import platform_registry
         entry = platform_registry.get(platform_name.lower())
@@ -427,7 +427,7 @@ def _iter_home_target_platforms():
     for name in _HOME_TARGET_ENV_VARS:
         yield name
     try:
-        from zed_cli.plugins import discover_plugins
+        from hermes_cli.plugins import discover_plugins
         discover_plugins()  # idempotent
         from gateway.platform_registry import platform_registry
         for entry in platform_registry.plugin_entries():
@@ -1503,7 +1503,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
     # and discoverable via session_search (same pattern as gateway/run.py).
     _session_db = None
     try:
-        from zed_state import SessionDB
+        from hermes_state import SessionDB
         _session_db = SessionDB()
     except Exception as e:
         logger.debug("Job '%s': SQLite session store not available: %s", job.get("id", "?"), e)
@@ -1667,7 +1667,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
                 # builds its own dict, so overlay managed values via the shared
                 # helper (fail-open, no-op when no managed scope).
                 try:
-                    from zed_cli import managed_scope
+                    from hermes_cli import managed_scope
                     _cfg = managed_scope.apply_managed_overlay(_cfg)
                 except Exception:
                     pass
@@ -1683,7 +1683,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
 
         # Apply IPv4 preference if configured.
         try:
-            from zed_constants import apply_ipv4_preference
+            from hermes_constants import apply_ipv4_preference
             _net_cfg = _cfg.get("network", {})
             if isinstance(_net_cfg, dict) and _net_cfg.get("force_ipv4"):
                 apply_ipv4_preference(force=True)
@@ -1691,7 +1691,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
             pass
 
         # Reasoning config from config.yaml
-        from zed_constants import parse_reasoning_effort
+        from hermes_constants import parse_reasoning_effort
         effort = str(_cfg.get("agent", {}).get("reasoning_effort", "")).strip()
         reasoning_config = parse_reasoning_effort(effort)
 
@@ -1725,11 +1725,11 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
         # Provider routing
         pr = _cfg.get("provider_routing", {})
 
-        from zed_cli.runtime_provider import (
+        from hermes_cli.runtime_provider import (
             resolve_runtime_provider,
             format_runtime_provider_error,
         )
-        from zed_cli.auth import AuthError
+        from hermes_cli.auth import AuthError
         try:
             # Do not inject ZED_INFERENCE_PROVIDER here. resolve_runtime_provider()
             # already prefers persisted config over stale shell/env overrides when
@@ -2334,3 +2334,4 @@ def tick(verbose: bool = True, adapters=None, loop=None, sync: bool = True) -> i
 
 if __name__ == "__main__":
     tick(verbose=True)
+

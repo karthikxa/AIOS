@@ -62,7 +62,7 @@ def zed_auth_only_env(tmp_path, monkeypatch):
 
 def test_normal_path_still_works(zed_auth_only_env):
     """openai-codex appears when tokens are already in Zed auth store."""
-    from zed_cli.model_switch import list_authenticated_providers
+    from hermes_cli.model_switch import list_authenticated_providers
 
     providers = list_authenticated_providers(
         current_provider="openai-codex",
@@ -74,7 +74,7 @@ def test_normal_path_still_works(zed_auth_only_env):
 
 def test_codex_picker_uses_live_codex_catalog(zed_auth_only_env, tmp_path, monkeypatch):
     """The gateway /model picker should surface Codex CLI-only listed models."""
-    from zed_cli.model_switch import list_authenticated_providers
+    from hermes_cli.model_switch import list_authenticated_providers
 
     codex_home = tmp_path / "codex-home"
     codex_home.mkdir()
@@ -89,7 +89,7 @@ def test_codex_picker_uses_live_codex_catalog(zed_auth_only_env, tmp_path, monke
     # 10s HTTP probe to chatgpt.com/backend-api/codex/models which is both
     # slow and non-deterministic in CI/sandboxed environments.
     monkeypatch.setattr(
-        "zed_cli.codex_models._fetch_models_from_api",
+        "hermes_cli.codex_models._fetch_models_from_api",
         lambda access_token: [],
     )
 
@@ -145,7 +145,7 @@ def claude_code_only_env(tmp_path, monkeypatch):
 
 def test_claude_code_file_detected_by_model_picker(claude_code_only_env):
     """anthropic should appear when credentials only exist in ~/.claude/.credentials.json."""
-    from zed_cli.model_switch import list_authenticated_providers
+    from hermes_cli.model_switch import list_authenticated_providers
 
     providers = list_authenticated_providers(
         current_provider="anthropic",
@@ -180,7 +180,7 @@ def test_no_codex_when_no_credentials(tmp_path, monkeypatch):
     ]:
         monkeypatch.delenv(var, raising=False)
 
-    from zed_cli.model_switch import list_authenticated_providers
+    from hermes_cli.model_switch import list_authenticated_providers
 
     providers = list_authenticated_providers(
         current_provider="openrouter",
@@ -190,3 +190,4 @@ def test_no_codex_when_no_credentials(tmp_path, monkeypatch):
     assert "openai-codex" not in slugs, (
         "openai-codex should not appear without any credentials"
     )
+

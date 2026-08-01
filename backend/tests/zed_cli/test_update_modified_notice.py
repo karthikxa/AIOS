@@ -17,7 +17,7 @@ keeps holding if the wording is reworded, as long as both sites stay in sync.
 import re
 from pathlib import Path
 
-import zed_cli.main as main_mod
+import hermes_cli.main as main_mod
 
 
 _COUNT_RE = re.compile(r"user-modified \(kept\)")
@@ -51,3 +51,4 @@ def test_every_user_modified_notice_points_at_list_modified():
             "`zed skills list-modified` within the following lines â€” the "
             "update paths have drifted apart again:\n" + window
         )
+

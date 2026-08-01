@@ -15,7 +15,7 @@ from __future__ import annotations
 
 
 def test_build_apikey_providers_list_skips_dedicated_check_providers():
-    from zed_cli import doctor
+    from hermes_cli import doctor
 
     # Force a rebuild â€” the module caches the list on first call.
     doctor._APIKEY_PROVIDERS_CACHE = None
@@ -40,7 +40,7 @@ def test_build_apikey_providers_list_skips_dedicated_check_providers():
 
 def test_build_apikey_providers_list_includes_non_dedicated_providers():
     """Sanity guard: the skip-set must not strip every provider."""
-    from zed_cli import doctor
+    from hermes_cli import doctor
 
     doctor._APIKEY_PROVIDERS_CACHE = None
     entries = doctor._build_apikey_providers_list()
@@ -48,3 +48,4 @@ def test_build_apikey_providers_list_includes_non_dedicated_providers():
     names = {entry[0] for entry in entries}
     assert "DeepSeek" in names
     assert "Z.AI / GLM" in names
+

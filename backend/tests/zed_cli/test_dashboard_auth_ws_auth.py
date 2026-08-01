@@ -25,15 +25,15 @@ import pytest
 pytestmark = pytest.mark.xdist_group("dashboard_auth_app_state")
 from fastapi.testclient import TestClient
 
-from zed_cli import web_server
-from zed_cli.dashboard_auth import clear_providers, register_provider
-from zed_cli.dashboard_auth.ws_tickets import (
+from hermes_cli import web_server
+from hermes_cli.dashboard_auth import clear_providers, register_provider
+from hermes_cli.dashboard_auth.ws_tickets import (
     _reset_for_tests,
     consume_internal_credential,
     internal_ws_credential,
     mint_ticket,
 )
-from tests.zed_cli.conftest_dashboard_auth import StubAuthProvider
+from tests.hermes_cli.conftest_dashboard_auth import StubAuthProvider
 
 
 # ---------------------------------------------------------------------------
@@ -261,7 +261,7 @@ class TestWsAuthOkGated:
     def test_rejection_audit_logs(self, gated_app, tmp_path, monkeypatch):
         # Point the audit log at a tmp dir so we can read what got written.
         monkeypatch.setenv("ZED_HOME", str(tmp_path))
-        from zed_cli.dashboard_auth import audit as audit_mod
+        from hermes_cli.dashboard_auth import audit as audit_mod
 
         # The log path is resolved lazily on the first audit_log() call;
         # bust any cached handler so it re-resolves.
@@ -567,3 +567,4 @@ class TestGatewayWsUrl:
             assert web_server._build_gateway_ws_url() is None
         finally:
             web_server.app.state.bound_host = "fly-app.fly.dev"
+

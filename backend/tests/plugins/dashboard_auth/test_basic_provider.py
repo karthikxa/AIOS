@@ -14,7 +14,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import plugins.dashboard_auth.basic as basic_plugin
-from zed_cli.dashboard_auth import (
+from hermes_cli.dashboard_auth import (
     InvalidCredentialsError,
     RefreshExpiredError,
     assert_protocol_compliance,
@@ -244,3 +244,4 @@ class TestRegister:
         p2 = ctx2.register_dashboard_auth_provider.call_args.args[0]
         s = p1.complete_password_login(username="admin", password="hunter2")
         assert p2.verify_session(access_token=s.access_token) is not None
+

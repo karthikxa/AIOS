@@ -30,7 +30,7 @@ import tempfile
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from zed_constants import get_zed_home
+from hermes_constants import get_zed_home
 from typing import Dict, Any, List, Optional
 
 from utils import atomic_replace
@@ -1013,6 +1013,7 @@ registry.register(
     check_fn=check_memory_requirements,
     emoji="ðŸ§ ",
 )
+
 
 
 
