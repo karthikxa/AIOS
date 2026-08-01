@@ -19,6 +19,10 @@ import ttsRouter from './routes/tts.js';
 import imageRouter from './routes/image.js';
 import pdfRouter from './routes/pdf.js';
 import cronRouter from './routes/cron.js';
+import dataUtilsRouter from './routes/data-utils.js';
+import videoRouter from './routes/video.js';
+import browserRouter from './routes/browser.js';
+import mcpRouter from './routes/mcp.js';
 import { requireAuth } from './middleware/requireAuth.js';
 import { createProxyRateLimiter } from './middleware/rateLimit.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -88,6 +92,10 @@ export function createApp() {
   app.use('/api/image', requireAuth, imageRouter);
   app.use('/api/pdf', requireAuth, pdfRouter);
   app.use('/api/cron', requireAuth, cronRouter);
+  app.use('/api/utils', requireAuth, dataUtilsRouter);
+  app.use('/api/video', requireAuth, videoRouter);
+  app.use('/api/browser', requireAuth, browserRouter);
+  app.use('/api/mcp', requireAuth, mcpRouter);
 
   // OpenAI-compatible proxy. Per-IP rate limiting (#35 item #6) runs first so
   // it throttles unauthenticated brute-force / flood attempts before any
