@@ -925,9 +925,9 @@ def _auto_configure_env():
         changes.append(f"ZED_DASHBOARD_API_KEY={api_key}")
         logger.info("Auto-generated dashboard API key (first-run)")
 
-    # 3. Desktop Agent URL — default to local
+    # 3. Desktop Agent URL — default to local CUA Ubuntu agent
     if not os.environ.get("DESKTOP_AGENT_URL"):
-        os.environ["DESKTOP_AGENT_URL"] = "http://localhost:4000"
+        os.environ["DESKTOP_AGENT_URL"] = "http://localhost:6901"
 
     # 4. ZED_HOME — default to Hermes home location
     if not os.environ.get("ZED_HOME"):
@@ -1424,7 +1424,7 @@ def list_cron_jobs():
 @app.get("/api/desktop/status")
 async def desktop_status_proxy():
     try:
-        r = await _http_client.get("http://127.0.0.1:4000/health", timeout=3.0)
+        r = await _http_client.get("http://127.0.0.1:6901/health", timeout=3.0)
         if r.status_code == 200:
             return {"running": True, **r.json()}
     except Exception:
@@ -1434,7 +1434,7 @@ async def desktop_status_proxy():
 @app.get("/api/desktop/stream.mjpeg")
 async def desktop_stream_proxy():
     try:
-        req = _http_client.build_request("GET", "http://127.0.0.1:4000/stream.mjpeg")
+        req = _http_client.build_request("GET", "http://127.0.0.1:6901/stream.mjpeg")
         res = await _http_client.send(req, stream=True)
         return StreamingResponse(res.aiter_raw(), media_type="multipart/x-mixed-replace; boundary=frame", headers={"Cache-Control": "no-store"})
     except Exception as e:
@@ -3292,8 +3292,8 @@ async def stop_chat(session_id: str):
     raise HTTPException(status_code=404, detail="Session not found")
 
 
-# ── Computer Desktop Agent (proxy to standalone agent at port 4000) ─────────
-DESKTOP_AGENT_URL = os.getenv("DESKTOP_AGENT_URL", "http://localhost:4000")
+# ── Computer Desktop Agent (proxy to standalone agent at port 6901) ─────────
+DESKTOP_AGENT_URL = os.getenv("DESKTOP_AGENT_URL", "http://localhost:6901")
 
 @app.post("/api/desktop/task")
 async def desktop_task(request: Request):
@@ -4077,7 +4077,7 @@ async def proxy_kasmvnc(path: str, request: Request):
             )
 
 
-# ── MJPEG Stream Proxy (single-port: /api/desktop/stream.mjpeg → localhost:4000) ──
+# ── MJPEG Stream Proxy (single-port: /api/desktop/stream.mjpeg → localhost:6901) ──
 @app.get("/api/desktop/stream.mjpeg")
 async def proxy_desktop_mjpeg():
     """Proxy the live MJPEG screenshot stream from the desktop agent."""
