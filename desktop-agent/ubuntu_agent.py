@@ -110,21 +110,28 @@ async def _ensure_sandbox() -> Sandbox:
         if _sandbox is None:
             logger.info("[Sandbox] Creating Ubuntu 24.04 desktop sandbox...")
 
-            # Auto-detect Docker; fall back to QEMU VM if unavailable
+            # Smart mode selection: Docker (fast, small download) → QEMU (medium download, no Docker)
             use_docker = _has_docker()
+            mode = os.environ.get("CUA_MODE", "auto").lower()  # auto, docker, qemu, minimal
 
-            if use_docker:
-                # Docker container: fast, low RAM
-                logger.info("[Sandbox] Using Docker container (light resources)")
+            if mode == "auto":
+                if use_docker:
+                    mode = "docker"
+                else:
+                    mode = "qemu"
+
+            if mode == "docker":
+                logger.info("[Sandbox] Mode: Docker container (lightweight, ~4GB one-time download)")
                 image = Image.linux("ubuntu", "24.04", kind="container")
-                cpu = 2
-                memory_mb = 2048
-            else:
-                # QEMU VM: no Docker needed, but higher resource usage
-                logger.info("[Sandbox] Using QEMU VM (no Docker required, uses more RAM)")
+                cpu, memory_mb = 2, 2048
+            elif mode == "minimal":
+                logger.info("[Sandbox] Mode: Minimal Ubuntu (headless, ~200MB download, no GUI)")
+                image = Image.linux("ubuntu", "24.04", kind="container").apt_install("x11-utils", "xvfb")
+                cpu, memory_mb = 1, 1024
+            else:  # qemu
+                logger.info("[Sandbox] Mode: QEMU VM (no Docker, ~500MB one-time download, slower)")
                 image = Image.linux("ubuntu", "24.04", kind="vm")
-                cpu = 1  # single core to save RAM
-                memory_mb = 2048  # 2GB minimum for VM
+                cpu, memory_mb = 1, 2048
 
             _sandbox = await Sandbox.create(
                 image,
@@ -133,7 +140,7 @@ async def _ensure_sandbox() -> Sandbox:
                 cpu=cpu,
                 memory_mb=memory_mb,
             )
-            logger.info(f"[Sandbox] Ready: {_sandbox.name}")
+            logger.info(f"[Sandbox] Ready: {_sandbox.name} ({mode} mode)")
 
             _agent = ComputerAgent(
                 model=LLM_MODEL,
