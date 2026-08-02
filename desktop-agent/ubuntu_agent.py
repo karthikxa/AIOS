@@ -14,6 +14,7 @@ import io
 import json
 import logging
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -64,8 +65,10 @@ async def auth_middleware(request, call_next):
             return JSONResponse(status_code=403, content={"error": "Unauthorized"})
     return await call_next(request)
 
-STREAM_FPS = int(os.environ.get("STREAM_FPS", "15"))
-STREAM_QUAL = int(os.environ.get("STREAM_QUAL", "50"))
+# Frame rate and quality (adaptive defaults; override with env vars)
+# Default: 10 FPS, 40% quality (conservative for lower-resource setups)
+STREAM_FPS = int(os.environ.get("STREAM_FPS", "10"))
+STREAM_QUAL = int(os.environ.get("STREAM_QUAL", "40"))
 
 clients: list = []
 
@@ -76,6 +79,21 @@ LLM_MODEL = os.environ.get("LLM_MODEL", "openai/gpt-4o")
 _sandbox: Sandbox | None = None
 _agent: ComputerAgent | None = None
 _sandbox_lock = asyncio.Lock()
+_docker_available = None
+
+
+def _has_docker() -> bool:
+    global _docker_available
+    if _docker_available is not None:
+        return _docker_available
+    try:
+        subprocess.run(["docker", "info"], capture_output=True, check=True, timeout=5)
+        _docker_available = True
+        logger.info("[Docker] Available — will use container mode")
+    except (subprocess.TimeoutExpired, subprocess.CalledProcessError, FileNotFoundError):
+        _docker_available = False
+        logger.warning("[Docker] Not available — falling back to QEMU VM mode (higher RAM, slower)")
+    return _docker_available
 
 _frame_buffer = {
     "jpeg": None,
@@ -91,12 +109,29 @@ async def _ensure_sandbox() -> Sandbox:
     async with _sandbox_lock:
         if _sandbox is None:
             logger.info("[Sandbox] Creating Ubuntu 24.04 desktop sandbox...")
+
+            # Auto-detect Docker; fall back to QEMU VM if unavailable
+            use_docker = _has_docker()
+
+            if use_docker:
+                # Docker container: fast, low RAM
+                logger.info("[Sandbox] Using Docker container (light resources)")
+                image = Image.linux("ubuntu", "24.04", kind="container")
+                cpu = 2
+                memory_mb = 2048
+            else:
+                # QEMU VM: no Docker needed, but higher resource usage
+                logger.info("[Sandbox] Using QEMU VM (no Docker required, uses more RAM)")
+                image = Image.linux("ubuntu", "24.04", kind="vm")
+                cpu = 1  # single core to save RAM
+                memory_mb = 2048  # 2GB minimum for VM
+
             _sandbox = await Sandbox.create(
-                Image.linux("ubuntu", "24.04", kind="container"),
+                image,
                 local=True,
                 name="avde-ubuntu-desktop",
-                cpu=2,
-                memory_mb=4096,
+                cpu=cpu,
+                memory_mb=memory_mb,
             )
             logger.info(f"[Sandbox] Ready: {_sandbox.name}")
 
@@ -225,13 +260,16 @@ async def serve_frontend():
 async def health():
     w = _frame_buffer["width"]
     h = _frame_buffer["height"]
+    runtime_mode = "docker-container" if _has_docker() else "qemu-vm"
     return {
         "status": "ok" if _sandbox else "starting",
         "desktop": f"{w}x{h}",
         "mode": "cua-ubuntu-desktop",
         "platform": "linux",
+        "runtime": runtime_mode,
         "fps": STREAM_FPS,
-        "stream": "live-buffer",
+        "quality": STREAM_QUAL,
+        "stream": "live-websocket",
         "sandbox": _sandbox.name if _sandbox else None,
         "model": LLM_MODEL,
     }
@@ -485,6 +523,9 @@ async def agent_plan():
 @app.on_event("startup")
 async def startup():
     asyncio.create_task(_capture_frame_loop())
+    docker_status = "✓ Docker" if _has_docker() else "✗ Docker (will use QEMU VM)"
+    logger.info(f"[Ubuntu CUA Desktop Agent] {docker_status}")
+    logger.info(f"[Ubuntu CUA Desktop Agent] Streaming: {STREAM_FPS} FPS @ {STREAM_QUAL}% quality")
     logger.info("[Ubuntu CUA Desktop Agent] Ready — WebSocket stream at /stream")
     logger.info("[Ubuntu CUA Desktop Agent] Frontend at http://localhost:6901")
 
