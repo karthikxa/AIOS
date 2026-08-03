@@ -117,6 +117,19 @@ set RETRIES=0
 :wsl_ready
 echo [Desktop] WSL2 desktop ready on port 6901.
 
+:: Start the CUA agent inside WSL2
+echo [Desktop] Starting Ubuntu CUA agent in WSL2...
+wsl -d !DISTRO! -- bash -c "cd /home/agent/avde/desktop-agent && pip install -q fastapi uvicorn python-dotenv httpx Pillow 2>/dev/null; python3 -c 'from cua_agent import ComputerAgent; from cua_sandbox import Sandbox' 2>/dev/null && echo HAS_CUA=1 || echo HAS_CUA=0" > "%TEMP%\avde-cua-check.txt" 2>&1
+set /p CUA_CHECK=<"%TEMP%\avde-cua-check.txt"
+if "%CUA_CHECK%"=="HAS_CUA=1" (
+    echo [Desktop] CUA libraries available -- launching ubuntu_agent.py
+    wsl -d !DISTRO! -- bash -c "cd /home/agent/avde/desktop-agent && nohup python3 ubuntu_agent.py > /tmp/avde-cua-agent.log 2>&1 &"
+    echo [Desktop] CUA agent started (see /tmp/avde-cua-agent.log in WSL2)
+) else (
+    echo [Desktop] CUA libraries not installed -- CUA agent unavailable
+    echo [Desktop] Install with: pip install cua-agent cua-sandbox
+)
+
 :: Set up portproxy fallback (in case localhostForwarding has issues)
 for /f "tokens=*" %%i in ('wsl -d !DISTRO! -- hostname -I 2^>nul') do (
     for %%j in (%%i) do (

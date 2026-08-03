@@ -19,7 +19,7 @@ if not exist "%SCRIPT_DIR%backend\.venv" (
 
 echo [1/3] Starting Desktop Agent (port 6901)...
 cd /d "%SCRIPT_DIR%desktop-agent"
-start "AVDE Desktop Agent (6901)" cmd /k "..\backend\.venv\Scripts\python.exe start_agent.py"
+start "AVDE Desktop Agent (6901)" cmd /k "..\backend\.venv\Scripts\python.exe -u start_agent.py"
 timeout /t 2 /nobreak >nul
 
 echo [2/3] Starting Backend (port 8001)...

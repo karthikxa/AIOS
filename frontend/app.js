@@ -2116,12 +2116,14 @@ JSON Structure:
               const delta = d.choices?.[0]?.delta;
               if (!delta) continue;
 
-              // Handle content tokens
-              const content = delta.content;
-              const reasoning = delta.reasoning_content || delta.reasoning;
+              // Handle content & reasoning tokens (including <think> tag parsing)
+              const content = delta.content || '';
+              const reasoning = delta.reasoning_content || delta.reasoning || '';
+              
               if (reasoning && typeof onReasoning === 'function') {
                 onReasoning(reasoning);
               }
+              
               if (content) {
                 full += content;
                 if (onToken) onToken(content);
@@ -3939,7 +3941,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
 
         // Try WebSocket first (real-time push, <5ms latency on HF)
         try {
-          const wsUrl = hfUrl ? buildAgentWebSocketUrl(hfUrl) : `ws://${window.location.hostname || '127.0.0.1'}:4000/ws`;
+          const wsUrl = hfUrl ? buildAgentWebSocketUrl(hfUrl) : `ws://${window.location.hostname || '127.0.0.1'}:6901/ws`;
           agentWs = new WebSocket(wsUrl);
           await new Promise((resolve, reject) => {
             const t = setTimeout(() => reject(new Error('WS timeout')), 3000);
@@ -4553,6 +4555,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           blocksContainer.appendChild(nativeCard);
           return;
         }
+        
         // ── Update existing native subagent card from SSE stream events ──
         if (toolUsage.type && toolUsage.type.startsWith('subagent.') && toolUsage.subagent_id) {
           const card = bubble.querySelector(`[data-subagent-id="${toolUsage.subagent_id}"]`);
@@ -4565,9 +4568,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
             } else if (toolUsage.type === 'subagent.tool' && labelSpan) {
               labelSpan.textContent = `Running ${toolUsage.tool || 'tool'}…`;
             } else if (toolUsage.type === 'subagent.progress' && labelSpan) {
-              const toolsText = (toolUsage.toolsUsed && toolUsage.toolsUsed.length > 0)
-                ? `tools: ${toolUsage.toolsUsed.join(', ')}`
-                : `${toolUsage.toolCount || 0} tools`;
+              const toolsText = (toolUsage.toolsUsed && toolUsage.toolsUsed.length > 0) ? `tools: ${toolUsage.toolsUsed.join(', ')}` : `${toolUsage.toolCount || 0} tools`;
               const estPrefix = toolUsage.tokenEstimate ? '~' : '';
               const tokenText = toolUsage.outputTokens ? ` • ${estPrefix}${toolUsage.outputTokens} tokens` : '';
               labelSpan.textContent = `Progress — ${toolsText} (${toolUsage.durationSeconds || 0}s)${tokenText}`;
@@ -4591,8 +4592,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           return;
         }
 
-        // Real subagent stream tool handler (no duplicate LLM calls or forced split pane openings)
-
+        // Real subagent stream tool handler
         if (toolUsage.type === 'tool_start') {
           if (toolUsage.name === 'swarm_router' || toolUsage.name === 'delegate_task') {
             return; // Skip rendering internal swarm tools
@@ -4604,12 +4604,81 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
           const toolCall = { id: toolUsage.id, name: toolUsage.name, args: toolUsage.args || {}, status: 'running' };
           streamedToolCalls.push(toolCall);
 
-          const toolLabel = TOOL_LABELS[toolUsage.name] || toolUsage.name;
-          let activeLabel = `Running tool: ${toolLabel}...`;
-          if (toolUsage.name.includes('browser')) {
-            activeLabel = 'Generating project workflow...';
+          // 1. Finalize thinking block immediately into Thought for Xs lightbulb row
+          if (!hasEndedThinking && thinkingStartTime && cotSection) {
+            hasEndedThinking = true;
+            const duration = Math.round((Date.now() - thinkingStartTime) / 1000);
+            const durationText = duration <= 1 ? '1s' : `${duration}s`;
+            const iconSpan = cotSection.querySelector('.activity-icon-span');
+            if (iconSpan) {
+              iconSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .6 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`;
+            }
+            const labelSpan = cotSection.querySelector('.activity-label-span');
+            if (labelSpan) {
+              labelSpan.textContent = `Thought for ${durationText}`;
+              labelSpan.style.color = '#4B5563';
+            }
+            const statusSpan = cotSection.querySelector('.activity-status-text');
+            if (statusSpan) statusSpan.textContent = '';
+            const contentContainer = cotSection.querySelector('.activity-content-container');
+            if (contentContainer) {
+              contentContainer.style.maxHeight = '0px';
+              contentContainer.style.padding = '0px 12px 0px 24px';
+            }
+            const chevron = cotSection.querySelector('.activity-chevron');
+            if (chevron) {
+              chevron.style.transform = 'rotate(0deg)';
+            }
           }
 
+          const toolLabel = toolUsage.name;
+          const activeLabel = `Running tool: ${toolLabel}...`;
+
+          // 2. Prevent stacked duplicate rows: update single active tool row
+          let blocksContainer = bubble.querySelector('.message-collapsible-blocks');
+          let singleToolRow = blocksContainer.querySelector('.single-tool-activity-row');
+
+          if (singleToolRow) {
+            const labelSpan = singleToolRow.querySelector('.activity-label-span');
+            if (labelSpan) {
+              labelSpan.textContent = activeLabel;
+              labelSpan.style.color = '#2563EB';
+            }
+            const contentInner = singleToolRow.querySelector('.activity-content-inner');
+            if (contentInner) contentInner.innerHTML = formatToolArgs(toolUsage.name, toolUsage.args);
+
+            toolBlocksMap[toolUsage.id] = {
+              blockElement: singleToolRow,
+              labelSpan: labelSpan,
+              contentContainer: singleToolRow.querySelector('.activity-content-container'),
+              chevronSvg: singleToolRow.querySelector('.activity-chevron'),
+              iconSpan: singleToolRow.querySelector('.activity-icon-span'),
+              detailWrapper: singleToolRow.querySelector('.activity-detail-wrapper')
+            };
+          } else {
+            const toolSection = createActivityRow({
+              type: 'active',
+              label: activeLabel,
+              contentHtml: formatToolArgs(toolUsage.name, toolUsage.args),
+              defaultOpen: false
+            });
+            toolSection.classList.add('single-tool-activity-row');
+            
+            const iconSpan = toolSection.querySelector('.activity-icon-span');
+            if (iconSpan) {
+              iconSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`;
+            }
+            blocksContainer.appendChild(toolSection);
+
+            toolBlocksMap[toolUsage.id] = {
+              blockElement: toolSection,
+              labelSpan: toolSection.querySelector('.activity-label-span'),
+              contentContainer: toolSection.querySelector('.activity-content-container'),
+              chevronSvg: toolSection.querySelector('.activity-chevron'),
+              iconSpan: toolSection.querySelector('.activity-icon-span'),
+              detailWrapper: toolSection.querySelector('.activity-detail-wrapper')
+            };
+          }
           // Create active activity row
           let blocksContainer = bubble.querySelector('.message-collapsible-blocks');
           const toolSection = createActivityRow({
@@ -5158,9 +5227,8 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   let desktopStreamStarted = false;
   let desktopPollInterval = null;
   let desktopPollStopped = false;
-  const DEFAULT_HF_SPACE_URL = '/api/desktop/stream.mjpeg';
-  const DEFAULT_CLOUD_VNC_URL =
-    '/desktop/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=1000&resize=scale&quality=6&path=websockify&bell=false&show_dot=false';
+const DEFAULT_HF_SPACE_URL = 'http://localhost:6901';
+const DEFAULT_CLOUD_VNC_URL = 'http://localhost:6901/stream.mjpeg';
   const LEGACY_HF_SPACE_URLS = new Set([
     'https://bkarthikeyan-desktop-agent.hf.space',
     'https://bkarthikeyan-browser-agent-stream.hf.space',
@@ -5221,7 +5289,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
     return true;
   }
 
-  // On localhost: clear any stale kasm_url / VNC URL — we use Playwright MJPEG stream (port 4000) instead.
+  // On localhost: clear any stale kasm_url / VNC URL — we use CUA MJPEG stream (port 6901) instead.
   // The /desktop/vnc.html path is no longer served (no VNC server running).
   if (isLocal) {
     localStorage.removeItem('kasm_url');
@@ -5229,30 +5297,8 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   }
 
   function getSavedDesktopUrl() {
-    const savedUrl = localStorage.getItem('kasm_url');
-    if (!savedUrl) return null;
-
-    // Kasm is a local-only desktop option.  A deployed frontend must always
-    // use vnc_url (the stream service) rather than a legacy kasm_url, which
-    // may point at the agent API and leave noVNC permanently "Connecting".
-    if (!isLocal) {
-      localStorage.removeItem('kasm_url');
-      return null;
-    }
-
-    try {
-      const hostname = new URL(savedUrl, window.location.href).hostname;
-      const isLoopback = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
-      if (!isLoopback) {
-        localStorage.removeItem('kasm_url');
-        return null;
-      }
-    } catch (_) {
-      localStorage.removeItem('kasm_url');
-      return null;
-    }
-
-    return savedUrl;
+    // noVNC support removed — we use WebSocket live streaming instead
+    return null;
   }
 
 
@@ -5293,7 +5339,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
     if (agentUrl) return agentUrl;
     const host = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? window.location.hostname : '127.0.0.1';
-    return `ws://${host}:4000/ws`;
+    return `ws://${host}:6901/ws`;
   }
 
   function startDesktopStream() {
@@ -5303,12 +5349,12 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
     if (desktopStreamStarted && !frameIsBlank) return;
     desktopStreamStarted = true;
 
-    // ── Priority 0: Local desktop agent MJPEG stream (port 4000) ──
+    // ── Priority 0: Local desktop agent WebSocket stream (CUA server port 6901) ──
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || !window.location.hostname;
     if (isLocal) {
       const agentHost = window.location.hostname || '127.0.0.1';
-      const agentBaseUrl = `http://${agentHost}:4000`;
-      const agentWsBase = `ws://${agentHost}:4000`;
+      const agentBaseUrl = `http://${agentHost}:6901`;
+      const agentWsBase = `ws://${agentHost}:6901`;
       fetch(agentBaseUrl + '/health').then(r => r.json()).then(d => {
         if (d && (d.status === 'ok' || d.desktop)) {
           // ── WebSocket canvas live stream ──────────────────────────────
@@ -5365,75 +5411,35 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
       }).catch(() => {});
     }
 
-    // ── Priority 1: Kasm / noVNC URL (local desktop) ───────────────────
-    const kasmUrl = getSavedDesktopUrl();
-    if (kasmUrl) {
-      // Load noVNC directly in iframe — both on localhost, no CORS issues
-      desktopFrame.style.display = 'block';
-      loadDesktopFrame(kasmUrl);
-      const urlEl = document.getElementById('splitPaneHeaderUrl');
-      if (urlEl) { urlEl.textContent = kasmUrl; urlEl.href = kasmUrl; urlEl.style.display = 'inline'; }
-      const browserLabel = document.getElementById('splitPaneBrowserLabel');
-      if (browserLabel) browserLabel.textContent = 'Zed is using Desktop';
-      const msgEl = document.getElementById('desktopConnectingMsg');
-      if (msgEl) msgEl.textContent = 'Connecting to desktop at ' + new URL(kasmUrl).host + '…';
-      desktopFrame.onload = () => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; };
-      // noVNC may take a moment to connect — hide overlay after 5s
-      setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 5000);
-      return;
-    }
-
-    // ── Priority 2: HF Space cloud desktop (noVNC via WebSocket) ───────
-    const hfSpaceUrl = localStorage.getItem('hf_space_url');
-    if (hfSpaceUrl || !isLocal) {
-      // VNC stream comes from browser-server-1, agent API from browser-server-2
-      const agentUrl = hfSpaceUrl ? hfSpaceUrl.replace(/\/$/, '') : '';
+    // Cloud fallback (non-local)
+    if (!isLocal) {
       const vncUrl = getCloudVncUrl();
-      // Re-entering Computer mode keeps the existing VNC socket. Only a
-      // configured endpoint change is allowed to reload the iframe.
       loadDesktopFrame(vncUrl);
+      const agentUrl = localStorage.getItem('hf_space_url') || '';
       desktopFrame.style.display = 'block';
-      // Update URL in header
       const urlEl = document.getElementById('splitPaneHeaderUrl');
       if (urlEl && agentUrl) {
         urlEl.innerHTML = `<a href="${agentUrl}" target="_blank" style="color:#3B82F6;text-decoration:none;">${agentUrl}</a>`;
       }
-      // Hide connecting overlay once iframe loads (noVNC connects via WebSocket)
       desktopFrame.onload = () => {
         if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
       };
-      // Fallback: hide overlay after 5s
       setTimeout(() => { if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none'; }, 5000);
     } else {
-      // Live noVNC stream from sandbox
-      const sandboxUrl = getVncBaseUrl();
-      loadDesktopFrame(sandboxUrl + '/vnc/index.html?autoconnect=true&resize=scale&reconnect=true&reconnect_delay=1000&path=websockify');
-      desktopFrame.onload = () => {
-        if (desktopConnectingOverlay) {
-          desktopConnectingOverlay.style.display = 'none';
-        }
-        // Signal ready
-        try { window.dispatchEvent(new CustomEvent('desktop-ready')); } catch(e) {}
-      };
+      // Fallback: MJPEG stream from backend proxy
+      loadDesktopFrame('/api/desktop/stream.mjpeg');
     }
 
-    // NOTE: Thumbnail frame intentionally NOT loaded with a separate VNC connection.
-    // Opening a second noVNC WebSocket to the same VNC server causes websockify to drop
-    // the first (main) connection, making the main desktop panel show "Connecting..." mid-task.
-    // The main desktopFrame already shows the live stream — thumbnail is redundant here.
+    // Thumbnail is redundant — the main desktopFrame already shows the live stream.
     const thumbnailPlaceholder = document.getElementById('thumbnailPlaceholder');
     if (thumbnailPlaceholder) thumbnailPlaceholder.style.display = 'none';
   }
 
-  // ── Pre-load VNC immediately on page init ───────────────────────────────
-  // Chrome is visible the moment the user opens Computer mode (no cold start).
-  // The connection stays alive in the background between tab switches.
-  (function preloadVnc() {
+  // ── Pre-load desktop stream ────────────────────────────────────────────────
+  (function preloadStream() {
     if (!desktopFrame) return;
-    // Skip VNC preload when local desktop agent is available
     if (isLocal) return;
-    const vncUrl = getSavedDesktopUrl() || getCloudVncUrl();
-    loadDesktopFrame(vncUrl);
+    loadDesktopFrame('http://' + (window.location.hostname || '127.0.0.1') + ':6901/stream.mjpeg');
     desktopFrame.addEventListener('load', () => {
       if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
     }, { once: true });
@@ -5442,11 +5448,9 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   })();
 
   // ── Reconnect on tab visibility restore ──────────────────────────────────
-  // Keep the existing iframe on tab restore; noVNC reconnects its own socket.
+  // Re-establish the desktop stream connection when the tab becomes visible.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && desktopFrame) {
-      // Do not reload a connected iframe after a tab switch. noVNC's own
-      // reconnect logic has the live canvas and session state it needs.
       startDesktopStream();
       desktopFrame.style.display = 'block';
     }

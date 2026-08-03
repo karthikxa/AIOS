@@ -1,10 +1,10 @@
 """Desktop Computer Agent — Full Windows desktop capture & control.
 
-Captures the ENTIRE Windows screen (or virtual display) via mss and streams
-it live via WebSocket. The agent controls the real desktop: can open Chrome,
-Notepad, Explorer, terminal — anything.
+Captures the ENTIRE Windows screen via mss and streams it live via WebSocket
+at 30 FPS. The agent controls the real desktop: can open Chrome, Notepad,
+Explorer, terminal — anything.
 
-This is the "Computer Use" model: full desktop, not just a browser.
+No VNC, no screenshot polling — direct mss capture with a continuous frame buffer.
 """
 
 import asyncio
@@ -17,7 +17,6 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Optional
 
 import mss
 import mss.tools
@@ -42,7 +41,6 @@ logger = logging.getLogger("desktop-computer")
 
 app = FastAPI()
 
-# ── CORS — allow frontend ───────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -51,7 +49,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Auth — skip for health / stream ────────────────────────────────────────
 _API_KEY = os.environ.get("AGENT_API_KEY", "")
 
 @app.middleware("http")
@@ -64,16 +61,13 @@ async def auth_middleware(request, call_next):
             return JSONResponse(status_code=403, content={"error": "Unauthorized"})
     return await call_next(request)
 
-# ── Screen capture config ───────────────────────────────────────────────────
-STREAM_FPS   = 20
-STREAM_QUAL  = 75      # JPEG quality (0-100)
-MONITOR_IDX  = 1       # 1 = primary monitor (mss uses 1-based)
+STREAM_FPS   = int(os.environ.get("STREAM_FPS", "15"))
+STREAM_QUAL  = int(os.environ.get("STREAM_QUAL", "50"))
+MONITOR_IDX  = 1
 
-# pyautogui safety settings
-pyautogui.FAILSAFE = False   # Don't throw on corner move
-pyautogui.PAUSE    = 0.05   # 50ms between actions
+pyautogui.FAILSAFE = True
+pyautogui.PAUSE    = 0
 
-# WebSocket clients for broadcasting agent events
 clients = []
 
 LLM_BASE  = os.environ.get("LLM_BASE_URL", "")
@@ -81,12 +75,17 @@ LLM_KEY   = os.environ.get("LLM_API_KEY", "no-auth")
 LLM_MODEL = os.environ.get("LLM_MODEL", "auto")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Screen helpers
-# ══════════════════════════════════════════════════════════════════════════════
+_frame_buffer = {
+    "jpeg": None,
+    "b64": None,
+    "width": 1920,
+    "height": 1080,
+    "updated_at": 0.0,
+}
+_frame_lock = asyncio.Lock()
+
 
 def capture_screen_jpeg(quality: int = STREAM_QUAL) -> bytes:
-    """Capture full primary monitor and return JPEG bytes."""
     with mss.mss() as sct:
         mon = sct.monitors[MONITOR_IDX]
         img = sct.grab(mon)
@@ -96,27 +95,61 @@ def capture_screen_jpeg(quality: int = STREAM_QUAL) -> bytes:
         return buf.getvalue()
 
 
+_cached_size = None
+
 def get_screen_size():
-    with mss.mss() as sct:
-        mon = sct.monitors[MONITOR_IDX]
-        return mon["width"], mon["height"]
+    global _cached_size
+    if _cached_size is None:
+        with mss.mss() as sct:
+            mon = sct.monitors[MONITOR_IDX]
+            _cached_size = (mon["width"], mon["height"])
+    return _cached_size
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Desktop action executor
-# ══════════════════════════════════════════════════════════════════════════════
+def get_latest_frame():
+    return _frame_buffer["jpeg"]
+
+
+def get_latest_frame_b64():
+    return _frame_buffer["b64"]
+
+
+async def _frame_capture_loop():
+    logger.info(f"[Frame Capture] Starting at {STREAM_FPS} FPS")
+    interval = 1.0 / STREAM_FPS
+    loop = asyncio.get_event_loop()
+    while True:
+        try:
+            t0 = time.monotonic()
+            jpg = await loop.run_in_executor(None, capture_screen_jpeg)
+            b64 = base64.b64encode(jpg).decode()
+            w, h = get_screen_size()
+            async with _frame_lock:
+                _frame_buffer["jpeg"] = jpg
+                _frame_buffer["b64"] = b64
+                _frame_buffer["width"] = w
+                _frame_buffer["height"] = h
+                _frame_buffer["updated_at"] = time.time()
+            elapsed = time.monotonic() - t0
+            sleep_time = max(0, interval - elapsed)
+            await asyncio.sleep(sleep_time)
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:
+            logger.warning(f"[Frame Capture] Error: {e}")
+            await asyncio.sleep(0.5)
+
 
 async def execute_action(action: dict) -> str:
     a = action.get("action", "")
     try:
-        # ── Screenshot ───────────────────────────────────────────────────
         if a == "screenshot":
-            jpg = capture_screen_jpeg(quality=60)
-            b64 = base64.b64encode(jpg).decode()
-            w, h = get_screen_size()
-            return f"Screenshot captured ({w}x{h}, {len(jpg)} bytes)"
+            b64 = get_latest_frame_b64()
+            if b64:
+                w, h = get_screen_size()
+                return f"Screenshot captured ({w}x{h}, from live buffer)"
+            return "No frame available yet"
 
-        # ── Mouse ────────────────────────────────────────────────────────
         elif a == "move_mouse":
             x, y = int(action.get("x", 0)), int(action.get("y", 0))
             pyautogui.moveTo(x, y, duration=0.1)
@@ -129,7 +162,6 @@ async def execute_action(action: dict) -> str:
             if x is not None and y is not None:
                 pyautogui.click(int(x), int(y), button=btn)
                 return f"Clicked {btn} at ({x}, {y})"
-            # Click current position
             pyautogui.click(button=btn)
             return f"Clicked {btn} at current position"
 
@@ -147,7 +179,7 @@ async def execute_action(action: dict) -> str:
             fx, fy = int(action.get("from_x", 0)), int(action.get("from_y", 0))
             tx, ty = int(action.get("to_x", 0)),   int(action.get("to_y", 0))
             pyautogui.drag(fx, fy, tx - fx, ty - fy, duration=0.3, button="left")
-            return f"Dragged ({fx},{fy}) → ({tx},{ty})"
+            return f"Dragged ({fx},{fy}) -> ({tx},{ty})"
 
         elif a == "scroll":
             x   = int(action.get("x", pyautogui.position().x))
@@ -158,7 +190,6 @@ async def execute_action(action: dict) -> str:
             pyautogui.scroll(clicks, x=x, y=y)
             return f"Scrolled {direction} {amt} clicks at ({x},{y})"
 
-        # ── Keyboard ─────────────────────────────────────────────────────
         elif a == "type":
             text = action.get("text", "")
             pyautogui.write(text, interval=0.02)
@@ -174,7 +205,6 @@ async def execute_action(action: dict) -> str:
             pyautogui.hotkey(*keys)
             return f"Hotkey: {'+'.join(keys)}"
 
-        # ── Applications ─────────────────────────────────────────────────
         elif a == "open_browser":
             url = action.get("url", "https://www.google.com")
             subprocess.Popen(["start", "chrome", url], shell=True)
@@ -197,7 +227,7 @@ async def execute_action(action: dict) -> str:
             cmd = ["notepad"] + ([file] if file else [])
             subprocess.Popen(cmd)
             await asyncio.sleep(0.8)
-            return f"Opened Notepad{' with ' + file if file else ''}"
+            return f"Opened Notepad{(' with ' + file) if file else ''}"
 
         elif a == "run_command":
             cmd   = action.get("command", "")
@@ -219,7 +249,6 @@ async def execute_action(action: dict) -> str:
             await asyncio.sleep(0.8)
             return f"Launched: {app_path}"
 
-        # ── File system ──────────────────────────────────────────────────
         elif a == "read_file":
             return Path(action.get("path", "")).read_text(encoding="utf-8", errors="replace")[:5000]
 
@@ -253,11 +282,7 @@ async def execute_action(action: dict) -> str:
         return f"Error in '{a}': {e}"
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# LLM agent loop
-# ══════════════════════════════════════════════════════════════════════════════
-
-W, H = 1920, 1080  # will be set at startup
+W, H = 1920, 1080
 
 DESKTOP_TOOLS = [
     {"type": "function", "function": {"name": "screenshot",        "description": "Take a screenshot to see the current desktop state.", "parameters": {"type": "object", "properties": {}, "required": []}}},
@@ -290,7 +315,7 @@ You can open Chrome, File Explorer, Notepad, run commands, and any app.
 
 RULES:
 1. Always take a screenshot first to see the current desktop state.
-2. Use pixel coordinates (x, y) for clicks — read them from the screenshot.
+2. Use pixel coordinates (x, y) for clicks -- read them from the screenshot.
 3. After each action, take another screenshot to verify the result.
 4. For web tasks: open_browser, then use click/type to interact.
 5. Be precise with coordinates. The screen is {W}x{H} pixels.
@@ -336,7 +361,7 @@ async def run_agent(task: str):
         {"role": "user", "content": task},
     ]
     for step in range(25):
-        await broadcast({"type": "thinking", "text": f"Step {step+1}…"})
+        await broadcast({"type": "thinking", "text": f"Step {step+1}..."})
         try:
             msg = await call_llm(messages)
         except Exception as e:
@@ -356,19 +381,18 @@ async def run_agent(task: str):
             except Exception:
                 args = {}
 
-            await broadcast({"type": "action", "text": f"→ {name}", "action": name})
+            await broadcast({"type": "action", "text": f"-> {name}", "action": name})
             t0     = time.time()
             result = await execute_action({"action": name, **args})
             elapsed = round(time.time() - t0, 2)
 
-            # After every action, broadcast the new screenshot as a frame
-            try:
-                jpg = capture_screen_jpeg(quality=70)
-                b64 = base64.b64encode(jpg).decode()
-                w, h = get_screen_size()
-                await broadcast({"type": "frame", "data": b64, "width": w, "height": h})
-            except Exception:
-                pass
+            b64 = get_latest_frame_b64()
+            if b64:
+                try:
+                    w, h = get_screen_size()
+                    await broadcast({"type": "frame", "data": b64, "width": w, "height": h})
+                except Exception:
+                    pass
 
             await broadcast({
                 "type": "screen", "text": result[:2000],
@@ -387,35 +411,48 @@ async def run_agent(task: str):
     await broadcast({"type": "system", "text": "Agent loop ended."})
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Endpoints
-# ══════════════════════════════════════════════════════════════════════════════
+@app.get("/", response_class=HTMLResponse)
+async def serve_frontend():
+    p = Path(__file__).resolve().parent.parent / "frontend" / "index.html"
+    if p.exists():
+        return HTMLResponse(p.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Desktop Computer Agent Ready</h1>")
+
 
 @app.get("/health")
 def health():
     w, h = get_screen_size()
-    return {"status": "ok", "desktop": f"{w}x{h}", "mode": "full-desktop", "platform": sys.platform}
+    return {
+        "status": "ok",
+        "desktop": f"{w}x{h}",
+        "mode": "full-desktop",
+        "platform": sys.platform,
+        "fps": STREAM_FPS,
+        "stream": "live-buffer",
+    }
 
 
 @app.get("/screenshot")
 async def screenshot_endpoint():
-    """Single JPEG screenshot of the desktop."""
+    jpg = get_latest_frame()
+    if jpg:
+        return Response(jpg, media_type="image/jpeg", headers={"Cache-Control": "no-store"})
     jpg = capture_screen_jpeg()
     return Response(jpg, media_type="image/jpeg", headers={"Cache-Control": "no-store"})
 
 
 @app.get("/stream.mjpeg")
 async def mjpeg():
-    """MJPEG live stream of the full desktop at ~20fps."""
     async def gen():
         bnd = "frame"
         while True:
             try:
-                jpg = await asyncio.get_event_loop().run_in_executor(None, capture_screen_jpeg)
-                yield (
-                    f"--{bnd}\r\nContent-Type: image/jpeg\r\n"
-                    f"Content-Length: {len(jpg)}\r\n\r\n"
-                ).encode() + jpg + b"\r\n"
+                jpg = get_latest_frame()
+                if jpg:
+                    yield (
+                        f"--{bnd}\r\nContent-Type: image/jpeg\r\n"
+                        f"Content-Length: {len(jpg)}\r\n\r\n"
+                    ).encode() + jpg + b"\r\n"
                 await asyncio.sleep(1.0 / STREAM_FPS)
             except asyncio.CancelledError:
                 raise
@@ -430,18 +467,18 @@ async def mjpeg():
 
 @app.websocket("/stream")
 async def stream_ws(ws: WebSocket):
-    """WebSocket live stream — pushes full-desktop JPEG frames at 20fps + agent events."""
     await ws.accept()
     clients.append(ws)
-    # Background frame push task
+
     async def push_frames():
+        interval = 1.0 / STREAM_FPS
+        w, h = get_screen_size()
         while True:
             try:
-                jpg = await asyncio.get_event_loop().run_in_executor(None, capture_screen_jpeg)
-                b64 = base64.b64encode(jpg).decode()
-                w, h = get_screen_size()
-                await ws.send_json({"type": "frame", "data": b64, "width": w, "height": h})
-                await asyncio.sleep(1.0 / STREAM_FPS)
+                jpg = get_latest_frame()
+                if jpg:
+                    await ws.send_json({"type": "frame", "data": base64.b64encode(jpg).decode(), "width": w, "height": h})
+                await asyncio.sleep(interval)
             except asyncio.CancelledError:
                 raise
             except Exception:
@@ -462,9 +499,28 @@ async def stream_ws(ws: WebSocket):
             clients.remove(ws)
 
 
+@app.websocket("/ws/video")
+async def ws_video(ws: WebSocket):
+    await ws.accept()
+    clients.append(ws)
+    interval = 1.0 / STREAM_FPS
+    try:
+        while True:
+            jpg = get_latest_frame()
+            if jpg:
+                await ws.send_bytes(jpg)
+            await asyncio.sleep(interval)
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        pass
+    finally:
+        if ws in clients:
+            clients.remove(ws)
+
+
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
-    """Agent control WebSocket (tasks + events, no frame push)."""
     await ws.accept()
     clients.append(ws)
     try:
@@ -477,6 +533,11 @@ async def ws_endpoint(ws: WebSocket):
     finally:
         if ws in clients:
             clients.remove(ws)
+
+
+@app.websocket("/ws/agent")
+async def ws_agent(ws: WebSocket):
+    await ws_endpoint(ws)
 
 
 @app.post("/agent/inject")
@@ -492,6 +553,8 @@ async def inject(request: dict):
 async def startup():
     global W, H
     W, H = get_screen_size()
-    logger.info(f"[Desktop Computer] Ready — full desktop {W}x{H} on {sys.platform}")
-    logger.info("[Desktop Computer] MJPEG stream at /stream.mjpeg")
+    logger.info(f"[Desktop Computer] Ready -- full desktop {W}x{H} on {sys.platform}")
+    logger.info(f"[Desktop Computer] Live stream at {STREAM_FPS} FPS -- no VNC, no polling")
+    logger.info("[Desktop Computer] Frontend at http://localhost:6901")
     logger.info("[Desktop Computer] WebSocket stream at /stream")
+    asyncio.create_task(_frame_capture_loop())

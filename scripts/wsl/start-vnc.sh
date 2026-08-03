@@ -7,7 +7,7 @@ set -euo pipefail
 export HOME=/home/agent
 export DISPLAY=:0
 
-SCREEN_SIZE="${AVDE_SCREEN:-1360x768x16}"
+SCREEN_SIZE="${AVDE_SCREEN:-1366x768x16}"
 
 echo "=== Starting AVDE virtual desktop (${SCREEN_SIZE}) ==="
 
@@ -16,6 +16,8 @@ pkill -f Xvfb 2>/dev/null || true
 pkill -f fluxbox 2>/dev/null || true
 pkill -f x11vnc 2>/dev/null || true
 pkill -f websockify 2>/dev/null || true
+pkill -f "python3 ubuntu_agent.py" 2>/dev/null || true
+pkill -f "python3 start_agent.py" 2>/dev/null || true
 sleep 1
 
 # 1. Virtual framebuffer — the "monitor" nobody sees directly
@@ -44,6 +46,27 @@ echo "  x11vnc PID:     ${VNC_PID}"
 echo "  websockify PID: ${WEBSOCKIFY_PID}"
 echo "  VNC:            port 5900"
 echo "  noVNC:          port 6901"
+
+# 5. Start the CUA agent if available (connects to the local desktop)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [ -f "${SCRIPT_DIR}/desktop-agent/ubuntu_agent.py" ] || [ -f "/home/agent/avde/desktop-agent/ubuntu_agent.py" ]; then
+    AGENT_DIR="/home/agent/avde/desktop-agent"
+    if [ -d "${AGENT_DIR}" ]; then
+        # Check if CUA libs are available
+        if python3 -c "from cua_agent import ComputerAgent; from cua_sandbox import Sandbox" 2>/dev/null; then
+            echo "  CUA Agent:      starting (ubuntu_agent.py)"
+            cd "${AGENT_DIR}"
+            export USE_CUA=1
+            nohup python3 start_agent.py > /tmp/avde-cua-agent.log 2>&1 &
+            echo "  Agent PID:      $!"
+        else
+            echo "  CUA Agent:      not available (install cua-agent cua-sandbox)"
+        fi
+    else
+        echo "  CUA Agent:      code not found at ${AGENT_DIR}"
+    fi
+fi
+
 echo "=== Ready for connections ==="
 
 # Wait for any process to exit — if one crashes, report it

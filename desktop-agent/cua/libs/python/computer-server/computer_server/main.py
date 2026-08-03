@@ -24,7 +24,7 @@ from fastapi import (
     WebSocketDisconnect,
 )
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 
 from .browser import get_browser_manager
 from .handlers.factory import OS_TYPE, HandlerFactory
@@ -505,6 +505,68 @@ async def status():
     return {"status": "ok", "os_type": OS_TYPE, "features": features}
 
 
+@app.get("/health")
+async def health():
+    """Health check endpoint for the frontend."""
+    size_result = await automation_handler.get_screen_size()
+    size = size_result.get("size", {"width": 1920, "height": 1080})
+    fps = int(os.environ.get("STREAM_FPS", "15"))
+    return {
+        "status": "ok",
+        "desktop": f"{size['width']}x{size['height']}",
+        "mode": "native",
+        "platform": platform.system().lower(),
+        "fps": fps,
+        "stream": "live-buffer",
+        "features": ["screenshot", "stream", "agent", "mouse", "keyboard", "keyboard_text", "scroll", "clip"],
+    }
+
+
+@app.get("/screenshot")
+async def screenshot_endpoint():
+    """Capture a screenshot and return raw JPEG bytes."""
+    result = await automation_handler.screenshot()
+    img_b64 = result.get("image_data", "")
+    if img_b64.startswith("data:image"):
+        img_b64 = img_b64.split(",", 1)[1]
+    return Response(
+        content=base64.b64decode(img_b64),
+        media_type="image/jpeg",
+    )
+
+
+@app.get("/stream.mjpeg")
+async def mjpeg_stream_endpoint():
+    """MJPEG video stream for browser embedding."""
+    fps = int(os.environ.get("STREAM_FPS", "15"))
+    interval = 1.0 / fps
+
+    async def generate():
+        yield b"HTTP/1.1 200 OK\r\n"
+        yield b"Cache-Control: no-cache\r\n"
+        yield b"Connection: close\r\n"
+        yield b"Content-Type: multipart/x-mixed-replace; boundary=frame\r\n\r\n"
+        while True:
+            try:
+                result = await asyncio.to_thread(automation_handler.screenshot_sync) if hasattr(automation_handler, 'screenshot_sync') else await automation_handler.screenshot()
+                img_b64 = result.get("image_data", "") if isinstance(result, dict) else result
+                if img_b64.startswith("data:image"):
+                    img_b64 = img_b64.split(",", 1)[1]
+                jpg_bytes = base64.b64decode(img_b64)
+                yield f"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: {len(jpg_bytes)}\r\n\r\n".encode()
+                yield jpg_bytes
+                yield b"\r\n"
+                await asyncio.sleep(interval)
+            except Exception as e:
+                logger.error(f"Error in MJPEG stream: {e}")
+                await asyncio.sleep(0.5)
+
+    return StreamingResponse(
+        generate(),
+        media_type="multipart/x-mixed-replace; boundary=frame",
+    )
+
+
 @app.get("/commands")
 async def list_commands():
     """List all available commands and their aliases."""
@@ -675,6 +737,61 @@ async def websocket_endpoint(websocket: WebSocket):
         except:
             pass
         manager.disconnect(websocket)
+
+
+@app.websocket("/stream")
+async def stream_endpoint(websocket: WebSocket):
+    """Live screen streaming endpoint. Sends JPEG frames as JSON with base64 data."""
+    await websocket.accept()
+    fps = int(os.environ.get("STREAM_FPS", "15"))
+    interval = 1.0 / fps
+    try:
+        while True:
+            try:
+                result = await automation_handler.screenshot()
+                img_b64 = result.get("image_data", "")
+                if img_b64.startswith("data:image"):
+                    img_b64 = img_b64.split(",", 1)[1]
+                size_result = await automation_handler.get_screen_size()
+                size = size_result.get("size", {"width": 1920, "height": 1080})
+                await websocket.send_json({
+                    "type": "frame",
+                    "data": img_b64,
+                    "width": size["width"],
+                    "height": size["height"],
+                })
+                await asyncio.sleep(interval)
+            except WebSocketDisconnect:
+                raise
+            except Exception as e:
+                logger.error(f"Error in stream: {e}")
+                await asyncio.sleep(0.5)
+    except WebSocketDisconnect:
+        pass
+    finally:
+        await websocket.close()
+
+
+@app.websocket("/ws/agent")
+async def ws_agent_endpoint(websocket: WebSocket):
+    """WebSocket endpoint for running the CUA agent."""
+    await websocket.accept()
+    try:
+        while True:
+            try:
+                data = await websocket.receive_json()
+                if data.get("type") == "task":
+                    text = data.get("text", "")
+                    await websocket.send_json({"type": "log", "message": "Agent not available on this server"})
+                    await websocket.send_json({"type": "done", "error": "Agent not available"})
+            except WebSocketDisconnect:
+                raise
+            except Exception as e:
+                await websocket.send_json({"type": "error", "error": str(e)})
+    except WebSocketDisconnect:
+        pass
+    finally:
+        await websocket.close()
 
 
 @app.post("/cmd")
