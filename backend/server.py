@@ -1694,15 +1694,36 @@ def _translate_model_name(model_name: str) -> str:
 
 def _nous_auth() -> tuple[str, str]:
     """Return Nous access_token and inference base url from Hermes auth.json."""
-    try:
-        auth_path = _Path(os.getenv("ZED_HOME", "~/.hermes")).expanduser() / "auth.json"
-        data = _json.loads(auth_path.read_text())
-        nous = data.get("providers", {}).get("nous", {})
-        token = nous.get("access_token", "") or ""
-        base = nous.get("inference_base_url", "https://inference-api.nousresearch.com/v1")
-        return token, base.rstrip("/")
-    except Exception:
-        return "", "https://inference-api.nousresearch.com/v1"
+    candidate_dirs = [
+        _Path(os.getenv("ZED_HOME", "~/.hermes")).expanduser(),
+        _Path("C:/Users/balur/AppData/Local/hermes"),
+        _Path("~/.hermes").expanduser(),
+        _Path("~/AppData/Local/hermes").expanduser(),
+    ]
+    for d in candidate_dirs:
+        try:
+            auth_path = d / "auth.json"
+            if auth_path.exists():
+                data = _json.loads(auth_path.read_text(encoding="utf-8"))
+                nous = data.get("providers", {}).get("nous", {})
+                token = nous.get("access_token", "") or ""
+                if token:
+                    base = nous.get("inference_base_url", "https://inference-api.nousresearch.com/v1")
+                    return token, base.rstrip("/")
+        except Exception:
+            pass
+    # Fallback if no token found
+    for d in candidate_dirs:
+        try:
+            auth_path = d / "auth.json"
+            if auth_path.exists():
+                data = _json.loads(auth_path.read_text(encoding="utf-8"))
+                nous = data.get("providers", {}).get("nous", {})
+                base = nous.get("inference_base_url", "https://inference-api.nousresearch.com/v1")
+                return "", base.rstrip("/")
+        except Exception:
+            pass
+    return "", "https://inference-api.nousresearch.com/v1"
 
 
 @app.get("/api/models")
