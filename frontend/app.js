@@ -4679,24 +4679,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
               detailWrapper: toolSection.querySelector('.activity-detail-wrapper')
             };
           }
-          // Create active activity row
-          let blocksContainer = bubble.querySelector('.message-collapsible-blocks');
-          const toolSection = createActivityRow({
-            type: 'active',
-            label: activeLabel,
-            contentHtml: formatToolArgs(toolUsage.name, toolUsage.args),
-            defaultOpen: true
-          });
-          blocksContainer.appendChild(toolSection);
 
-          toolBlocksMap[toolUsage.id] = {
-            blockElement: toolSection,
-            labelSpan: toolSection.querySelector('.activity-label-span'),
-            contentContainer: toolSection.querySelector('.activity-content-container'),
-            chevronSvg: toolSection.querySelector('.activity-chevron'),
-            iconSpan: toolSection.querySelector('.activity-icon-span'),
-            detailWrapper: toolSection.querySelector('.activity-detail-wrapper')
-          };
         } else if (toolUsage.type === 'tool_complete') {
           if (toolUsage.name === 'swarm_router' || toolUsage.name === 'delegate_task') {
             return; // Skip rendering internal swarm tools

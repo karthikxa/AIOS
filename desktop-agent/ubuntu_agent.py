@@ -36,12 +36,21 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ubuntu-cua-agent")
 
 try:
-    from cua_agent import ComputerAgent
     from cua_sandbox import Image, Sandbox
 except ImportError as e:
     logger.error(f"Failed to import CUA libraries: {e}")
     logger.error("Install with: pip install cua-agent cua-sandbox")
     sys.exit(1)
+
+ComputerAgent = None
+
+def _get_computer_agent():
+    global ComputerAgent
+    if ComputerAgent is None:
+        import importlib
+        mod = importlib.import_module("cua_agent.agent")
+        ComputerAgent = mod.ComputerAgent
+    return ComputerAgent
 
 app = FastAPI()
 
@@ -77,7 +86,7 @@ LLM_KEY = os.environ.get("LLM_API_KEY", "no-auth")
 LLM_MODEL = os.environ.get("LLM_MODEL", "openai/gpt-4o")
 
 _sandbox: Sandbox | None = None
-_agent: ComputerAgent | None = None
+_agent = None
 _sandbox_lock = asyncio.Lock()
 _docker_available = None
 
@@ -142,7 +151,7 @@ async def _ensure_sandbox() -> Sandbox:
             )
             logger.info(f"[Sandbox] Ready: {_sandbox.name} ({mode} mode)")
 
-            _agent = ComputerAgent(
+            _agent = _get_computer_agent()(
                 model=LLM_MODEL,
                 tools=[_sandbox],
                 api_key=LLM_KEY if LLM_KEY != "no-auth" else None,
