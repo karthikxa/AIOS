@@ -13,6 +13,7 @@ Usage:
 
 import asyncio
 import json
+import os
 import time
 import logging
 import sys
@@ -25,8 +26,8 @@ logger = logging.getLogger(__name__)
 
 # ── Configuration ──────────────────────────────────────────────────────
 
-LLM_BASE = "https://server-llm-1-0r64.onrender.com/v1"
-LLM_KEY = "freellmapi-b8b35f76a87a2e3db4985258c26197a2f22ceabe528eb6ac"
+LLM_BASE = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+LLM_KEY = os.getenv("ZED_PRO_API_KEY", "")
 MODEL = "auto"
 CONCURRENCY_LEVELS = [5, 10, 20, 30]
 AGENTS_PER_LEVEL = 10  # agents to run at each concurrency level

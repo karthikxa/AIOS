@@ -297,7 +297,7 @@ const initialModels = [
     logoSrc: "assets/models/stepfun.svg",
     type: "official",
     isPrimary: false,
-    settings: { baseUrl: "https://inference-api.nousresearch.com/v1", endpoint: "nous" }
+    settings: { baseUrl: "/v1", endpoint: "stepfun/step-3.7-flash" }
   },
   {
     id: "tencent/hy3",
@@ -310,7 +310,7 @@ const initialModels = [
     logoSrc: "assets/models/hy3.svg",
     type: "official",
     isPrimary: false,
-    settings: { baseUrl: "https://inference-api.nousresearch.com/v1", endpoint: "nous" }
+    settings: { baseUrl: "/v1", endpoint: "tencent/hy3" }
   },
   {
     id: "poolside/laguna-s-2.1",
@@ -323,7 +323,7 @@ const initialModels = [
     logoSrc: "assets/models/poolside.svg",
     type: "official",
     isPrimary: false,
-    settings: { baseUrl: "https://inference-api.nousresearch.com/v1", endpoint: "nous" }
+    settings: { baseUrl: "/v1", endpoint: "poolside/laguna-s-2.1" }
   },
   {
     id: "inclusionai/ling-3.0-flash",
@@ -336,7 +336,7 @@ const initialModels = [
     logoSrc: "assets/models/ling-3.0-flash.svg",
     type: "official",
     isPrimary: false,
-    settings: { baseUrl: "https://inference-api.nousresearch.com/v1", endpoint: "nous" }
+    settings: { baseUrl: "/v1", endpoint: "inclusionai/ling-3.0-flash" }
   },
 
   // 2. Individual Models (type: "official")
@@ -1469,7 +1469,7 @@ const initialModels = [
     logoSrc: "assets/models/stepfun.svg",
     type: "official",
     isPrimary: false,
-    settings: { baseUrl: "/v1", endpoint: "step-3.7-flash" }
+    settings: { baseUrl: "/v1", endpoint: "stepfun/step-3.7-flash" }
   },
   {
     id: "premium-tencent-hy3",

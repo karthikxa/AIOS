@@ -1441,9 +1441,7 @@ JSON Structure:
       result: '',
       dotsCount: 2,
       activities: [
-        { type: 'think', label: 'Initializing sandboxed execution context' },
-        { type: 'terminal', label: `Spawning sub-agent process '${HUMAN_NAMES[i % HUMAN_NAMES.length]}' [PID ${Math.floor(Math.random() * 9000 + 1000)}]` },
-        { type: 'think', label: 'Allocating container nodes and loading tool suite' }
+        { type: 'think', label: 'Waiting to start' }
       ]
     }));
 
@@ -5210,8 +5208,8 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   let desktopStreamStarted = false;
   let desktopPollInterval = null;
   let desktopPollStopped = false;
-const DEFAULT_HF_SPACE_URL = 'http://localhost:6901';
-const DEFAULT_CLOUD_VNC_URL = 'http://localhost:6901/stream.mjpeg';
+const DEFAULT_HF_SPACE_URL = '';  // set desktop_agent_url/hf_space_url in Settings for cloud desktops
+const DEFAULT_CLOUD_VNC_URL = '/api/desktop/stream.mjpeg';
   const LEGACY_HF_SPACE_URLS = new Set([
     'https://bkarthikeyan-desktop-agent.hf.space',
     'https://bkarthikeyan-browser-agent-stream.hf.space',
@@ -5223,8 +5221,6 @@ const DEFAULT_CLOUD_VNC_URL = 'http://localhost:6901/stream.mjpeg';
   const savedHfSpaceUrl = (localStorage.getItem('hf_space_url') || '').replace(/\/$/, '');
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   if (LEGACY_HF_SPACE_URLS.has(savedHfSpaceUrl)) {
-    localStorage.setItem('hf_space_url', DEFAULT_HF_SPACE_URL);
-  } else if (!isLocal && !localStorage.getItem('hf_space_url') && !localStorage.getItem('desktop_agent_url')) {
     localStorage.setItem('hf_space_url', DEFAULT_HF_SPACE_URL);
   }
 
@@ -5422,7 +5418,7 @@ const DEFAULT_CLOUD_VNC_URL = 'http://localhost:6901/stream.mjpeg';
   (function preloadStream() {
     if (!desktopFrame) return;
     if (isLocal) return;
-    loadDesktopFrame('http://' + (window.location.hostname || '127.0.0.1') + ':6901/stream.mjpeg');
+    loadDesktopFrame('/api/desktop/stream.mjpeg');
     desktopFrame.addEventListener('load', () => {
       if (desktopConnectingOverlay) desktopConnectingOverlay.style.display = 'none';
     }, { once: true });

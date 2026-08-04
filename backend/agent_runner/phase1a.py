@@ -6,6 +6,7 @@ If B works → per-model. Repeat 2-3 times for reliability.
 
 import asyncio
 import json
+import os
 import time
 import logging
 import httpx
@@ -13,8 +14,8 @@ import httpx
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-LLM_BASE = "https://server-llm-1-0r64.onrender.com/v1"
-LLM_KEY = "freellmapi-b8b35f76a87a2e3db4985258c26197a2f22ceabe528eb6ac"
+LLM_BASE = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+LLM_KEY = os.getenv("ZED_PRO_API_KEY", "")
 MODEL_A = "gemini-3.5-flash"
 MODEL_B = "deepseek-v4-flash"
 

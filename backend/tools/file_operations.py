@@ -860,13 +860,18 @@ class ShellFileOperations(FileOperations):
         if not path:
             return path
 
-        # Translate Windows paths to local workspace path if running on cloud
+        # Translate the client's local project path to this server's workspace
         p_norm = path.replace("\\", "/")
-        for pattern in ["C:/Users/balur/Downloads/AVDE", "c:/Users/balur/Downloads/AVDE", "/c/Users/balur/Downloads/AVDE"]:
-            if p_norm.startswith(pattern):
-                rel = p_norm[len(pattern):].lstrip("/")
-                path = os.path.join(os.getcwd(), rel)
-                break
+        _local_root = os.getenv("AVDE_LOCAL_ROOT", "").replace("\\", "/").rstrip("/")
+        if _local_root:
+            _variants = {_local_root, _local_root.lower()}
+            if len(_local_root) > 2 and _local_root[1] == ":":
+                _variants.add("/" + _local_root[0].lower() + _local_root[2:])
+            for pattern in _variants:
+                if p_norm.startswith(pattern):
+                    rel = p_norm[len(pattern):].lstrip("/")
+                    path = os.path.join(os.getcwd(), rel)
+                    break
         
         # Handle ~ and ~user
         if path.startswith('~'):

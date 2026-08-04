@@ -11,9 +11,9 @@ Architecture:
 This server:
   - Proxies /v1/chat/completions to freellmapi (port 3001) with SSE streaming
   - Exposes all agent management APIs (sessions, skills, tools, cron, memory)
-  - All intelligence flows through Hermes Agent (C:\\Users\\balur\\AppData\\Local\\hermes\\hermes-agent)
-  - Loads config from C:\\Users\\balur\\.hermes\\config.yaml (Hermes Home)
-  - All sessions/memories/skills saved to C:\\Users\\balur\\.hermes\\
+  - All intelligence flows through Hermes Agent (HERMES_ROOT env var)
+  - Loads config from ~/.hermes/config.yaml (Hermes Home)
+  - All sessions/memories/skills saved to ~/.hermes/
 """
 
 from __future__ import annotations
@@ -38,7 +38,10 @@ from typing import Any, Dict, List, Optional
 # ── Add Hermes upstream to sys.path (single brain, no vendored fork) ────────
 # Hermes root FIRST — provides hermes_cli, hermes_constants, hermes_state,
 # agent, tools, cron, gateway, plugins, run_agent, model_tools, toolsets.
-_HERMES_ROOT = r"C:\Users\balur\AppData\Local\hermes\hermes-agent"
+_HERMES_ROOT = os.getenv(
+    "HERMES_ROOT",
+    os.path.join(os.getenv("LOCALAPPDATA", os.path.expanduser("~")), "hermes", "hermes-agent"),
+)
 if _HERMES_ROOT not in sys.path:
     sys.path.insert(0, _HERMES_ROOT)
 
@@ -1670,6 +1673,25 @@ _NOUS_MODELS = [
 ]
 
 
+def _translate_model_name(model_name: str) -> str:
+    """Translate model names/aliases/frontend IDs to canonical IDs."""
+    if not model_name:
+        return model_name
+    _model_aliases = {
+        "step-3.7-flash": "stepfun/step-3.7-flash",
+        "premium-step-3.7-flash": "stepfun/step-3.7-flash",
+        "hy3": "tencent/hy3",
+        "premium-tencent-hy3": "tencent/hy3",
+        "laguna-s-2.1": "poolside/laguna-s-2.1",
+        "premium-poolside-laguna": "poolside/laguna-s-2.1",
+        "ling-3.0-flash": "inclusionai/ling-3.0-flash",
+        "premium-inclusion-ling": "inclusionai/ling-3.0-flash",
+        "laguna-xs-2.1": "poolside/laguna-xs-2.1",
+        "premium-poolside-laguna-xs-2.1": "poolside/laguna-xs-2.1",
+    }
+    return _model_aliases.get(model_name, model_name)
+
+
 def _nous_auth() -> tuple[str, str]:
     """Return Nous access_token and inference base url from Hermes auth.json."""
     try:
@@ -1780,6 +1802,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
     resolved_model = request.model or "gemini-2.5-flash-lite"
     if resolved_model.lower() in ("zed-pro", "auto"):
         resolved_model = "gemini-2.5-flash-lite"
+    resolved_model = _translate_model_name(resolved_model)
 
     # ── Route Nous models through Hermes Nous auth ────────────────────────────
     _nous_model_ids = {m["id"] for m in _NOUS_MODELS}
@@ -3171,6 +3194,7 @@ async def run_agent_now(agent_id: str):
         try:
             # Use full AIAgent (same as chat endpoint) — skills, memory, tools, 90 rounds
             resolved_model = llm_model if llm_model.lower() not in ("auto", "zed-pro", "") else "gemini-2.5-flash-lite"
+            resolved_model = _translate_model_name(resolved_model)
 
             agent_runner = AIAgent(
                 session_id=f"agent-{agent_id}",
@@ -4466,6 +4490,7 @@ class SubagentTaskManager:
         resolved_model = model or "gemini-2.5-flash-lite"
         if resolved_model.lower() in ("zed-pro", "auto"):
             resolved_model = "gemini-2.5-flash-lite"
+        resolved_model = _translate_model_name(resolved_model)
 
         _agent_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
         _agent_api_key = os.getenv("ZED_PRO_API_KEY", "")

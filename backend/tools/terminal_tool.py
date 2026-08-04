@@ -1919,18 +1919,23 @@ def terminal_tool(
                     "status": "error",
                 }, ensure_ascii=False)
 
-        # Path translation: Map user's Windows path to Render's current directory path
-        if workdir:
-            workdir_norm = workdir.replace("\\", "/")
-            for pattern in ["C:/Users/balur/Downloads/AVDE", "c:/Users/balur/Downloads/AVDE", "/c/Users/balur/Downloads/AVDE"]:
-                if workdir_norm.startswith(pattern):
-                    rel = workdir_norm[len(pattern):].lstrip("/")
-                    workdir = os.path.join(os.getcwd(), rel) or "."
-                    break
-
-        command = command.replace("C:\\Users\\balur\\Downloads\\AVDE", os.getcwd())
-        command = command.replace("c:\\Users\\balur\\Downloads\\AVDE", os.getcwd())
-        command = command.replace("/c/Users/balur/Downloads/AVDE", os.getcwd())
+        # Path translation: Map the client's local project path to this
+        # server's working directory (e.g. Windows dev path → Render deploy path).
+        _local_root = os.getenv("AVDE_LOCAL_ROOT", "").replace("\\", "/").rstrip("/")
+        if _local_root:
+            _root_variants = {_local_root, _local_root.lower()}
+            if len(_local_root) > 2 and _local_root[1] == ":":
+                _root_variants.add("/" + _local_root[0].lower() + _local_root[2:])
+            if workdir:
+                workdir_norm = workdir.replace("\\", "/")
+                for pattern in _root_variants:
+                    if workdir_norm.startswith(pattern):
+                        rel = workdir_norm[len(pattern):].lstrip("/")
+                        workdir = os.path.join(os.getcwd(), rel) or "."
+                        break
+            for pattern in _root_variants:
+                command = command.replace(pattern, os.getcwd())
+                command = command.replace(pattern.replace("/", "\\"), os.getcwd())
 
         # Get configuration
         config = _get_env_config()

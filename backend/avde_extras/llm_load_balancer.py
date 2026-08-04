@@ -99,7 +99,7 @@ class LLMLoadBalancer:
         self.providers["render-llm"] = LLMProvider(
             name="Render LLM Proxy",
             url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1"),
-            api_key=os.getenv("ZED_PRO_API_KEY", "freellmapi-b8b35f76a87a2e3db4985258c26197a2f22ceabe528eb6ac"),
+            api_key=os.getenv("ZED_PRO_API_KEY", ""),
             models=["auto", "gemini-2.5-flash-lite", "gpt-4o-mini", "claude-3-haiku"],
             rate_limit=120,  # Increased from 60 to handle more requests
             burst=20,  # Increased burst capacity

@@ -1,3 +1,3 @@
 @echo off
-cd /d "C:\Users\balur\Downloads\AVDE\llm\llm-proxy"
+cd /d "%~dp0..\llm-proxy"
 npm run dev -w server > server.log 2>&1
