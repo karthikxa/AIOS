@@ -28,12 +28,39 @@ export function initDb(dbPath?: string): Database.Database {
     }
   }
 
-  db = new Database(resolvedPath);
-  if (!isMemory) db.pragma('journal_mode = WAL');
-  db.pragma('busy_timeout = 5000');
-  db.pragma('foreign_keys = ON');
+  const openAndMigrate = () => {
+    const d = new Database(resolvedPath);
+    if (!isMemory) d.pragma('journal_mode = WAL');
+    d.pragma('busy_timeout = 5000');
+    d.pragma('foreign_keys = ON');
+    migrateDbSchema(d);
+    return d;
+  };
 
-  migrateDbSchema(db);
+  try {
+    db = openAndMigrate();
+    // Test DB health query to catch malformed disk image on startup
+    db.prepare("SELECT 1 FROM settings LIMIT 1").get();
+  } catch (err: any) {
+    if (err?.message?.includes('malformed') || err?.message?.includes('corrupt')) {
+      console.warn(`[db] Corrupted database detected at ${resolvedPath} (${err.message}). Auto-recreating database...`);
+      try {
+        if (db) {
+          try { db.close(); } catch {}
+        }
+        if (!isMemory && fs.existsSync(resolvedPath)) {
+          fs.unlinkSync(resolvedPath);
+          if (fs.existsSync(`${resolvedPath}-wal`)) fs.unlinkSync(`${resolvedPath}-wal`);
+          if (fs.existsSync(`${resolvedPath}-shm`)) fs.unlinkSync(`${resolvedPath}-shm`);
+        }
+      } catch (cleanErr) {
+        console.error('[db] Error purging corrupted DB files:', cleanErr);
+      }
+      db = openAndMigrate();
+    } else {
+      throw err;
+    }
+  }
 
   console.log(`Database initialized at ${resolvedPath}`);
   return db;
