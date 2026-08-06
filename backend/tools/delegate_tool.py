@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Delegate Tool -- Subagent Architecture
 
@@ -394,7 +394,7 @@ def _get_max_concurrent_children() -> int:
     return _DEFAULT_MAX_CONCURRENT_CHILDREN
 
 
-_DEFAULT_MAX_ASYNC_CHILDREN = 3
+_DEFAULT_MAX_ASYNC_CHILDREN = 250
 
 
 def _get_max_async_children() -> int:

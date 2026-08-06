@@ -1,7 +1,10 @@
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
-
-// Configure worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+/**
+ * pdf.ts — Server-side PDF processing using pdfjs-dist.
+ *
+ * pdfjs-dist is loaded lazily inside each function to avoid module-init
+ * side-effects (DOMMatrix reference, worker setup) that hang the Node 20
+ * process on Render during server startup.
+ */
 
 export interface PDFPage {
   pageNumber: number;
@@ -28,7 +31,22 @@ export interface PDFInfo {
   keywords?: string[];
 }
 
+// Lazy singleton — pdfjs is only loaded once per process, but NOT at module init.
+let _pdfjsLib: any = null;
+
+async function getPdfjsLib(): Promise<any> {
+  if (_pdfjsLib) return _pdfjsLib;
+  // Polyfill DOMMatrix before pdfjs loads, in case it references it at init.
+  if (typeof (globalThis as any).DOMMatrix === 'undefined') {
+    (globalThis as any).DOMMatrix = class DOMMatrix {};
+  }
+  _pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  _pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+  return _pdfjsLib;
+}
+
 export async function getPDFInfo(input: Buffer | Uint8Array): Promise<PDFInfo> {
+  const pdfjsLib = await getPdfjsLib();
   const pdf = await pdfjsLib.getDocument({ data: input }).promise;
   const metadata = await pdf.getMetadata();
   const info = metadata.info as any;
@@ -47,6 +65,7 @@ export async function getPDFInfo(input: Buffer | Uint8Array): Promise<PDFInfo> {
 }
 
 export async function extractPDFText(input: Buffer | Uint8Array): Promise<string> {
+  const pdfjsLib = await getPdfjsLib();
   const pdf = await pdfjsLib.getDocument({ data: input }).promise;
   const fullText: string[] = [];
 
@@ -66,6 +85,7 @@ export async function extractPDFPage(
   input: Buffer | Uint8Array,
   pageNumber: number
 ): Promise<PDFPage> {
+  const pdfjsLib = await getPdfjsLib();
   const pdf = await pdfjsLib.getDocument({ data: input }).promise;
   const page = await pdf.getPage(pageNumber);
   const viewport = page.getViewport({ scale: 1.0 });
@@ -86,7 +106,7 @@ export async function extractPDFPage(
 }
 
 export async function extractAllPDFPages(input: Buffer | Uint8Array): Promise<PDFPage[]> {
-  const pdf = await pdfjsLib.getDocument({ data: input }).promise;
+  const pdf = await (await getPdfjsLib()).getDocument({ data: input }).promise;
   const pages: PDFPage[] = [];
 
   for (let i = 1; i <= pdf.numPages; i++) {
@@ -97,6 +117,7 @@ export async function extractAllPDFPages(input: Buffer | Uint8Array): Promise<PD
 }
 
 export async function getPDFPageCount(input: Buffer | Uint8Array): Promise<number> {
+  const pdfjsLib = await getPdfjsLib();
   const pdf = await pdfjsLib.getDocument({ data: input }).promise;
   return pdf.numPages;
 }
@@ -105,6 +126,7 @@ export async function searchPDFText(
   input: Buffer | Uint8Array,
   query: string
 ): Promise<Array<{ pageNumber: number; text: string; index: number }>> {
+  const pdfjsLib = await getPdfjsLib();
   const pdf = await pdfjsLib.getDocument({ data: input }).promise;
   const results: Array<{ pageNumber: number; text: string; index: number }> = [];
 

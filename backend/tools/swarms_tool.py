@@ -35,7 +35,7 @@ def _get_current_rss_mb() -> float:
 
 
 def _max_safe_workers() -> int:
-    container_limit = int(os.environ.get("CONTAINER_LIMIT_MB", "512"))
+    container_limit = int(os.environ.get("CONTAINER_LIMIT_MB", "16384"))
     available = container_limit - SAFETY_MARGIN_MB - _get_current_rss_mb()
     return max(1, int(available / ESTIMATED_MB_PER_WORKER))
 
