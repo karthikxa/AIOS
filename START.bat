@@ -5,11 +5,9 @@ echo   AVDE - Starting All Services (Remote LLM Proxy)
 echo =====================================================
 echo.
 
-echo [1/4] Cleaning up stale processes on ports 8000, 8642, 6901...
-for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":8000 "') do taskkill /f /pid %%a >nul 2>&1
-for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":8642 "') do taskkill /f /pid %%a >nul 2>&1
-for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":6901 "') do taskkill /f /pid %%a >nul 2>&1
-timeout /t 1 /nobreak >nul
+echo [1/4] Cleaning up stale processes on ports 8000, 8001, 8642, 6901...
+for /f "tokens=5" %%a in ('netstat -aon 2^>nul ^| findstr ":8000 :8001 :8642 :6901"') do taskkill /f /pid %%a >nul 2>&1
+ping -n 2 127.0.0.1 >nul
 
 echo [2/4] Starting Zed Agent Backend (port 8642)...
 start "Zed Agent Backend (8642)" cmd /k "cd /d "%~dp0backend" && set ZED_HOME=%USERPROFILE%\.hermes&& set ZED_PRO_BASE_URL=https://server-llm-1.onrender.com/v1&& .venv\Scripts\python.exe -m uvicorn server:app --host 0.0.0.0 --port 8642"
@@ -28,7 +26,5 @@ echo Remote LLM Server: https://server-llm-1.onrender.com/v1
 echo =====================================================
 echo.
 
-timeout /t 3 /nobreak >nul
+ping -n 3 127.0.0.1 >nul
 start http://localhost:8000
-
-pause

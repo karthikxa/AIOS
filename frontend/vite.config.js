@@ -24,7 +24,8 @@ export default {
     },
   },
   server: {
-    port: 8001,
+    port: 8000,
+    strictPort: true,
     proxy: {
       // Route /v1 to local backend (LLM proxy passthrough)
       '/v1': {
