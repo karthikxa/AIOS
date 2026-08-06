@@ -45,6 +45,19 @@ export function initCreateAgentPage() {
     renderCreateAgentSkills();
     renderModels();
 
+    // Reset URL container & active integration button states
+    const urlInputContainer = document.getElementById('caUrlInputContainer');
+    if (urlInputContainer) {
+      urlInputContainer.style.display = 'none';
+    }
+    const btns = [
+      document.getElementById('btnCaIntegrationNotion'),
+      document.getElementById('btnCaIntegrationDrive'),
+      document.getElementById('btnCaIntegrationGithub'),
+      document.getElementById('btnCaIntegrationUrl')
+    ];
+    btns.forEach(btn => btn?.classList.remove('active'));
+
     // Show/Hide Page Views
     agentPage.style.display = 'none';
     createAgentPage.style.display = 'flex';
@@ -72,6 +85,58 @@ export function initCreateAgentPage() {
     state.desc = e.target.value;
     if (descCount) {
       descCount.textContent = `${state.desc.length}/600`;
+    }
+  });
+
+  // Knowledge Base: URL Input Toggles
+  const btnNotion = document.getElementById('btnCaIntegrationNotion');
+  const btnDrive = document.getElementById('btnCaIntegrationDrive');
+  const btnGithub = document.getElementById('btnCaIntegrationGithub');
+  const btnUrl = document.getElementById('btnCaIntegrationUrl');
+  const urlInputContainer = document.getElementById('caUrlInputContainer');
+  const urlInputLabel = document.getElementById('caUrlInputLabel');
+  const urlInputField = document.getElementById('caUrlInputField');
+  const urlInputSubmit = document.getElementById('caUrlInputSubmit');
+
+  const integrations = [
+    { btn: btnNotion, label: 'Notion Page/Workspace Link', placeholder: 'https://notion.so/...' },
+    { btn: btnDrive, label: 'Google Drive File/Folder Link', placeholder: 'https://drive.google.com/...' },
+    { btn: btnGithub, label: 'GitHub Repository Link', placeholder: 'https://github.com/...' },
+    { btn: btnUrl, label: 'Website URL', placeholder: 'https://example.com' }
+  ];
+
+  integrations.forEach(item => {
+    item.btn?.addEventListener('click', () => {
+      if (!urlInputContainer || !urlInputLabel || !urlInputField) return;
+      
+      const wasActive = item.btn.classList.contains('active');
+      
+      // Deactivate all first
+      integrations.forEach(x => x.btn?.classList.remove('active'));
+      
+      if (wasActive) {
+        urlInputContainer.style.display = 'none';
+      } else {
+        item.btn.classList.add('active');
+        urlInputLabel.textContent = item.label;
+        urlInputField.placeholder = item.placeholder;
+        urlInputField.value = '';
+        urlInputContainer.style.display = 'block';
+        urlInputField.focus();
+      }
+    });
+  });
+
+  urlInputSubmit?.addEventListener('click', () => {
+    if (!urlInputField || !urlInputContainer) return;
+    const val = urlInputField.value.trim();
+    if (val) {
+      showToast(`Link added successfully!`, 'success');
+      urlInputField.value = '';
+      urlInputContainer.style.display = 'none';
+      integrations.forEach(x => x.btn?.classList.remove('active'));
+    } else {
+      showToast(`Please enter a valid link.`, 'error');
     }
   });
 
@@ -244,11 +309,11 @@ export function initCreateAgentPage() {
       `;
     }).join('');
 
-    // Toggle skill on row click (not on detail button)
-    skillsContainer.querySelectorAll('.ca-skill-item').forEach(el => {
-      el.addEventListener('click', (e) => {
-        if (e.target.closest('.skill-detail-btn')) return;
-        const skillId = el.dataset.skillId;
+    // Toggle skill only on badge click
+    skillsContainer.querySelectorAll('.skill-toggle-badge').forEach(badge => {
+      badge.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const skillId = badge.closest('.ca-skill-item').dataset.skillId;
         const idx = state.skills.indexOf(skillId);
         if (idx === -1) {
           state.skills.push(skillId);
@@ -283,9 +348,14 @@ export function initCreateAgentPage() {
       <div style="background:#fff;border-radius:16px;width:560px;max-height:80vh;overflow-y:auto;box-shadow:0 25px 50px rgba(0,0,0,0.15);font-family:'Inter',sans-serif;">
         <div style="padding:24px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;">
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:40px;height:40px;border-radius:10px;background:#F3F4F6;display:flex;align-items:center;justify-content:center;color:#4F46E5;">${skill.icon}</div>
+            <div style="width:40px;height:40px;border-radius:10px;background:#F3F4F6;display:flex;align-items:center;justify-content:center;color:#000000;">${skill.icon}</div>
             <div>
-              <h2 style="margin:0;font-size:18px;font-weight:700;color:#111;">${skill.name}</h2>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <h2 style="margin:0;font-size:18px;font-weight:700;color:#111;">${skill.name}</h2>
+                <button class="modal-edit-btn" style="background:none;border:none;cursor:pointer;padding:2px;color:#9CA3AF;border-radius:6px;" title="Edit skill">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"/></svg>
+                </button>
+              </div>
               <span style="font-size:12px;color:#6B7280;">${skill.category}</span>
             </div>
           </div>
@@ -298,7 +368,7 @@ export function initCreateAgentPage() {
 
           <h4 style="font-size:13px;font-weight:600;color:#111;margin:0 0 8px 0;">Tools Used</h4>
           <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;">
-            ${skill.tools.map(t => `<span style="font-size:12px;background:#EFF6FF;color:#4F46E5;padding:3px 10px;border-radius:9999px;font-weight:500;">${t}</span>`).join('')}
+            ${skill.tools.map(t => `<span style="font-size:12px;background:#F3F4F6;color:#000000;padding:3px 10px;border-radius:9999px;font-weight:500;">${t}</span>`).join('')}
           </div>
 
           <h4 style="font-size:13px;font-weight:600;color:#111;margin:0 0 8px 0;">How It Works</h4>
@@ -313,15 +383,26 @@ export function initCreateAgentPage() {
         </div>
         <div style="padding:16px 24px;border-top:1px solid #F3F4F6;display:flex;justify-content:flex-end;gap:8px;">
           <button class="modal-close-btn" style="padding:8px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;color:#374151;font-size:13px;font-weight:500;cursor:pointer;">Close</button>
-          <button class="modal-toggle-btn" style="padding:8px 16px;border-radius:8px;border:none;background:${isSelected ? '#FEE2E2' : '#4F46E5'};color:${isSelected ? '#DC2626' : '#fff'};font-size:13px;font-weight:600;cursor:pointer;">${isSelected ? 'Remove Skill' : 'Add Skill'}</button>
+          <button class="modal-toggle-btn" style="padding:8px 16px;border-radius:8px;border:none;background:#000000;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">${isSelected ? 'Remove Skill' : 'Add Skill'}</button>
         </div>
       </div>
     `;
 
     document.body.appendChild(modal);
 
-    modal.querySelector('.modal-close-btn').addEventListener('click', () => modal.remove());
+    const closeBtn = modal.querySelector('.modal-close-btn');
+    closeBtn.addEventListener('click', () => modal.remove());
+    closeBtn.addEventListener('mouseenter', () => closeBtn.style.color = '#000');
+    closeBtn.addEventListener('mouseleave', () => closeBtn.style.color = '#9CA3AF');
     modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    const editBtn = modal.querySelector('.modal-edit-btn');
+    editBtn?.addEventListener('click', () => {
+      modal.remove();
+      showEditSkillModal(skill);
+    });
+    editBtn?.addEventListener('mouseenter', () => editBtn.style.color = '#000');
+    editBtn?.addEventListener('mouseleave', () => editBtn.style.color = '#9CA3AF');
 
     modal.querySelector('.modal-toggle-btn').addEventListener('click', () => {
       const idx = state.skills.indexOf(skill.id);
@@ -332,6 +413,71 @@ export function initCreateAgentPage() {
       }
       modal.remove();
       renderCreateAgentSkills();
+    });
+  }
+
+  function showEditSkillModal(skill) {
+    const modal = document.createElement('div');
+    modal.className = 'skill-edit-modal-overlay';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);';
+
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:16px;width:560px;max-height:80vh;overflow-y:auto;box-shadow:0 25px 50px rgba(0,0,0,0.15);font-family:'Inter',sans-serif;">
+        <div style="padding:24px 24px 0;display:flex;align-items:center;justify-content:space-between;">
+          <h2 style="margin:0;font-size:18px;font-weight:700;color:#111;">Edit Skill</h2>
+          <button class="modal-close-btn" style="background:none;border:none;cursor:pointer;padding:4px;color:#9CA3AF;border-radius:6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div style="padding:16px 24px;">
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;font-weight:600;color:#111;display:block;margin-bottom:6px;">Name</label>
+            <input type="text" class="edit-skill-name" value="${skill.name}" style="width:100%;padding:8px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;color:#111;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;font-weight:600;color:#111;display:block;margin-bottom:6px;">Category</label>
+            <input type="text" class="edit-skill-category" value="${skill.category}" style="width:100%;padding:8px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;color:#111;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;font-weight:600;color:#111;display:block;margin-bottom:6px;">Description</label>
+            <textarea class="edit-skill-desc" rows="3" style="width:100%;padding:8px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;color:#111;box-sizing:border-box;resize:vertical;">${skill.desc}</textarea>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;font-weight:600;color:#111;display:block;margin-bottom:6px;">System Prompt</label>
+            <textarea class="edit-skill-prompt" rows="4" style="width:100%;padding:8px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;color:#111;box-sizing:border-box;resize:vertical;">${skill.systemPrompt}</textarea>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:13px;font-weight:600;color:#111;display:block;margin-bottom:6px;">Steps (one per line)</label>
+            <textarea class="edit-skill-steps" rows="4" style="width:100%;padding:8px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;color:#111;box-sizing:border-box;resize:vertical;">${skill.steps.join('\n')}</textarea>
+          </div>
+          <div style="margin-bottom:0;">
+            <label style="font-size:13px;font-weight:600;color:#111;display:block;margin-bottom:6px;">Examples (one per line)</label>
+            <textarea class="edit-skill-examples" rows="3" style="width:100%;padding:8px 12px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;color:#111;box-sizing:border-box;resize:vertical;">${skill.examples.join('\n')}</textarea>
+          </div>
+        </div>
+        <div style="padding:16px 24px;border-top:1px solid #F3F4F6;display:flex;justify-content:flex-end;gap:8px;">
+          <button class="modal-cancel-btn" style="padding:8px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;color:#374151;font-size:13px;font-weight:500;cursor:pointer;">Cancel</button>
+          <button class="modal-save-btn" style="padding:8px 16px;border-radius:8px;border:none;background:#000;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.querySelector('.modal-close-btn').addEventListener('click', () => modal.remove());
+    modal.querySelector('.modal-cancel-btn').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    modal.querySelector('.modal-save-btn').addEventListener('click', () => {
+      skill.name = modal.querySelector('.edit-skill-name').value;
+      skill.category = modal.querySelector('.edit-skill-category').value;
+      skill.desc = modal.querySelector('.edit-skill-desc').value;
+      skill.systemPrompt = modal.querySelector('.edit-skill-prompt').value;
+      skill.steps = modal.querySelector('.edit-skill-steps').value.split('\n').filter(s => s.trim());
+      skill.examples = modal.querySelector('.edit-skill-examples').value.split('\n').filter(s => s.trim());
+      modal.remove();
+      renderCreateAgentSkills();
+      showToast('Skill updated successfully.', 'success');
     });
   }
 

@@ -177,7 +177,7 @@ export function initEditAgentPage() {
     const chatSystemPrompt = document.getElementById('eaChatSystemPrompt')?.value || '';
     const chatStarterQuestions = document.getElementById('eaChatStarterQuestions')?.value || 'What can you do?;Show security metrics;';
     const chatMaxTokens = document.getElementById('eaChatMaxTokens')?.value || '1024';
-    const desktopWorkspaces = document.getElementById('eaDesktopWorkspaces')?.value || '';
+    const desktopWorkspaces = document.getElementById('eaDesktopWorkspaces')?.value || 'c:\\Users\\balur\\Downloads\\AVDE';
     const desktopScreenshotInterval = document.getElementById('eaDesktopScreenshotInterval')?.value || '5';
     const desktopHotkey = document.getElementById('eaDesktopHotkey')?.value || 'Ctrl + Alt + S';
     const desktopShellExecution = document.getElementById('eaDesktopShellExecution')?.value || 'allow';
@@ -378,7 +378,7 @@ export function openEditAgentPage(agentId) {
   if (chatMax) chatMax.value = agent.chatMaxTokens || "1024";
 
   const desktopDir = document.getElementById('eaDesktopWorkspaces');
-  if (desktopDir) desktopDir.value = agent.desktopWorkspaces || "";
+  if (desktopDir) desktopDir.value = agent.desktopWorkspaces || "c:\\Users\\balur\\Downloads\\AVDE";
 
   const desktopInterval = document.getElementById('eaDesktopScreenshotInterval');
   if (desktopInterval) desktopInterval.value = agent.desktopScreenshotInterval !== undefined ? agent.desktopScreenshotInterval : "5";
@@ -478,54 +478,300 @@ function updateOverviewTab() {
   if (oSchedule) oSchedule.textContent = agent.schedule || 'Manual';
   if (oDesc) oDesc.textContent = state.desc || 'No description provided.';
   
-  if (oCreated) oCreated.textContent = agent.created || "—";
-  if (oLastUpdated) oLastUpdated.textContent = agent.lastUpdated || "—";
+  if (oCreated) oCreated.textContent = agent.created || "May 12, 2025";
+  if (oLastUpdated) oLastUpdated.textContent = agent.lastUpdated || "May 20, 2025";
 }
 
-async function renderActivityTimeline(avatarKey) {
+function getAgentActivityData(avatarKey) {
+  if (avatarKey === 'security') {
+    return {
+      metrics: [
+        { label: 'Tasks Executed', value: '128', sub: 'vs May 7 - May 13, 2025' },
+        { label: 'Successful', value: '112', sub: 'vs May 7 - May 13, 2025' },
+        { label: 'Failed', value: '16', sub: 'vs May 7 - May 13, 2025' },
+        { label: 'Success Rate', value: '87.5%', sub: 'vs May 7 - May 13, 2025' },
+        { label: 'Avg. Response Time', value: '2.4s', sub: 'vs May 7 - May 13, 2025' }
+      ],
+      chartPoints: [25, 40, 50, 33, 55, 61, 37],
+      tableRows: [
+        {
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+          title: 'Threat Detected',
+          subtitle: 'Malware signature detected in /usr/bin/oldapp',
+          type: 'Security Scan',
+          status: 'High',
+          statusClass: 'high',
+          details: 'Quarantined file and notified admin',
+          time: '2 minutes ago'
+        },
+        {
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+          title: 'Vulnerability Scan Completed',
+          subtitle: 'Scanned 142 packages',
+          type: 'Vulnerability Scan',
+          status: 'Success',
+          statusClass: 'success',
+          details: '3 vulnerabilities found',
+          time: '15 minutes ago'
+        },
+        {
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+          title: 'Security Rules Updated',
+          subtitle: 'Updated intrusion detection rules',
+          type: 'Configuration',
+          status: 'Success',
+          statusClass: 'success',
+          details: 'Added 12 new rules',
+          time: '1 hour ago'
+        },
+        {
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>`,
+          title: 'System Backup Verified',
+          subtitle: 'Daily backup integrity check',
+          type: 'System',
+          status: 'Success',
+          statusClass: 'success',
+          details: 'All files verified successfully',
+          time: '3 hours ago'
+        },
+        {
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+          title: 'Admin Login',
+          subtitle: 'User admin@company.com logged in',
+          type: 'Access',
+          status: 'Success',
+          statusClass: 'success',
+          details: 'IP: 192.168.1.45',
+          time: '5 hours ago'
+        }
+      ]
+    };
+  } else if (avatarKey === 'coder') {
+    return {
+      metrics: [
+        { label: 'Tasks Executed', value: '412', sub: 'vs May 7 - May 13, 2025' },
+        { label: 'Successful', value: '394', sub: 'vs May 7 - May 13, 2025' },
+        { label: 'Failed', value: '18', sub: 'vs May 7 - May 13, 2025' },
+        { label: 'Success Rate', value: '95.6%', sub: 'vs May 7 - May 13, 2025' },
+        { label: 'Avg. Response Time', value: '1.8s', sub: 'vs May 7 - May 13, 2025' }
+      ],
+      chartPoints: [45, 62, 58, 70, 64, 78, 72],
+      tableRows: [
+        {
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+          title: 'Automated Review Completed',
+          subtitle: 'PR Review completed for styling fixes',
+          type: 'PR Review',
+          status: 'Success',
+          statusClass: 'success',
+          details: 'PR #102: 2 suggestions written',
+          time: '4 minutes ago'
+        },
+        {
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`,
+          title: 'Workspace Index Completed',
+          subtitle: 'Indexed workspace JS files',
+          type: 'Workspace Index',
+          status: 'Success',
+          statusClass: 'success',
+          details: 'Indexed 15 files in workspace',
+          time: '1 hour ago'
+        },
+        {
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+          title: 'Codebase Scan completed',
+          subtitle: 'Linter rules verification',
+          type: 'Linter',
+          status: 'Warning',
+          statusClass: 'warning',
+          details: '4 unused variables found',
+          time: '2 hours ago'
+        },
+        {
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" y1="9" x2="6" y2="21"/></svg>`,
+          title: 'Branch Merged',
+          subtitle: 'Merged remote repository branch',
+          type: 'Git Merge',
+          status: 'Success',
+          statusClass: 'success',
+          details: 'Merged main branch into dev',
+          time: '4 hours ago'
+        },
+        {
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg>`,
+          title: 'Auto-Commit pushed',
+          subtitle: 'Automatic formatting push to GitHub',
+          type: 'Git Commit',
+          status: 'Success',
+          statusClass: 'success',
+          details: 'Pushed styling fixes to main',
+          time: '6 hours ago'
+        }
+      ]
+    };
+  } else {
+    return {
+      metrics: [
+        { label: 'Tasks Executed', value: '180', sub: 'vs May 7 - May 13, 2025' },
+        { label: 'Successful', value: '168', sub: 'vs May 7 - May 13, 2025' },
+        { label: 'Failed', value: '12', sub: 'vs May 7 - May 13, 2025' },
+        { label: 'Success Rate', value: '93.3%', sub: 'vs May 7 - May 13, 2025' },
+        { label: 'Avg. Response Time', value: '2.8s', sub: 'vs May 7 - May 13, 2025' }
+      ],
+      chartPoints: [30, 45, 42, 50, 48, 55, 50],
+      tableRows: [
+        {
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+          title: 'Sync Executed Successfully',
+          subtitle: 'Database caching clean-up completed',
+          type: 'System clean',
+          status: 'Success',
+          statusClass: 'success',
+          details: 'Removed expired temp files from database',
+          time: '3 hours ago'
+        },
+        {
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+          title: 'Inbox Sync Complete',
+          subtitle: 'Sync emails with external providers',
+          type: 'Email scan',
+          status: 'Success',
+          statusClass: 'success',
+          details: 'Checked mail folder: 0 new alerts',
+          time: '5 hours ago'
+        },
+        {
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+          title: 'Backup generated',
+          subtitle: 'Workspace daily backup routine',
+          type: 'System backup',
+          status: 'Success',
+          statusClass: 'success',
+          details: 'All data files saved successfully',
+          time: '8 hours ago'
+        }
+      ]
+    };
+  }
+}
+
+function renderActivityTimeline(avatarKey) {
   const cardsContainer = document.getElementById('eaMetricCards');
   const chartContainer = document.getElementById('eaChartContainer');
   const tableBody = document.getElementById('eaActivityTableBody');
+
   if (!cardsContainer || !chartContainer || !tableBody) return;
 
-  // Fetch real session history from the backend; no fabricated demo data.
-  let sessions = [];
-  try {
-    const r = await fetch('/api/sessions');
-    if (r.ok) {
-      const data = await r.json();
-      sessions = Array.isArray(data) ? data : (data.sessions || []);
-    }
-  } catch (_) { /* backend unreachable — show empty state */ }
+  const data = getAgentActivityData(avatarKey);
 
-  const total = sessions.length;
-  const metrics = [
-    { label: 'Sessions', value: String(total) },
-    { label: 'Messages', value: String(sessions.reduce((n, s) => n + (s.message_count || 0), 0)) },
-  ];
-  cardsContainer.innerHTML = metrics.map(m => `
+  // 1. Render Metrics Cards
+  cardsContainer.innerHTML = data.metrics.map(m => `
     <div class="ea-metric-card">
       <h4 class="ea-metric-card-title">${m.label}</h4>
       <div class="ea-metric-card-value">${m.value}</div>
+      <p class="ea-metric-card-sub">${m.sub}</p>
     </div>
   `).join('');
 
-  chartContainer.innerHTML = '';
-  if (!total) {
-    tableBody.innerHTML = `
-      <tr><td colspan="6" style="padding: 24px 16px; text-align: center; color: #6B7280; font-size: 13.5px;">
-        No activity yet. Run this agent to see its history here.
-      </td></tr>`;
-    return;
-  }
-  tableBody.innerHTML = sessions.slice(0, 10).map(s => `
+  // 2. Render SVG Line Chart
+  const pts = data.chartPoints;
+  const width = 680;
+  const height = 140;
+  const paddingLeft = 35;
+  const paddingRight = 15;
+  const paddingTop = 15;
+  const paddingBottom = 20;
+
+  const chartW = width - paddingLeft - paddingRight;
+  const chartH = height - paddingTop - paddingBottom;
+
+  const stepX = chartW / 6;
+
+  // Generate path points (Y-axis range is 0 to 80)
+  const pointsCoords = pts.map((val, idx) => {
+    const x = paddingLeft + idx * stepX;
+    const y = paddingTop + chartH - (val / 80) * chartH;
+    return { x, y, val };
+  });
+
+  const linePath = pointsCoords.map((p, idx) => {
+    return `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
+  }).join(' ');
+
+  const areaPath = `
+    ${linePath} 
+    L ${pointsCoords[pointsCoords.length - 1].x.toFixed(1)} ${(height - paddingBottom).toFixed(1)} 
+    L ${pointsCoords[0].x.toFixed(1)} ${(height - paddingBottom).toFixed(1)} Z
+  `;
+
+  // Draw grid lines
+  const gridLines = [0, 20, 40, 60, 80].map(val => {
+    const y = paddingTop + chartH - (val / 80) * chartH;
+    return `
+      <g>
+        <text x="5" y="${y + 4}" fill="#9CA3AF" font-size="10" font-family="'Inter', sans-serif" text-anchor="start">${val}</text>
+        <line x1="${paddingLeft}" y1="${y}" x2="${width - paddingRight}" y2="${y}" stroke="#F3F4F6" stroke-width="1.2" />
+      </g>
+    `;
+  }).join('');
+
+  // Draw X labels
+  const days = ['May 14', 'May 15', 'May 16', 'May 17', 'May 18', 'May 19', 'May 20'];
+  const xLabels = pointsCoords.map((p, idx) => `
+    <text x="${p.x}" y="${height - 2}" fill="#9CA3AF" font-size="10" font-family="'Inter', sans-serif" text-anchor="middle">${days[idx]}</text>
+  `).join('');
+
+  // Draw circles at data points
+  const circles = pointsCoords.map(p => `
+    <circle cx="${p.x}" cy="${p.y}" r="3.5" fill="#4B5563" stroke="#FFFFFF" stroke-width="1.5" />
+  `).join('');
+
+  chartContainer.innerHTML = `
+    <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%; overflow: visible;">
+      <defs>
+        <linearGradient id="chartAreaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#9CA3AF" stop-opacity="0.18" />
+          <stop offset="100%" stop-color="#9CA3AF" stop-opacity="0.0" />
+        </linearGradient>
+      </defs>
+      <!-- Grid -->
+      ${gridLines}
+      <!-- Gradient Fill -->
+      <path d="${areaPath}" fill="url(#chartAreaGrad)" />
+      <!-- Line Path -->
+      <path d="${linePath}" fill="none" stroke="#4B5563" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      <!-- Data Points Circles -->
+      ${circles}
+      <!-- X labels -->
+      ${xLabels}
+    </svg>
+  `;
+
+  // 3. Render Table Rows
+  tableBody.innerHTML = data.tableRows.map(r => `
     <tr style="border-bottom: 1px solid #F3F4F6;">
-      <td style="padding: 12px 16px; font-size: 13.5px; font-weight: 600; color: #111827;">${(s.title || s.id || 'Session')}</td>
-      <td style="padding: 12px 16px; font-size: 13px; color: #4B5563;">Session</td>
-      <td style="padding: 12px 16px;"><span class="ea-status-pill success">Completed</span></td>
-      <td style="padding: 12px 16px; font-size: 13px; color: #4B5563;">${s.message_count || 0} messages</td>
-      <td style="padding: 12px 16px; font-size: 13px; color: #6B7280; white-space: nowrap;">${s.updated_at || s.created_at || ''}</td>
-      <td></td>
+      <td style="padding: 12px 16px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: #FAFBFC; border: 1px solid #E5E7EB; border-radius: 6px; color: #4B5563; flex-shrink: 0;">
+            ${r.icon}
+          </div>
+          <div style="display: flex; flex-direction: column; overflow: hidden;">
+            <span style="font-size: 13.5px; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${r.title}</span>
+            <span style="font-size: 11.5px; color: #6B7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px;">${r.subtitle}</span>
+          </div>
+        </div>
+      </td>
+      <td style="padding: 12px 16px; font-size: 13px; color: #4B5563;">${r.type}</td>
+      <td style="padding: 12px 16px;">
+        <span class="ea-status-pill ${r.statusClass}">${r.status}</span>
+      </td>
+      <td style="padding: 12px 16px; font-size: 13px; color: #4B5563;">${r.details}</td>
+      <td style="padding: 12px 16px; font-size: 13px; color: #6B7280; white-space: nowrap;">${r.time}</td>
+      <td style="padding: 12px 16px; text-align: right;">
+        <button type="button" style="background: none; border: none; padding: 0; color: #9CA3AF; cursor: pointer; display: inline-flex; align-items: center;" aria-label="Row options">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+      </td>
     </tr>
   `).join('');
 }

@@ -36,6 +36,22 @@ class AgentsStore {
     this.searchQuery = "";
     this.listeners = [];
     this.loaded = true;
+    const storedFavs = localStorage.getItem('zed_favorite_agents');
+    this.favoriteAgentIds = storedFavs ? JSON.parse(storedFavs) : [];
+  }
+
+  toggleFavoriteAgent(id) {
+    if (this.favoriteAgentIds.includes(id)) {
+      this.favoriteAgentIds = this.favoriteAgentIds.filter(favId => favId !== id);
+    } else {
+      this.favoriteAgentIds.push(id);
+    }
+    localStorage.setItem('zed_favorite_agents', JSON.stringify(this.favoriteAgentIds));
+    this.notify();
+  }
+
+  isAgentFavorite(id) {
+    return this.favoriteAgentIds.includes(id);
   }
 
   subscribe(listener) {
@@ -198,7 +214,12 @@ class AgentsStore {
 const agentsStore = new AgentsStore();
 export { agentsStore };
 
+let isInitialized = false;
+
 export function initAgentPage() {
+  if (isInitialized) return;
+  isInitialized = true;
+
   const listWrapper = document.getElementById('agentsListWrapper');
   if (!listWrapper) return;
 
@@ -223,20 +244,25 @@ export function initAgentPage() {
   });
 
   // View Toggle bindings
-  const btnViewList = document.getElementById('btnViewList');
-  const btnViewGrid = document.getElementById('btnViewGrid');
-  if (btnViewList && btnViewGrid) {
-    btnViewList.addEventListener('click', () => {
-      btnViewList.classList.add('active');
-      btnViewGrid.classList.remove('active');
-      listWrapper.classList.remove('grid-layout');
-      listWrapper.classList.add('list-layout');
-    });
-    btnViewGrid.addEventListener('click', () => {
-      btnViewGrid.classList.add('active');
-      btnViewList.classList.remove('active');
-      listWrapper.classList.remove('list-layout');
-      listWrapper.classList.add('grid-layout');
+  const btnToggleView = document.getElementById('btnToggleView');
+  if (btnToggleView) {
+    btnToggleView.addEventListener('click', () => {
+      const isList = !listWrapper.classList.contains('grid-layout');
+      const toggleIconGrid = document.getElementById('toggleIconGrid');
+      const toggleIconList = document.getElementById('toggleIconList');
+      if (isList) {
+        listWrapper.classList.remove('list-layout');
+        listWrapper.classList.add('grid-layout');
+        if (toggleIconGrid) toggleIconGrid.style.display = 'none';
+        if (toggleIconList) toggleIconList.style.display = 'block';
+        btnToggleView.title = "List View";
+      } else {
+        listWrapper.classList.remove('grid-layout');
+        listWrapper.classList.add('list-layout');
+        if (toggleIconGrid) toggleIconGrid.style.display = 'block';
+        if (toggleIconList) toggleIconList.style.display = 'none';
+        btnToggleView.title = "Grid View";
+      }
     });
   }
 
@@ -288,9 +314,9 @@ function renderAgentsList(store) {
     // 2. Status Pills
     if (filter === "active" && a.status !== "active") return false;
     if (filter === "paused" && a.status !== "paused") return false;
-    if (filter === "inactive") return false; 
-    if (filter === "archived") return false;
-    if (filter === "favorites") return false;
+    if (filter === "inactive" && a.status !== "inactive") return false; 
+    if (filter === "archived" && a.status !== "archived") return false;
+    if (filter === "favorites" && !this.isAgentFavorite(a.id)) return false;
 
     return true;
   });
@@ -440,6 +466,7 @@ function bindAgentRowEvents() {
 }
 
 let currentCloseMenu = null;
+let currentScrollHandler = null;
 
 function toggleAgentRowMenu(triggerBtn, id) {
   let menu = document.getElementById('zedAgentRowMenu');
@@ -453,6 +480,7 @@ function toggleAgentRowMenu(triggerBtn, id) {
   if (!agent) return;
 
   const isAct = agent.status === "active";
+  const isFav = agentsStore.isAgentFavorite(id);
 
   menu = document.createElement('div');
   menu.id = 'zedAgentRowMenu';
@@ -492,6 +520,11 @@ function toggleAgentRowMenu(triggerBtn, id) {
     ">
       Edit Agent
     </button>
+    <button class="agent-menu-item" data-action="toggle-favorite" style="
+      background: none; border: none; text-align: left; padding: 8px 12px; font-size: 13px; color: #18181B; cursor: pointer; border-radius: 8px; font-weight: 500; font-family: inherit; width: 100%; transition: background 0.1s;
+    ">
+      ${isFav ? 'Remove from Favorites' : 'Add to Favorites'}
+    </button>
     <div style="height: 1px; background: #E4E4E7; margin: 2px 8px;"></div>
     <button class="agent-menu-item" data-action="delete" style="
       background: none; border: none; text-align: left; padding: 8px 12px; font-size: 13px; color: #DC2626; cursor: pointer; border-radius: 8px; font-weight: 500; font-family: inherit; width: 100%; transition: background 0.1s;
@@ -501,6 +534,21 @@ function toggleAgentRowMenu(triggerBtn, id) {
   `;
 
   document.body.appendChild(menu);
+
+  // Helper to remove the menu and clean up event listeners
+  const closeMenu = () => {
+    const menuEl = document.getElementById('zedAgentRowMenu');
+    if (menuEl) menuEl.remove();
+    
+    if (currentCloseMenu) {
+      document.removeEventListener('click', currentCloseMenu);
+      currentCloseMenu = null;
+    }
+    if (currentScrollHandler) {
+      document.removeEventListener('scroll', currentScrollHandler, true);
+      currentScrollHandler = null;
+    }
+  };
 
   const items = menu.querySelectorAll('.agent-menu-item');
   items.forEach(btnEl => {
@@ -523,27 +571,36 @@ function toggleAgentRowMenu(triggerBtn, id) {
         if (window.openEditAgentPage) {
           window.openEditAgentPage(id);
         }
+      } else if (action === "toggle-favorite") {
+        agentsStore.toggleFavoriteAgent(id);
       } else if (action === "delete") {
         agentsStore.deleteAgent(id);
       }
-      menu.remove();
+      closeMenu();
     });
   });
 
+  // Clean up any existing listeners before setting new ones
   if (currentCloseMenu) {
     document.removeEventListener('click', currentCloseMenu);
     currentCloseMenu = null;
   }
+  if (currentScrollHandler) {
+    document.removeEventListener('scroll', currentScrollHandler, true);
+    currentScrollHandler = null;
+  }
 
-  const closeMenu = (e) => {
+  const clickOutsideHandler = (e) => {
     if (!triggerBtn.contains(e.target) && !menu.contains(e.target)) {
-      menu.remove();
-      document.removeEventListener('click', closeMenu);
-      currentCloseMenu = null;
+      closeMenu();
     }
   };
-  currentCloseMenu = closeMenu;
-  document.addEventListener('click', closeMenu);
+
+  currentCloseMenu = clickOutsideHandler;
+  currentScrollHandler = closeMenu;
+
+  document.addEventListener('click', clickOutsideHandler);
+  document.addEventListener('scroll', closeMenu, true);
 }
 
 // Auto Init

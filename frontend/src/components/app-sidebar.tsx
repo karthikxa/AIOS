@@ -41,7 +41,7 @@ const navItems: { id: AppView; label: string; icon: any }[] = [
   { id: "agent", label: "Agent Mode", icon: Bot },
   { id: "models", label: "Models", icon: Boxes },
   { id: "plugins", label: "Plugins", icon: Puzzle },
-  { id: "scheduled", label: "Scheduled", icon: Calendar },
+  { id: "scheduled", label: "Schedules", icon: Calendar },
 ]
 
 export function AppSidebar({ activeView, onNavigate, theme, onToggleTheme }: AppSidebarProps) {

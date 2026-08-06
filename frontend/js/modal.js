@@ -1459,9 +1459,6 @@ export function openConnectFlow(id, store) {
             <p style="font-size: 13.5px; color: #6B7280; margin: 0;">Fetch and select the models you want to enable.</p>
           </div>
           <button id="zedFetchModelsBtn" class="wizard-fetch-btn">
-            <svg class="refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
-              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
-            </svg>
             Fetch Models
           </button>
         </div>
@@ -1902,9 +1899,6 @@ export function openAddProviderModal(store) {
             <p style="font-size: 13.5px; color: #6B7280; margin: 0;">Fetch and select the models you want to enable.</p>
           </div>
           <button id="zedFetchModelsBtn" class="wizard-fetch-btn">
-            <svg class="refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
-              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
-            </svg>
             Fetch Models
           </button>
         </div>
