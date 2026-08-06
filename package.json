@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "Single-command bootloader for AVDE",
   "scripts": {
-    "dev": "concurrently --kill-others-on-fail --prefix \"[{name}]\" --names \"BACKEND,DESKTOP,FRONTEND\" --prefix-colors \"bgBlue.bold,bgMagenta.bold,bgCyan.bold\" \"npm run dev:backend\" \"npm run dev:desktop\" \"npm run dev:frontend\"",
+    "dev": "concurrently --kill-others-on-fail --prefix \"[{name}]\" --names \"BACKEND,DESKTOP,FRONTEND,NOUS\" --prefix-colors \"bgBlue.bold,bgMagenta.bold,bgCyan.bold,bgGreen.bold\" \"npm run dev:backend\" \"npm run dev:desktop\" \"npm run dev:frontend\" \"npm run dev:nous\"",
     "dev:backend": "cd backend && .venv\\Scripts\\python.exe server.py",
     "dev:desktop": "cd desktop-agent && python start_agent.py",
-    "dev:frontend": "cd frontend && npm run dev"
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:nous": "python nous-token-server/server.py"
   },
   "dependencies": {
     "concurrently": "^8.2.2"

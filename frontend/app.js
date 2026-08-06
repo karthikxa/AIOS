@@ -16,6 +16,7 @@ import DOMPurify from 'dompurify';
 import { renderMarkdown, extractCodeBlocks, isMaskedKey, normalizeBaseUrl, TasksStore } from './src/utils.js';
 import { buildAgentWebSocketUrl } from './src/desktop-connection.js';
 import { parseReasoningToCoT, createCoTLiveRenderer } from './js/chain-of-thought.js';
+import { isNousDirectModel, nousStreamChat, nousChat } from './js/nous-client.js';
 
 const tasksStore = new TasksStore();
 
@@ -2221,6 +2222,34 @@ JSON Structure:
       } catch (err) {
         console.error('[Zed Pro] LLM proxy call failed:', err);
         throw new Error('Could not reach the AI service. Please check your connection and try again.');
+      }
+    }
+
+    // ── Direct Nous Research (Separate Local Client) ──
+    const endpointStr = (settings.endpoint || model.endpoint || model.id || '').toLowerCase();
+    const providerLower = (model.provider || '').toLowerCase();
+    const nameLower = (model.name || '').toLowerCase();
+    if (endpointStr.includes('step-3.7-flash') || nameLower.includes('step 3.7 flash') || endpointStr.includes('hy3') || providerLower.includes('nous') || isNousDirectModel(model.id)) {
+      const targetModel = settings.endpoint || model.endpoint || model.id || 'stepfun/step-3.7-flash:free';
+      if (onToken) {
+        return new Promise((resolve, reject) => {
+          let fullText = '';
+          nousStreamChat({
+            model: targetModel,
+            messages: apiMessages,
+            onChunk: (chunk) => {
+              fullText += chunk;
+              onToken(chunk);
+            },
+            onDone: () => resolve(fullText),
+            onError: (err) => reject(err)
+          });
+        });
+      } else {
+        return await nousChat({
+          model: targetModel,
+          messages: apiMessages
+        });
       }
     }
 

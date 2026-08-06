@@ -297,7 +297,7 @@ const initialModels = [
     logoSrc: "assets/models/stepfun.svg",
     type: "official",
     isPrimary: false,
-    settings: { baseUrl: "/v1", endpoint: "stepfun/step-3.7-flash" }
+    settings: { baseUrl: "https://inference-api.nousresearch.com/v1", endpoint: "stepfun/step-3.7-flash:free" }
   },
   {
     id: "tencent/hy3",
@@ -310,7 +310,7 @@ const initialModels = [
     logoSrc: "assets/models/hy3.svg",
     type: "official",
     isPrimary: false,
-    settings: { baseUrl: "/v1", endpoint: "tencent/hy3" }
+    settings: { baseUrl: "https://inference-api.nousresearch.com/v1", endpoint: "tencent/hy3:free" }
   },
   {
     id: "poolside/laguna-s-2.1",
@@ -1469,7 +1469,7 @@ const initialModels = [
     logoSrc: "assets/models/stepfun.svg",
     type: "official",
     isPrimary: false,
-    settings: { baseUrl: "/v1", endpoint: "stepfun/step-3.7-flash" }
+    settings: { baseUrl: "https://inference-api.nousresearch.com/v1", endpoint: "stepfun/step-3.7-flash:free" }
   },
   {
     id: "premium-tencent-hy3",

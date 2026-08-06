@@ -1666,10 +1666,10 @@ import json as _json
 from pathlib import Path as _Path
 
 _NOUS_MODELS = [
-    {"id": "stepfun/step-3.7-flash", "name": "step-3.7-flash"},
-    {"id": "tencent/hy3", "name": "hy3"},
-    {"id": "poolside/laguna-s-2.1", "name": "laguna-s-2.1"},
-    {"id": "inclusionai/ling-3.0-flash", "name": "ling-3.0-flash"},
+    {"id": "stepfun/step-3.7-flash:free", "name": "step-3.7-flash"},
+    {"id": "tencent/hy3:free", "name": "hy3"},
+    {"id": "poolside/laguna-s-2.1:free", "name": "laguna-s-2.1"},
+    {"id": "inclusionai/ling-3.0-flash:free", "name": "ling-3.0-flash"},
 ]
 
 
@@ -1678,16 +1678,20 @@ def _translate_model_name(model_name: str) -> str:
     if not model_name:
         return model_name
     _model_aliases = {
-        "step-3.7-flash": "stepfun/step-3.7-flash",
-        "premium-step-3.7-flash": "stepfun/step-3.7-flash",
-        "hy3": "tencent/hy3",
-        "premium-tencent-hy3": "tencent/hy3",
-        "laguna-s-2.1": "poolside/laguna-s-2.1",
-        "premium-poolside-laguna": "poolside/laguna-s-2.1",
-        "ling-3.0-flash": "inclusionai/ling-3.0-flash",
-        "premium-inclusion-ling": "inclusionai/ling-3.0-flash",
-        "laguna-xs-2.1": "poolside/laguna-xs-2.1",
-        "premium-poolside-laguna-xs-2.1": "poolside/laguna-xs-2.1",
+        "step-3.7-flash": "stepfun/step-3.7-flash:free",
+        "stepfun/step-3.7-flash": "stepfun/step-3.7-flash:free",
+        "premium-step-3.7-flash": "stepfun/step-3.7-flash:free",
+        "hy3": "tencent/hy3:free",
+        "tencent/hy3": "tencent/hy3:free",
+        "premium-tencent-hy3": "tencent/hy3:free",
+        "laguna-s-2.1": "poolside/laguna-s-2.1:free",
+        "poolside/laguna-s-2.1": "poolside/laguna-s-2.1:free",
+        "premium-poolside-laguna": "poolside/laguna-s-2.1:free",
+        "ling-3.0-flash": "inclusionai/ling-3.0-flash:free",
+        "inclusionai/ling-3.0-flash": "inclusionai/ling-3.0-flash:free",
+        "premium-inclusion-ling": "inclusionai/ling-3.0-flash:free",
+        "laguna-xs-2.1": "poolside/laguna-xs-2.1:free",
+        "premium-poolside-laguna-xs-2.1": "poolside/laguna-xs-2.1:free",
     }
     return _model_aliases.get(model_name, model_name)
 
@@ -1759,10 +1763,10 @@ async def list_models():
             "description": "Zed Pro — powered by freellmapi free providers",
             "context_length": 128000,
         },
-        *_to_openai_shape({"id": "stepfun/step-3.7-flash", "provider": "Nous Research", "description": "step-3.7-flash — Nous free model", "context_length": 128000}),
-        *_to_openai_shape({"id": "tencent/hy3", "provider": "Nous Research", "description": "hy3 — Nous free model", "context_length": 128000}),
-        *_to_openai_shape({"id": "poolside/laguna-s-2.1", "provider": "Nous Research", "description": "laguna-s-2.1 — Nous free model", "context_length": 128000}),
-        *_to_openai_shape({"id": "inclusionai/ling-3.0-flash", "provider": "Nous Research", "description": "ling-3.0-flash — Nous free model", "context_length": 128000}),
+        _to_openai_shape({"id": "stepfun/step-3.7-flash", "provider": "Nous Research", "description": "step-3.7-flash — Nous free model", "context_length": 128000}),
+        _to_openai_shape({"id": "tencent/hy3", "provider": "Nous Research", "description": "hy3 — Nous free model", "context_length": 128000}),
+        _to_openai_shape({"id": "poolside/laguna-s-2.1", "provider": "Nous Research", "description": "laguna-s-2.1 — Nous free model", "context_length": 128000}),
+        _to_openai_shape({"id": "inclusionai/ling-3.0-flash", "provider": "Nous Research", "description": "ling-3.0-flash — Nous free model", "context_length": 128000}),
         *[_to_openai_shape(m) for m in nous_models],
         *[_to_openai_shape(m) for m in openrouter_models],
     ]

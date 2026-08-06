@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { getDb } from '../db/index.js';
 import { resolveProvider } from '../providers/index.js';
 import { encrypt, decrypt, maskKey } from '../lib/crypto.js';
+import { PLATFORM_ENV_MAP } from '../lib/env-keys.js';
 
 export const keysRouter = Router();
 
@@ -43,7 +44,21 @@ keysRouter.get('/', (_req: Request, res: Response) => {
       const realKey = decrypt(row.encrypted_key, row.iv, row.auth_tag);
       maskedKey = maskKey(realKey);
     } catch {
-      maskedKey = '[decrypt failed]';
+      // Auto-heal if raw environment key is available for this platform
+      const envVarName = PLATFORM_ENV_MAP[row.platform];
+      const envRawKey = envVarName ? process.env[envVarName]?.trim() : null;
+      if (envRawKey) {
+        try {
+          const { encrypted, iv, authTag } = encrypt(envRawKey);
+          db.prepare("UPDATE api_keys SET encrypted_key = ?, iv = ?, auth_tag = ? WHERE id = ?")
+            .run(encrypted, iv, authTag, row.id);
+          maskedKey = maskKey(envRawKey);
+        } catch {
+          maskedKey = '[decrypt failed]';
+        }
+      } else {
+        maskedKey = '[decrypt failed]';
+      }
     }
     return {
       id: row.id,
@@ -83,6 +98,8 @@ keysRouter.post('/', (req: Request, res: Response) => {
   const keyToStore = isKeyless ? (rawKey || 'no-key') : rawKey;
 
   const db = getDb();
+  // Clear user deletion preference if key is added/updated manually
+  db.prepare("DELETE FROM settings WHERE key = ?").run(`deleted_platform_${platform}`);
 
   // A keyless provider needs only one sentinel row — re-enable an existing one
   // instead of piling up duplicates each time the user clicks "Add".
@@ -264,6 +281,10 @@ keysRouter.delete('/:id', (req: Request, res: Response) => {
 
   const remove = db.transaction(() => {
     db.prepare('DELETE FROM api_keys WHERE id = ?').run(id);
+    // Record user deletion preference so env-keys won't auto-restore it on server boot
+    db.prepare("INSERT INTO settings (key, value) VALUES (?, '1') ON CONFLICT(key) DO UPDATE SET value = '1'")
+      .run(`deleted_platform_${row.platform}`);
+
     // Custom models exist only because POST /custom registered them alongside
     // their endpoint key (#117) — they can't route without it. Cascade away
     // the models bound to THIS endpoint (#212); other custom providers keep
