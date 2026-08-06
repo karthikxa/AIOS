@@ -453,7 +453,7 @@ main.main-content {
   overflow-y: auto !important;
   overflow-x: hidden !important;
   position: relative;
-  padding: 8px 40px;
+  padding: 8px 20px;
   scrollbar-width: none !important; /* Firefox */
   -ms-overflow-style: none !important;  /* IE and Edge */
 }
@@ -581,7 +581,7 @@ header.app-header {
   max-width: var(--max-content-width);
   margin: 0 auto;
   min-height: 0;
-  padding: 0 20px;
+  padding: 0 8px;
 }
 
 
