@@ -22,7 +22,7 @@ Stop-Process-On-Port 8765
 
 Start-Sleep -Seconds 1
 
-$remoteLlmUrl = "https://server-llm-1-0r64.onrender.com/v1"
+$remoteLlmUrl = "https://server-llm-1.onrender.com/v1"
 Write-Host "=== Target Remote LLM Server: $remoteLlmUrl ===" -ForegroundColor Green
 
 # 1. Start Zed Agent Backend (8642)

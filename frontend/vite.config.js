@@ -8,7 +8,7 @@
  * /oauth/* → http://127.0.0.1:8642 (Google OAuth)
  * /desktop/* → http://127.0.0.1:8642 (VNC proxy + MJPEG stream)
  * /kasm/* → http://127.0.0.1:8642  (legacy KasmVNC proxy)
- * LLM proxy stays on Render: server-llm-1-0r64.onrender.com
+ * LLM proxy stays on Render: https://server-llm-1.onrender.com
  */
 
 import react from '@vitejs/plugin-react';

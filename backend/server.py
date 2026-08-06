@@ -909,7 +909,7 @@ def _auto_configure_env():
 
     # 1. LLM Proxy — use built-in FreeLLMAPI if not configured
     if not os.environ.get("ZED_PRO_BASE_URL"):
-        default_url = "https://server-llm-1-0r64.onrender.com/v1"
+        default_url = "https://server-llm-1.onrender.com/v1"
         os.environ["ZED_PRO_BASE_URL"] = default_url
         changes.append(f"ZED_PRO_BASE_URL={default_url}")
         logger.info("Auto-configured LLM proxy: %s", default_url)
@@ -1638,7 +1638,7 @@ async def get_status():
     """Health check — shows freellmapi connectivity."""
     freellmapi_ok = False
     try:
-        base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+        base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
         base_ping_url = base_url.replace("/v1", "") if "/v1" in base_url else base_url
         api_key = os.getenv("ZED_PRO_API_KEY", "")
         headers = {}
@@ -1833,14 +1833,14 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
     _nous_model_ids = {m["id"] for m in _NOUS_MODELS}
     _nous_token, _nous_base = _nous_auth()
     _is_nous_model = resolved_model in _nous_model_ids
-    _agent_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+    _agent_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
     _agent_api_key = os.getenv("ZED_PRO_API_KEY", "")
     if _is_nous_model and _nous_token:
         _agent_base_url = _nous_base
         _agent_api_key = _nous_token
     elif _is_nous_model and not _nous_token:
         logger.warning("Nous model selected but no Nous auth found; upstream fallback may not serve this model")
-        _agent_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+        _agent_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
         _agent_api_key = os.getenv("ZED_PRO_API_KEY", "")
 
     if request.stream:
@@ -2119,13 +2119,13 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
             _nous_model_ids = {m["id"] for m in _NOUS_MODELS}
             _nous_token_for_sync, _nous_base_for_sync = _nous_auth()
             _is_nous_sync = resolved_model in _nous_model_ids
-            sync_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+            sync_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
             sync_api_key = os.getenv("ZED_PRO_API_KEY", "")
             if _is_nous_sync and _nous_token_for_sync:
                 sync_base_url = _nous_base_for_sync
                 sync_api_key = _nous_token_for_sync
             elif _is_nous_sync and not _nous_token_for_sync:
-                sync_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+                sync_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
                 sync_api_key = os.getenv("ZED_PRO_API_KEY", "")
                 resolved_model = "gemini-2.5-flash-lite"
 
@@ -2189,7 +2189,7 @@ async def chat_completions(request: ChatCompletionRequest, raw_request: Request)
                     model=fallback_model,
                     quiet_mode=True,
                     verbose_logging=False,
-                    base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1"),
+                    base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"),
                     api_key=os.getenv("ZED_PRO_API_KEY", ""),
                     credential_pool=credential_pool,
                 )
@@ -3042,7 +3042,7 @@ async def run_cron_now(job_id: str):
 
     prompt = job.get("prompt", f"Execute scheduled task: {job.get('name', job_id)}")
     llm_model = job.get("model", "auto") or "auto"
-    llm_base_url = os.environ.get("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+    llm_base_url = os.environ.get("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
     llm_api_key  = os.environ.get("ZED_PRO_API_KEY", "")
     run_id = f"run-{uuid.uuid4().hex[:8]}"
 
@@ -3444,7 +3444,7 @@ async def healthz():
     # Also check LLM proxy connectivity
     proxy_ok = False
     try:
-        proxy_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+        proxy_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
         ping_url = proxy_url.replace("/v1", "") if "/v1" in proxy_url else proxy_url
         r = await _http_client.get(f"{ping_url.rstrip('/')}/healthz", timeout=5.0)
         proxy_ok = r.status_code == 200
@@ -3511,7 +3511,7 @@ async def retry_chat(session_id: str, request: Request):
             model=fallback_model,
             quiet_mode=True,
             verbose_logging=False,
-            base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1"),
+            base_url=os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1"),
             api_key=os.getenv("ZED_PRO_API_KEY", ""),
             credential_pool=credential_pool,
         )
@@ -4517,7 +4517,7 @@ class SubagentTaskManager:
             resolved_model = "gemini-2.5-flash-lite"
         resolved_model = _translate_model_name(resolved_model)
 
-        _agent_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+        _agent_base_url = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
         _agent_api_key = os.getenv("ZED_PRO_API_KEY", "")
 
         loop = asyncio.get_running_loop()

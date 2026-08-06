@@ -285,59 +285,7 @@ const initialModels = [
     }
   },
 
-  // Nous free models via Hermes Nous auth
-  {
-    id: "stepfun/step-3.7-flash",
-    name: "Step 3.7 Flash",
-    provider: "Nous Research",
-    desc: "Nous free model — routed via Hermes Nous auth.",
-    tags: ["Free"],
-    status: "connected",
-    logoClass: "logo-stepfun",
-    logoSrc: "assets/models/stepfun.svg",
-    type: "official",
-    isPrimary: false,
-    settings: { baseUrl: "https://inference-api.nousresearch.com/v1", endpoint: "stepfun/step-3.7-flash:free" }
-  },
-  {
-    id: "tencent/hy3",
-    name: "Hy3",
-    provider: "Tencent",
-    desc: "Tencent HyperCLOVA via Hermes.",
-    tags: ["Fast"],
-    status: "connected",
-    logoClass: "logo-hy3",
-    logoSrc: "assets/models/hy3.svg",
-    type: "official",
-    isPrimary: false,
-    settings: { baseUrl: "https://inference-api.nousresearch.com/v1", endpoint: "tencent/hy3:free" }
-  },
-  {
-    id: "poolside/laguna-s-2.1",
-    name: "Laguna S 2.1",
-    provider: "Nous Research",
-    desc: "Nous free model — routed via Hermes Nous auth.",
-    tags: ["Free"],
-    status: "connected",
-    logoClass: "logo-poolside",
-    logoSrc: "assets/models/poolside.svg",
-    type: "official",
-    isPrimary: false,
-    settings: { baseUrl: "/v1", endpoint: "poolside/laguna-s-2.1" }
-  },
-  {
-    id: "inclusionai/ling-3.0-flash",
-    name: "Ling 3.0 Flash",
-    provider: "Nous Research",
-    desc: "Nous free model — routed via Hermes Nous auth.",
-    tags: ["Free"],
-    status: "connected",
-    logoClass: "logo-ling",
-    logoSrc: "assets/models/ling-3.0-flash.svg",
-    type: "official",
-    isPrimary: false,
-    settings: { baseUrl: "/v1", endpoint: "inclusionai/ling-3.0-flash" }
-  },
+  // Nous free models via Hermes Nous auth (Hermes 3 default)
 
   // 2. Individual Models (type: "official")
   {

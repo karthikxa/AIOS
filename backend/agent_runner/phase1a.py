@@ -14,7 +14,7 @@ import httpx
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-LLM_BASE = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+LLM_BASE = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
 LLM_KEY = os.getenv("ZED_PRO_API_KEY", "")
 MODEL_A = "gemini-3.5-flash"
 MODEL_B = "deepseek-v4-flash"

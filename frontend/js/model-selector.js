@@ -105,7 +105,15 @@ export function initModelSelector(onModelChange) {
     if (!modelOptionsList || !secondaryFlyoutPanel) return;
 
     const state = modelsStore.getState();
-    const allModels = state.models.filter(m => m.type !== 'provider' && m.status === 'connected');
+    const allModels = state.models.filter(m => {
+      if (m.type === 'provider' || m.status !== 'connected') return false;
+      const name = (m.name || '').toLowerCase();
+      const id = (m.id || '').toLowerCase();
+      if (name.includes('step') || id.includes('step') || name.includes('laguna') || id.includes('laguna') || name.includes('ling') || id.includes('ling') || name.includes('hy3') || id.includes('hy3')) {
+        return false;
+      }
+      return true;
+    });
 
     if (allModels.length === 0) {
       modelOptionsList.innerHTML = `<div style="padding:12px;color:var(--text-secondary);font-size:13px;text-align:center;">No models connected.</div>`;

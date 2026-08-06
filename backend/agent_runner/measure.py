@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 # ── Configuration ──────────────────────────────────────────────────────
 
-LLM_BASE = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1-0r64.onrender.com/v1")
+LLM_BASE = os.getenv("ZED_PRO_BASE_URL", "https://server-llm-1.onrender.com/v1")
 LLM_KEY = os.getenv("ZED_PRO_API_KEY", "")
 MODEL = "auto"
 CONCURRENCY_LEVELS = [5, 10, 20, 30]

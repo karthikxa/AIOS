@@ -118,7 +118,7 @@ _router: Optional[ModelRouter] = None
 
 
 def get_model_router(
-    proxy_url: str = "https://server-llm-1-0r64.onrender.com/v1",
+    proxy_url: str = "https://server-llm-1.onrender.com/v1",
     api_key: str = None,
 ) -> ModelRouter:
     global _router
