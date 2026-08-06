@@ -30,6 +30,7 @@ export function initDb(dbPath?: string): Database.Database {
 
   db = new Database(resolvedPath);
   if (!isMemory) db.pragma('journal_mode = WAL');
+  db.pragma('busy_timeout = 5000');
   db.pragma('foreign_keys = ON');
 
   migrateDbSchema(db);

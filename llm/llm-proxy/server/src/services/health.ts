@@ -17,8 +17,25 @@ export async function checkKeyHealth(keyId: number): Promise<KeyStatus> {
   const provider = resolveProvider(row.platform as Platform, row.base_url);
   if (!provider) return 'error';
 
+  let apiKey: string;
   try {
-    const apiKey = decrypt(row.encrypted_key, row.iv, row.auth_tag);
+    apiKey = decrypt(row.encrypted_key, row.iv, row.auth_tag);
+  } catch (err: any) {
+    // Decryption failure (ENCRYPTION_KEY changed or corrupted key)
+    console.warn(`[Health] Key ${keyId} (${row.platform}) decryption failed (ENCRYPTION_KEY mismatch). Auto-disabling key.`);
+    db.prepare("UPDATE api_keys SET enabled = 0, status = 'invalid', last_checked_at = datetime('now') WHERE id = ?")
+      .run(keyId);
+    return 'invalid';
+  }
+
+  // Keyless sentinel row — no outgoing network health check needed
+  if (apiKey === 'no-key' || provider.keyless) {
+    db.prepare("UPDATE api_keys SET status = 'healthy', last_checked_at = datetime('now') WHERE id = ?")
+      .run(keyId);
+    return 'healthy';
+  }
+
+  try {
     const isValid = await provider.validateKey(apiKey);
 
     const status: KeyStatus = isValid ? 'healthy' : 'invalid';
@@ -41,9 +58,8 @@ export async function checkKeyHealth(keyId: number): Promise<KeyStatus> {
     return status;
   } catch (err: any) {
     // Transport errors (DNS/timeout/TLS) — provider unreachable, not necessarily
-    // a bad key. Mark status='error' but do NOT increment failure counter — auto-
-    // disable is reserved for confirmed 401/403 (returned by validateKey as false).
-    console.error(`[Health] Key ${keyId} transport error:`, err.message);
+    // a bad key. Mark status='error' but do NOT increment failure counter.
+    console.error(`[Health] Key ${keyId} (${row.platform}) transport error:`, err?.message ?? err);
     db.prepare("UPDATE api_keys SET status = ?, last_checked_at = datetime('now') WHERE id = ?")
       .run('error', keyId);
     return 'error';
@@ -54,7 +70,7 @@ export async function checkAllKeys(): Promise<void> {
   const db = getDb();
   const keys = db.prepare('SELECT id, platform FROM api_keys WHERE enabled = 1').all() as { id: number; platform: string }[];
 
-  console.log(`[Health] Checking ${keys.length} keys...`);
+  console.log(`[Health] Checking ${keys.length} key(s)...`);
 
   for (const key of keys) {
     await checkKeyHealth(key.id);

@@ -62,9 +62,12 @@ export function createApp() {
   // stay disabled unless someone serves the proxy over HTTPS publicly
   // (which is also not a supported deployment — see README).
   app.use(helmet({ contentSecurityPolicy: false, hsts: false }));
+  // ALLOW_ALL_CORS=true: development / self-hosted CLI access from any origin.
+  // Do NOT set on a public deployment — combined with LOCAL_BYPASS it removes auth.
+  const allowAllCors = process.env.ALLOW_ALL_CORS === 'true';
   app.use(cors({
     origin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-      callback(null, !origin || allowedCorsOrigins.has(origin));
+      callback(null, allowAllCors || !origin || allowedCorsOrigins.has(origin));
     },
   }));
   // 10mb: code agents (OpenCode, AionUI, Qwen Code) ship very large system
