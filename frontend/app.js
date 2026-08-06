@@ -5146,7 +5146,7 @@ For simple greetings or questions — just respond with text. For tasks: plan fi
   }
 
   // ── Desktop Pop-up (Computer Desktop above chatbox) ─────────────
-  const desktopFrame = document.getElementById('desktopFrame');
+  let desktopFrame = document.getElementById('desktopFrame');
   const desktopConnectingOverlay = document.getElementById('desktopConnectingOverlay');
   const subagentComputerPopup = document.getElementById('subagentComputerPopup');
   const closeComputerPopupBtn = document.getElementById('closeComputerPopupBtn');
