@@ -44,20 +44,32 @@ keysRouter.get('/', (_req: Request, res: Response) => {
       const realKey = decrypt(row.encrypted_key, row.iv, row.auth_tag);
       maskedKey = maskKey(realKey);
     } catch {
-      // Auto-heal if raw environment key is available for this platform
-      const envVarName = PLATFORM_ENV_MAP[row.platform];
-      const envRawKey = envVarName ? process.env[envVarName]?.trim() : null;
-      if (envRawKey) {
+      const isKeyless = resolveProvider(row.platform as any)?.keyless === true;
+      if (isKeyless) {
         try {
-          const { encrypted, iv, authTag } = encrypt(envRawKey);
-          db.prepare("UPDATE api_keys SET encrypted_key = ?, iv = ?, auth_tag = ? WHERE id = ?")
+          const { encrypted, iv, authTag } = encrypt('no-key');
+          db.prepare("UPDATE api_keys SET encrypted_key = ?, iv = ?, auth_tag = ?, status = 'healthy' WHERE id = ?")
             .run(encrypted, iv, authTag, row.id);
-          maskedKey = maskKey(envRawKey);
+          maskedKey = maskKey('no-key');
         } catch {
           maskedKey = '[decrypt failed]';
         }
       } else {
-        maskedKey = '[decrypt failed]';
+        // Auto-heal if raw environment key is available for this platform
+        const envVarName = PLATFORM_ENV_MAP[row.platform];
+        const envRawKey = envVarName ? process.env[envVarName]?.trim() : null;
+        if (envRawKey) {
+          try {
+            const { encrypted, iv, authTag } = encrypt(envRawKey);
+            db.prepare("UPDATE api_keys SET encrypted_key = ?, iv = ?, auth_tag = ? WHERE id = ?")
+              .run(encrypted, iv, authTag, row.id);
+            maskedKey = maskKey(envRawKey);
+          } catch {
+            maskedKey = '[decrypt failed]';
+          }
+        } else {
+          maskedKey = '[decrypt failed]';
+        }
       }
     }
     return {
@@ -262,6 +274,31 @@ keysRouter.post('/custom', (req: Request, res: Response) => {
     models: registered,
     maskedKey: maskKey(rawKey),
   });
+});
+
+// Purge all undecryptable keys (e.g. from obsolete ENCRYPTION_KEY)
+keysRouter.delete('/corrupted', (_req: Request, res: Response) => {
+  const db = getDb();
+  const rows = db.prepare('SELECT id, platform, encrypted_key, iv, auth_tag FROM api_keys').all() as any[];
+  let purged = 0;
+  for (const row of rows) {
+    try {
+      decrypt(row.encrypted_key, row.iv, row.auth_tag);
+    } catch {
+      // If raw env key exists or keyless, don't purge — it will auto-heal
+      const isKeyless = resolveProvider(row.platform as any)?.keyless === true;
+      const envVarName = PLATFORM_ENV_MAP[row.platform];
+      const envRawKey = envVarName ? process.env[envVarName]?.trim() : null;
+
+      if (!isKeyless && !envRawKey) {
+        db.prepare('DELETE FROM api_keys WHERE id = ?').run(row.id);
+        db.prepare("INSERT INTO settings (key, value) VALUES (?, '1') ON CONFLICT(key) DO UPDATE SET value = '1'")
+          .run(`deleted_platform_${row.platform}`);
+        purged++;
+      }
+    }
+  }
+  res.json({ success: true, purged });
 });
 
 // Delete a key
