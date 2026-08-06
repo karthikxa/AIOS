@@ -7,7 +7,7 @@ import { routeRequest, resolveRoutingChain, recordRateLimitHit, recordSuccess, h
 import { recordRequest, recordTokens, setCooldown, getCooldownDurationForLimit, PAYMENT_REQUIRED_COOLDOWN_MS, MODEL_FORBIDDEN_COOLDOWN_MS } from '../services/ratelimit.js';
 import { pruneRequestAnalytics } from '../services/request-retention.js';
 import { runEmbeddings, EmbeddingsError } from '../services/embeddings.js';
-import { getDb, getUnifiedApiKey } from '../db/index.js';
+import { getDb, getUnifiedApiKey, resetCorruptedDb } from '../db/index.js';
 import { contentToString, messageHasImage, normalizeOutboundContent } from '../lib/content.js';
 import { repairToolArguments, toolSchemaMap } from '../lib/tool-args.js';
 import { sanitizeProviderErrorMessage } from '../lib/error-redaction.js';
@@ -726,6 +726,10 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
           },
         });
       } else {
+        if (err?.message?.includes('malformed') || err?.message?.includes('corrupt')) {
+          console.warn(`[proxy] Corrupted DB detected on request (${err.message}) — resetting DB...`);
+          try { resetCorruptedDb(); } catch {}
+        }
         res.status(err.status ?? 503).json({
           error: { message: err.message, type: 'routing_error' },
         });
