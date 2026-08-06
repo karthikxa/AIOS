@@ -13,6 +13,36 @@ const windows = new Map<string, Window>();
 type RateLimitDb = ReturnType<typeof getDb>;
 type UsageKind = 'request' | 'tokens';
 
+// Periodic cleanup: prune stale windows and cooldown hits every 5 minutes
+// to prevent unbounded memory growth from idle model/key combinations.
+const CLEANUP_INTERVAL = 5 * 60 * 1000;
+setInterval(() => {
+  const now = Date.now();
+  // Prune windows: remove entries where all timestamps are older than the max window (1 day)
+  for (const [key, w] of windows) {
+    const maxWindow = DAY;
+    const newest = w.timestamps.length > 0 ? w.timestamps[w.timestamps.length - 1] : 0;
+    const newestToken = w.tokenTimestamps.length > 0 ? w.tokenTimestamps[w.tokenTimestamps.length - 1].ts : 0;
+    const latest = Math.max(newest, newestToken);
+    if (latest === 0 || now - latest > maxWindow) {
+      windows.delete(key);
+    }
+  }
+  // Prune cooldownHits: remove entries with no recent hits
+  for (const [key, hits] of cooldownHits) {
+    const recent = hits.filter(t => t > now - DAY);
+    if (recent.length === 0) {
+      cooldownHits.delete(key);
+    } else {
+      cooldownHits.set(key, recent);
+    }
+  }
+  // Prune cooldowns: remove expired entries
+  for (const [key, expiry] of cooldowns) {
+    if (expiry <= now) cooldowns.delete(key);
+  }
+}, CLEANUP_INTERVAL).unref();
+
 function getWindow(key: string): Window {
   let w = windows.get(key);
   if (!w) {

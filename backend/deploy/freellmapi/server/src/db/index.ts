@@ -43,10 +43,19 @@ export function initDb(dbPath?: string): Database.Database {
     if (!isMemory) db.pragma('journal_mode = WAL');
     db.pragma('foreign_keys = ON');
     // Verify the database is not corrupted
-    db.pragma('integrity_check');
+    const result = db.pragma('integrity_check', { simple: true }) as string;
+    if (result !== 'ok') {
+      console.warn(`[db] Database integrity check failed: ${result} — removing and recreating`);
+      db.close();
+      removeCorruptedDb(resolvedPath);
+      db = new Database(resolvedPath);
+      if (!isMemory) db.pragma('journal_mode = WAL');
+      db.pragma('foreign_keys = ON');
+    }
   } catch (err: any) {
     if (err?.code === 'SQLITE_CORRUPT' || err?.message?.includes('malformed')) {
       console.warn(`[db] Database corrupted at ${resolvedPath} — removing and recreating`);
+      try { db.close(); } catch {}
       removeCorruptedDb(resolvedPath);
       db = new Database(resolvedPath);
       if (!isMemory) db.pragma('journal_mode = WAL');

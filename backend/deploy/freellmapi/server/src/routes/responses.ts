@@ -22,6 +22,7 @@ import {
   isModelAccessForbiddenError,
   timingSafeStringEqual,
   extractApiToken,
+  isLocalBypass,
   getStickyModel,
   setStickyModel,
   logRequest,
@@ -267,11 +268,15 @@ responsesRouter.post('/responses', async (req: Request, res: Response) => {
   const start = Date.now();
 
   // Same unified-key auth as the proxy (accepts Bearer or x-api-key).
-  const token = extractApiToken(req);
-  const unifiedKey = getUnifiedApiKey();
-  if (!token || !timingSafeStringEqual(token, unifiedKey)) {
-    res.status(401).json({ error: { message: 'Invalid API key', type: 'authentication_error' } });
-    return;
+  // Local loopback bypass: allow unauthenticated requests from 127.0.0.1
+  // when LOCAL_BYPASS=true (deploy server, dashboard dev server, etc.).
+  if (!isLocalBypass(req)) {
+    const token = extractApiToken(req);
+    const unifiedKey = getUnifiedApiKey();
+    if (!token || !timingSafeStringEqual(token, unifiedKey)) {
+      res.status(401).json({ error: { message: 'Invalid API key', type: 'authentication_error' } });
+      return;
+    }
   }
 
   const parsed = responsesRequestSchema.safeParse(req.body);
