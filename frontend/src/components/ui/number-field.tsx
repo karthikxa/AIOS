@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 
 export const NumberFieldContext: React.Context<{
   fieldId: string;
+  inputId: string;
 } | null> = React.createContext<{
   fieldId: string;
+  inputId: string;
 } | null>(null);
 
 export function NumberField({
@@ -22,9 +24,10 @@ export function NumberField({
 }): React.ReactElement {
   const generatedId = React.useId();
   const fieldId = id ?? generatedId;
+  const inputId = `${fieldId}-input`;
 
   return (
-    <NumberFieldContext.Provider value={{ fieldId }}>
+    <NumberFieldContext.Provider value={{ fieldId, inputId }}>
       <NumberFieldPrimitive.Root
         className={cn("flex w-full flex-col items-start gap-2", className)}
         data-size={size}
@@ -92,6 +95,8 @@ export function NumberFieldInput({
   className,
   ...props
 }: NumberFieldPrimitive.Input.Props): React.ReactElement {
+  const context = React.useContext(NumberFieldContext);
+
   return (
     <NumberFieldPrimitive.Input
       className={cn(
@@ -99,6 +104,7 @@ export function NumberFieldInput({
         className,
       )}
       data-slot="number-field-input"
+      id={context?.inputId}
       {...props}
     />
   );
@@ -125,7 +131,7 @@ export function NumberFieldScrubArea({
       data-slot="number-field-scrub-area"
       {...props}
     >
-      <Label className="cursor-ew-resize" htmlFor={context.fieldId}>
+      <Label className="cursor-ew-resize" htmlFor={context.inputId}>
         {label}
       </Label>
       <NumberFieldPrimitive.ScrubAreaCursor className="drop-shadow-[0_1px_1px_#0008] filter">

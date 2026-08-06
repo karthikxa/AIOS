@@ -453,7 +453,7 @@ main.main-content {
   overflow-y: auto !important;
   overflow-x: hidden !important;
   position: relative;
-  padding: 8px 20px;
+  padding: 8px 30px;
   scrollbar-width: none !important; /* Firefox */
   -ms-overflow-style: none !important;  /* IE and Edge */
 }
@@ -578,10 +578,10 @@ header.app-header {
   align-items: center;
   flex: 1;
   width: 100%;
-  max-width: var(--max-content-width);
+  max-width: none;
   margin: 0 auto;
   min-height: 0;
-  padding: 0 8px;
+  padding: 0;
 }
 
 
@@ -3076,10 +3076,11 @@ aside.sidebar.collapsed .sidebar-logo {
 .models-page-view,
 .library-page-view {
   width: 100%;
-  max-width: var(--max-content-width);
+  max-width: none;
   margin: 0 auto;
   padding: var(--space-xl) var(--space-xs);
   box-sizing: border-box;
+  align-self: stretch;
 }
 
 .models-page-view, .models-page-view *,
@@ -3427,6 +3428,7 @@ aside.sidebar.collapsed .sidebar-logo {
 
 .models-usage-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 13.5px;
   text-align: left;
@@ -4168,7 +4170,7 @@ aside.sidebar.collapsed .sidebar-logo {
 /* Schedules Page View Style System */
 .schedules-page-view {
   width: 100%;
-  max-width: 1400px;
+  max-width: none;
   margin: 0 auto;
   padding: var(--space-xl) var(--space-xs);
   font-family: 'Inter', sans-serif;
@@ -4893,7 +4895,7 @@ aside.sidebar.collapsed .sidebar-logo {
    ========================================================================== */
 .plugins-page-view {
   width: 100%;
-  max-width: 1400px;
+  max-width: none;
   margin: 0 auto;
   padding: var(--space-xl) var(--space-xs);
   font-family: 'Inter', sans-serif;
@@ -5368,7 +5370,7 @@ aside.sidebar.collapsed .sidebar-logo {
 
 .agent-page-view {
   width: 100%;
-  max-width: 1400px;
+  max-width: none;
   margin: 0 auto;
   padding: var(--space-xl) var(--space-xs);
   color: #111111;
@@ -8308,7 +8310,7 @@ aside.sidebar.collapsed .sidebar-logo {
 
 .voice-page-view {
   width: 100%;
-  max-width: var(--max-content-width);
+  max-width: none;
   margin: 0 auto;
   padding: var(--space-xl) var(--space-xs);
   box-sizing: border-box;

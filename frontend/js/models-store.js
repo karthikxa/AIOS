@@ -912,6 +912,8 @@ const initialModels = [
   }
 ];
 
+const STORAGE_KEY = 'zed_models_state';
+
 class ModelsStore {
   constructor() {
     // Default activeTab is "providers" to match the mockup (which lists Connected Providers by default)
@@ -923,6 +925,62 @@ class ModelsStore {
       activeModel: "Zed Pro"
     };
     this.listeners = [];
+    this._loadFromStorage();
+  }
+
+  _loadFromStorage() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved.activeModel) this.state.activeModel = saved.activeModel;
+      if (Array.isArray(saved.overrides)) {
+        for (const ov of saved.overrides) {
+          const m = this.state.models.find(m => m.id === ov.id);
+          if (m) {
+            if (ov.status) m.status = ov.status;
+            if (ov.settings) m.settings = { ...m.settings, ...ov.settings };
+          }
+        }
+      }
+      if (Array.isArray(saved.customProviders)) {
+        for (const cp of saved.customProviders) {
+          const exists = this.state.models.find(m => m.type === 'provider' && m.name.toLowerCase() === cp.name.toLowerCase());
+          if (!exists) {
+            this.state.models.push(cp);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[ModelsStore] Failed to load from localStorage:', e);
+    }
+  }
+
+  _saveToStorage() {
+    try {
+      const overrides = [];
+      for (const m of this.state.models) {
+        // Skip disconnected — removed keys must NOT persist
+        if (m.status === 'disconnected') continue;
+        const base = initialModels.find(b => b.id === m.id);
+        if (base && (m.status !== base.status || JSON.stringify(m.settings) !== JSON.stringify(base.settings))) {
+          overrides.push({ id: m.id, status: m.status, settings: m.settings });
+        }
+      }
+      // Custom providers: only save connected ones, skip disconnected
+      const customProviders = this.state.models.filter(m =>
+        !initialModels.find(b => b.id === m.id) &&
+        m.type === 'provider' &&
+        m.status !== 'disconnected'
+      );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        activeModel: this.state.activeModel,
+        overrides,
+        customProviders,
+      }));
+    } catch (e) {
+      console.warn('[ModelsStore] Failed to save to localStorage:', e);
+    }
   }
 
   getState() {
@@ -976,9 +1034,17 @@ class ModelsStore {
             }
           }
         });
+
+        // When a custom provider is disconnected, remove it and its models permanently
+        if (status === 'disconnected' && !initialModels.find(b => b.id === model.id)) {
+          this.state.models = this.state.models.filter(m =>
+            m.id !== model.id && m.provider !== providerName
+          );
+        }
       }
 
       this.notify();
+      this._saveToStorage();
     }
   }
 
@@ -1006,6 +1072,7 @@ class ModelsStore {
       }
 
       this.notify();
+      this._saveToStorage();
     }
   }
 
@@ -1090,6 +1157,7 @@ class ModelsStore {
     });
 
     this.notify();
+    this._saveToStorage();
   }
 
   addCustomProvider(providerData) {
@@ -1118,6 +1186,7 @@ class ModelsStore {
     };
     this.state.models.push(newProvider);
     this.notify();
+    this._saveToStorage();
   }
 }
 

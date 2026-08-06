@@ -17,6 +17,16 @@ export function getDb(): Database.Database {
   return db;
 }
 
+function removeCorruptedDb(resolvedPath: string): void {
+  const exts = ['', '-wal', '-shm'];
+  for (const ext of exts) {
+    const p = resolvedPath + ext;
+    if (fs.existsSync(p)) {
+      try { fs.unlinkSync(p); } catch { /* ignore */ }
+    }
+  }
+}
+
 export function initDb(dbPath?: string): Database.Database {
   const resolvedPath = dbPath ?? DB_PATH;
   const isMemory = resolvedPath === ':memory:';
@@ -28,9 +38,23 @@ export function initDb(dbPath?: string): Database.Database {
     }
   }
 
-  db = new Database(resolvedPath);
-  if (!isMemory) db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
+  try {
+    db = new Database(resolvedPath);
+    if (!isMemory) db.pragma('journal_mode = WAL');
+    db.pragma('foreign_keys = ON');
+    // Verify the database is not corrupted
+    db.pragma('integrity_check');
+  } catch (err: any) {
+    if (err?.code === 'SQLITE_CORRUPT' || err?.message?.includes('malformed')) {
+      console.warn(`[db] Database corrupted at ${resolvedPath} — removing and recreating`);
+      removeCorruptedDb(resolvedPath);
+      db = new Database(resolvedPath);
+      if (!isMemory) db.pragma('journal_mode = WAL');
+      db.pragma('foreign_keys = ON');
+    } else {
+      throw err;
+    }
+  }
 
   migrateDbSchema(db);
 
