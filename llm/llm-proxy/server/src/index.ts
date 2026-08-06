@@ -1,7 +1,7 @@
 import './env.js';
 import { createApp } from './app.js';
 import { initDb, getSetting } from './db/index.js';
-import { applyEnvProviderKeys } from './lib/env-keys.js';
+import { applyEnvProviderKeys, applyKeylessProviders } from './lib/env-keys.js';
 import { startHealthChecker } from './services/health.js';
 import { applyProxyUrl, applyProxyEnabled, applyProxyBypass } from './lib/proxy.js';
 import { startCatalogSync } from './services/catalog-sync.js';
@@ -14,7 +14,8 @@ const HOST = process.env.HOST ?? '::';
 
 async function main() {
   initDb();
-  applyEnvProviderKeys(); // load any PROVIDER_*_KEY env vars into DB
+  applyEnvProviderKeys();     // load any PROVIDER_*_KEY env vars into DB
+  applyKeylessProviders();  // seed keyless sentinels (kilo/pollinations/ovh) — skipped if user deleted them
 
   // Load the persisted proxy settings from the DB (env var wins if set).
   // Must happen after initDb so the settings table is ready.
