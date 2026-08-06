@@ -20,18 +20,20 @@ export function getDb(): Database.Database {
 export function resetCorruptedDb(dbPath?: string): Database.Database {
   const resolvedPath = dbPath ?? DB_PATH;
   const isMemory = resolvedPath === ':memory:';
-  console.warn(`[db] Resetting malformed database file at ${resolvedPath}...`);
-  try {
-    if (db) {
-      try { db.close(); } catch {}
-    }
-    if (!isMemory && fs.existsSync(resolvedPath)) {
-      fs.unlinkSync(resolvedPath);
+  console.warn(`[db] Purging corrupted database files at ${resolvedPath}...`);
+  if (!isMemory) {
+    try {
+      if (db) {
+        try { db.close(); } catch {}
+      }
+    } catch {}
+    try {
+      if (fs.existsSync(resolvedPath)) fs.unlinkSync(resolvedPath);
       if (fs.existsSync(`${resolvedPath}-wal`)) fs.unlinkSync(`${resolvedPath}-wal`);
       if (fs.existsSync(`${resolvedPath}-shm`)) fs.unlinkSync(`${resolvedPath}-shm`);
+    } catch (err) {
+      console.error('[db] Error unlinking DB files:', err);
     }
-  } catch (err) {
-    console.error('[db] Error cleaning up malformed DB files:', err);
   }
   db = new Database(resolvedPath);
   if (!isMemory) db.pragma('journal_mode = WAL');
@@ -43,10 +45,41 @@ export function resetCorruptedDb(dbPath?: string): Database.Database {
 
 export function initDb(dbPath?: string): Database.Database {
   const resolvedPath = dbPath ?? DB_PATH;
-  try {
+  const isMemory = resolvedPath === ':memory:';
+
+  if (!isMemory) {
+    const dataDir = path.dirname(resolvedPath);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+  }
+
+  // Probe existing DB file for corruption BEFORE initializing
+  let isMalformed = false;
+  if (!isMemory && fs.existsSync(resolvedPath)) {
+    try {
+      const probe = new Database(resolvedPath, { readonly: true });
+      probe.prepare("SELECT 1 FROM settings LIMIT 1").get();
+      probe.close();
+    } catch (err: any) {
+      console.warn(`[db] Probe detected corrupted SQLite file (${err?.message}) — forcing purge...`);
+      isMalformed = true;
+    }
+  }
+
+  if (isMalformed) {
     return resetCorruptedDb(resolvedPath);
+  }
+
+  try {
+    db = new Database(resolvedPath);
+    if (!isMemory) db.pragma('journal_mode = WAL');
+    db.pragma('busy_timeout = 5000');
+    db.pragma('foreign_keys = ON');
+    migrateDbSchema(db);
+    return db;
   } catch (err: any) {
-    console.error('[db] Error initializing DB, forcing reset:', err);
+    console.warn(`[db] Error during DB init (${err?.message}) — forcing reset...`);
     return resetCorruptedDb(resolvedPath);
   }
 }
