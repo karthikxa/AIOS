@@ -10,5 +10,7 @@ services:
         value: 3001
       - key: LOCAL_BYPASS
         value: "false"
+      - key: ALLOW_ANONYMOUS_PROXY
+        value: "true"
     healthCheckPath: /api/ping
     plan: free

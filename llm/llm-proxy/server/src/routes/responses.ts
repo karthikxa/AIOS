@@ -21,6 +21,7 @@ import {
   isModelAccessForbiddenError,
   timingSafeStringEqual,
   extractApiToken,
+  isValidProxyToken,
   getStickyModel,
   setStickyModel,
   logRequest,
@@ -265,10 +266,7 @@ export function buildResponseObject(opts: {
 responsesRouter.post('/responses', async (req: Request, res: Response) => {
   const start = Date.now();
 
-  // Same unified-key auth as the proxy (accepts Bearer or x-api-key).
-  const token = extractApiToken(req);
-  const unifiedKey = getUnifiedApiKey();
-  if (!token || !timingSafeStringEqual(token, unifiedKey)) {
+  if (!isValidProxyToken(req)) {
     res.status(401).json({ error: { message: 'Invalid API key', type: 'authentication_error' } });
     return;
   }

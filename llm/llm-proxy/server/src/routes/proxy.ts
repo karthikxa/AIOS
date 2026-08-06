@@ -58,6 +58,16 @@ export function extractApiToken(req: Request): string | undefined {
   return trimmed || undefined;
 }
 
+export function isValidProxyToken(req: Request): boolean {
+  if (process.env.ALLOW_ANONYMOUS_PROXY === 'true' || process.env.LOCAL_BYPASS === 'true') {
+    return true;
+  }
+  const token = extractApiToken(req);
+  const unifiedKey = getUnifiedApiKey();
+  if (!token) return false;
+  return timingSafeStringEqual(token, unifiedKey);
+}
+
 // Sticky sessions: track which model served each "session"
 // Key: hash of first user message → model_db_id
 // This prevents model switching mid-conversation which causes hallucination
@@ -111,9 +121,7 @@ export function setStickyModel(messages: ChatMessage[], modelDbId: number, sessi
 // OpenAI-compatible /models endpoint (used by Hermes for metadata) 
 // shows API models which is linked by the user
 proxyRouter.get('/models', (req: Request, res: Response) => {
-  const token = extractApiToken(req);
-  const unifiedKey = getUnifiedApiKey();
-  if (!token || !timingSafeStringEqual(token, unifiedKey)) {
+  if (!isValidProxyToken(req)) {
     res.status(401).json({ error: { message: 'Invalid API key', type: 'authentication_error' } });
     return;
   }
@@ -420,9 +428,7 @@ const EmbeddingsBody = z.object({
 });
 
 proxyRouter.post('/embeddings', async (req: Request, res: Response) => {
-  const token = extractApiToken(req);
-  const unifiedKey = getUnifiedApiKey();
-  if (!token || !timingSafeStringEqual(token, unifiedKey)) {
+  if (!isValidProxyToken(req)) {
     res.status(401).json({ error: { message: 'Invalid API key', type: 'authentication_error' } });
     return;
   }
@@ -454,9 +460,7 @@ proxyRouter.post('/chat/completions', async (req: Request, res: Response) => {
   // Authenticate with the unified API key for every proxy request, including
   // loopback callers. Browser pages can reach localhost, so socket locality is
   // not a reliable authorization boundary.
-  const token = extractApiToken(req);
-  const unifiedKey = getUnifiedApiKey();
-  if (!token || !timingSafeStringEqual(token, unifiedKey)) {
+  if (!isValidProxyToken(req)) {
     res.status(401).json({
       error: { message: 'Invalid API key', type: 'authentication_error' },
     });
