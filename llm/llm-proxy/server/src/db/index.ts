@@ -76,10 +76,18 @@ export function initDb(dbPath?: string): Database.Database {
     if (!isMemory) db.pragma('journal_mode = WAL');
     db.pragma('busy_timeout = 5000');
     db.pragma('foreign_keys = ON');
+    // Verify internal integrity — catches index corruption and page checksum errors
+    const result = db.pragma('integrity_check', { simple: true }) as string;
+    if (result !== 'ok') {
+      console.warn(`[db] Integrity check failed: ${result} — resetting database`);
+      try { db.close(); } catch {}
+      return resetCorruptedDb(resolvedPath);
+    }
     migrateDbSchema(db);
     return db;
   } catch (err: any) {
     console.warn(`[db] Error during DB init (${err?.message}) — forcing reset...`);
+    try { db.close(); } catch {}
     return resetCorruptedDb(resolvedPath);
   }
 }

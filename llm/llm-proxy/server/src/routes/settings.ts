@@ -1,13 +1,16 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { getUnifiedApiKey, regenerateUnifiedKey, getSetting, setSetting } from '../db/index.js';
+import { maskKey } from '../lib/crypto.js';
 import { applyProxyUrl, applyProxyEnabled, applyProxyBypass, isProxyActive, getProxyUrl, isProxyEnabled, getProxyBypassPlatforms } from '../lib/proxy.js';
 
 export const settingsRouter = Router();
 
-// Get the unified API key
-settingsRouter.get('/api-key', (_req: Request, res: Response) => {
-  res.json({ apiKey: getUnifiedApiKey() });
+// Get the unified API key (masked by default; ?reveal=true for full key)
+settingsRouter.get('/api-key', (req: Request, res: Response) => {
+  const key = getUnifiedApiKey();
+  const reveal = req.query.reveal === 'true';
+  res.json({ apiKey: reveal ? key : maskKey(key) });
 });
 
 // Regenerate the unified API key

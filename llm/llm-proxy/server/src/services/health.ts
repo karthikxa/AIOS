@@ -72,8 +72,18 @@ export async function checkAllKeys(): Promise<void> {
 
   console.log(`[Health] Checking ${keys.length} key(s)...`);
 
-  for (const key of keys) {
-    await checkKeyHealth(key.id);
+  // Parallel check with concurrency limit of 5
+  const CONCURRENCY = 5;
+  for (let i = 0; i < keys.length; i += CONCURRENCY) {
+    const batch = keys.slice(i, i + CONCURRENCY);
+    await Promise.allSettled(batch.map(k => checkKeyHealth(k.id)));
+  }
+
+  // Clean up failureCount entries for keys that no longer exist
+  for (const keyId of failureCount.keys()) {
+    if (!keys.some(k => k.id === keyId)) {
+      failureCount.delete(keyId);
+    }
   }
 
   console.log(`[Health] Check complete.`);

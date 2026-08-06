@@ -80,3 +80,17 @@ export function deleteSession(token: string | undefined | null): void {
   if (!token) return;
   getDb().prepare('DELETE FROM sessions WHERE token_hash = ?').run(sha256(token));
 }
+
+// Periodic cleanup: prune expired sessions every hour to prevent unbounded growth.
+const CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
+setInterval(() => {
+  try {
+    const db = getDb();
+    const result = db.prepare('DELETE FROM sessions WHERE expires_at_ms < ?').run(Date.now());
+    if (result.changes > 0) {
+      console.log(`[auth] Pruned ${result.changes} expired session(s)`);
+    }
+  } catch (e) {
+    console.warn('[auth] Session cleanup failed:', e instanceof Error ? e.message : e);
+  }
+}, CLEANUP_INTERVAL).unref();

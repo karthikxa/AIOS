@@ -13,6 +13,8 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
     res.status(401).json({ error: { message: 'Authentication required', type: 'authentication_error' } });
     return;
   }
+  // Prevent reverse proxies/CDNs from caching admin API responses
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   (req as Request & { user?: typeof session }).user = session;
   next();
 }

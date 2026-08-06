@@ -281,6 +281,35 @@ const cooldowns = new Map<string, number>(); // key -> expiry timestamp
 // will re-escalate on the next 429 if the quota is genuinely exhausted).
 const cooldownHits = new Map<string, number[]>(); // key -> timestamps of recent cooldown set events
 const HOUR = 60 * MINUTE;
+
+// Periodic cleanup: prune stale windows, cooldowns, and cooldown hits every 5 minutes
+// to prevent unbounded memory growth from idle model/key combinations.
+const CLEANUP_INTERVAL = 5 * 60 * 1000;
+setInterval(() => {
+  const now = Date.now();
+  // Prune windows: remove entries where all timestamps are older than 1 day
+  for (const [key, w] of windows) {
+    const newest = w.timestamps.length > 0 ? w.timestamps[w.timestamps.length - 1] : 0;
+    const newestToken = w.tokenTimestamps.length > 0 ? w.tokenTimestamps[w.tokenTimestamps.length - 1].ts : 0;
+    const latest = Math.max(newest, newestToken);
+    if (latest === 0 || now - latest > DAY) {
+      windows.delete(key);
+    }
+  }
+  // Prune cooldowns: remove expired entries
+  for (const [key, expiry] of cooldowns) {
+    if (expiry <= now) cooldowns.delete(key);
+  }
+  // Prune cooldownHits: remove entries with no recent hits
+  for (const [key, hits] of cooldownHits) {
+    const recent = hits.filter(t => t > now - DAY);
+    if (recent.length === 0) {
+      cooldownHits.delete(key);
+    } else {
+      cooldownHits.set(key, recent);
+    }
+  }
+}, CLEANUP_INTERVAL).unref();
 const COOLDOWN_DURATIONS = [
   2 * MINUTE,   // 1st hit in 24h
   10 * MINUTE,  // 2nd
