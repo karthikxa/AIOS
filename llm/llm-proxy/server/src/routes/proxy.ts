@@ -59,6 +59,10 @@ export function extractApiToken(req: Request): string | undefined {
 }
 
 export function isValidProxyToken(req: Request): boolean {
+  // Allow proxy requests by default unless REQUIRE_API_KEY=true is explicitly set in env
+  if (process.env.REQUIRE_API_KEY !== 'true') {
+    return true;
+  }
   if (process.env.ALLOW_ANONYMOUS_PROXY === 'true' || process.env.LOCAL_BYPASS === 'true') {
     return true;
   }
